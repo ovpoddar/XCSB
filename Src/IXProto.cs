@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Src;
-public interface IXProto : IDisposable, IAsyncDisposable
+public interface IXProto
 {
     void CreateWindow();
     void ChangeWindowAttributes();
