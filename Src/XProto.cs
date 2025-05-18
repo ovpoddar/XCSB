@@ -1,14 +1,18 @@
-﻿using System;
+﻿using Src.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Src;
 internal class XProto : IXProto
 {
-    private Socket _socket;
+    private readonly Socket _socket;
+    private bool _disposedValue;
 
     public XProto(Socket socket)
     {
@@ -380,9 +384,15 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.MapWindow()
+    [SkipLocalsInit]
+    void IXProto.MapWindow(int window)
     {
-        throw new NotImplementedException();
+        Span<byte> values = stackalloc byte[8];
+        values[0] = (byte)Opcode.MapWindow;
+        values[1] = 0;
+        MemoryMarshal.Write<ushort>(values[2..], 2);
+        MemoryMarshal.Write(values[4..], window);
+        _socket.Send(values, SocketFlags.None);
     }
 
     void IXProto.NoOperation()
@@ -615,4 +625,22 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
+        {
+            if (disposing)
+            {
+                if (_socket.Connected) _socket.Close();
+            }
+            _disposedValue = true;
+        }
+    }
+
+    void IDisposable.Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Src;
-public interface IXProto
+public interface IXProto : IDisposable
 {
     void CreateWindow();
     void ChangeWindowAttributes();
@@ -14,7 +14,7 @@ public interface IXProto
     void DestroySubwindows();
     void ChangeSaveSet();
     void ReparentWindow();
-    void MapWindow();
+    void MapWindow(int window);
     void MapSubwindows();
     void UnmapWindow();
     void UnmapSubwindows();

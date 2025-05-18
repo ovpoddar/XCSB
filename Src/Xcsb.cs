@@ -7,7 +7,6 @@ namespace Src;
 
 public class Xcsb
 {
-
     public IXProto Initialized()
     {
         var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
@@ -16,6 +15,9 @@ public class Xcsb
         socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.SocketPath.ToString()));
         if (!socket.Connected)
             throw new Exception("Initialized failed");
+
+
+
         var result = new XProto(socket);
         return result;
     }
@@ -31,6 +33,7 @@ public class Xcsb
         var result = new XProto(socket);
         return result;
     }
+
     private ConnectionDetails GetSocketInformation(ReadOnlySpan<char> display)
     {
         var result = new ConnectionDetails();
@@ -41,9 +44,9 @@ public class Xcsb
             out var screenNumber,
             out var protocol))
             throw new Exception("Initialized failed");
-        if (socket.Length != 0) 
+        if (socket.Length != 0)
             result.SocketPath = display;
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) 
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             result.SocketPath = $"{host}:{6000 + displayNumber}";
         else
             result.SocketPath = $"/tmp/.X11-unix/X{displayNumber}";
@@ -78,7 +81,7 @@ public class Xcsb
             var slashIndex = display.IndexOf('/');
             if (slashIndex >= 0)
             {
-                if (!Enum.TryParse(display.Slice(0, slashIndex).ToString(), true, out protocol))
+                if (!Enum.TryParse(display.Slice(0, slashIndex), true, out protocol))
                     protocol = ProtocolType.Tcp;
 
                 host = display.Slice(slashIndex + 1, colonIndex);
