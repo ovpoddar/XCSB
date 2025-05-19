@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,4 +17,14 @@ internal static class GenericHelper
 
     internal static int AddPadding(int pad) =>
         pad + ((4 - (pad & 3)) & 3);
+
+    internal static void SendMust(this Socket socket, Span<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
+    {
+        while (socket.Connected)
+        {
+            var totalSend = socket.Send(buffer, socketFlags);
+            if (totalSend == buffer.Length)
+                break;
+        }
+    }
 }

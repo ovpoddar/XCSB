@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace Src;
 
-public class Xcsb
+public static class Xcsb
 {
-    public IXProto Initialized()
+    public static IXProto Initialized()
     {
         var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
         var connectionDetails = GetSocketInformation(display);
@@ -15,14 +15,13 @@ public class Xcsb
         socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.SocketPath.ToString()));
         if (!socket.Connected)
             throw new Exception("Initialized failed");
-
-
-
+        
+        Connection.TryConnect(socket, connectionDetails.Host, connectionDetails.Display);
         var result = new XProto(socket);
         return result;
     }
 
-    public async Task<IXProto> InitializedAsync()
+    public static async Task<IXProto> InitializedAsync()
     {
         var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
         var connectionDetails = GetSocketInformation(display);
@@ -34,12 +33,13 @@ public class Xcsb
         return result;
     }
 
-    private ConnectionDetails GetSocketInformation(ReadOnlySpan<char> display)
+    private static ConnectionDetails GetSocketInformation(ReadOnlySpan<char> display)
     {
         var result = new ConnectionDetails();
         if (GetDisplayConfiguration(display,
             out var socket,
             out var host,
+            out var dspy,
             out var displayNumber,
             out var screenNumber,
             out var protocol))
@@ -51,12 +51,15 @@ public class Xcsb
         else
             result.SocketPath = $"/tmp/.X11-unix/X{displayNumber}";
         result.Protocol = protocol;
+        result.Host = host;
+        result.Display = dspy;
         return result;
     }
-
-    private bool GetDisplayConfiguration(ReadOnlySpan<char> display,
+    // todo: map it directly to the struct
+    private static bool GetDisplayConfiguration(ReadOnlySpan<char> display,
         out ReadOnlySpan<char> socket,
         out ReadOnlySpan<char> host,
+        out ReadOnlySpan<char> dspy,
         out int displayNumber,
         out int screenNumber,
         out ProtocolType protocol)
@@ -66,6 +69,7 @@ public class Xcsb
         displayNumber = 0;
         screenNumber = 0;
         protocol = ProtocolType.IP;
+        dspy = ReadOnlySpan<char>.Empty;
 
         if (display.IsEmpty)
             return false;
@@ -75,36 +79,38 @@ public class Xcsb
             return false;
 
         if (display[0] == '/')
-            socket = display.Slice(0, colonIndex);
+            socket = display[..colonIndex];
         else
         {
             var slashIndex = display.IndexOf('/');
             if (slashIndex >= 0)
             {
-                if (!Enum.TryParse(display.Slice(0, slashIndex), true, out protocol))
+                if (!Enum.TryParse(display[..slashIndex], true, out protocol))
                     protocol = ProtocolType.Tcp;
 
                 host = display.Slice(slashIndex + 1, colonIndex);
             }
             else
             {
-                host = display.Slice(0, colonIndex);
+                host = display[..colonIndex];
             }
         }
 
-        var displayNumberStart = display.Slice(0);
+        var displayNumberStart = display[..];
         if (displayNumberStart.Length == 0)
             return false;
 
         var dotIndex = displayNumberStart.IndexOf('.');
         if (dotIndex < 0)
         {
-            return int.TryParse(displayNumberStart.Slice(dotIndex + 1), out displayNumber);
+            dspy = displayNumberStart[..];
+            return int.TryParse(displayNumberStart[(dotIndex + 1)..], out displayNumber);
         }
         else
         {
+            dspy = displayNumberStart[..dotIndex];
             return int.TryParse(displayNumberStart.Slice(1, dotIndex), out displayNumber)
-                && int.TryParse(displayNumberStart.Slice(dotIndex + 1), out screenNumber);
+                && int.TryParse(displayNumberStart[(dotIndex + 1)..], out screenNumber);
         }
     }
 }

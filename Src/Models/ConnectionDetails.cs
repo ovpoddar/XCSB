@@ -10,5 +10,6 @@ internal ref struct ConnectionDetails
 {
     public ReadOnlySpan<char> SocketPath { get; set; }
     public ProtocolType Protocol { get; set; }
-
+    public ReadOnlySpan<char> Host { get; set; }
+    public ReadOnlySpan<char> Display { get; set; }
 }
