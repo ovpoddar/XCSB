@@ -12,7 +12,7 @@ public static class Xcsb
         var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
         var connectionDetails = GetSocketInformation(display);
         var socket = new Socket(AddressFamily.Unix, SocketType.Stream, connectionDetails.Protocol);
-        socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.SocketPath.ToString()));
+        socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.GetSocketPath(display).ToString()));
         if (!socket.Connected)
             throw new Exception("Initialized failed");
         
@@ -26,50 +26,28 @@ public static class Xcsb
         var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
         var connectionDetails = GetSocketInformation(display);
         var socket = new Socket(AddressFamily.Unix, SocketType.Stream, connectionDetails.Protocol);
-        await socket.ConnectAsync(new UnixDomainSocketEndPoint(connectionDetails.SocketPath.ToString()));
+        await socket.ConnectAsync(new UnixDomainSocketEndPoint(connectionDetails.GetSocketPath(display).ToString()));
         if (!socket.Connected)
             throw new Exception("Initialized failed");
+
+        Connection.TryConnectAsync(socket, connectionDetails.Host, connectionDetails.Display);
         var result = new XProto(socket);
         return result;
     }
 
     private static ConnectionDetails GetSocketInformation(ReadOnlySpan<char> display)
     {
-        var result = new ConnectionDetails();
         if (GetDisplayConfiguration(display,
-            out var socket,
-            out var host,
-            out var dspy,
-            out var displayNumber,
-            out var screenNumber,
-            out var protocol))
+            out var result))
             throw new Exception("Initialized failed");
-        if (socket.Length != 0)
-            result.SocketPath = display;
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            result.SocketPath = $"{host}:{6000 + displayNumber}";
-        else
-            result.SocketPath = $"/tmp/.X11-unix/X{displayNumber}";
-        result.Protocol = protocol;
-        result.Host = host;
-        result.Display = dspy;
         return result;
     }
-    // todo: map it directly to the struct
+    
     private static bool GetDisplayConfiguration(ReadOnlySpan<char> display,
-        out ReadOnlySpan<char> socket,
-        out ReadOnlySpan<char> host,
-        out ReadOnlySpan<char> dspy,
-        out int displayNumber,
-        out int screenNumber,
-        out ProtocolType protocol)
+        out ConnectionDetails details)
     {
-        socket = ReadOnlySpan<char>.Empty;
-        host = ReadOnlySpan<char>.Empty;
-        displayNumber = 0;
-        screenNumber = 0;
-        protocol = ProtocolType.IP;
-        dspy = ReadOnlySpan<char>.Empty;
+        details = new ConnectionDetails();
+
 
         if (display.IsEmpty)
             return false;
@@ -79,20 +57,20 @@ public static class Xcsb
             return false;
 
         if (display[0] == '/')
-            socket = display[..colonIndex];
+            details.Socket = display[..colonIndex];
         else
         {
             var slashIndex = display.IndexOf('/');
             if (slashIndex >= 0)
             {
-                if (!Enum.TryParse(display[..slashIndex], true, out protocol))
-                    protocol = ProtocolType.Tcp;
+                if (!Enum.TryParse(display[..slashIndex], true, out details.Protocol))
+                    details.Protocol = ProtocolType.Tcp;
 
-                host = display.Slice(slashIndex + 1, colonIndex);
+                details.Host = display.Slice(slashIndex + 1, colonIndex);
             }
             else
             {
-                host = display[..colonIndex];
+                details.Host = display[..colonIndex];
             }
         }
 
@@ -103,14 +81,14 @@ public static class Xcsb
         var dotIndex = displayNumberStart.IndexOf('.');
         if (dotIndex < 0)
         {
-            dspy = displayNumberStart[..];
-            return int.TryParse(displayNumberStart[(dotIndex + 1)..], out displayNumber);
+            details.Display = displayNumberStart[..];
+            return int.TryParse(displayNumberStart[(dotIndex + 1)..], out details.DisplayNumber);
         }
         else
         {
-            dspy = displayNumberStart[..dotIndex];
-            return int.TryParse(displayNumberStart.Slice(1, dotIndex), out displayNumber)
-                && int.TryParse(displayNumberStart[(dotIndex + 1)..], out screenNumber);
+            details.Display = displayNumberStart[..dotIndex];
+            return int.TryParse(displayNumberStart.Slice(1, dotIndex), out details.DisplayNumber)
+                && int.TryParse(displayNumberStart[(dotIndex + 1)..], out details.ScreenNumber);
         }
     }
 }

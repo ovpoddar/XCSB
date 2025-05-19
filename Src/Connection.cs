@@ -41,6 +41,11 @@ internal static class Connection
         socket.SendMust(scratchBuffer);
     }
 
+    internal static void TryConnectAsync(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
+    {
+        throw new NotImplementedException();
+    }
+
     private static (string authName, string authData) GetAuthInfo(ReadOnlySpan<char> host,
         ReadOnlySpan<char> display)
     {
