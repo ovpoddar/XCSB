@@ -8,40 +8,33 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Src.Models;
+using Src.Models.Handshake;
+using System.Diagnostics;
 
 namespace Src;
 
 internal static class Connection
 {
+    private const string MAGICCOOKIE = "MIT-MAGIC-COOKIE-1";
     internal static void TryConnect(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
     {
-        var (authName, authData) = GetAuthInfo(host, display);
-        var namePaddedLength = GenericHelper.AddPadding(authName.Length);
-        var scratchBufferSize = 12
-                                + namePaddedLength
-                                + GenericHelper.AddPadding(authData.Length);
-        var writingIndex = 0;
-        Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
+        var result = MakeHandshake(socket, [], []);
+        if (result.HandshakeStatus == HandshakeStatus.Authenticate)
+        {
+            Debug.WriteLine($"Connection: Authenticate fail {result.GetStatusMessage(socket)}");
+            var (authName, authData) = GetAuthInfo(host, display);
+            result = MakeHandshake(socket, authName, authData);
+        }
+        else if (result.HandshakeStatus == HandshakeStatus.Failed)
+            throw new Exception(result.GetStatusMessage(socket).ToString());
 
-        scratchBuffer[writingIndex++] = (byte)(BitConverter.IsLittleEndian ? 'l' : 'B');
-        scratchBuffer[writingIndex++] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 11);
-        writingIndex += 2;
-        MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
-        writingIndex += 2;
-        MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authName.Length);
-        writingIndex += 2;
-        MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authData.Length);
-        writingIndex += 2;
-        MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
-        writingIndex += 2;
-        Encoding.ASCII.GetBytes(authName, scratchBuffer[writingIndex..]);
-        writingIndex += namePaddedLength;
-        Encoding.ASCII.GetBytes(authData, scratchBuffer[writingIndex..]);
-        socket.SendMust(scratchBuffer);
+        if (result.HandshakeStatus != HandshakeStatus.Success)
+            throw new Exception("Could not connect to x11");
+
+        HandshakeResponseBody
     }
 
-    internal static void TryConnectAsync(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
+    internal static Task TryConnectAsync(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
     {
         throw new NotImplementedException();
     }
@@ -62,7 +55,7 @@ internal static class Connection
             return ("", "");
 
         using var fileStream = File.OpenRead(filePath);
-        while (fileStream.Length <= fileStream.Position)
+        while (fileStream.Position <= fileStream.Length)
         {
             var context = new XAuthority(fileStream);
             var dspy = context.GetDisplayNumber(fileStream);
@@ -70,10 +63,39 @@ internal static class Connection
             if (context.Family == ushort.MaxValue
                        || (context.Family == byte.MaxValue && context.GetHostAddress(fileStream) == host)
                        && (dspy == "" || dspy == display)
-                       && contentName == "MIT-MAGIC-COOKIE-1")
+                       && contentName.SequenceEqual(MAGICCOOKIE))
                 return (contentName.ToString(), context.GetData(fileStream).ToString());
         }
 
         throw new InvalidOperationException("Invalid XAuthority file present.");
+    }
+
+    private static HandshakeResponseHead MakeHandshake(Socket socket, ReadOnlySpan<char> authName, ReadOnlySpan<char> authData)
+    {
+        var namePaddedLength = authName.Length.AddPadding();
+        var scratchBufferSize = 12 + namePaddedLength + authData.Length.AddPadding();
+        var writingIndex = 0;
+        Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
+
+        scratchBuffer[writingIndex++] = (byte)(BitConverter.IsLittleEndian ? 'l' : 'B');
+        scratchBuffer[writingIndex++] = 0;
+        MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 11);
+        writingIndex += 2;
+        MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
+        writingIndex += 2;
+        MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authName.Length);
+        writingIndex += 2;
+        MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authData.Length);
+        writingIndex += 2;
+        MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
+        writingIndex += 2;
+        Encoding.ASCII.GetBytes(authName, scratchBuffer[writingIndex..]);
+        writingIndex += namePaddedLength;
+        Encoding.ASCII.GetBytes(authData, scratchBuffer[writingIndex..]);
+        socket.SendMust(scratchBuffer);
+
+        scratchBuffer = scratchBuffer.Slice(0, Marshal.SizeOf<HandshakeResponseHead>());
+        socket.Receive(scratchBuffer);
+        return scratchBuffer.AsStruct<HandshakeResponseHead>();
     }
 }

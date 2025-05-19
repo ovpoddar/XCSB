@@ -12,9 +12,9 @@ internal ref struct ConnectionDetails
     public ReadOnlySpan<char> Socket { get; set; }
     public ReadOnlySpan<char> Host { get; set; }
     public ReadOnlySpan<char> Display { get; set; }
-    public ref int DisplayNumber;
-    public ref int ScreenNumber;
-    public ProtocolType Protocol;
+    public int DisplayNumber { get; set; }
+    public int ScreenNumber { get; set; }
+    public ProtocolType Protocol { get; set; }
 
     public readonly ReadOnlySpan<char> GetSocketPath(ReadOnlySpan<char> display)
     {

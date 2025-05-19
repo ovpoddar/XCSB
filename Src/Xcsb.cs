@@ -15,7 +15,7 @@ public static class Xcsb
         socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.GetSocketPath(display).ToString()));
         if (!socket.Connected)
             throw new Exception("Initialized failed");
-        
+
         Connection.TryConnect(socket, connectionDetails.Host, connectionDetails.Display);
         var result = new XProto(socket);
         return result;
@@ -30,7 +30,7 @@ public static class Xcsb
         if (!socket.Connected)
             throw new Exception("Initialized failed");
 
-        Connection.TryConnectAsync(socket, connectionDetails.Host, connectionDetails.Display);
+        //await Connection.TryConnectAsync(socket, connectionDetails.Host, connectionDetails.Display);
         var result = new XProto(socket);
         return result;
     }
@@ -42,11 +42,15 @@ public static class Xcsb
             throw new Exception("Initialized failed");
         return result;
     }
-    
+
     private static bool GetDisplayConfiguration(ReadOnlySpan<char> display,
         out ConnectionDetails details)
     {
-        details = new ConnectionDetails();
+        details = new ConnectionDetails()
+        {
+            DisplayNumber = 0,
+            ScreenNumber = 0,
+        };
 
 
         if (display.IsEmpty)
@@ -63,7 +67,9 @@ public static class Xcsb
             var slashIndex = display.IndexOf('/');
             if (slashIndex >= 0)
             {
-                if (!Enum.TryParse(display[..slashIndex], true, out details.Protocol))
+                if (Enum.TryParse(display[..slashIndex], true, out ProtocolType protocol))
+                    details.Protocol = protocol;
+                else
                     details.Protocol = ProtocolType.Tcp;
 
                 details.Host = display.Slice(slashIndex + 1, colonIndex);
@@ -82,13 +88,18 @@ public static class Xcsb
         if (dotIndex < 0)
         {
             details.Display = displayNumberStart[..];
-            return int.TryParse(displayNumberStart[(dotIndex + 1)..], out details.DisplayNumber);
+            var result = int.TryParse(displayNumberStart[(dotIndex + 1)..], out var displayNumber);
+            details.DisplayNumber = displayNumber;
+            return result;
         }
         else
         {
             details.Display = displayNumberStart[..dotIndex];
-            return int.TryParse(displayNumberStart.Slice(1, dotIndex), out details.DisplayNumber)
-                && int.TryParse(displayNumberStart[(dotIndex + 1)..], out details.ScreenNumber);
+            var task1 = int.TryParse(displayNumberStart.Slice(1, dotIndex), out var displayNumber);
+            var task2 = int.TryParse(displayNumberStart[(dotIndex + 1)..], out var screenNumber);
+            details.DisplayNumber = displayNumber;
+            details.ScreenNumber = screenNumber;
+            return task1 && task2;
         }
     }
 }

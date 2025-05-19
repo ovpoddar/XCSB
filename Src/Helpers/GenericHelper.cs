@@ -15,7 +15,7 @@ internal static class GenericHelper
     internal static T ToStruct<T>(this Span<byte> @bytes) where T : struct =>
         Unsafe.As<byte, T>(ref @bytes[0]);
 
-    internal static int AddPadding(int pad) =>
+    internal static int AddPadding(this int pad) =>
         pad + ((4 - (pad & 3)) & 3);
 
     internal static void SendMust(this Socket socket, Span<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
