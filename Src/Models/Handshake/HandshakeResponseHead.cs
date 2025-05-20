@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Src.Helpers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,7 +36,7 @@ internal struct HandshakeResponseHead
         if (dataLength == 0) throw new NotSupportedException();
 
         Span<byte> buffer = stackalloc byte[dataLength * 4];
-        socket.Receive(buffer);
+        socket.ReceiveExact(buffer);
         return Encoding.ASCII.GetString(buffer).TrimEnd();
     }
 }

@@ -396,7 +396,7 @@ internal class XProto : IXProto
         values[1] = 0;
         MemoryMarshal.Write<ushort>(values[2..], 2);
         MemoryMarshal.Write(values[4..], window);
-        _socket.SendMust(values, SocketFlags.None);
+        _socket.SendExact(values, SocketFlags.None);
     }
 
     void IXProto.NoOperation()

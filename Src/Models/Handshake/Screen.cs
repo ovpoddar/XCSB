@@ -69,6 +69,7 @@ internal class Screen
         public byte RootDepth; // bits per pixel
         public byte NumberOfDepth; // number of supported depths
     }
+
     public int FillTheDepth(Span<byte> reader)
     {
         var readIndex = 0;

@@ -31,7 +31,7 @@ internal static class Connection
         if (result.HandshakeStatus != HandshakeStatus.Success)
             throw new Exception("Could not connect to x11");
 
-        var successResponseBody = HandshakeSuccessResponseBody.Read(socket);
+        var successResponseBody = HandshakeSuccessResponseBody.Read(socket, result.HandshakeResponseHeadSuccess.AdditionalDataLength);
         return successResponseBody;
     }
 
@@ -93,10 +93,10 @@ internal static class Connection
         Encoding.ASCII.GetBytes(authName, scratchBuffer[writingIndex..]);
         writingIndex += namePaddedLength;
         Encoding.ASCII.GetBytes(authData, scratchBuffer[writingIndex..]);
-        socket.SendMust(scratchBuffer);
+        socket.SendExact(scratchBuffer);
 
         scratchBuffer = scratchBuffer.Slice(0, Marshal.SizeOf<HandshakeResponseHead>());
-        socket.Receive(scratchBuffer);
+        socket.ReceiveExact(scratchBuffer);
         return scratchBuffer.AsStruct<HandshakeResponseHead>();
     }
 }

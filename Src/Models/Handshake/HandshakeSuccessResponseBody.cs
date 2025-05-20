@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +15,6 @@ internal class HandshakeSuccessResponseBody
     public uint ResourceIDMask { get; set; }
     public uint MotionBufferSize { get; set; }
     public ushort MaxRequestLength { get; set; }
-    public byte FormatsNumber { get; set; }
     public ImageOrder ImageByteOrder { get; set; }
     public BitOrder BitmapBitOrder { get; set; }
     public byte BitmapScanLineUnit { get; set; }
@@ -23,9 +24,54 @@ internal class HandshakeSuccessResponseBody
     public string VendorName { get; set; }
     public Format[] Formats { get; set; }
     public Screen[] Screens { get; set; }
-    internal static HandshakeSuccessResponseBody Read(Socket socket)
+
+    private const int StackAllocThreshold = 1024;
+    internal static HandshakeSuccessResponseBody Read(Socket socket, short additionalDataLength)
     {
-        throw new NotImplementedException();
+        Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_handshakeSuccessResponseBody>()];
+        socket.ReceiveExact(scratchBuffer);
+        ref var fixed1 = ref scratchBuffer.AsStruct<_handshakeSuccessResponseBody>();
+        var result = (HandshakeSuccessResponseBody)fixed1;
+        result.VendorName = GetVendorName(socket, fixed1.VendorLength.AddPadding());
+        result.Formats = GetFormats(socket, fixed1.FormatsNumber);
+        result.Screens = new Screen[fixed1.ScreensNumber];
+        for (var i = 0; i < fixed1.ScreensNumber; i++)
+        {
+        }
+        return result;
+    }
+
+    private static Format[] GetFormats(Socket socket, int formatLength)
+    {
+        var requireByte = formatLength * Marshal.SizeOf<Format>();
+        if (requireByte < StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requireByte];
+            socket.ReceiveExact(scratchBuffer);
+            return MemoryMarshal.Cast<byte, Format>(scratchBuffer).ToArray();
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
+            socket.ReceiveExact(scratchBuffer[..requireByte]);
+            return MemoryMarshal.Cast<byte, Format>(scratchBuffer).ToArray();
+        }
+    }
+
+    private static string GetVendorName(Socket socket, int length)
+    {
+        if (length < StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[length];
+            socket.ReceiveExact(scratchBuffer);
+            return Encoding.ASCII.GetString(scratchBuffer);
+        }
+        else
+    {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(length);
+            socket.ReceiveExact(scratchBuffer[..length]);
+            return Encoding.ASCII.GetString(scratchBuffer);
+        }
     }
 
     public static explicit operator HandshakeSuccessResponseBody(_handshakeSuccessResponseBody depth)
@@ -37,7 +83,6 @@ internal class HandshakeSuccessResponseBody
             ResourceIDMask = depth.ResourceIDMask,
             MotionBufferSize = depth.MotionBufferSize,
             MaxRequestLength = depth.MaxRequestLength,
-            FormatsNumber = depth.FormatsNumber,
             ImageByteOrder = depth.ImageByteOrder,
             BitmapBitOrder = depth.BitmapBitOrder,
             BitmapScanLineUnit = depth.BitmapScanLineUnit,
