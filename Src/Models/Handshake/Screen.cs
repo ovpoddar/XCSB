@@ -10,25 +10,25 @@ namespace Src.Models.Handshake;
 
 internal class Screen
 {
-    public uint Root; // Window (XID, usually ulong)
-    public uint CMap; // Colormap
-    public uint WhitePixel; // pixel value for white
-    public uint BlackPixel; // pixel value for black
-    public int InputMask; // event mask
-    public ushort Width; // screen width in pixels
-    public ushort Height; // screen height in pixels
-    public ushort MWidth; // width in millimeters
-    public ushort MHeight; // height in millimeters
-    public ushort MinMaps; // min colormaps
-    public ushort MaxMaps; // max colormaps
-    public uint RootVisualId; // Visual*
+    public uint Root;
+    public uint CMap;
+    public uint WhitePixel;
+    public uint BlackPixel;
+    public int InputMask;
+    public ushort Width;
+    public ushort Height;
+    public ushort MWidth;
+    public ushort MHeight;
+    public ushort MinMaps;
+    public ushort MaxMaps;
+    public uint RootVisualId;
     public BackingStores BackingStore;
-    public bool SaveUnders; // Bool (0 or non-zero)
+    public bool SaveUnders;
     private byte _rootDepth;
     public Depth? RootDepth => this.Depths.FirstOrDefault(a => a.DepthValue == _rootDepth);
     public required Depth[] Depths;
 
-    public static explicit operator Screen(_screen depth)
+    public static implicit operator Screen(_screen depth)
     {
         return new Screen()
         {
@@ -55,33 +55,32 @@ internal class Screen
     {
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_screen>()];
         socket.ReceiveExact(scratchBuffer);
-        ref var fixed1 = ref scratchBuffer.AsStruct<_screen>();
         currentlyRead += scratchBuffer.Length;
 
-        var screen = (Screen)fixed1;
+        Screen screen = scratchBuffer.ToStruct<_screen>();
         for (var i = 0; i < screen.Depths.Length; i++)
-            screen.Depths[i] = Depth.Read(socket);
+            screen.Depths[i] = Depth.Read(socket, ref currentlyRead);
         return screen;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     internal struct _screen
     {
-        public uint Root; // Window (XID, usually ulong)
-        public uint CMap; // Colormap
-        public uint WhitePixel; // pixel value for white
-        public uint BlackPixel; // pixel value for black
-        public int InputMask; // event mask
-        public ushort Width; // screen width in pixels
-        public ushort Height; // screen height in pixels
-        public ushort MWidth; // width in millimeters
-        public ushort MHeight; // height in millimeters
-        public ushort MinMaps; // min colormaps
-        public ushort MaxMaps; // max colormaps
-        public uint RootVisualId; // Visual*
+        public uint Root;
+        public uint CMap;
+        public uint WhitePixel;
+        public uint BlackPixel;
+        public int InputMask;
+        public ushort Width;
+        public ushort Height;
+        public ushort MWidth;
+        public ushort MHeight;
+        public ushort MinMaps;
+        public ushort MaxMaps;
+        public uint RootVisualId;
         public BackingStores BackingStore;
-        public byte SaveUnders; // Bool (0 or non-zero)
-        public byte RootDepth; // bits per pixel
-        public byte NumberOfDepth; // number of supported depths
+        public byte SaveUnders;
+        public byte RootDepth;
+        public byte NumberOfDepth;
     }
 }

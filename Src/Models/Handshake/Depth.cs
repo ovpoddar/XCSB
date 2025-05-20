@@ -14,7 +14,7 @@ internal class Depth
     public byte DepthValue;
     public required Visual[] Visuals;
 
-    public static explicit operator Depth(_Depth depth)
+    public static implicit operator Depth(_Depth depth)
     {
         var dept = new Depth()
         {
@@ -24,17 +24,35 @@ internal class Depth
         return dept;
     }
 
-    public static Depth Read(Socket socket)
+    public static Depth Read(Socket socket, ref int currentlyRead)
     {
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_Depth>()];
         socket.ReceiveExact(scratchBuffer);
-        ref var fixed1 = ref scratchBuffer.AsStruct<_Depth>();
+        currentlyRead += scratchBuffer.Length;
 
-        var result = (Depth)fixed1;
-        Span<byte> scratchBudder2 = stackalloc byte[Marshal.SizeOf<Visual>() * fixed1.VisualsLength];
-        socket.ReceiveExact(scratchBudder2);
-        result.Visuals = MemoryMarshal.Cast<byte, Visual>(scratchBudder2).ToArray();
-        return result;
+        Depth depth = scratchBuffer.ToStruct<_Depth>();
+        currentlyRead += SetVisual(depth, socket);
+        return depth;
+    }
+
+    private static int SetVisual(Depth depth, Socket socket)
+    {
+        var requireByte = Marshal.SizeOf<Visual>() * depth.Visuals.Length;
+        if (requireByte < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requireByte];
+            socket.ReceiveExact(scratchBuffer);
+            MemoryMarshal.Cast<byte, Visual>(scratchBuffer)
+                .CopyTo(depth.Visuals);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
+            socket.ReceiveExact(scratchBuffer[..requireByte]);
+            MemoryMarshal.Cast<byte, Visual>(scratchBuffer)
+                .CopyTo(depth.Visuals);
+        }
+        return requireByte;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

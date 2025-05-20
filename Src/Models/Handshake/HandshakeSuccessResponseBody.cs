@@ -28,8 +28,6 @@ internal class HandshakeSuccessResponseBody
     public Format[] Formats { get; set; }
     public Screen[] Screens { get; set; }
 
-    private const int StackAllocThreshold = 1024;
-    // todo: want to use a scoket reader exrensation
     internal static HandshakeSuccessResponseBody Read(Socket socket, short additionalDataLength)
     {
         var readIndex = 0;
@@ -40,35 +38,36 @@ internal class HandshakeSuccessResponseBody
 
         var result = (HandshakeSuccessResponseBody)fixed1;
         readIndex += SetVendorName(result, socket, fixed1.VendorLength.AddPadding());
-        readIndex += SettFormats(result, socket, fixed1.FormatsNumber);
-        result.Screens = new Screen[fixed1.ScreensNumber];
+        readIndex += SettFormats(result, socket);
         for (var i = 0; i < result.Screens.Length; i++)
             result.Screens[i] = Screen.Read(socket, ref readIndex);
 
         return result;
     }
 
-    private static int SettFormats(HandshakeSuccessResponseBody result, Socket socket, int formatLength)
+    private static int SettFormats(HandshakeSuccessResponseBody result, Socket socket)
     {
-        var requireByte = formatLength * Marshal.SizeOf<Format>();
-        if (requireByte < StackAllocThreshold)
+        var requireByte = result.Formats.Length * Marshal.SizeOf<Format>();
+        if (requireByte < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requireByte];
             socket.ReceiveExact(scratchBuffer);
-            result.Formats = MemoryMarshal.Cast<byte, Format>(scratchBuffer).ToArray();
+            MemoryMarshal.Cast<byte, Format>(scratchBuffer)
+                .CopyTo(result.Formats);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
             socket.ReceiveExact(scratchBuffer[..requireByte]);
-            result.Formats = MemoryMarshal.Cast<byte, Format>(scratchBuffer).ToArray();
+            MemoryMarshal.Cast<byte, Format>(scratchBuffer)
+                .CopyTo(result.Formats);
         }
         return requireByte;
     }
 
     private static int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int length)
     {
-        if (length < StackAllocThreshold)
+        if (length < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[length];
             socket.ReceiveExact(scratchBuffer);
@@ -98,6 +97,8 @@ internal class HandshakeSuccessResponseBody
             BitmapScanLinePad = depth.BitmapScanLinePad,
             MinKeyCode = depth.MinKeyCode,
             MaxKeyCode = depth.MaxKeyCode,
+            Formats = new Format[depth.FormatsNumber],
+            Screens = new Screen[depth.ScreensNumber],
         };
     }
 

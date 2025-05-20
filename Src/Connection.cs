@@ -76,27 +76,55 @@ internal static class Connection
         var namePaddedLength = authName.Length.AddPadding();
         var scratchBufferSize = 12 + namePaddedLength + authData.Length.AddPadding();
         var writingIndex = 0;
-        Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
 
-        scratchBuffer[writingIndex++] = (byte)(BitConverter.IsLittleEndian ? 'l' : 'B');
-        scratchBuffer[writingIndex++] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 11);
-        writingIndex += 2;
-        MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
-        writingIndex += 2;
-        MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authName.Length);
-        writingIndex += 2;
-        MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authData.Length);
-        writingIndex += 2;
-        MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
-        writingIndex += 2;
-        Encoding.ASCII.GetBytes(authName, scratchBuffer[writingIndex..]);
-        writingIndex += namePaddedLength;
-        Encoding.ASCII.GetBytes(authData, scratchBuffer[writingIndex..]);
-        socket.SendExact(scratchBuffer);
+        if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
 
-        scratchBuffer = scratchBuffer.Slice(0, Marshal.SizeOf<HandshakeResponseHead>());
-        socket.ReceiveExact(scratchBuffer);
-        return scratchBuffer.AsStruct<HandshakeResponseHead>();
+            scratchBuffer[writingIndex++] = (byte)(BitConverter.IsLittleEndian ? 'l' : 'B');
+            scratchBuffer[writingIndex++] = 0;
+            MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 11);
+            writingIndex += 2;
+            MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
+            writingIndex += 2;
+            MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authName.Length);
+            writingIndex += 2;
+            MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authData.Length);
+            writingIndex += 2;
+            MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
+            writingIndex += 2;
+            Encoding.ASCII.GetBytes(authName, scratchBuffer[writingIndex..]);
+            writingIndex += namePaddedLength;
+            Encoding.ASCII.GetBytes(authData, scratchBuffer[writingIndex..]);
+            socket.SendExact(scratchBuffer);
+
+            scratchBuffer = scratchBuffer.Slice(0, Marshal.SizeOf<HandshakeResponseHead>());
+            socket.ReceiveExact(scratchBuffer);
+            return scratchBuffer.AsStruct<HandshakeResponseHead>();
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
+            scratchBuffer[writingIndex++] = (byte)(BitConverter.IsLittleEndian ? 'l' : 'B');
+            scratchBuffer[writingIndex++] = 0;
+            MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 11);
+            writingIndex += 2;
+            MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
+            writingIndex += 2;
+            MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authName.Length);
+            writingIndex += 2;
+            MemoryMarshal.Write(scratchBuffer[writingIndex..], (ushort)authData.Length);
+            writingIndex += 2;
+            MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
+            writingIndex += 2;
+            Encoding.ASCII.GetBytes(authName, scratchBuffer[writingIndex..]);
+            writingIndex += namePaddedLength;
+            Encoding.ASCII.GetBytes(authData, scratchBuffer[writingIndex..]);
+            socket.SendExact(scratchBuffer);
+
+            Span<byte> tempBuffer = stackalloc byte[ Marshal.SizeOf<HandshakeResponseHead>()];
+            socket.ReceiveExact(tempBuffer);
+            return tempBuffer.AsStruct<HandshakeResponseHead>();
+        }
     }
 }
