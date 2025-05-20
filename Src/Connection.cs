@@ -16,7 +16,7 @@ namespace Src;
 internal static class Connection
 {
     private const string MAGICCOOKIE = "MIT-MAGIC-COOKIE-1";
-    internal static void TryConnect(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
+    internal static HandshakeSuccessResponseBody TryConnect(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
     {
         var result = MakeHandshake(socket, [], []);
         if (result.HandshakeStatus == HandshakeStatus.Authenticate)
@@ -31,7 +31,8 @@ internal static class Connection
         if (result.HandshakeStatus != HandshakeStatus.Success)
             throw new Exception("Could not connect to x11");
 
-        HandshakeResponseBody
+        var successResponseBody = HandshakeSuccessResponseBody.Read(socket);
+        return successResponseBody;
     }
 
     internal static Task TryConnectAsync(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)

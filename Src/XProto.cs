@@ -1,5 +1,6 @@
 ﻿using Src.Helpers;
 using Src.Models;
+using Src.Models.Handshake;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +14,13 @@ namespace Src;
 internal class XProto : IXProto
 {
     private readonly Socket _socket;
+    private readonly HandshakeSuccessResponseBody _connectionResult;
     private bool _disposedValue;
 
-    public XProto(Socket socket)
+    public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult)
     {
         _socket = socket;
+        _connectionResult = connectionResult;
     }
 
     void IXProto.AllocColor()
