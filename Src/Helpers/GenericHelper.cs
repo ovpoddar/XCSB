@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,7 +35,7 @@ internal static class GenericHelper
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
-        int total = 0;
+        var total = 0;
         while (socket.Connected)
         {
             total += socket.Receive(buffer[total..]);

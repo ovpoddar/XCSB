@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Src.Helpers;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static Src.Models.Handshake.Screen;
 
 namespace Src.Models.Handshake;
 internal class HandshakeSuccessResponseBody
@@ -26,52 +29,58 @@ internal class HandshakeSuccessResponseBody
     public Screen[] Screens { get; set; }
 
     private const int StackAllocThreshold = 1024;
+    // todo: want to use a scoket reader exrensation
     internal static HandshakeSuccessResponseBody Read(Socket socket, short additionalDataLength)
     {
+        var readIndex = 0;
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_handshakeSuccessResponseBody>()];
         socket.ReceiveExact(scratchBuffer);
         ref var fixed1 = ref scratchBuffer.AsStruct<_handshakeSuccessResponseBody>();
+        readIndex += scratchBuffer.Length;
+
         var result = (HandshakeSuccessResponseBody)fixed1;
-        result.VendorName = GetVendorName(socket, fixed1.VendorLength.AddPadding());
-        result.Formats = GetFormats(socket, fixed1.FormatsNumber);
+        readIndex += SetVendorName(result, socket, fixed1.VendorLength.AddPadding());
+        readIndex += SettFormats(result, socket, fixed1.FormatsNumber);
         result.Screens = new Screen[fixed1.ScreensNumber];
-        for (var i = 0; i < fixed1.ScreensNumber; i++)
-        {
-        }
+        for (var i = 0; i < result.Screens.Length; i++)
+            result.Screens[i] = Screen.Read(socket, ref readIndex);
+
         return result;
     }
 
-    private static Format[] GetFormats(Socket socket, int formatLength)
+    private static int SettFormats(HandshakeSuccessResponseBody result, Socket socket, int formatLength)
     {
         var requireByte = formatLength * Marshal.SizeOf<Format>();
         if (requireByte < StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requireByte];
             socket.ReceiveExact(scratchBuffer);
-            return MemoryMarshal.Cast<byte, Format>(scratchBuffer).ToArray();
+            result.Formats = MemoryMarshal.Cast<byte, Format>(scratchBuffer).ToArray();
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
             socket.ReceiveExact(scratchBuffer[..requireByte]);
-            return MemoryMarshal.Cast<byte, Format>(scratchBuffer).ToArray();
+            result.Formats = MemoryMarshal.Cast<byte, Format>(scratchBuffer).ToArray();
         }
+        return requireByte;
     }
 
-    private static string GetVendorName(Socket socket, int length)
+    private static int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int length)
     {
         if (length < StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[length];
             socket.ReceiveExact(scratchBuffer);
-            return Encoding.ASCII.GetString(scratchBuffer);
+            result.VendorName = Encoding.ASCII.GetString(scratchBuffer);
         }
         else
-    {
+        {
             using var scratchBuffer = new ArrayPoolUsing<byte>(length);
             socket.ReceiveExact(scratchBuffer[..length]);
-            return Encoding.ASCII.GetString(scratchBuffer);
+            result.VendorName = Encoding.ASCII.GetString(scratchBuffer);
         }
+        return length;
     }
 
     public static explicit operator HandshakeSuccessResponseBody(_handshakeSuccessResponseBody depth)
