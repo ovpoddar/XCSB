@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Src.Models.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct MotionEvent
+public struct EnterEvent
 {
-    public EventType EventType; // 6
-    public Motion Detail;
+    public EventType EventType; // 7, 8
+    public NotifyDetail Detail;
     public ushort Sequence;
     public uint Time;
     public int Root;
@@ -18,5 +22,6 @@ public struct MotionEvent
     public short EventX;
     public short EventY;
     public ushort State;
-    public sbyte SameScreen; // 1 true 0 false
+    public NotifyMode Mode;
+    public byte SameScreenFocus; // 1 true, 0 false
 }
