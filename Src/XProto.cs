@@ -17,6 +17,7 @@ internal class XProto : IXProto
     private readonly Socket _socket;
     private readonly HandshakeSuccessResponseBody _connectionResult;
     private bool _disposedValue;
+    private int _globalId;
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody => _connectionResult;
 
@@ -24,6 +25,7 @@ internal class XProto : IXProto
     {
         _socket = socket;
         _connectionResult = connectionResult;
+        _globalId = 0;
     }
 
     void IXProto.AllocColor()
@@ -173,7 +175,7 @@ internal class XProto : IXProto
 
     [SkipLocalsInit]
     void IXProto.CreateWindow(int window,
-        int parent,
+        uint parent,
         short x,
         short y,
         ushort width,
@@ -694,5 +696,12 @@ internal class XProto : IXProto
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    public int NewId()
+    {
+        var result = (int)((_connectionResult.ResourceIDMask & _globalId) | _connectionResult.ResourceIDBase);
+        _globalId += 1;
+        return result;
     }
 }

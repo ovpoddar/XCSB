@@ -10,8 +10,9 @@ namespace Src;
 public interface IXProto : IDisposable
 {
     HandshakeSuccessResponseBody  HandshakeSuccessResponseBody { get; }
+    int NewId();
     void CreateWindow(int window,
-        int parent,
+        uint parent,
         short x,
         short y,
         ushort width,
