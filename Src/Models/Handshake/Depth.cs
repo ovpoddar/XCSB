@@ -9,20 +9,10 @@ using System.Threading.Tasks;
 
 namespace Src.Models.Handshake;
 
-internal class Depth
+public class Depth
 {
     public byte DepthValue;
     public required Visual[] Visuals;
-
-    public static implicit operator Depth(_Depth depth)
-    {
-        var dept = new Depth()
-        {
-            DepthValue = depth.DepthValue,
-            Visuals = new Visual[depth.VisualsLength]
-        };
-        return dept;
-    }
 
     public static Depth Read(Socket socket, ref int currentlyRead)
     {
@@ -30,9 +20,14 @@ internal class Depth
         socket.ReceiveExact(scratchBuffer);
         currentlyRead += scratchBuffer.Length;
 
-        Depth depth = scratchBuffer.ToStruct<_Depth>();
-        currentlyRead += SetVisual(depth, socket);
-        return depth;
+        ref var depth = ref scratchBuffer.AsStruct<_Depth>();
+        var result = new Depth()
+        {
+            DepthValue = depth.DepthValue,
+            Visuals = new Visual[depth.VisualsLength]
+        };
+        currentlyRead += SetVisual(result, socket);
+        return result;
     }
 
     private static int SetVisual(Depth depth, Socket socket)
@@ -54,14 +49,13 @@ internal class Depth
         }
         return requireByte;
     }
+}
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct _Depth
-    {
-        public byte DepthValue;
-        public byte Pad0;
-        public ushort VisualsLength;
-        public int Pad1;
-    }
-
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+file struct _Depth
+{
+    public byte DepthValue;
+    public byte Pad0;
+    public ushort VisualsLength;
+    public int Pad1;
 }

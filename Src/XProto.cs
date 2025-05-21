@@ -3,6 +3,7 @@ using Src.Models;
 using Src.Models.Handshake;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -16,6 +17,8 @@ internal class XProto : IXProto
     private readonly Socket _socket;
     private readonly HandshakeSuccessResponseBody _connectionResult;
     private bool _disposedValue;
+
+    public HandshakeSuccessResponseBody HandshakeSuccessResponseBody => _connectionResult;
 
     public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult)
     {
@@ -168,9 +171,54 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.CreateWindow()
+    [SkipLocalsInit]
+    void IXProto.CreateWindow(int window,
+        int parent,
+        short x,
+        short y,
+        ushort width,
+        ushort height,
+        ushort borderWidth,
+        ClassType classType,
+        uint rootVisualId,
+        ValueMask mask,
+        uint[] args,
+        params uint[] args1
+    )
     {
-        throw new NotImplementedException();
+        var requiredBuffer = 32 + args.Length * 4 + args1.Length * 4;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer[0] = 1;
+            scratchBuffer[1] = 0;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], window);
+            MemoryMarshal.Write(scratchBuffer[8..12], parent);
+            MemoryMarshal.Write(scratchBuffer[12..14], x);
+            MemoryMarshal.Write(scratchBuffer[14..16], y);
+            MemoryMarshal.Write(scratchBuffer[16..18], width);
+            MemoryMarshal.Write(scratchBuffer[18..20], height);
+            MemoryMarshal.Write(scratchBuffer[20..22], borderWidth);
+            MemoryMarshal.Write(scratchBuffer[22..24], (ushort)classType);
+            MemoryMarshal.Write(scratchBuffer[24..28], rootVisualId);
+            MemoryMarshal.Write(scratchBuffer[28..32], (uint)mask);
+
+            var writtenIndex = 32;
+            foreach (var item in args)
+            {
+                MemoryMarshal.Write(scratchBuffer[writtenIndex..], item);
+                writtenIndex += 4;
+            }
+
+            foreach (var item in args1)
+            {
+                MemoryMarshal.Write(scratchBuffer[writtenIndex..], item);
+                writtenIndex += 4;
+            }
+            _socket.SendExact(scratchBuffer);
+        }
+
     }
 
     void IXProto.DeleteProperty()

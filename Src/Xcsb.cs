@@ -21,20 +21,6 @@ public static class Xcsb
         return result;
     }
 
-    //public static async Task<IXProto> InitializedAsync()
-    //{
-    //    var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
-    //    var connectionDetails = GetSocketInformation(display);
-    //    var socket = new Socket(AddressFamily.Unix, SocketType.Stream, connectionDetails.Protocol);
-    //    await socket.ConnectAsync(new UnixDomainSocketEndPoint(connectionDetails.GetSocketPath(display).ToString()));
-    //    if (!socket.Connected)
-    //        throw new Exception("Initialized failed");
-
-    //    await Connection.TryConnectAsync(socket, connectionDetails.Host, connectionDetails.Display);
-    //    var result = new XProto(socket);
-    //    return result;
-    //}
-
     private static ConnectionDetails GetSocketInformation(ReadOnlySpan<char> display)
     {
         if (GetDisplayConfiguration(display,

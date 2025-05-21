@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Src.Models;
+using Src.Models.Handshake;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +9,20 @@ using System.Threading.Tasks;
 namespace Src;
 public interface IXProto : IDisposable
 {
-    void CreateWindow();
+    HandshakeSuccessResponseBody  HandshakeSuccessResponseBody { get; }
+    void CreateWindow(int window,
+        int parent,
+        short x,
+        short y,
+        ushort width,
+        ushort height,
+        ushort borderWidth,
+        ClassType classType,
+        uint rootVisualId,
+        ValueMask mask,
+        uint[] args,
+        params uint[] args1
+    );
     void ChangeWindowAttributes();
     void GetWindowAttributes();
     void DestroyWindow();

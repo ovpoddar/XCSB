@@ -25,10 +25,11 @@ internal static class GenericHelper
 
     internal static void SendExact(this Socket socket, Span<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
     {
+        var total = 0;
         while (socket.Connected)
         {
-            var totalSend = socket.Send(buffer, socketFlags);
-            if (totalSend == buffer.Length)
+            total += socket.Send(buffer[total..], socketFlags);
+            if (total == buffer.Length)
                 break;
         }
     }

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using static Src.Models.Handshake.Screen;
 
 namespace Src.Models.Handshake;
-internal class HandshakeSuccessResponseBody
+public class HandshakeSuccessResponseBody
 {
     public uint ReleaseNumber { get; set; }
     public uint ResourceIDBase { get; set; }
@@ -24,24 +24,39 @@ internal class HandshakeSuccessResponseBody
     public byte BitmapScanLinePad { get; set; }
     public byte MinKeyCode { get; set; }
     public byte MaxKeyCode { get; set; }
-    public string VendorName { get; set; }
-    public Format[] Formats { get; set; }
-    public Screen[] Screens { get; set; }
+    public string VendorName { get; set; } = null!;
+    public required Format[] Formats { get; set; }
+    public required Screen[] Screens { get; set; }
 
-    internal static HandshakeSuccessResponseBody Read(Socket socket, short additionalDataLength)
+    internal static HandshakeSuccessResponseBody Read(Socket socket, int additionalDataLength)
     {
         var readIndex = 0;
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_handshakeSuccessResponseBody>()];
         socket.ReceiveExact(scratchBuffer);
-        ref var fixed1 = ref scratchBuffer.AsStruct<_handshakeSuccessResponseBody>();
         readIndex += scratchBuffer.Length;
 
-        var result = (HandshakeSuccessResponseBody)fixed1;
-        readIndex += SetVendorName(result, socket, fixed1.VendorLength.AddPadding());
+        ref var successResponseBody = ref scratchBuffer.AsStruct<_handshakeSuccessResponseBody>();
+        var result = new HandshakeSuccessResponseBody()
+        {
+            ReleaseNumber = successResponseBody.ReleaseNumber,
+            ResourceIDBase = successResponseBody.ResourceIDBase,
+            ResourceIDMask = successResponseBody.ResourceIDMask,
+            MotionBufferSize = successResponseBody.MotionBufferSize,
+            MaxRequestLength = successResponseBody.MaxRequestLength,
+            ImageByteOrder = successResponseBody.ImageByteOrder,
+            BitmapBitOrder = successResponseBody.BitmapBitOrder,
+            BitmapScanLineUnit = successResponseBody.BitmapScanLineUnit,
+            BitmapScanLinePad = successResponseBody.BitmapScanLinePad,
+            MinKeyCode = successResponseBody.MinKeyCode,
+            MaxKeyCode = successResponseBody.MaxKeyCode,
+            Formats = new Format[successResponseBody.FormatsNumber],
+            Screens = new Screen[successResponseBody.ScreensNumber],
+        };
+        readIndex += SetVendorName(result, socket, successResponseBody.VendorLength.AddPadding());
         readIndex += SettFormats(result, socket);
         for (var i = 0; i < result.Screens.Length; i++)
             result.Screens[i] = Screen.Read(socket, ref readIndex);
-
+        Debug.Assert(readIndex == additionalDataLength);
         return result;
     }
 
@@ -71,53 +86,35 @@ internal class HandshakeSuccessResponseBody
         {
             Span<byte> scratchBuffer = stackalloc byte[length];
             socket.ReceiveExact(scratchBuffer);
-            result.VendorName = Encoding.ASCII.GetString(scratchBuffer);
+            result.VendorName = Encoding.ASCII.GetString(scratchBuffer).TrimEnd();
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(length);
             socket.ReceiveExact(scratchBuffer[..length]);
-            result.VendorName = Encoding.ASCII.GetString(scratchBuffer);
+            result.VendorName = Encoding.ASCII.GetString(scratchBuffer).TrimEnd();
         }
         return length;
     }
+}
 
-    public static explicit operator HandshakeSuccessResponseBody(_handshakeSuccessResponseBody depth)
-    {
-        return new HandshakeSuccessResponseBody
-        {
-            ReleaseNumber = depth.ReleaseNumber,
-            ResourceIDBase = depth.ResourceIDBase,
-            ResourceIDMask = depth.ResourceIDMask,
-            MotionBufferSize = depth.MotionBufferSize,
-            MaxRequestLength = depth.MaxRequestLength,
-            ImageByteOrder = depth.ImageByteOrder,
-            BitmapBitOrder = depth.BitmapBitOrder,
-            BitmapScanLineUnit = depth.BitmapScanLineUnit,
-            BitmapScanLinePad = depth.BitmapScanLinePad,
-            MinKeyCode = depth.MinKeyCode,
-            MaxKeyCode = depth.MaxKeyCode,
-            Formats = new Format[depth.FormatsNumber],
-            Screens = new Screen[depth.ScreensNumber],
-        };
-    }
 
-    internal struct _handshakeSuccessResponseBody
-    {
-        public uint ReleaseNumber { get; set; }
-        public uint ResourceIDBase { get; set; }
-        public uint ResourceIDMask { get; set; }
-        public uint MotionBufferSize { get; set; }
-        public short VendorLength { get; set; }
-        public ushort MaxRequestLength { get; set; }
-        public byte ScreensNumber { get; set; }
-        public byte FormatsNumber { get; set; }
-        public ImageOrder ImageByteOrder { get; set; }
-        public BitOrder BitmapBitOrder { get; set; }
-        public byte BitmapScanLineUnit { get; set; }
-        public byte BitmapScanLinePad { get; set; }
-        public byte MinKeyCode { get; set; }
-        public byte MaxKeyCode { get; set; }
-        public int Padding { get; set; }
-    }
+[StructLayout(LayoutKind.Sequential)]
+file struct _handshakeSuccessResponseBody
+{
+    public uint ReleaseNumber { get; set; }
+    public uint ResourceIDBase { get; set; }
+    public uint ResourceIDMask { get; set; }
+    public uint MotionBufferSize { get; set; }
+    public short VendorLength { get; set; }
+    public ushort MaxRequestLength { get; set; }
+    public byte ScreensNumber { get; set; }
+    public byte FormatsNumber { get; set; }
+    public ImageOrder ImageByteOrder { get; set; }
+    public BitOrder BitmapBitOrder { get; set; }
+    public byte BitmapScanLineUnit { get; set; }
+    public byte BitmapScanLinePad { get; set; }
+    public byte MinKeyCode { get; set; }
+    public byte MaxKeyCode { get; set; }
+    public int Padding { get; set; }
 }

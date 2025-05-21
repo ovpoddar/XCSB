@@ -31,13 +31,8 @@ internal static class Connection
         if (result.HandshakeStatus != HandshakeStatus.Success)
             throw new Exception("Could not connect to x11");
 
-        var successResponseBody = HandshakeSuccessResponseBody.Read(socket, result.HandshakeResponseHeadSuccess.AdditionalDataLength);
+        var successResponseBody = HandshakeSuccessResponseBody.Read(socket, result.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
         return successResponseBody;
-    }
-
-    internal static Task TryConnectAsync(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
-    {
-        throw new NotImplementedException();
     }
 
     private static (string authName, string authData) GetAuthInfo(ReadOnlySpan<char> host,
