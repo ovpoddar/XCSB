@@ -1,15 +1,14 @@
 ﻿using Src.Models;
+using Src.Models.Event;
 using Src.Models.Handshake;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Src;
 public interface IXProto : IDisposable
 {
-    HandshakeSuccessResponseBody  HandshakeSuccessResponseBody { get; }
+    HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
+
+    XEvent GetEvent();
+
     int NewId();
     void CreateWindow(int window,
         uint parent,

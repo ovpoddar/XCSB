@@ -1,15 +1,10 @@
 ﻿using Src.Helpers;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Src.Models;
 using Src.Models.Handshake;
 using System.Diagnostics;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Src;
 
@@ -117,7 +112,7 @@ internal static class Connection
             Encoding.ASCII.GetBytes(authData, scratchBuffer[writingIndex..]);
             socket.SendExact(scratchBuffer);
 
-            Span<byte> tempBuffer = stackalloc byte[ Marshal.SizeOf<HandshakeResponseHead>()];
+            Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
             socket.ReceiveExact(tempBuffer);
             return tempBuffer.AsStruct<HandshakeResponseHead>();
         }

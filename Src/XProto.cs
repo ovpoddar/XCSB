@@ -1,15 +1,11 @@
 ﻿using Src.Helpers;
 using Src.Models;
+using Src.Models.Event;
 using Src.Models.Handshake;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Linq;
+using System.Buffers;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Src;
 internal class XProto : IXProto
@@ -703,5 +699,10 @@ internal class XProto : IXProto
         var result = (int)((_connectionResult.ResourceIDMask & _globalId) | _connectionResult.ResourceIDBase);
         _globalId += 1;
         return result;
+    }
+
+    public XEvent GetEvent()
+    {
+        Span<byte> scratchBuffer = stackalloc byte[192];
     }
 }
