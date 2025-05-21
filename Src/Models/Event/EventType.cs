@@ -1,6 +1,6 @@
 ﻿namespace Src.Models.Event;
 
-public enum EventType : int
+public enum EventType : byte
 {
     KeyPress = 2,
     KeyRelease = 3,
