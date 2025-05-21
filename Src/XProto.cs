@@ -703,6 +703,9 @@ internal class XProto : IXProto
 
     public XEvent GetEvent()
     {
-        Span<byte> scratchBuffer = stackalloc byte[192];
+        Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
+        _socket.Receive(scratchBuffer);
+        var result = scratchBuffer.ToStruct<XEvent>();
+        return result;
     }
 }
