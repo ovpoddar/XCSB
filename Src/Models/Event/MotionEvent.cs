@@ -6,7 +6,6 @@ namespace Src.Models.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct MotionEvent
 {
-    public EventType EventType; // 6
     public Motion Detail;
     public ushort Sequence;
     public uint Time;

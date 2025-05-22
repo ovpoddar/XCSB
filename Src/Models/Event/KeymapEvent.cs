@@ -10,6 +10,5 @@ namespace Src.Models.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public unsafe struct KeymapEvent
 {
-    public EventType EventType; // 11
     public fixed byte Keys[31];
 }

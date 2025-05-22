@@ -5,7 +5,6 @@ namespace Src.Models.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct InputEvent
 {
-    public EventType EventType; // 2, 3, 4, 5
     public byte Detail;
     public ushort SequenceNumber;
     public uint TimeStamp;

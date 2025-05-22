@@ -10,7 +10,6 @@ namespace Src.Models.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct EnterEvent
 {
-    public EventType EventType; // 7, 8
     public NotifyDetail Detail;
     public ushort Sequence;
     public uint Time;

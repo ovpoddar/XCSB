@@ -3,10 +3,10 @@
 namespace Src.Models.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct FocusEvent
+public struct DestroyNotifyEvent
 {
-    public NotifyDetail Detail;
+    private byte Pad0;
     public ushort Sequence;
-    public int Event;
-    public NotifyMode Mode;
+    public uint Event;
+    public uint Window;
 }

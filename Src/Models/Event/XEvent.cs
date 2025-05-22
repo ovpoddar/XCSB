@@ -13,24 +13,36 @@ public struct XEvent
     [FieldOffset(0)]
     public EventType EventType;
 
-    [FieldOffset(0)]
+    [FieldOffset(1)]
     public InputEvent InputEvent;
 
-    [FieldOffset(0)]
+    [FieldOffset(1)]
     public MotionEvent MotionEvent;
 
-    [FieldOffset(0)]
+    [FieldOffset(1)]
     public EnterEvent EnterEvent;
 
-    [FieldOffset(0)]
+    [FieldOffset(1)]
     public FocusEvent FocusEvent;
 
-    [FieldOffset(0)]
+    [FieldOffset(1)]
     public KeymapEvent KeymapEvent;
 
-    [FieldOffset(0)]
+    [FieldOffset(1)]
     public ExposeEvent ExposeEvent;
 
-    [FieldOffset(0)]
-    public GraphicsExposeEvent GraphicsExposeEvent; 
+    [FieldOffset(1)]
+    public GraphicsExposeEvent GraphicsExposeEvent;
+
+    [FieldOffset(1)]
+    public NoExposeEvent NoExposeEvent;
+
+    [FieldOffset(1)]
+    public VisibilityNotifyEvent VisibilityNotifyEvent;
+
+    [FieldOffset(1)]
+    public CreateNotifyEvent CreateNotifyEvent;
+
+    [FieldOffset(1)]
+    public DestroyNotifyEvent DestroyNotifyEvent;
 }

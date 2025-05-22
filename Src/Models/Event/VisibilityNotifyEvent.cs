@@ -3,13 +3,10 @@
 namespace Src.Models.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct ExposeEvent
+public struct VisibilityNotifyEvent
 {
     private byte Pad0;
+    public ushort SequenceNumber;
     public int Window;
-    public ushort X;
-    public ushort Y;
-    public ushort Width;
-    public ushort Height;
-    public ushort Count;
+    public Visibility State;
 }
