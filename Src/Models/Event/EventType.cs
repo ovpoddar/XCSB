@@ -18,12 +18,12 @@ public enum EventType : byte
     VisibilityNotify = 15,
     CreateNotify = 16,
     DestroyNotify = 17,
-    UnMapNotify = 18,// --
+    UnMapNotify = 18,
     MapNotify = 19,
     MapRequest = 20,
     ReParentNotify = 21,
     ConfigureNotify = 22,
-    ConfigureRequest = 23,
+    ConfigureRequest = 23,// --
     GravityNotify = 24,
     ResizeRequest = 25,
     CirculateNotify = 26,

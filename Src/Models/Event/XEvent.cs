@@ -45,4 +45,22 @@ public struct XEvent
 
     [FieldOffset(1)]
     public DestroyNotifyEvent DestroyNotifyEvent;
+
+    [FieldOffset(1)]
+    public UnMapNotifyEvent UnMapNotifyEvent;
+
+    [FieldOffset(1)]
+    public MapNotifyEvent MapNotifyEvent;
+
+    [FieldOffset(1)]
+    public MapRequestEvent MapRequestEvent;
+
+    [FieldOffset(1)]
+    public ReParentNotifyEvent ReParentNotifyEvent;
+
+    [FieldOffset(1)]
+    public ConfigureNotifyEvent ConfigureNotifyEvent;
+
+    [FieldOffset(1)]
+    public ConfigureRequestEvent ConfigureRequestEvent;
 }
