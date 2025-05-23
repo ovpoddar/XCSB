@@ -14,17 +14,15 @@ internal static class Connection
     internal static HandshakeSuccessResponseBody TryConnect(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
     {
         var result = MakeHandshake(socket, [], []);
-        if (result.HandshakeStatus == HandshakeStatus.Authenticate)
+        if (result.HandshakeStatus == HandshakeStatus.Authenticate || result.HandshakeStatus == HandshakeStatus.Failed)
         {
             Debug.WriteLine($"Connection: Authenticate fail {result.GetStatusMessage(socket)}");
             var (authName, authData) = GetAuthInfo(host, display);
             result = MakeHandshake(socket, authName, authData);
         }
-        else if (result.HandshakeStatus == HandshakeStatus.Failed)
+        
+        if (result.HandshakeStatus == HandshakeStatus.Failed || result.HandshakeStatus == HandshakeStatus.Authenticate)
             throw new Exception(result.GetStatusMessage(socket).ToString());
-
-        if (result.HandshakeStatus != HandshakeStatus.Success)
-            throw new Exception("Could not connect to x11");
 
         var successResponseBody = HandshakeSuccessResponseBody.Read(socket, result.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
         return successResponseBody;
