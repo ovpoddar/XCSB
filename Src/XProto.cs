@@ -170,7 +170,7 @@ internal class XProto : IXProto
     }
 
     [SkipLocalsInit]
-    void IXProto.CreateWindow(int window,
+    void IXProto.CreateWindow(uint window,
         uint parent,
         short x,
         short y,
