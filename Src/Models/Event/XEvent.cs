@@ -63,4 +63,37 @@ public struct XEvent
 
     [FieldOffset(1)]
     public ConfigureRequestEvent ConfigureRequestEvent;
+
+    [FieldOffset(1)]
+    public GravityNotifyEvent GravityNotifyEvent;
+
+    [FieldOffset(1)]
+    public ResizeRequestEvent ResizeRequestEvent;
+
+    [FieldOffset(1)]
+    public CirculateEvent CirculateEvent;
+
+    [FieldOffset(1)]
+    public PropertyNotifyEvent PropertyNotifyEvent;
+
+    [FieldOffset(1)]
+    public SelectionClearEvent SelectionClearEvent;
+
+    [FieldOffset(1)]
+    public SelectionRequestEvent SelectionRequestEvent;
+
+    [FieldOffset(1)]
+    public SelectionNotifyEvent SelectionNotifyEvent;
+
+    [FieldOffset(1)]
+    public ColorMapNotifyEvent ColorMapNotifyEvent;
+
+    [FieldOffset(1)]
+    public ClientMessageEvent ClientMessageEvent;
+
+    [FieldOffset(1)]
+    public MappingNotifyEvent MappingNotifyEvent;
+
+    [FieldOffset(1)]
+    public GenericEvent GenericEvent;
 }

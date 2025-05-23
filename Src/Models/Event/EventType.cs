@@ -23,7 +23,7 @@ public enum EventType : byte
     MapRequest = 20,
     ReParentNotify = 21,
     ConfigureNotify = 22,
-    ConfigureRequest = 23,// --
+    ConfigureRequest = 23,
     GravityNotify = 24,
     ResizeRequest = 25,
     CirculateNotify = 26,

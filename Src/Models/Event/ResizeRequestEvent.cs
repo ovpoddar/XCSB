@@ -2,12 +2,12 @@
 
 namespace Src.Models.Event;
 
-[StructLayout(LayoutKind.Sequential)]
-public struct MapNotifyEvent
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct ResizeRequestEvent
 {
     private byte Pad0;
     public ushort Sequence;
-    public uint Event;
     public uint Window;
-    public bool OverrideRedirect;
+    public ushort Width;
+    public ushort Height;
 }
