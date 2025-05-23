@@ -10,7 +10,7 @@ namespace Src;
 
 internal static class Connection
 {
-    private const string MAGICCOOKIE = "MIT-MAGIC-COOKIE-1";
+    private static byte[] MAGICCOOKIE = [77, 73, 84, 45, 77, 65, 71, 73, 67, 45, 67, 79, 79, 75, 73, 69, 45, 49];// "MIT-MAGIC-COOKIE-1";
     internal static HandshakeSuccessResponseBody TryConnect(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
     {
         var result = MakeHandshake(socket, [], []);
@@ -20,7 +20,7 @@ internal static class Connection
             var (authName, authData) = GetAuthInfo(host, display);
             result = MakeHandshake(socket, authName, authData);
         }
-        
+
         if (result.HandshakeStatus is HandshakeStatus.Failed or HandshakeStatus.Authenticate)
             throw new Exception(result.GetStatusMessage(socket).ToString());
 
@@ -28,7 +28,7 @@ internal static class Connection
         return successResponseBody;
     }
 
-    private static (string authName, string authData) GetAuthInfo(ReadOnlySpan<char> host,
+    private static (byte[] authName, byte[] authData) GetAuthInfo(ReadOnlySpan<char> host,
         ReadOnlySpan<char> display)
     {
         var filePath = Environment.GetEnvironmentVariable("XAUTHORITY");
@@ -41,25 +41,27 @@ internal static class Connection
         }
 
         if (!File.Exists(filePath))
-            return ("", "");
+            return ([], []);
 
         using var fileStream = File.OpenRead(filePath);
         while (fileStream.Position <= fileStream.Length)
         {
             var context = new XAuthority(fileStream);
             var dspy = context.GetDisplayNumber(fileStream);
-            var contentName = context.GetName(fileStream);
+            var displayName = context.GetName(fileStream);
             if (context.Family == ushort.MaxValue
                        || (context.Family == byte.MaxValue && context.GetHostAddress(fileStream) == host)
-                       && (dspy == "" || dspy == display)
-                       && contentName.SequenceEqual(MAGICCOOKIE))
-                return (contentName.ToString(), context.GetData(fileStream).ToString());
+                       && (dspy is "" || dspy == display)
+                       && displayName.SequenceEqual(MAGICCOOKIE))
+            {
+                return (displayName, context.GetData(fileStream));
+            }
         }
 
         throw new InvalidOperationException("Invalid XAuthority file present.");
     }
 
-    private static HandshakeResponseHead MakeHandshake(Socket socket, ReadOnlySpan<char> authName, ReadOnlySpan<char> authData)
+    private static HandshakeResponseHead MakeHandshake(Socket socket, Span<byte> authName, Span<byte> authData)
     {
         var namePaddedLength = authName.Length.AddPadding();
         var scratchBufferSize = 12 + namePaddedLength + authData.Length.AddPadding();
@@ -81,9 +83,9 @@ internal static class Connection
             writingIndex += 2;
             MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
             writingIndex += 2;
-            Encoding.ASCII.GetBytes(authName, scratchBuffer[writingIndex..]);
+            authName.CopyTo(scratchBuffer[writingIndex..]);
             writingIndex += namePaddedLength;
-            Encoding.ASCII.GetBytes(authData, scratchBuffer[writingIndex..]);
+            authData.CopyTo(scratchBuffer[writingIndex..]);
             socket.SendExact(scratchBuffer);
 
             scratchBuffer = scratchBuffer.Slice(0, Marshal.SizeOf<HandshakeResponseHead>());
@@ -105,9 +107,9 @@ internal static class Connection
             writingIndex += 2;
             MemoryMarshal.Write<ushort>(scratchBuffer[writingIndex..], 0);
             writingIndex += 2;
-            Encoding.ASCII.GetBytes(authName, scratchBuffer[writingIndex..]);
+            authName.CopyTo(scratchBuffer[writingIndex..]);
             writingIndex += namePaddedLength;
-            Encoding.ASCII.GetBytes(authData, scratchBuffer[writingIndex..]);
+            authData.CopyTo(scratchBuffer[writingIndex..]);
             socket.SendExact(scratchBuffer);
 
             Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];

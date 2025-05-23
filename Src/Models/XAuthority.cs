@@ -58,23 +58,23 @@ internal readonly ref struct XAuthority
         return Encoding.ASCII.GetString(result);
     }
 
-    public ReadOnlySpan<char> GetName(Stream stream)
+    public byte[] GetName(Stream stream)
     {
         var oldPosition = stream.Position;
-        Span<byte> result = stackalloc byte[Name.Length];
+        var result = new byte[Name.Length];
         stream.Seek(Name.Position, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
-        return Encoding.ASCII.GetString(result);
+        return result;
     }
 
-    public ReadOnlySpan<char> GetData(Stream stream)
+    public byte[] GetData(Stream stream)
     {
         var oldPosition = stream.Position;
-        Span<byte> result = stackalloc byte[Data.Length];
+        var result = new byte[Data.Length];
         stream.Seek(Data.Position, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
-        return Encoding.ASCII.GetString(result);
+        return result;
     }
 }
