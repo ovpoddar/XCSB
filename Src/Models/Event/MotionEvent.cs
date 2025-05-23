@@ -9,9 +9,9 @@ public struct MotionEvent
     public Motion Detail;
     public ushort Sequence;
     public uint Time;
-    public int Root;
-    public int Event;
-    public int Child;
+    public uint Root;
+    public uint Event;
+    public uint Child;
     public short RootX;
     public short RootY;
     public short EventX;

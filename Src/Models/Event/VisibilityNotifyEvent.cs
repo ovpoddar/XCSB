@@ -7,6 +7,6 @@ public struct VisibilityNotifyEvent
 {
     private byte Pad0;
     public ushort SequenceNumber;
-    public int Window;
+    public uint Window;
     public Visibility State;
 }

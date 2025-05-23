@@ -6,7 +6,7 @@ namespace Src.Models.Event;
 public struct ExposeEvent
 {
     private byte Pad0;
-    public int Window;
+    public uint Window;
     public ushort X;
     public ushort Y;
     public ushort Width;
