@@ -22,10 +22,10 @@ public interface IXProto : IDisposable
         ClassType classType,
         uint rootVisualId,
         ValueMask mask,
-        uint[] args,
-        params uint[] args1
-    );
-    void ChangeWindowAttributes();
+        params uint[] args);
+    void ChangeWindowAttributes(uint window,
+        ValueMask mask,
+        params uint[] args);
     void GetWindowAttributes();
     void DestroyWindow();
     void DestroySubwindows();
