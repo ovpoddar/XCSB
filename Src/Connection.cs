@@ -14,14 +14,14 @@ internal static class Connection
     internal static HandshakeSuccessResponseBody TryConnect(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
     {
         var result = MakeHandshake(socket, [], []);
-        if (result.HandshakeStatus == HandshakeStatus.Authenticate || result.HandshakeStatus == HandshakeStatus.Failed)
+        if (result.HandshakeStatus is HandshakeStatus.Authenticate or HandshakeStatus.Failed)
         {
             Debug.WriteLine($"Connection: Authenticate fail {result.GetStatusMessage(socket)}");
             var (authName, authData) = GetAuthInfo(host, display);
             result = MakeHandshake(socket, authName, authData);
         }
         
-        if (result.HandshakeStatus == HandshakeStatus.Failed || result.HandshakeStatus == HandshakeStatus.Authenticate)
+        if (result.HandshakeStatus is HandshakeStatus.Failed or HandshakeStatus.Authenticate)
             throw new Exception(result.GetStatusMessage(socket).ToString());
 
         var successResponseBody = HandshakeSuccessResponseBody.Read(socket, result.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
