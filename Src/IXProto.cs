@@ -11,6 +11,8 @@ public interface IXProto : IDisposable
 
     int NewId();
     void CreateWindow(int window,
+    uint NewId();
+    void CreateWindow(uint window,
         uint parent,
         short x,
         short y,
@@ -29,7 +31,7 @@ public interface IXProto : IDisposable
     void DestroySubwindows();
     void ChangeSaveSet();
     void ReparentWindow();
-    void MapWindow(int window);
+    void MapWindow(uint window);
     void MapSubwindows();
     void UnmapWindow();
     void UnmapSubwindows();

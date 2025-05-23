@@ -435,7 +435,7 @@ internal class XProto : IXProto
     }
 
     [SkipLocalsInit]
-    void IXProto.MapWindow(int window)
+    void IXProto.MapWindow(uint window)
     {
         Span<byte> values = stackalloc byte[8];
         values[0] = (byte)Opcode.MapWindow;
@@ -694,9 +694,9 @@ internal class XProto : IXProto
         GC.SuppressFinalize(this);
     }
 
-    public int NewId()
+    public uint NewId()
     {
-        var result = (int)((_connectionResult.ResourceIDMask & _globalId) | _connectionResult.ResourceIDBase);
+        var result = (uint)((_connectionResult.ResourceIDMask & _globalId) | _connectionResult.ResourceIDBase);
         _globalId += 1;
         return result;
     }
