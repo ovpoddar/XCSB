@@ -22,7 +22,7 @@ public static class Xcsb
 
     private static ConnectionDetails GetSocketInformation(ReadOnlySpan<char> display)
     {
-        if (GetDisplayConfiguration(display,
+        if (!GetDisplayConfiguration(display,
             out var result))
             throw new Exception("Initialized failed");
         return result;
@@ -65,7 +65,7 @@ public static class Xcsb
             }
         }
 
-        var displayNumberStart = display[..];
+        var displayNumberStart = display[(colonIndex + 1)..];
         if (displayNumberStart.Length == 0)
             return false;
 
@@ -73,7 +73,7 @@ public static class Xcsb
         if (dotIndex < 0)
         {
             details.Display = displayNumberStart[..];
-            var result = int.TryParse(displayNumberStart[(dotIndex + 1)..], out var displayNumber);
+            var result = int.TryParse(displayNumberStart[..], out var displayNumber);
             details.DisplayNumber = displayNumber;
             return result;
         }
