@@ -95,7 +95,7 @@ internal class XProto : IXProto
     {
         Span<byte> scratchBuffer = stackalloc byte[8];
         scratchBuffer[0] = (byte)Opcode.ChangeSaveSet;
-        scratchBuffer[1] = 0;
+        scratchBuffer[1] = (byte)changeSaveSetMode;
         MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
         MemoryMarshal.Write(scratchBuffer[4..8], window);
         _socket.SendExact(scratchBuffer);
@@ -114,13 +114,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
             MemoryMarshal.Write(scratchBuffer[4..8], window);
             MemoryMarshal.Write(scratchBuffer[8..12], mask);
-            var writtenIndex = 12;
-
-            foreach (var item in args)
-            {
-                MemoryMarshal.Write(scratchBuffer[writtenIndex..], item);
-                writtenIndex += 4;
-            }
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
             _socket.SendExact(scratchBuffer);
         }
         else
@@ -131,13 +125,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
             MemoryMarshal.Write(scratchBuffer[4..8], window);
             MemoryMarshal.Write(scratchBuffer[8..12], mask);
-            var writtenIndex = 12;
-
-            foreach (var item in args)
-            {
-                MemoryMarshal.Write(scratchBuffer[writtenIndex..], item);
-                writtenIndex += 4;
-            }
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
@@ -174,13 +162,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[4..8], window);
             MemoryMarshal.Write(scratchBuffer[8..10], mask);
             MemoryMarshal.Write(scratchBuffer[10..12], 0);
-            var writtenIndex = 12;
-
-            foreach (var item in args)
-            {
-                MemoryMarshal.Write(scratchBuffer[writtenIndex..], item);
-                writtenIndex += 4;
-            }
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
             _socket.SendExact(scratchBuffer);
         }
         else
@@ -192,13 +174,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[4..8], window);
             MemoryMarshal.Write(scratchBuffer[8..10], mask);
             MemoryMarshal.Write(scratchBuffer[10..12], 0);
-            var writtenIndex = 12;
-
-            foreach (var item in args)
-            {
-                MemoryMarshal.Write(scratchBuffer[writtenIndex..], item);
-                writtenIndex += 4;
-            }
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
@@ -283,14 +259,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[22..24], classType);
             MemoryMarshal.Write(scratchBuffer[24..28], rootVisualId);
             MemoryMarshal.Write(scratchBuffer[28..32], mask);
-
-            var writtenIndex = 32;
-
-            foreach (var item in args)
-            {
-                MemoryMarshal.Write(scratchBuffer[writtenIndex..], item);
-                writtenIndex += 4;
-            }
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[32..requiredBuffer]));
             _socket.SendExact(scratchBuffer);
         }
         else
@@ -309,14 +278,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[22..24], classType);
             MemoryMarshal.Write(scratchBuffer[24..28], rootVisualId);
             MemoryMarshal.Write(scratchBuffer[28..32], mask);
-
-            var writtenIndex = 32;
-
-            foreach (var item in args)
-            {
-                MemoryMarshal.Write(scratchBuffer[writtenIndex..], item);
-                writtenIndex += 4;
-            }
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[32..requiredBuffer]));
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
@@ -327,8 +289,8 @@ internal class XProto : IXProto
         scratchBuffer[0] = (byte)Opcode.DeleteProperty;
         scratchBuffer[1] = 0;
         MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 3);
-        MemoryMarshal.Write(scratchBuffer[2..4], window);
-        MemoryMarshal.Write(scratchBuffer[2..4], atom);
+        MemoryMarshal.Write(scratchBuffer[4..8], window);
+        MemoryMarshal.Write(scratchBuffer[8..12], atom);
         _socket.SendExact(scratchBuffer);
     }
 
@@ -844,7 +806,7 @@ internal class XProto : IXProto
     public uint NewId()
     {
         var result = (uint)((_connectionResult.ResourceIDMask & _globalId) | _connectionResult.ResourceIDBase);
-        _globalId += 1;
+        _globalId++;
         return result;
     }
 
@@ -852,7 +814,7 @@ internal class XProto : IXProto
     {
         var requiredLength = Marshal.SizeOf<XEvent>();
         if (scratchBuffer.Length != requiredLength)
-            throw new Exception($"not enough space. allocate at least {requiredLength} bytes");
+            throw new ArgumentException($"scratchBuffer at least {requiredLength} bytes");
         if (_socket.Poll(-1, SelectMode.SelectRead))
         {
             var totalRead = _socket.Receive(scratchBuffer);
