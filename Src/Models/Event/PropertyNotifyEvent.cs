@@ -10,5 +10,5 @@ public struct PropertyNotifyEvent
     public uint Window;
     public uint Atom;
     public uint Time;
-    public State State;
+    public NotifyState State;
 }

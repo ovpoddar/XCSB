@@ -1,6 +1,6 @@
 ﻿namespace Src.Models.Event;
 
-public enum State : byte
+public enum NotifyState : byte
 {
     NewValue,
     Delete

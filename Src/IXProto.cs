@@ -41,17 +41,17 @@ public interface IXProto : IDisposable
     void ChangeProperty();
     void DeleteProperty(uint window, uint atom);
     void GetProperty();
-    void RotateProperties();
+    void RotateProperties(uint window, ushort delta, params uint[] properties);
     void ListProperties();
     void SetSelectionOwner(uint owner, uint atom, uint timestamp);
     void GetSelectionOwner();
-    void ConvertSelection();
-    void SendEvent();
+    void ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp);
+    void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt);
     void GrabPointer();
-    void UngrabPointer();
+    void UngrabPointer(uint time);
     void GrabButton();
     void UngrabButton();
-    void ChangeActivePointerGrab();
+    void ChangeActivePointerGrab(uint cursor, uint time, ushort mask);
     void GrabKeyboard();
     void UngrabKeyboard();
     void GrabKey();
@@ -125,21 +125,21 @@ public interface IXProto : IDisposable
     void GetModifierMapping();
     void ChangeKeyboardMapping();
     void GetKeyboardMapping();
-    void ChangeKeyboardControl();
+    void ChangeKeyboardControl(); // tpdp
     void GetKeyboardControl();
-    void Bell();
+    void Bell(byte percent);
     void SetPointerMapping();
     void GetPointerMapping();
-    void ChangePointerControl();
+    void ChangePointerControl(); // tpdp
     void GetPointerControl();
-    void SetScreenSaver();
+    void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures);
     void GetScreenSaver();
-    void ForceScreenSaver();
+    void ForceScreenSaver(ForceScreenSaverMode mode);
     void ChangeHosts();
     void ListHosts();
-    void SetAccessControl();
-    void SetCloseDownMode();
-    void KillClient();
-    void NoOperation();
+    void SetAccessControl(AccessControlMode mode);
+    void SetCloseDownMode(CloseDownMode mode);
+    void KillClient(uint resource);
+    void NoOperation(params uint[] args);
 }
 
