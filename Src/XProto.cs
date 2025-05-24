@@ -98,7 +98,7 @@ internal class XProto : IXProto
         ValueMask mask,
         params uint[] args)
     {
-        var requiredBuffer = 3 + args.Length * 4;
+        var requiredBuffer = 12 + args.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -107,7 +107,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
             MemoryMarshal.Write(scratchBuffer[4..8], window);
             MemoryMarshal.Write(scratchBuffer[8..12], mask);
-            var writtenIndex = 32;
+            var writtenIndex = 12;
 
             foreach (var item in args)
             {
@@ -124,7 +124,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
             MemoryMarshal.Write(scratchBuffer[4..8], window);
             MemoryMarshal.Write(scratchBuffer[8..12], mask);
-            var writtenIndex = 32;
+            var writtenIndex = 12;
 
             foreach (var item in args)
     {
