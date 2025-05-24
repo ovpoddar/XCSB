@@ -52,11 +52,9 @@ public static class Xcsb
             var slashIndex = display.IndexOf('/');
             if (slashIndex >= 0)
             {
-                if (Enum.TryParse(display[..slashIndex], true, out ProtocolType protocol))
-                    details.Protocol = protocol;
-                else
-                    details.Protocol = ProtocolType.Tcp;
-
+                details.Protocol = Enum.TryParse(display[..slashIndex], true, out ProtocolType protocol) 
+                    ? protocol 
+                    : ProtocolType.Tcp;
                 details.Host = display.Slice(slashIndex + 1, colonIndex);
             }
             else
