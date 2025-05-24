@@ -17,6 +17,9 @@ internal static class GenericHelper
         return T.CreateChecked(value + ((4 - (value & 3)) & 3));
     }
 
+    internal static T Padding<T>(this T pad) where T : INumber<T> =>
+        T.CreateChecked(((4 - (int.CreateChecked(pad) & 3)) & 3));
+
     internal static void SendExact(this Socket socket, Span<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
     {
         var total = 0;

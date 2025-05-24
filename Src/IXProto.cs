@@ -1,6 +1,7 @@
 ﻿using Src.Models;
 using Src.Models.Event;
 using Src.Models.Handshake;
+using System.Numerics;
 
 namespace Src;
 public interface IXProto : IDisposable
@@ -36,9 +37,8 @@ public interface IXProto : IDisposable
     void CirculateWindow(Direction direction, uint window);
     void GetGeometry();
     void QueryTree();
-    void InternAtom();
     void GetAtomName();
-    void ChangeProperty();
+    void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args) where T : struct, INumber<T>;
     void DeleteProperty(uint window, uint atom);
     void GetProperty();
     void RotateProperties(uint window, ushort delta, params uint[] properties);
@@ -76,12 +76,12 @@ public interface IXProto : IDisposable
     void GetFontPath();
     void CreatePixmap();
     void FreePixmap();
-    void CreateGC();
-    void ChangeGC();
-    void CopyGC();
+    void CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args);
+    void ChangeGC(uint gc, GCMask mask, params uint[] args);
+    void CopyGC(uint srcGc, uint dstGc, GCMask mask);
     void SetDashes();
     void SetClipRectangles();
-    void FreeGC();
+    void FreeGC(uint gc);
     void ClearArea();
     void CopyArea();
     void CopyPlane();
@@ -93,7 +93,7 @@ public interface IXProto : IDisposable
     void FillPoly();
     void PolyFillRectangle();
     void PolyFillArc();
-    void PutImage();
+    void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y, byte leftPad, byte depth, Span<byte> data);
     void GetImage();
     void PolyText8();
     void PolyText16();
@@ -125,7 +125,7 @@ public interface IXProto : IDisposable
     void GetModifierMapping();
     void ChangeKeyboardMapping();
     void GetKeyboardMapping();
-    void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args); // tpdp
+    void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args);
     void GetKeyboardControl();
     void Bell(byte percent);
     void SetPointerMapping();
