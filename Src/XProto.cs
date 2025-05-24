@@ -84,9 +84,29 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.ChangeKeyboardControl()
+    void IXProto.ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args)
     {
-        throw new NotImplementedException();
+        var requiredBuffer = 8 + args.Length * 4;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer[0] = (byte)Opcode.ChangeKeyboardControl;
+            scratchBuffer[1] = 0;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], mask);
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[8..requiredBuffer]));
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            scratchBuffer[0] = (byte)Opcode.ChangeKeyboardControl;
+            scratchBuffer[1] = 0;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], mask);
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[8..requiredBuffer]));
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.ChangeKeyboardMapping()
@@ -94,9 +114,19 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.ChangePointerControl()
+    void IXProto.ChangePointerControl(Acceleration acceleration, ushort? threshold)
     {
-        throw new NotImplementedException();
+
+        Span<byte> scratchBuffer = stackalloc byte[12];
+        scratchBuffer[0] = (byte)Opcode.ChangePointerControl;
+        scratchBuffer[1] = 0;
+        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 3);
+        MemoryMarshal.Write(scratchBuffer[4..6], acceleration.Numerator ?? 0);
+        MemoryMarshal.Write(scratchBuffer[6..8], acceleration.Denominator ?? 0);
+        MemoryMarshal.Write(scratchBuffer[8..10], threshold ?? 0);
+        scratchBuffer[11] = (byte)(acceleration is not null ? 1 : 0);
+        scratchBuffer[12] = (byte)(threshold.HasValue ? 1 : 0);
+        _socket.SendExact(scratchBuffer);
     }
 
     void IXProto.ChangeProperty()

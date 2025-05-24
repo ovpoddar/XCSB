@@ -125,12 +125,12 @@ public interface IXProto : IDisposable
     void GetModifierMapping();
     void ChangeKeyboardMapping();
     void GetKeyboardMapping();
-    void ChangeKeyboardControl(); // tpdp
+    void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args); // tpdp
     void GetKeyboardControl();
     void Bell(byte percent);
     void SetPointerMapping();
     void GetPointerMapping();
-    void ChangePointerControl(); // tpdp
+    void ChangePointerControl(Acceleration acceleration, ushort? threshold);
     void GetPointerControl();
     void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures);
     void GetScreenSaver();
