@@ -15,5 +15,5 @@ public struct ConfigureNotifyEvent
     public ushort Width;
     public ushort Height;
     public ushort BorderWidth;
-    public bool OverrideRedirect;
+    public byte OverrideRedirect;
 }

@@ -6,11 +6,8 @@ namespace Src;
 public interface IXProto : IDisposable
 {
     HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
+    ref XEvent GetEvent(Span<byte> scratchBuffer);
 
-    XEvent GetEvent();
-
-    int NewId();
-    void CreateWindow(int window,
     uint NewId();
     void CreateWindow(uint window,
         uint parent,

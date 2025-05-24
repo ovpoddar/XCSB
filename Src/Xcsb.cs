@@ -1,6 +1,8 @@
 ﻿
 using Src.Models;
+using Src.Models.Event;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 
 namespace Src;
 
@@ -85,4 +87,7 @@ public static class Xcsb
             return task1 && task2;
         }
     }
+
+    public static int GetEventSize() =>
+        Marshal.SizeOf<XEvent>();
 }

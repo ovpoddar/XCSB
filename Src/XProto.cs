@@ -756,11 +756,19 @@ internal class XProto : IXProto
         return result;
     }
 
-    public XEvent GetEvent()
+    public ref XEvent GetEvent(Span<byte> scratchBuffer)
     {
-        Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
-        _socket.Receive(scratchBuffer);
-        var result = scratchBuffer.ToStruct<XEvent>();
-        return result;
+        var requiredLength = Marshal.SizeOf<XEvent>();
+        if (scratchBuffer.Length != requiredLength)
+            throw new Exception($"not enough space. allocate at least {requiredLength} bytes");
+        if (_socket.Poll(-1, SelectMode.SelectRead))
+        {
+            var totalRead = _socket.Receive(scratchBuffer);
+            if (totalRead != 0)
+                return ref scratchBuffer.AsStruct<XEvent>();
+        }
+        scratchBuffer[0] = 0;
+        return ref scratchBuffer.AsStruct<XEvent>();
     }
+        
 }
