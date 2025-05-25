@@ -622,9 +622,37 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.ImageText8()
+    void IXProto.ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
     {
-        throw new NotImplementedException();
+        var requiredBuffer = 16 + text.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer[0] = (byte)Opcode.ImageText8;
+            scratchBuffer[1] = (byte)text.Length;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], drawable);
+            MemoryMarshal.Write(scratchBuffer[8..12], gc);
+            MemoryMarshal.Write(scratchBuffer[12..14], x);
+            MemoryMarshal.Write(scratchBuffer[14..16], y);
+            text.CopyTo(scratchBuffer[16..(text.Length + 16)]);
+            scratchBuffer[(16 + text.Length)..requiredBuffer].Clear();
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            scratchBuffer[0] = (byte)Opcode.ImageText8;
+            scratchBuffer[1] = (byte)text.Length;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], drawable);
+            MemoryMarshal.Write(scratchBuffer[8..12], gc);
+            MemoryMarshal.Write(scratchBuffer[12..14], x);
+            MemoryMarshal.Write(scratchBuffer[14..16], y);
+            text.CopyTo(scratchBuffer[16..(text.Length + 16)]);
+            scratchBuffer[(16 + text.Length)..requiredBuffer].Clear();
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.InstallColormap()

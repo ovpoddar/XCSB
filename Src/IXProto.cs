@@ -107,7 +107,7 @@ public interface IXProto : IDisposable
     void GetImage();
     void PolyText8();
     void PolyText16();
-    void ImageText8();
+    void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text);
     void ImageText16();
     void CreateColormap();
     void FreeColormap();
