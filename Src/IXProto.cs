@@ -67,8 +67,8 @@ public interface IXProto : IDisposable
     void SetInputFocus(InputFocusMode mode, uint focus, uint time);
     void GetInputFocus();
     void QueryKeymap();
-    void OpenFont();
-    void CloseFont();
+    void OpenFont(string fontName, uint fontId);
+    void CloseFont(uint fontId);
     void QueryFont();
     void QueryTextExtents();
     void ListFonts();
