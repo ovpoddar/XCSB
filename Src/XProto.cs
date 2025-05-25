@@ -774,8 +774,8 @@ internal class XProto : IXProto
         MemoryMarshal.Write(scratchBuffer[14..16], height);
         MemoryMarshal.Write(scratchBuffer[16..18], x);
         MemoryMarshal.Write(scratchBuffer[18..20], y);
-        scratchBuffer[21] = leftPad;
-        scratchBuffer[22] = depth;
+        scratchBuffer[20] = leftPad;
+        scratchBuffer[21] = depth;
         MemoryMarshal.Write(scratchBuffer[22..24], (ushort)0);
         _socket.SendExact(scratchBuffer);
         _socket.SendExact(data);
@@ -1052,12 +1052,8 @@ internal class XProto : IXProto
         GC.SuppressFinalize(this);
     }
 
-    public uint NewId()
-    {
-        var result = (uint)((_connectionResult.ResourceIDMask & _globalId) | _connectionResult.ResourceIDBase);
-        _globalId++;
-        return result;
-    }
+    public uint NewId() =>
+        (uint)((_connectionResult.ResourceIDMask & _globalId++) | _connectionResult.ResourceIDBase);
 
     public ref XEvent GetEvent(Span<byte> scratchBuffer)
     {
