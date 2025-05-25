@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 namespace Src.Models;
 public class Acceleration
 {
-    public ushort? Numerator { get; set; } = null;
-    public ushort? Denominator { get; set; } = null;
+    public required ushort Numerator { get; set; }
+    public required ushort Denominator { get; set; }
 }

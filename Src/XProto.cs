@@ -136,15 +136,14 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.ChangePointerControl(Acceleration acceleration, ushort? threshold)
+    void IXProto.ChangePointerControl(Acceleration? acceleration, ushort? threshold)
     {
-
         Span<byte> scratchBuffer = stackalloc byte[12];
         scratchBuffer[0] = (byte)Opcode.ChangePointerControl;
         scratchBuffer[1] = 0;
         MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 3);
-        MemoryMarshal.Write(scratchBuffer[4..6], acceleration.Numerator ?? 0);
-        MemoryMarshal.Write(scratchBuffer[6..8], acceleration.Denominator ?? 0);
+        MemoryMarshal.Write(scratchBuffer[4..6], acceleration?.Numerator ?? 0);
+        MemoryMarshal.Write(scratchBuffer[6..8], acceleration?.Denominator ?? 0);
         MemoryMarshal.Write(scratchBuffer[8..10], threshold ?? 0);
         scratchBuffer[11] = (byte)(acceleration is not null ? 1 : 0);
         scratchBuffer[12] = (byte)(threshold.HasValue ? 1 : 0);
@@ -157,8 +156,42 @@ internal class XProto : IXProto
         if (size is not 1 or 2 or 4)
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
 
-        var requiredBuffer = 24 + args.Length * size;
-        throw new NotFiniteNumberException();
+        var requiredBuffer = 24 + args.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer[0] = (byte)Opcode.ChangeProperty;
+            scratchBuffer[1] = (byte)mode;
+            MemoryMarshal.Write<ushort>(scratchBuffer[2..4], (ushort)(requiredBuffer /4));
+            MemoryMarshal.Write(scratchBuffer[4..8], window);
+            MemoryMarshal.Write(scratchBuffer[8..12], property);
+            MemoryMarshal.Write(scratchBuffer[12..16], type);
+            scratchBuffer[17] = (byte)size;
+            scratchBuffer[18] = 0;
+            scratchBuffer[19] = 0;
+            scratchBuffer[20] = 0;
+            MemoryMarshal.Write(scratchBuffer[21..24], args.Length);
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, T>(scratchBuffer[24..requiredBuffer]));
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            scratchBuffer[0] = (byte)Opcode.ChangeProperty;
+            scratchBuffer[1] = (byte)mode;
+            MemoryMarshal.Write<ushort>(scratchBuffer[2..4], (ushort)(requiredBuffer /4));
+            MemoryMarshal.Write(scratchBuffer[4..8], window);
+            MemoryMarshal.Write(scratchBuffer[8..12], property);
+            MemoryMarshal.Write(scratchBuffer[12..16], type);
+            scratchBuffer[17] = (byte)size;
+            scratchBuffer[18] = 0;
+            scratchBuffer[19] = 0;
+            scratchBuffer[20] = 0;
+            MemoryMarshal.Write(scratchBuffer[21..24], args.Length);
+            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, T>(scratchBuffer[24..requiredBuffer]));
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+        
     }
 
     void IXProto.ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
@@ -721,7 +754,16 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y, byte leftPad, byte depth, Span<byte> data)
+    void IXProto.PutImage(ImageFormat format,
+        uint drawable,
+        uint gc,
+        ushort width,
+        ushort height,
+        short x,
+        short y,
+        byte leftPad,
+        byte depth,
+        Span<byte> data)
     {
         Span<byte> scratchBuffer = stackalloc byte[24];
         scratchBuffer[0] = (byte)Opcode.PutImage;
@@ -738,9 +780,9 @@ internal class XProto : IXProto
         MemoryMarshal.Write(scratchBuffer[22..24], 0);
         _socket.SendExact(scratchBuffer);
         _socket.SendExact(data);
-        //todo: verify the padding
-        Span<byte> buffer = stackalloc byte[data.Length.Padding()];
-        _socket.SendExact(buffer);
+        scratchBuffer = scratchBuffer[..data.Length.Padding()];
+        scratchBuffer.Clear();
+        _socket.SendExact(scratchBuffer);
     }
 
     void IXProto.QueryBestSize()
@@ -999,6 +1041,7 @@ internal class XProto : IXProto
             {
                 if (_socket.Connected) _socket.Close();
             }
+
             _disposedValue = true;
         }
     }
@@ -1028,8 +1071,8 @@ internal class XProto : IXProto
             if (totalRead != 0)
                 return ref scratchBuffer.AsStruct<XEvent>();
         }
+
         scratchBuffer[0] = 0;
         return ref scratchBuffer.AsStruct<XEvent>();
     }
-
 }
