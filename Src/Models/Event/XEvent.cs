@@ -14,6 +14,9 @@ public struct XEvent
     public EventType EventType;
 
     [FieldOffset(1)]
+    public ErrorEvent ErrorEvent;
+
+    [FieldOffset(1)]
     public InputEvent InputEvent;
 
     [FieldOffset(1)]

@@ -1,4 +1,5 @@
 ﻿using Src.Helpers;
+using Src.Masks;
 using Src.Models;
 using Src.Models.Event;
 using Src.Models.Handshake;
@@ -162,7 +163,7 @@ internal class XProto : IXProto
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer[0] = (byte)Opcode.ChangeProperty;
             scratchBuffer[1] = (byte)mode;
-            MemoryMarshal.Write<ushort>(scratchBuffer[2..4], (ushort)(requiredBuffer /4));
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
             MemoryMarshal.Write(scratchBuffer[4..8], window);
             MemoryMarshal.Write(scratchBuffer[8..12], property);
             MemoryMarshal.Write(scratchBuffer[12..16], type);
@@ -179,7 +180,7 @@ internal class XProto : IXProto
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
             scratchBuffer[0] = (byte)Opcode.ChangeProperty;
             scratchBuffer[1] = (byte)mode;
-            MemoryMarshal.Write<ushort>(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
             MemoryMarshal.Write(scratchBuffer[4..8], window);
             MemoryMarshal.Write(scratchBuffer[8..12], property);
             MemoryMarshal.Write(scratchBuffer[12..16], type);
@@ -191,7 +192,7 @@ internal class XProto : IXProto
             args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, T>(scratchBuffer[24..requiredBuffer]));
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
-        
+
     }
 
     void IXProto.ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)

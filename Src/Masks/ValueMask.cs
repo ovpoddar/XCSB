@@ -1,4 +1,4 @@
-﻿namespace Src.Models;
+﻿namespace Src.Masks;
 [Flags]
 public enum ValueMask : uint
 {

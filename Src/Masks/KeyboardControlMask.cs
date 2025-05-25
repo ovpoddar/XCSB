@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Src.Models;
+namespace Src.Masks;
 [Flags]
 public enum KeyboardControlMask : int
 {
