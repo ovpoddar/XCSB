@@ -57,14 +57,14 @@ public interface IXProto : IDisposable
     void UngrabKeyboard();
     void GrabKey();
     void UngrabKey();
-    void AllowEvents();
+    void AllowEvents(EventsMode mode, uint time);
     void GrabServer();
     void UngrabServer();
     void QueryPointer();
     void GetMotionEvents();
     void TranslateCoordinates();
-    void WarpPointer();
-    void SetInputFocus();
+    void WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destX, short destY);
+    void SetInputFocus(InputFocusMode mode, uint focus, uint time);
     void GetInputFocus();
     void QueryKeymap();
     void OpenFont();
