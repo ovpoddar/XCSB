@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Src.Models.Event;
 public enum ErrorCode : byte
 {
-    Request,
+    Request = 1,
     Value,
     Window,
     Pixmap,
