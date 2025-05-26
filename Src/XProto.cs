@@ -11,6 +11,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
 
 namespace Src;
 
@@ -313,9 +315,15 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.CopyColormapAndFree()
+    void IXProto.CopyColormapAndFree(uint colormapId, uint srcColormapId)
     {
-        throw new NotImplementedException();
+        Span<byte> scratchBuffer = stackalloc byte[12];
+        scratchBuffer[0] = (byte)Opcode.CopyColormapAndFree;
+        scratchBuffer[1] = 0;
+        MemoryMarshal.Write<short>(scratchBuffer[2..4], 3);
+        MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+        MemoryMarshal.Write(scratchBuffer[8..12], srcColormapId);
+        _socket.SendExact(scratchBuffer);
     }
 
     void IXProto.CopyGC(uint srcGc, uint dstGc, GCMask mask)
@@ -335,9 +343,16 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.CreateColormap()
+    void IXProto.CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
-        throw new NotImplementedException();
+        Span<byte> scratchBuffer = stackalloc byte[16];
+        scratchBuffer[0] = (byte)Opcode.CreateColormap;
+        scratchBuffer[1] = (byte)alloc;
+        MemoryMarshal.Write<short>(scratchBuffer[2..4], 4);
+        MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+        MemoryMarshal.Write(scratchBuffer[8..12], window);
+        MemoryMarshal.Write(scratchBuffer[12..16], visual);
+        _socket.SendExact(scratchBuffer);
     }
 
     void IXProto.CreateCursor()
@@ -483,14 +498,41 @@ internal class XProto : IXProto
         _socket.SendExact(scratchBuffer);
     }
 
-    void IXProto.FreeColormap()
+    void IXProto.FreeColormap(uint colormapId)
     {
-        throw new NotImplementedException();
+        Span<byte> scratchBuffer = stackalloc byte[8];
+        scratchBuffer[0] = (byte)Opcode.FreeColormap;
+        scratchBuffer[1] = 0;
+        MemoryMarshal.Write(scratchBuffer[2..4], 2);
+        MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+        _socket.SendExact(scratchBuffer);
     }
 
-    void IXProto.FreeColors()
+    void IXProto.FreeColors(uint colormapId, uint planeMask, params uint[] pixels)
     {
-        throw new NotImplementedException();
+        var requiredBuffer = 12 + pixels.Length * 4;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer[0] = (byte)Opcode.FreeColors;
+            scratchBuffer[1] = 0;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+            MemoryMarshal.Write(scratchBuffer[8..12], planeMask);
+            pixels.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            scratchBuffer[0] = (byte)Opcode.FreeColors;
+            scratchBuffer[1] = 0;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+            MemoryMarshal.Write(scratchBuffer[8..12], planeMask);
+            pixels.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.FreeCursor()
@@ -683,9 +725,14 @@ internal class XProto : IXProto
         }
     }
 
-    void IXProto.InstallColormap()
+    void IXProto.InstallColormap(uint colormapId)
     {
-        throw new NotImplementedException();
+        Span<byte> scratchBuffer = stackalloc byte[8];
+        scratchBuffer[0] = (byte)Opcode.InstallColormap;
+        scratchBuffer[1] = 0;
+        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
+        MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+        _socket.SendExact(scratchBuffer);
     }
 
     void IXProto.KillClient(uint resource)
@@ -1111,9 +1158,14 @@ internal class XProto : IXProto
         _socket.SendExact(scratchBuffer);
     }
 
-    void IXProto.UninstallColormap()
+    void IXProto.UninstallColormap(uint colormapId)
     {
-        throw new NotImplementedException();
+        Span<byte> scratchBuffer = stackalloc byte[8];
+        scratchBuffer[0] = (byte)Opcode.UninstallColormap;
+        scratchBuffer[1] = 0;
+        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
+        MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+        _socket.SendExact(scratchBuffer);
     }
 
     void IXProto.UnmapSubwindows(uint window)
