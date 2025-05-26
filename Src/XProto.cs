@@ -3,6 +3,7 @@ using Src.Masks;
 using Src.Models;
 using Src.Models.Event;
 using Src.Models.Handshake;
+using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Drawing;
@@ -13,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Src;
 
@@ -535,9 +537,14 @@ internal class XProto : IXProto
         }
     }
 
-    void IXProto.FreeCursor()
+    void IXProto.FreeCursor(uint cursorId)
     {
-        throw new NotImplementedException();
+        Span<byte> scratchBuffer = stackalloc byte[8];
+        scratchBuffer[0] = (byte)Opcode.FreeCursor;
+        scratchBuffer[1] = 0;
+        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
+        MemoryMarshal.Write(scratchBuffer[4..8], cursorId);
+        _socket.SendExact(scratchBuffer);
     }
 
     void IXProto.FreeGC(uint gc)
@@ -1109,14 +1116,64 @@ internal class XProto : IXProto
         _socket.SendExact(scratchBuffer);
     }
 
-    void IXProto.StoreColors()
+    void IXProto.StoreColors(uint colormapId, params ColorItem[] item)
     {
-        throw new NotImplementedException();
+        var requiredBuffer = 8 + 12 * item.Length;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer[0] = (byte)Opcode.StoreColors;
+            scratchBuffer[1] = 0;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+            item.CopyTo(MemoryMarshal.Cast<byte, ColorItem>(scratchBuffer[8..requiredBuffer]));
+            scratchBuffer[^1] = 0;
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            scratchBuffer[0] = (byte)Opcode.StoreColors;
+            scratchBuffer[1] = 0;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+            item.CopyTo(MemoryMarshal.Cast<byte, ColorItem>(scratchBuffer[8..requiredBuffer]));
+            scratchBuffer[requiredBuffer - 1] = 0;
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
-    void IXProto.StoreNamedColor()
+    void IXProto.StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
     {
-        throw new NotImplementedException();
+        var requiredBuffer = 16 + name.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer[0] = (byte)Opcode.StoreNamedColor;
+            scratchBuffer[1] = (byte)mode;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+            MemoryMarshal.Write(scratchBuffer[8..12], pixels);
+            MemoryMarshal.Write(scratchBuffer[12..14], (ushort)name.Length);
+            MemoryMarshal.Write(scratchBuffer[14..16], 0);
+            name.CopyTo(scratchBuffer[16..(name.Length + 16)]);
+            scratchBuffer[^name.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            scratchBuffer[0] = (byte)Opcode.StoreNamedColor;
+            scratchBuffer[1] = (byte)mode;
+            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+            MemoryMarshal.Write(scratchBuffer[8..12], pixels);
+            MemoryMarshal.Write(scratchBuffer[12..14], (ushort)name.Length);
+            MemoryMarshal.Write(scratchBuffer[14..16], 0);
+            name.CopyTo(scratchBuffer[16..(name.Length + 16)]);
+            scratchBuffer[^name.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer);
+        }
     }
 
     void IXProto.TranslateCoordinates()

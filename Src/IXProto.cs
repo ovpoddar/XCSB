@@ -120,13 +120,13 @@ public interface IXProto : IDisposable
     void AllocColorCells();
     void AllocColorPlanes();
     void FreeColors(uint colormapId, uint planeMask, params uint[] pixels);
-    void StoreColors();
-    void StoreNamedColor();
+    void StoreColors(uint colormapId, params ColorItem[] item);
+    void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name);
     void QueryColors();
     void LookupColor();
     void CreateCursor();
     void CreateGlyphCursor();
-    void FreeCursor();
+    void FreeCursor(uint cursorId);
     void RecolorCursor();
     void QueryBestSize();
     void QueryExtension();
