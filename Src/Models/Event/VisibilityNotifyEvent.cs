@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Src.Models.Event;
+namespace Xcsb.Models.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct VisibilityNotifyEvent

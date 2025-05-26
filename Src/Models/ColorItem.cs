@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Src.Models;
+﻿namespace Xcsb.Models;
 public struct ColorItem
 {
     public uint Pixel;
@@ -12,5 +6,5 @@ public struct ColorItem
     public ushort Green;
     public ushort Blue;
     public ColorFlag ColorFlag;
-    private byte Pad0; 
+    private byte Pad0;
 }

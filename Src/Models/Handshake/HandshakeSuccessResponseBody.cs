@@ -1,10 +1,10 @@
-﻿using Src.Helpers;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Helpers;
 
-namespace Src.Models.Handshake;
+namespace Xcsb.Models.Handshake;
 public class HandshakeSuccessResponseBody
 {
     public uint ReleaseNumber { get; set; }

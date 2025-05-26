@@ -1,4 +1,4 @@
-﻿namespace Src.Models.Handshake;
+﻿namespace Xcsb.Models.Handshake;
 
 public enum VisualClass : byte
 {

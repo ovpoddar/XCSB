@@ -1,10 +1,10 @@
-﻿using Src.Masks;
-using Src.Models;
-using Src.Models.Event;
-using Src.Models.Handshake;
-using System.Numerics;
+﻿using System.Numerics;
+using Xcsb.Masks;
+using Xcsb.Models;
+using Xcsb.Models.Event;
+using Xcsb.Models.Handshake;
 
-namespace Src;
+namespace Xcsb;
 public interface IXProto : IDisposable
 {
     HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }

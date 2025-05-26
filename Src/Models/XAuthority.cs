@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Src.Models;
+namespace Xcsb.Models;
 
 internal readonly ref struct XAuthority
 {

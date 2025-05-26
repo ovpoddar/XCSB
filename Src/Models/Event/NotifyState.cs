@@ -1,4 +1,4 @@
-﻿namespace Src.Models.Event;
+﻿namespace Xcsb.Models.Event;
 
 public enum NotifyState : byte
 {

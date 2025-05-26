@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Src.Models.Handshake;
+namespace Xcsb.Models.Handshake;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 internal struct HandshakeResponseHeadFailed

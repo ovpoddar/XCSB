@@ -1,22 +1,15 @@
-﻿using Src.Helpers;
-using Src.Masks;
-using Src.Models;
-using Src.Models.Event;
-using Src.Models.Handshake;
-using System;
-using System.Buffers;
-using System.Diagnostics;
-using System.Drawing;
+﻿using System.Buffers;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
-using static System.Net.Mime.MediaTypeNames;
+using Xcsb.Helpers;
+using Xcsb.Masks;
+using Xcsb.Models;
+using Xcsb.Models.Event;
+using Xcsb.Models.Handshake;
 
-namespace Src;
+namespace Xcsb;
 
 [SkipLocalsInit]
 internal class XProto : IXProto
@@ -679,7 +672,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[8..12], gc);
             MemoryMarshal.Write(scratchBuffer[12..14], x);
             MemoryMarshal.Write(scratchBuffer[14..16], y);
-            text.CopyTo(MemoryMarshal.Cast<byte, char>(scratchBuffer[16..((text.Length * 2) + 16)]));
+            text.CopyTo(MemoryMarshal.Cast<byte, char>(scratchBuffer[16..(text.Length * 2 + 16)]));
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer);
         }
@@ -693,7 +686,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[8..12], gc);
             MemoryMarshal.Write(scratchBuffer[12..14], x);
             MemoryMarshal.Write(scratchBuffer[14..16], y);
-            text.CopyTo(MemoryMarshal.Cast<byte, char>(scratchBuffer[16..((text.Length * 2) + 16)]));
+            text.CopyTo(MemoryMarshal.Cast<byte, char>(scratchBuffer[16..(text.Length * 2 + 16)]));
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer);
         }
@@ -920,7 +913,7 @@ internal class XProto : IXProto
         Span<byte> scratchBuffer = stackalloc byte[24];
         scratchBuffer[0] = (byte)Opcode.PutImage;
         scratchBuffer[1] = (byte)format;
-        MemoryMarshal.Write(scratchBuffer[2..4], (ushort)((6 + (data.Length.AddPadding() / 4))));
+        MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(6 + data.Length.AddPadding() / 4));
         MemoryMarshal.Write(scratchBuffer[4..8], drawable);
         MemoryMarshal.Write(scratchBuffer[8..12], gc);
         MemoryMarshal.Write(scratchBuffer[12..14], width);
@@ -1267,9 +1260,7 @@ internal class XProto : IXProto
         if (!_disposedValue)
         {
             if (disposing)
-            {
                 if (_socket.Connected) _socket.Close();
-            }
 
             _disposedValue = true;
         }
@@ -1283,7 +1274,7 @@ internal class XProto : IXProto
     }
 
     public uint NewId() =>
-        (uint)((_connectionResult.ResourceIDMask & _globalId++) | _connectionResult.ResourceIDBase);
+        (uint)(_connectionResult.ResourceIDMask & _globalId++ | _connectionResult.ResourceIDBase);
 
     public ref XEvent GetEvent(Span<byte> scratchBuffer)
     {

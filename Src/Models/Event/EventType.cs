@@ -1,4 +1,4 @@
-﻿namespace Src.Models.Event;
+﻿namespace Xcsb.Models.Event;
 
 public enum EventType : byte
 {
@@ -14,7 +14,7 @@ public enum EventType : byte
     FocusOut = 10,
     KeymapNotify = 11,
     Expose = 12,
-    GraphicsExpose = 13, 
+    GraphicsExpose = 13,
     NoExpose = 14,
     VisibilityNotify = 15,
     CreateNotify = 16,

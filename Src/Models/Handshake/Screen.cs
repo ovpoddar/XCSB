@@ -1,8 +1,8 @@
-﻿using Src.Helpers;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Xcsb.Helpers;
 
-namespace Src.Models.Handshake;
+namespace Xcsb.Models.Handshake;
 
 
 public class Screen
@@ -22,7 +22,7 @@ public class Screen
     public BackingStores BackingStore;
     public bool SaveUnders;
     private byte _rootDepth;
-    public Depth? RootDepth => this.Depths.FirstOrDefault(a => a.DepthValue == _rootDepth);
+    public Depth? RootDepth => Depths.FirstOrDefault(a => a.DepthValue == _rootDepth);
     public required Depth[] Depths;
 
     public static Screen Read(Socket socket, ref int currentlyRead)

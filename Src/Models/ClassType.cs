@@ -1,4 +1,4 @@
-﻿namespace Src.Models;
+﻿namespace Xcsb.Models;
 
 public enum ClassType : ushort
 {

@@ -1,12 +1,11 @@
-﻿
-using Src.Models;
-using Src.Models.Event;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Xcsb.Models;
+using Xcsb.Models.Event;
 
-namespace Src;
+namespace Xcsb;
 
-public static class Xcsb
+public static class XcsbClient
 {
     public static IXProto Initialized()
     {
@@ -54,8 +53,8 @@ public static class Xcsb
             var slashIndex = display.IndexOf('/');
             if (slashIndex >= 0)
             {
-                details.Protocol = Enum.TryParse(display[..slashIndex], true, out ProtocolType protocol) 
-                    ? protocol 
+                details.Protocol = Enum.TryParse(display[..slashIndex], true, out ProtocolType protocol)
+                    ? protocol
                     : ProtocolType.Tcp;
                 details.Host = display.Slice(slashIndex + 1, colonIndex);
             }

@@ -1,12 +1,11 @@
-﻿using Src.Helpers;
-using Src.Models;
-using Src.Models.Handshake;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
+using Xcsb.Helpers;
+using Xcsb.Models;
+using Xcsb.Models.Handshake;
 
-namespace Src;
+namespace Xcsb;
 
 internal static class Connection
 {
@@ -50,12 +49,10 @@ internal static class Connection
             var dspy = context.GetDisplayNumber(fileStream);
             var displayName = context.GetName(fileStream);
             if (context.Family == ushort.MaxValue
-                       || (context.Family == byte.MaxValue && context.GetHostAddress(fileStream) == host)
+                       || context.Family == byte.MaxValue && context.GetHostAddress(fileStream) == host
                        && (dspy is "" || dspy == display)
                        && displayName.SequenceEqual(MAGICCOOKIE))
-            {
                 return (displayName, context.GetData(fileStream));
-            }
         }
 
         throw new InvalidOperationException("Invalid XAuthority file present.");

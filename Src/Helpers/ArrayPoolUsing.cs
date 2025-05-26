@@ -1,7 +1,7 @@
 ﻿using System.Buffers;
 using System.Runtime.CompilerServices;
 
-namespace Src.Helpers;
+namespace Xcsb.Helpers;
 internal struct ArrayPoolUsing<T> : IDisposable
 {
     private readonly ArrayPool<T> _arrayPool;
@@ -11,17 +11,17 @@ internal struct ArrayPoolUsing<T> : IDisposable
 
     public ArrayPoolUsing(int length = 0, bool clearArray = false)
     {
-        this._arrayPool = ArrayPool<T>.Shared;
-        this._length = length;
-        this._clearArray = clearArray;
+        _arrayPool = ArrayPool<T>.Shared;
+        _length = length;
+        _clearArray = clearArray;
 
-        this.Rent(length);
+        Rent(length);
     }
 
     public ArrayPoolUsing<T> Rent(int size)
     {
         if (size == 0) return this;
-            ArgumentOutOfRangeException.ThrowIfNegative(size);
+        ArgumentOutOfRangeException.ThrowIfNegative(size);
 
         if (_values != null)
             _arrayPool.Return(_values, _clearArray);

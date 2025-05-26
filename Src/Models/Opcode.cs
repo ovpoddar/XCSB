@@ -1,4 +1,4 @@
-﻿namespace Src.Models;
+﻿namespace Xcsb.Models;
 internal enum Opcode : byte
 {
     CreateWindow = 1,

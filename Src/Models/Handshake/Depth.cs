@@ -1,8 +1,8 @@
-﻿using Src.Helpers;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Xcsb.Helpers;
 
-namespace Src.Models.Handshake;
+namespace Xcsb.Models.Handshake;
 
 public class Depth
 {

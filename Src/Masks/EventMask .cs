@@ -1,4 +1,4 @@
-﻿namespace Src.Masks;
+﻿namespace Xcsb.Masks;
 
 [Flags]
 public enum EventMask : uint

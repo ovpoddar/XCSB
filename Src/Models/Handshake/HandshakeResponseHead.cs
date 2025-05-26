@@ -1,9 +1,9 @@
-﻿using Src.Helpers;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Helpers;
 
-namespace Src.Models.Handshake;
+namespace Xcsb.Models.Handshake;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 8)]
 internal struct HandshakeResponseHead

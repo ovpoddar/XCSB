@@ -1,4 +1,4 @@
-﻿namespace Src.Models;
+﻿namespace Xcsb.Models;
 internal readonly ref struct Segment<T> where T : struct
 {
     public T Position { get; }

@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace Src.Helpers;
+namespace Xcsb.Helpers;
 internal static class GenericHelper
 {
     internal static ref T AsStruct<T>(this Span<byte> @bytes) where T : struct =>
@@ -14,11 +14,11 @@ internal static class GenericHelper
     internal static T AddPadding<T>(this T pad) where T : INumber<T>
     {
         var value = int.CreateChecked(pad);
-        return T.CreateChecked(value + ((4 - (value & 3)) & 3));
+        return T.CreateChecked(value + (4 - (value & 3) & 3));
     }
 
     internal static T Padding<T>(this T pad) where T : INumber<T> =>
-        T.CreateChecked(((4 - (int.CreateChecked(pad) & 3)) & 3));
+        T.CreateChecked(4 - (int.CreateChecked(pad) & 3) & 3);
 
     internal static void SendExact(this Socket socket, Span<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
     {

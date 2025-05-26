@@ -1,7 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace Src.Models;
+namespace Xcsb.Models;
 internal ref struct ConnectionDetails
 {
     public ReadOnlySpan<char> Socket { get; set; }
