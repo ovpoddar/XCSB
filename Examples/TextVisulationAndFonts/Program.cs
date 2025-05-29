@@ -71,9 +71,8 @@ while (isRunning)
     }
     else if (Event.EventType == EventType.Expose)
     {
-        byte[] text = [0x00, (byte)'h', 0x00, (byte)'e', 0x00, (byte)'l', 0x00, (byte)'l', 0x00, (byte)'o'];
-        c.ImageText16(window, gc, 10, 15, MemoryMarshal.Cast<byte, char>(text));
-        c.ImageText8(window, gc, 10, 40, "Hello"u8);
+        c.ImageText16(window, gc, 10, 15, "this is a utf 16 string");
+        c.ImageText8(window, gc, 10, 40, "this is a utf 8 string"u8);
     }
     else
     {

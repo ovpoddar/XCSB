@@ -672,7 +672,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[8..12], gc);
             MemoryMarshal.Write(scratchBuffer[12..14], x);
             MemoryMarshal.Write(scratchBuffer[14..16], y);
-            text.CopyTo(MemoryMarshal.Cast<byte, char>(scratchBuffer[16..(text.Length * 2 + 16)]));
+            Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer);
         }
@@ -686,7 +686,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[8..12], gc);
             MemoryMarshal.Write(scratchBuffer[12..14], x);
             MemoryMarshal.Write(scratchBuffer[14..16], y);
-            text.CopyTo(MemoryMarshal.Cast<byte, char>(scratchBuffer[16..(text.Length * 2 + 16)]));
+            Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer);
         }
