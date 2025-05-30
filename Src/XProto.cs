@@ -1,4 +1,6 @@
 ﻿using System.Buffers;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -650,7 +652,7 @@ internal class XProto : IXProto
         }
         else
         {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
             scratchBuffer[0] = (byte)Opcode.ImageText16;
             scratchBuffer[1] = (byte)text.Length;
             MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
@@ -660,7 +662,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[14..16], y);
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
-            _socket.SendExact(scratchBuffer);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
 
@@ -764,12 +766,8 @@ internal class XProto : IXProto
 
     void IXProto.MapWindow(uint window)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.MapWindow;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], window);
-        _socket.SendExact(scratchBuffer);
+        var request = new MapWindowType(window);
+        _socket.Send(ref request);
     }
 
     void IXProto.NoOperation(params uint[] args)
@@ -797,31 +795,28 @@ internal class XProto : IXProto
 
     void IXProto.OpenFont(string fontName, uint fontId)
     {
-        var requiredBuffer = 12 + fontName.Length.AddPadding();
+        var request = new OpenFontType(fontId, (ushort)fontName.Length);
+        var requestSize = Marshal.SizeOf<OpenFontType>();
+        var requiredBuffer = requestSize + fontName.Length.AddPadding();
+
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.OpenFont;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], fontId);
-            MemoryMarshal.Write(scratchBuffer[8..10], (ushort)fontName.Length);
-            MemoryMarshal.Write<ushort>(scratchBuffer[10..12], 0);
-            Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
-            scratchBuffer[(12 + fontName.Length)..requiredBuffer].Clear();
+            MemoryMarshal.Write(scratchBuffer[0..requestSize], in request);
+            Encoding.ASCII.GetBytes(fontName, scratchBuffer.Slice(requestSize, fontName.Length));
+            scratchBuffer[(requestSize + fontName.Length)..requiredBuffer].Clear();
+
             _socket.SendExact(scratchBuffer);
         }
         else
         {
+            requiredBuffer -= requestSize;
+
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.OpenFont;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], fontId);
-            MemoryMarshal.Write(scratchBuffer[8..10], (ushort)fontName.Length);
-            MemoryMarshal.Write<ushort>(scratchBuffer[10..12], 0);
-            Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
-            scratchBuffer[(12 + fontName.Length)..requiredBuffer].Clear();
+            Encoding.ASCII.GetBytes(fontName, scratchBuffer.Slice(fontName.Length));
+            scratchBuffer[(fontName.Length)..requiredBuffer].Clear();
+
+            _socket.Send(ref request);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
