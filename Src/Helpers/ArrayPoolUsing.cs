@@ -39,7 +39,7 @@ internal struct ArrayPoolUsing<T> : IDisposable
     public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing) =>
         arrayPoolUsing._values ?? [];
 
-    public static implicit operator Span<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
+    public static implicit operator ReadOnlySpan<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
         new(arrayPoolUsing._values, 0, arrayPoolUsing._length);
 
     public readonly Span<T> Slice(int length)
