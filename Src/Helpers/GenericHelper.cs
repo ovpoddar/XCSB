@@ -36,6 +36,13 @@ internal static class GenericHelper
     internal static void Send<T>(this Socket socket, scoped ref T value) where T : struct =>
         socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void SendPadding(this Socket socket, byte size)
+    {
+        Span<byte> buffer = stackalloc byte[size];
+        socket.SendExact(buffer);
+    }
+
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
         var total = 0;

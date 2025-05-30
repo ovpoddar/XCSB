@@ -221,7 +221,7 @@ internal class XProto : IXProto
 
     void IXProto.CirculateWindow(Direction direction, uint window)
     {
-        var request = new CirculateWindowType(direction,window);
+        var request = new CirculateWindowType(direction, window);
         _socket.Send(ref request);
     }
 
@@ -826,24 +826,15 @@ internal class XProto : IXProto
         byte depth,
         Span<byte> data)
     {
-        Span<byte> scratchBuffer = stackalloc byte[24];
-        scratchBuffer[0] = (byte)Opcode.PutImage;
-        scratchBuffer[1] = (byte)format;
-        MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(6 + data.Length.AddPadding() / 4));
-        MemoryMarshal.Write(scratchBuffer[4..8], drawable);
-        MemoryMarshal.Write(scratchBuffer[8..12], gc);
-        MemoryMarshal.Write(scratchBuffer[12..14], width);
-        MemoryMarshal.Write(scratchBuffer[14..16], height);
-        MemoryMarshal.Write(scratchBuffer[16..18], x);
-        MemoryMarshal.Write(scratchBuffer[18..20], y);
-        scratchBuffer[20] = leftPad;
-        scratchBuffer[21] = depth;
-        MemoryMarshal.Write(scratchBuffer[22..24], (ushort)0);
-        _socket.SendExact(scratchBuffer);
+        var request = new PutImageType(
+            format,
+            drawable,
+            gc, width, height, x, y,
+            leftPad, depth,
+            data.Length);
+        _socket.Send(ref request);
         _socket.SendExact(data);
-        scratchBuffer = scratchBuffer[..data.Length.Padding()];
-        scratchBuffer.Clear();
-        _socket.SendExact(scratchBuffer);
+        _socket.SendPadding((byte)data.Length.Padding());
     }
 
     void IXProto.QueryBestSize()
