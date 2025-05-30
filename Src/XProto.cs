@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
@@ -211,43 +212,17 @@ internal class XProto : IXProto
         _socket.SendExact(scratchBuffer);
     }
 
-    void IXProto.ChangeWindowAttributes(uint window,
-        ValueMask mask,
-        params uint[] args)
+    void IXProto.ChangeWindowAttributes(uint window, ValueMask mask, params uint[] args)
     {
-        var requiredBuffer = 12 + args.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.ChangeWindowAttributes;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], window);
-            MemoryMarshal.Write(scratchBuffer[8..12], mask);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
-            _socket.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.ChangeWindowAttributes;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], window);
-            MemoryMarshal.Write(scratchBuffer[8..12], mask);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
-            _socket.SendExact(scratchBuffer[..requiredBuffer]);
-        }
+        var request = new ChangeWindowAttributesType(window, mask, args.Length);
+        _socket.Send(ref request);
+        _socket.SendExact(MemoryMarshal.Cast<uint, byte>(args));
     }
 
     void IXProto.CirculateWindow(Direction direction, uint window)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.CirculateWindow;
-        scratchBuffer[1] = (byte)direction;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], window);
-        _socket.SendExact(scratchBuffer);
+        var request = new CirculateWindowType(direction,window);
+        _socket.Send(ref request);
     }
 
     void IXProto.ClearArea()
@@ -360,31 +335,9 @@ internal class XProto : IXProto
 
     void IXProto.CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args)
     {
-        var requiredBuffer = 16 + args.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.CreateGC;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], gc);
-            MemoryMarshal.Write(scratchBuffer[8..12], drawable);
-            MemoryMarshal.Write(scratchBuffer[12..16], mask);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[16..requiredBuffer]));
-            _socket.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.CreateGC;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], gc);
-            MemoryMarshal.Write(scratchBuffer[8..12], drawable);
-            MemoryMarshal.Write(scratchBuffer[12..16], mask);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[16..requiredBuffer]));
-            _socket.SendExact(scratchBuffer[..requiredBuffer]);
-        }
+        var request = new CreateGCType(gc, drawable, mask, args.Length);
+        _socket.Send(ref request);
+        _socket.SendExact(MemoryMarshal.Cast<uint, byte>(args));
     }
 
     void IXProto.CreateGlyphCursor()
@@ -445,12 +398,8 @@ internal class XProto : IXProto
 
     void IXProto.DestroyWindow(uint window)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.DestroyWindow;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write(scratchBuffer[2..4], (ushort)2);
-        MemoryMarshal.Write(scratchBuffer[4..8], window);
-        _socket.SendExact(scratchBuffer);
+        var request = new DestroyWindowType(window);
+        _socket.Send(ref request);
     }
 
     void IXProto.FillPoly()

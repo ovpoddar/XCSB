@@ -4,6 +4,41 @@ using Xcsb.Helpers;
 using Xcsb.Masks;
 
 namespace Xcsb.Models.Requests;
+// TODO: can be auto generated from xproto.h
+// not need but could be a nice idea to investigate.
+// which might not able to provide exact use case but 
+// should be able to provide a base line
+
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct DestroyWindowType(uint window)
+{
+    public readonly Opcode Opcode = Opcode.DestroyWindow;
+    private readonly byte _pad0;
+    public readonly ushort Length = 1;
+    public readonly uint Window = window;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct MapWindowType(uint window)
+{
+    public readonly Opcode OpCode = Opcode.MapWindow;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint Window = window;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct CirculateWindowType(Direction direction, uint window)
+{
+    public readonly Opcode OpCode = Opcode.CirculateWindow;
+    public readonly Direction Direction = direction;
+    public readonly ushort Length = 2;
+    public readonly uint Window = window;
+}
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -17,6 +52,41 @@ internal readonly struct HandShakeRequestType(ushort nameLength, ushort dataLeng
     public readonly ushort NameLength = nameLength;
     public readonly ushort DataLength = dataLength;
     private readonly ushort _pad1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct OpenFontType(uint fontId, ushort fontLength)
+{
+    public readonly Opcode opcode = Opcode.OpenFont;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + (fontLength.AddPadding() / 4));
+    public readonly uint FontId = fontId;
+    public readonly ushort FontLength = fontLength;
+    private readonly ushort _pad1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ChangeWindowAttributesType(uint window, ValueMask mask, int argsLength)
+{
+    public readonly Opcode opcode = Opcode.ChangeWindowAttributes;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + argsLength);
+    public readonly uint Window = window;
+    public readonly ValueMask Mask = mask;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct CreateGCType(uint gc, uint drawable, GCMask mask, int argsLength)
+{
+    public readonly Opcode OpCode = Opcode.CreateGC;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(4 + argsLength);
+    public readonly uint Gc = gc;
+    public readonly uint Drawable = drawable;
+    public readonly GCMask Mask = mask;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
@@ -37,26 +107,4 @@ internal readonly struct CreateWindowType(uint window, uint parent, short x, sho
     public readonly ClassType ClassType = classType;
     public readonly uint RootVisualId = rootVisualId;
     public readonly ValueMask Mask = mask;
-}
-
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
-[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct MapWindowType(uint window)
-{
-    public readonly Opcode OpCode = Opcode.MapWindow;
-    private readonly byte _pad0;
-    public readonly ushort Length = 2;
-    public readonly uint Window = window;
-}
-
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
-[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct OpenFontType(uint fontId, ushort fontLength)
-{
-    public readonly Opcode opcode = Opcode.OpenFont;
-    private readonly byte _pad0;
-    public readonly ushort Length = (ushort)(3 + (fontLength.AddPadding() / 4));
-    public readonly uint FontId = fontId;
-    public readonly ushort FontLength = fontLength;
-    private readonly ushort _pad1;
 }
