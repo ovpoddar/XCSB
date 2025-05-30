@@ -39,14 +39,14 @@ internal struct ArrayPoolUsing<T> : IDisposable
     public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing) =>
         arrayPoolUsing._values ?? [];
 
-    public static implicit operator ReadOnlySpan<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
-        new(arrayPoolUsing._values, 0, arrayPoolUsing._length);
+    public static implicit operator Span<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
+        arrayPoolUsing._values.AsSpan(0, arrayPoolUsing._length);
 
     public readonly Span<T> Slice(int length)
     {
         if (length < 0 || length >= _length)
             throw new ArgumentOutOfRangeException(nameof(length));
-        return new Span<T>(_values, 0, length);
+        return _values.AsSpan(0, length);
     }
 
     public readonly T this[int index]
@@ -72,8 +72,8 @@ internal struct ArrayPoolUsing<T> : IDisposable
     {
         get
         {
-            ArgumentNullException.ThrowIfNull(_values);
-            return _values[range];
+            if (_values is null) return [];
+            return _values.AsSpan(range);
         }
     }
 }

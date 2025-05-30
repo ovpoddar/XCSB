@@ -1137,7 +1137,7 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[14..16], 0);
             name.CopyTo(scratchBuffer[16..(name.Length + 16)]);
             scratchBuffer[^name.Length.Padding()..].Clear();
-            _socket.SendExact(scratchBuffer);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
 
