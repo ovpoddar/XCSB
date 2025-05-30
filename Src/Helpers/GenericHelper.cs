@@ -31,20 +31,10 @@ internal static class GenericHelper
                 break;
         }
     }
-#if true
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal unsafe static void Send<T>(this Socket socket, scoped ref T value) where T : struct
-    {
-        var valueAsSpan = new ReadOnlySpan<byte>(
-           Unsafe.AsPointer(ref value),
-           Unsafe.SizeOf<T>());
-        socket.SendExact(valueAsSpan);
-    }
-#else
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void Send<T>(this Socket socket, scoped ref T value) where T : struct =>
         socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
-#endif
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
