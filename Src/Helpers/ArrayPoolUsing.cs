@@ -51,7 +51,7 @@ internal struct ArrayPoolUsing<T> : IDisposable
 
     public readonly Span<T> Slice(int start, int length)
     {
-        if (length < 0 || length >= _length)
+        if (length < 0 || length > _length)
             throw new ArgumentOutOfRangeException(nameof(length));
         return _values.AsSpan(start, length);
     }

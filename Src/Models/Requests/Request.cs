@@ -107,6 +107,24 @@ internal readonly struct PutImageType(ImageFormat format, uint drawable, uint gc
     public readonly byte Depth = depth;
 }
 
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ChangePropertyType(PropertyMode mode, uint window, uint property, uint type, int argsLength, byte size)
+{
+    public readonly Opcode OpCode = Opcode.ChangeProperty;
+    public readonly PropertyMode Mode = mode;
+    public readonly ushort Length = (ushort)(6 + (argsLength.AddPadding() / 4));
+    public readonly uint Window = window;
+    public readonly uint Property = property;
+    public readonly uint Type = type;
+    private readonly int _pad0;
+    public readonly byte Size = size;
+    public readonly int ArgsLength = argsLength;
+}
+
+
+
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct CreateWindowType(uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth,
