@@ -833,8 +833,21 @@ internal class XProto : IXProto
             leftPad, depth,
             data.Length);
         _socket.Send(ref request);
-        _socket.SendExact(data);
-        _socket.SendPadding((byte)data.Length.Padding());
+        var scratchBufferSize = data.Length.AddPadding();
+        if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
+            data.CopyTo(scratchBuffer[..data.Length]);
+            scratchBuffer[data.Length..].Clear();
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
+            data.CopyTo(scratchBuffer[..data.Length]);
+            scratchBuffer[data.Length..].Clear();
+            _socket.SendExact(scratchBuffer[..scratchBufferSize]);
+        }
     }
 
     void IXProto.QueryBestSize()
