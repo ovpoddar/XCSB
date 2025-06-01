@@ -165,37 +165,22 @@ internal class XProto : IXProto
         var size = Marshal.SizeOf<T>();
         if (size is not 1 or 2 or 4)
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
+        var request = new ChangePropertyType(mode, window, property, type, args.Length, (byte)(size * 8));
 
         var requiredBuffer = 24 + args.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.ChangeProperty;
-            scratchBuffer[1] = (byte)mode;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], window);
-            MemoryMarshal.Write(scratchBuffer[8..12], property);
-            MemoryMarshal.Write(scratchBuffer[12..16], type);
-            MemoryMarshal.Write(scratchBuffer[16..20], 0);
-            scratchBuffer[16] = (byte)(size * 8);
-            MemoryMarshal.Write(scratchBuffer[20..24], args.Length);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, T>(scratchBuffer[24..(24 + args.Length * size)]));
+            MemoryMarshal.Write(scratchBuffer[0..24], request);
+            MemoryMarshal.Cast<T, byte>(args).CopyTo(scratchBuffer[24..(24 + args.Length * size)]);
             scratchBuffer[(24 + args.Length * size)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.ChangeProperty;
-            scratchBuffer[1] = (byte)mode;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], window);
-            MemoryMarshal.Write(scratchBuffer[8..12], property);
-            MemoryMarshal.Write(scratchBuffer[12..16], type);
-            MemoryMarshal.Write(scratchBuffer[16..20], 0);
-            scratchBuffer[16] = (byte)(size * 8);
-            MemoryMarshal.Write(scratchBuffer[20..24], args.Length);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, T>(scratchBuffer[24..(24 + args.Length * size)]));
+            MemoryMarshal.Write(scratchBuffer[0..24], request);
+            MemoryMarshal.Cast<T, byte>(args).CopyTo(scratchBuffer[24..(24 + args.Length * size)]);
             scratchBuffer[(24 + args.Length * size)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
@@ -214,6 +199,7 @@ internal class XProto : IXProto
 
     void IXProto.ChangeWindowAttributes(uint window, ValueMask mask, params uint[] args)
     {
+        // todo: optamice
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         _socket.Send(ref request);
         _socket.SendExact(MemoryMarshal.Cast<uint, byte>(args));
@@ -335,6 +321,7 @@ internal class XProto : IXProto
 
     void IXProto.CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args)
     {
+        // todo: optamice
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         _socket.Send(ref request);
         _socket.SendExact(MemoryMarshal.Cast<uint, byte>(args));
@@ -363,6 +350,7 @@ internal class XProto : IXProto
         params uint[] args
     )
     {
+        // todo: optamice
         var request = new CreateWindowType(window,
             parent,
             x, y, width, height,
@@ -826,6 +814,7 @@ internal class XProto : IXProto
         byte depth,
         Span<byte> data)
     {
+        // todo: optamice
         var request = new PutImageType(
             format,
             drawable,

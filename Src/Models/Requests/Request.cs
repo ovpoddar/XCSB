@@ -118,12 +118,12 @@ internal readonly struct ChangePropertyType(PropertyMode mode, uint window, uint
     public readonly uint Window = window;
     public readonly uint Property = property;
     public readonly uint Type = type;
-    private readonly int _pad0;
     public readonly byte Size = size;
+    private readonly byte _pad0;
+    private readonly byte _pad1;
+    private readonly byte _pad2;
     public readonly int ArgsLength = argsLength;
 }
-
-
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
