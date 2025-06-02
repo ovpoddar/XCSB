@@ -215,12 +215,8 @@ internal class XProto : IXProto
 
     void IXProto.CloseFont(uint fontId)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.CloseFont;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], fontId);
-        _socket.SendExact(scratchBuffer);
+        var request = new CloseFontType(fontId);
+        _socket.Send(ref request);
     }
 
     void IXProto.ConfigureWindow(uint window, ConfigureValueMask mask, params uint[] args)
@@ -450,12 +446,8 @@ internal class XProto : IXProto
 
     void IXProto.FreeGC(uint gc)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.FreeGC;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], gc);
-        _socket.SendExact(scratchBuffer);
+        var request = new FreeGCType(gc);
+        _socket.Send(ref request);
     }
 
     void IXProto.FreePixmap()
@@ -765,9 +757,12 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.PolyFillRectangle()
+    void IXProto.PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles)
     {
-        throw new NotImplementedException();
+        //todo: optamice
+        var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
+        _socket.Send(ref request);
+        _socket.SendExact(MemoryMarshal.Cast<Rectangle, byte>(rectangles));
     }
 
     void IXProto.PolyLine()
@@ -901,29 +896,23 @@ internal class XProto : IXProto
 
     void IXProto.RotateProperties(uint window, ushort delta, params uint[] properties)
     {
+        var request = new RotatePropertiesType(window, properties.Length, delta);
         var requiredBuffer = 12 + properties.Length * 4;
+
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.RotateProperties;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], window);
-            MemoryMarshal.Write(scratchBuffer[8..10], (ushort)properties.Length);
-            MemoryMarshal.Write(scratchBuffer[10..12], delta);
-            properties.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<uint, byte>(properties).
+                CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.RotateProperties;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], window);
-            MemoryMarshal.Write(scratchBuffer[8..10], (ushort)properties.Length);
-            MemoryMarshal.Write(scratchBuffer[10..12], delta);
-            properties.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<uint, byte>(properties).
+                CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }

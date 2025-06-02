@@ -92,7 +92,7 @@ public interface IXProto : IDisposable
     void PolyRectangle();
     void PolyArc();
     void FillPoly();
-    void PolyFillRectangle();
+    void PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles);
     void PolyFillArc();
     void PutImage(ImageFormat format,
         uint drawable,

@@ -26,6 +26,17 @@ internal readonly struct QueryPointerType(uint window)
     public readonly uint Window = window;
 }
 
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct CloseFontType(uint fontId)
+{
+    public readonly Opcode Opcode = Opcode.CloseFont;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint FontId = fontId;
+}
+
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct DestroyWindowType(uint window)
@@ -64,6 +75,17 @@ internal readonly struct CirculateWindowType(Direction direction, uint window)
     public readonly Direction Direction = direction;
     public readonly ushort Length = 2;
     public readonly uint Window = window;
+}
+
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct FreeGCType(uint gc)
+{
+    public readonly Opcode OpCode = Opcode.FreeGC;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint GC = gc;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
@@ -111,6 +133,29 @@ internal readonly struct ChangeWindowAttributesType(uint window, ValueMask mask,
     public readonly ushort Length = (ushort)(3 + argsLength);
     public readonly uint Window = window;
     public readonly ValueMask Mask = mask;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct PolyFillRectangleType(uint drawable, uint gc, int rectanglesLength)
+{
+    public readonly Opcode opcode = Opcode.PolyFillRectangle;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + (2 * rectanglesLength));
+    public readonly uint Drawable = drawable;
+    public readonly uint Mask = gc;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct RotatePropertiesType(uint window, int propertiesLength, ushort delta)
+{
+    public readonly Opcode opcode = Opcode.RotateProperties;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + propertiesLength);
+    public readonly uint Window = window;
+    public readonly int PropertiesLength = propertiesLength;
+    public readonly ushort Delta = delta;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
