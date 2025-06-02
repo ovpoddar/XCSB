@@ -66,6 +66,11 @@ while (isRunning)
         {
             c.CirculateWindow(Direction.LowerHighest, window);
         }
+
+        if (Event.EventType == EventType.ButtonPress && Event.InputEvent.Detail == 1)
+        {
+            c.WarpPointer(0, window, 0, 0, 0, 0, 200, 150);
+        }
         c.Bell(100);
         Console.WriteLine($"event {Event.EventType} {Event.InputEvent.Detail}");
     }
