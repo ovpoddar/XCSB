@@ -66,7 +66,7 @@ while (isRunning)
         {
             c.CirculateWindow(Direction.LowerHighest, window);
         }
-
+        c.Bell(100);
         Console.WriteLine($"event {Event.EventType} {Event.InputEvent.Detail}");
     }
     else if (Event.EventType == EventType.Expose)

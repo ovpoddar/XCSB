@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
@@ -58,13 +59,13 @@ internal class XProto : IXProto
         _socket.Send(ref request);
     }
 
-    void IXProto.Bell(byte percent)
+    void IXProto.Bell(sbyte percent)
     {
-        Span<byte> scratchBuffer = stackalloc byte[4];
-        scratchBuffer[0] = (byte)Opcode.Bell;
-        scratchBuffer[1] = percent;
-        MemoryMarshal.Write(scratchBuffer[2..4], 1);
-        _socket.SendExact(scratchBuffer);
+        if (percent is not <= 100 or not >= (-100))
+            throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
+
+        var request = new BellType(percent);
+        _socket.Send(ref request);
     }
 
     void IXProto.ChangeActivePointerGrab(uint cursor, uint time, ushort mask)

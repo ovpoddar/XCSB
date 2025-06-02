@@ -137,7 +137,7 @@ public interface IXProto : IDisposable
     void GetKeyboardMapping();
     void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args);
     void GetKeyboardControl();
-    void Bell(byte percent);
+    void Bell(sbyte percent);
     void SetPointerMapping();
     void GetPointerMapping();
     void ChangePointerControl(Acceleration acceleration, ushort? threshold);

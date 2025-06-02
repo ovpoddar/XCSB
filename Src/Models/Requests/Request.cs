@@ -6,13 +6,22 @@ using Xcsb.Masks;
 
 namespace Xcsb.Models.Requests;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+[StructLayout(LayoutKind.Sequential, Pack =1, Size =4)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct BellType(sbyte percent)
+{
+    public readonly Opcode Opcode = Opcode.Bell;
+    public readonly sbyte Percent = percent;
+    public readonly ushort Length = 1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct DestroyWindowType(uint window)
 {
     public readonly Opcode Opcode = Opcode.DestroyWindow;
     private readonly byte _pad0;
-    public readonly ushort Length = 1;
+    public readonly ushort Length = 2;
     public readonly uint Window = window;
 }
 
