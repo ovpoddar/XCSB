@@ -90,6 +90,8 @@ using (var fs = File.OpenRead(xprotoFilePath))
                     fs.ReadExactly(typeDef);
                     if (typeDef.SequenceEqual("ypedef "u8))
                     {
+//todo: add more read to determine is it a enum or struct then for enum add more decoration
+// for struct add the layout def
                         wfs.Write("public "u8);
                     }
                     else

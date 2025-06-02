@@ -54,12 +54,8 @@ internal class XProto : IXProto
 
     void IXProto.AllowEvents(EventsMode mode, uint time)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.AllowEvents;
-        scratchBuffer[1] = (byte)mode;
-        MemoryMarshal.Write(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], time);
-        _socket.SendExact(scratchBuffer);
+        var request = new AllowEventsType(mode, time);
+        _socket.Send(ref request);
     }
 
     void IXProto.Bell(byte percent)

@@ -1,14 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 
 namespace Xcsb.Models.Requests;
-// TODO: can be auto generated from xproto.h
-// not need but could be a nice idea to investigate.
-// which might not able to provide exact use case but 
-// should be able to provide a base line
-
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -38,6 +34,16 @@ internal readonly struct CirculateWindowType(Direction direction, uint window)
     public readonly Direction Direction = direction;
     public readonly ushort Length = 2;
     public readonly uint Window = window;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct AllowEventsType(EventsMode mode, uint time)
+{
+    public readonly Opcode OpCode = Opcode.AllowEvents;
+    public readonly EventsMode Mode = mode;
+    public readonly ushort Length = 2;
+    public readonly uint Time = time;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
@@ -106,7 +112,6 @@ internal readonly struct PutImageType(ImageFormat format, uint drawable, uint gc
     public readonly byte LeftPad = leftPad;
     public readonly byte Depth = depth;
 }
-
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
