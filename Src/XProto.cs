@@ -1146,19 +1146,8 @@ internal class XProto : IXProto
 
     void IXProto.WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destX, short destY)
     {
-        Span<byte> scratchBuffer = stackalloc byte[24];
-        scratchBuffer[0] = (byte)Opcode.WarpPointer;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 6);
-        MemoryMarshal.Write(scratchBuffer[4..8], srcWindow);
-        MemoryMarshal.Write(scratchBuffer[8..12], destWindow);
-        MemoryMarshal.Write(scratchBuffer[12..14], srcX);
-        MemoryMarshal.Write(scratchBuffer[14..16], srcY);
-        MemoryMarshal.Write(scratchBuffer[16..18], srcWidth);
-        MemoryMarshal.Write(scratchBuffer[18..20], srcHeight);
-        MemoryMarshal.Write(scratchBuffer[20..22], destX);
-        MemoryMarshal.Write(scratchBuffer[22..24], destY);
-        _socket.SendExact(scratchBuffer);
+        var request = new WarpPointerType(srcWindow, destWindow, srcX, srcY, srcWidth, srcHeight, destX, destY);
+        _socket.Send(ref request);
     }
 
     protected virtual void Dispose(bool disposing)
