@@ -71,7 +71,14 @@ while (isRunning)
         {
             c.WarpPointer(0, window, 0, 0, 0, 0, 200, 150);
         }
-        c.Bell(100);
+        if (Event.InputEvent.Detail == 58)
+        {
+            c.UnmapWindow(window);
+            Thread.Sleep(1000);
+            c.MapWindow(window);
+        }
+
+            c.Bell(100);
         Console.WriteLine($"event {Event.EventType} {Event.InputEvent.Detail}");
     }
     else if (Event.EventType == EventType.Expose)

@@ -1136,12 +1136,8 @@ internal class XProto : IXProto
 
     void IXProto.UnmapWindow(uint window)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.UnmapWindow;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], window);
-        _socket.SendExact(scratchBuffer);
+        var request = new UnmapWindowType(window);
+        _socket.Send(ref request);
     }
 
     void IXProto.WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destX, short destY)
