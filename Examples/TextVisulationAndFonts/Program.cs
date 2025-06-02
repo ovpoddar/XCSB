@@ -69,7 +69,11 @@ while (isRunning)
 
         if (Event.EventType == EventType.ButtonPress && Event.InputEvent.Detail == 1)
         {
+            var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
+            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
             c.WarpPointer(0, window, 0, 0, 0, 0, 200, 150);
+            currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
+            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
         }
         if (Event.InputEvent.Detail == 58)
         {

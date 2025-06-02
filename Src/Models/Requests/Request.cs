@@ -18,6 +18,16 @@ internal readonly struct BellType(sbyte percent)
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct QueryPointerType(uint window)
+{
+    public readonly Opcode Opcode = Opcode.QueryPointer;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint Window = window;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct DestroyWindowType(uint window)
 {
     public readonly Opcode Opcode = Opcode.DestroyWindow;

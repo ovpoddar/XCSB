@@ -861,9 +861,14 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.QueryPointer()
+    QueryPointerReply IXProto.QueryPointer(uint window)
     {
-        throw new NotImplementedException();
+        var request = new QueryPointerType(window);
+        _socket.Send(ref request);
+
+        Span<byte> response = stackalloc byte[Marshal.SizeOf<QueryPointerReply>()];
+        _socket.ReceiveExact(response);
+        return response.ToStruct<QueryPointerReply>();
     }
 
     void IXProto.QueryTextExtents()

@@ -60,7 +60,7 @@ public interface IXProto : IDisposable
     void AllowEvents(EventsMode mode, uint time);
     void GrabServer();
     void UngrabServer();
-    void QueryPointer();
+    QueryPointerReply QueryPointer(uint window);
     void GetMotionEvents();
     void TranslateCoordinates();
     void WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destX, short destY);
