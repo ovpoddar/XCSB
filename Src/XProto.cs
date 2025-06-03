@@ -460,6 +460,37 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
+    InternAtomReply IXProto.InternAtom(bool onlyIfExist, string atomName)
+    {
+        var request = new InternAtomType(onlyIfExist, atomName.Length);
+        var requestSize = Marshal.SizeOf<InternAtomType>();
+        var requiredBuffer = requestSize + atomName.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..requestSize], in request);
+            Encoding.ASCII.GetBytes(atomName, scratchBuffer.Slice(requestSize, atomName.Length));
+            scratchBuffer[(requestSize + atomName.Length)..requiredBuffer].Clear();
+
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            requiredBuffer -= requestSize;
+
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            Encoding.ASCII.GetBytes(atomName, scratchBuffer.Slice(atomName.Length));
+            scratchBuffer[(atomName.Length)..requiredBuffer].Clear();
+
+            _socket.Send(ref request);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+
+        Span<byte> responce = stackalloc byte[Marshal.SizeOf<InternAtomReply>()];
+        _socket.ReceiveExact(responce);
+        return responce.ToStruct<InternAtomReply>();
+    }
+
     void IXProto.GetFontPath()
     {
         throw new NotImplementedException();

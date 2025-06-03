@@ -170,6 +170,16 @@ internal readonly struct CreateGCType(uint gc, uint drawable, GCMask mask, int a
     public readonly GCMask Mask = mask;
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+internal readonly struct InternAtomType(bool onlyIfExist, int atomNameLength)
+{
+    public readonly Opcode Opcode = Opcode.InternAtom;
+    public readonly byte OnlyIfExists = (byte)(onlyIfExist ? 1 : 0);
+    public readonly ushort Length = (ushort)(2 + (atomNameLength.AddPadding() /4));
+    public readonly ushort NameLength = (ushort)atomNameLength;
+    private readonly ushort _pad0;
+}
+
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct PutImageType(ImageFormat format, uint drawable, uint gc, ushort width,

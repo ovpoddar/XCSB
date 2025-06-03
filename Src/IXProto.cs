@@ -38,6 +38,7 @@ public interface IXProto : IDisposable
     void CirculateWindow(Direction direction, uint window);
     void GetGeometry();
     void QueryTree();
+    InternAtomReply InternAtom(bool onlyIfExist, string atomName);
     void GetAtomName();
     void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args) where T : struct, INumber<T>;
     void DeleteProperty(uint window, uint atom);
