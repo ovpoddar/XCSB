@@ -154,7 +154,7 @@ internal readonly struct RotatePropertiesType(uint window, int propertiesLength,
     private readonly byte _pad0;
     public readonly ushort Length = (ushort)(3 + propertiesLength);
     public readonly uint Window = window;
-    public readonly int PropertiesLength = propertiesLength;
+    public readonly ushort PropertiesLength = (ushort)propertiesLength;
     public readonly ushort Delta = delta;
 }
 
