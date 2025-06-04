@@ -42,7 +42,7 @@ public interface IXProto : IDisposable
     void GetAtomName();
     void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args) where T : struct, INumber<T>;
     void DeleteProperty(uint window, uint atom);
-    void GetProperty();
+    GetPropertyReply GetProperty(bool delete, uint window, uint property, uint type, uint offset, uint length);
     void RotateProperties(uint window, ushort delta, params uint[] properties);
     void ListProperties();
     void SetSelectionOwner(uint owner, uint atom, uint timestamp);

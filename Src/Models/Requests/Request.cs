@@ -175,7 +175,7 @@ internal readonly struct InternAtomType(bool onlyIfExist, int atomNameLength)
 {
     public readonly Opcode Opcode = Opcode.InternAtom;
     public readonly byte OnlyIfExists = (byte)(onlyIfExist ? 1 : 0);
-    public readonly ushort Length = (ushort)(2 + (atomNameLength.AddPadding() /4));
+    public readonly ushort Length = (ushort)(2 + (atomNameLength.AddPadding() / 4));
     public readonly ushort NameLength = (ushort)atomNameLength;
     private readonly ushort _pad0;
 }
@@ -230,6 +230,20 @@ internal readonly struct WarpPointerType(uint srcWindow, uint destWindow, short 
     public readonly ushort SrcHeight = srcHeight;
     public readonly short DestinationX = destX;
     public readonly short DestinationY = destY;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct GetPropertyType(bool delete, uint window, uint property, uint type, uint offset, uint length)
+{
+    public readonly Opcode OpCode = Opcode.GetProperty;
+    public readonly byte Delete = (byte)(delete ? 1 : 0);
+    public readonly ushort Length = 6;
+    public readonly uint Window = window;
+    public readonly uint Property = property;
+    public readonly uint Type = type;
+    public readonly uint Offset = offset;
+    public readonly uint Length1 = length;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]

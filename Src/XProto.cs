@@ -164,6 +164,7 @@ internal class XProto : IXProto
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
         var request = new ChangePropertyType(mode, window, property, type, args.Length, (byte)(size * 8));
 
+
         var requiredBuffer = 24 + args.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
@@ -181,7 +182,6 @@ internal class XProto : IXProto
             scratchBuffer[(24 + args.Length * size)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
-
     }
 
     void IXProto.ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
@@ -487,7 +487,7 @@ internal class XProto : IXProto
         }
 
         Span<byte> responce = stackalloc byte[Marshal.SizeOf<InternAtomReply>()];
-        _socket.ReceiveExact(responce);
+        _socket.Receive(responce, SocketFlags.Peek);
         return responce.ToStruct<InternAtomReply>();
     }
 
@@ -541,9 +541,11 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.GetProperty()
+    GetPropertyReply IXProto.GetProperty(bool delete, uint window, uint property, uint type, uint offset, uint length)
     {
-        throw new NotImplementedException();
+        var request = new GetPropertyType(delete, window, property, type, offset, length);
+        _socket.Send(ref request);
+        return new GetPropertyReply(_socket);
     }
 
     void IXProto.GetScreenSaver()
