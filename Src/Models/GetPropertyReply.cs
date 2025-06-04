@@ -27,7 +27,7 @@ public unsafe struct GetPropertyReply
         Sequence = propertyReply.Sequence;
         Type = propertyReply.Type;
 
-        var data = new byte[propertyReply.Length];
+        var data = new byte[propertyReply.Length * 4];
         if (data.Length != 0)
             socket.ReceiveExact(data);
         this.Data = data;
@@ -42,7 +42,7 @@ public unsafe struct GetPropertyReply
         public readonly ushort Sequence;
         public readonly uint Length;
         public readonly uint Type;
-        public readonly uint bytes_after;
-        public readonly uint value_len;
+        public readonly uint BytesAfter;
+        public readonly uint ValueLength;
     }
 }

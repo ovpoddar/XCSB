@@ -98,6 +98,16 @@ internal readonly struct AllowEventsType(EventsMode mode, uint time)
     public readonly uint Time = time;
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+internal readonly struct InternAtomType(bool onlyIfExist, int atomNameLength)
+{
+    public readonly Opcode Opcode = Opcode.InternAtom;
+    public readonly byte OnlyIfExists = (byte)(onlyIfExist ? 1 : 0);
+    public readonly ushort Length = (ushort)(2 + (atomNameLength.AddPadding() / 4));
+    public readonly ushort NameLength = (ushort)atomNameLength;
+    private readonly ushort _pad0;
+}
+
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct HandShakeRequestType(ushort nameLength, ushort dataLength,
@@ -122,6 +132,17 @@ internal readonly struct OpenFontType(uint fontId, ushort fontLength)
     public readonly uint FontId = fontId;
     public readonly ushort FontLength = fontLength;
     private readonly ushort _pad1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ChangeGCType(uint gc, GCMask mask, int argsLength)
+{
+    public readonly Opcode opcode = Opcode.ChangeGC;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + argsLength);
+    public readonly uint Gc = gc;
+    public readonly GCMask Mask = mask;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
@@ -171,13 +192,17 @@ internal readonly struct CreateGCType(uint gc, uint drawable, GCMask mask, int a
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
-internal readonly struct InternAtomType(bool onlyIfExist, int atomNameLength)
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ClearAreaType(bool exposures, uint window, short x, short y, ushort width, ushort height)
 {
-    public readonly Opcode Opcode = Opcode.InternAtom;
-    public readonly byte OnlyIfExists = (byte)(onlyIfExist ? 1 : 0);
-    public readonly ushort Length = (ushort)(2 + (atomNameLength.AddPadding() / 4));
-    public readonly ushort NameLength = (ushort)atomNameLength;
-    private readonly ushort _pad0;
+    public readonly Opcode OpCode = Opcode.ClearArea;
+    public readonly byte Exposures = (byte)(exposures ? 1 : 0);
+    public readonly ushort Length = 4;
+    public readonly uint Window = window;
+    public readonly short X = x;
+    public readonly short Y = y;
+    public readonly ushort Width = width;
+    public readonly ushort Height = height;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]

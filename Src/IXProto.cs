@@ -84,7 +84,7 @@ public interface IXProto : IDisposable
     void SetDashes();
     void SetClipRectangles();
     void FreeGC(uint gc);
-    void ClearArea();
+    void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height);
     void CopyArea();
     void CopyPlane();
     void PolyPoint();
