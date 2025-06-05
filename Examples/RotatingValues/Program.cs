@@ -9,11 +9,9 @@ using Xcsb.Models.Handshake;
 int screen_num;
 var x = XcsbClient.Initialized();
 
-// Get screen and root
 var screen = x.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
 
-// Create a basic window
 var win = x.NewId();
 x.CreateWindow(
     win,
@@ -23,7 +21,6 @@ x.CreateWindow(
     0, []);
 x.MapWindow(win);
 
-// Create three properties
 
 var fontId = x.NewId();
 x.OpenFont("fixed", fontId);
@@ -79,6 +76,9 @@ x.PolyFillRectangle(win, gc, [rect]);
 
 Thread.Sleep(3000);
 
+foreach (var atom in atoms)
+    x.DeleteProperty(win, atom);
+
 x.Dispose();
 return 0;
 
@@ -87,9 +87,9 @@ uint GetNameColor(Span<byte> name, Screen screen)
 {
     if (name.Slice(0, 3).SequenceEqual("Red"u8))
         return 0xFF0000;
-    if (name.Slice(0, 4).SequenceEqual("Blue"u8))
+    else if (name.Slice(0, 4).SequenceEqual("Blue"u8))
         return 0x0000FF;
-    if (name.Slice(0, 5).SequenceEqual("Green"u8))
+    else if (name.Slice(0, 5).SequenceEqual("Green"u8))
         return 0x00FF00;
     
     return screen.WhitePixel;

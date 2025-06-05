@@ -16,6 +16,24 @@ internal readonly struct BellType(sbyte percent)
     public readonly ushort Length = 1;
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct GrabServerType()
+{
+    public readonly Opcode Opcode = Opcode.GrabServer;
+    private readonly byte _pad0 = 0;
+    public readonly ushort Length = 1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct UnGrabServerType()
+{
+    public readonly Opcode Opcode = Opcode.UngrabServer;
+    private readonly byte _pad0 = 0;
+    public readonly ushort Length = 1;
+}
+
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct QueryPointerType(uint window)
@@ -26,7 +44,6 @@ internal readonly struct QueryPointerType(uint window)
     public readonly uint Window = window;
 }
 
-
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct CloseFontType(uint fontId)
@@ -35,6 +52,36 @@ internal readonly struct CloseFontType(uint fontId)
     private readonly byte _pad0;
     public readonly ushort Length = 2;
     public readonly uint FontId = fontId;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct UninstallColormapType(uint colormapId)
+{
+    public readonly Opcode Opcode = Opcode.UninstallColormap;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint ColorMapId = colormapId;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct InstallColormapType(uint colormapId)
+{
+    public readonly Opcode Opcode = Opcode.InstallColormap;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint ColorMapId = colormapId;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct FreeColormapType(uint colormapId)
+{
+    public readonly Opcode Opcode = Opcode.FreeColormap;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint ColorMapId = colormapId;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
@@ -76,7 +123,6 @@ internal readonly struct CirculateWindowType(Direction direction, uint window)
     public readonly ushort Length = 2;
     public readonly uint Window = window;
 }
-
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,6 +178,17 @@ internal readonly struct OpenFontType(uint fontId, ushort fontLength)
     public readonly uint FontId = fontId;
     public readonly ushort FontLength = fontLength;
     private readonly ushort _pad1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct DeletePropertyType(uint window, uint atom)
+{
+    public readonly Opcode opcode = Opcode.DeleteProperty;
+    private readonly byte _pad0;
+    public readonly ushort Length = 3;
+    public readonly uint Window = window;
+    public readonly uint Atom = atom;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
@@ -203,6 +260,18 @@ internal readonly struct ClearAreaType(bool exposures, uint window, short x, sho
     public readonly short Y = y;
     public readonly ushort Width = width;
     public readonly ushort Height = height;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct CreateColormapType(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
+{
+    public readonly Opcode OpCode = Opcode.CreateColormap;
+    public readonly ColormapAlloc Alloc = alloc;
+    public readonly ushort Length = 4;
+    public readonly uint ColorMapId = colormapId;
+    public readonly uint Window = window;
+    public readonly uint Visual = visual;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
