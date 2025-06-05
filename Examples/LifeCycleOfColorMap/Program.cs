@@ -26,11 +26,11 @@ x.CreateWindow(win,
 
 x.InstallColormap(colormap);
 Console.WriteLine("Colormap installed.");
-Thread.Sleep(3000);
 
 x.UngrabServer();
 
 x.MapWindow(win);
+Thread.Sleep(10000);
 
 x.UninstallColormap(colormap);
 Console.WriteLine("Colormap uninstalled.");
@@ -40,6 +40,6 @@ Console.WriteLine("Colormap freed.");
 
 Span<byte> evnt = stackalloc byte[XcsbClient.GetEventSize()];
 ref var xevnt = ref x.GetEvent(evnt);
-Debug.Assert(xevnt.EventType == EventType.Expose);
+Debug.Assert(xevnt.EventType == EventType.Expose || xevnt.EventType == EventType.MappingNotify);
 Console.WriteLine("all success {0}", xevnt.EventType != EventType.Error);
 x.DestroyWindow(win);

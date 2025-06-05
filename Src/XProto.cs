@@ -580,11 +580,8 @@ internal class XProto : IXProto
 
     void IXProto.GrabServer()
     {
-        Span<byte> scratchBuffer = stackalloc byte[4];
-        scratchBuffer[0] = (byte)Opcode.GrabServer;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write(scratchBuffer[2..4], 1);
-        _socket.SendExact(scratchBuffer);
+        var request = new GrabServerType();
+        _socket.Send(ref request);
     }
 
     void IXProto.ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
@@ -1142,11 +1139,8 @@ internal class XProto : IXProto
 
     void IXProto.UngrabServer()
     {
-        Span<byte> scratchBuffer = stackalloc byte[4];
-        scratchBuffer[0] = (byte)Opcode.UngrabServer;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write(scratchBuffer[2..4], 1);
-        _socket.SendExact(scratchBuffer);
+        var request = new UnGrabServerType();
+        _socket.Send(ref request);
     }
 
     void IXProto.UninstallColormap(uint colormapId)
