@@ -43,3 +43,4 @@ ref var xevnt = ref x.GetEvent(evnt);
 Debug.Assert(xevnt.EventType == EventType.Expose || xevnt.EventType == EventType.MappingNotify);
 Console.WriteLine("all success {0}", xevnt.EventType != EventType.Error);
 x.DestroyWindow(win);
+x.KillClient(win);

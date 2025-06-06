@@ -76,6 +76,16 @@ internal readonly struct InstallColormapType(uint colormapId)
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct KillClientType(uint resource)
+{
+    public readonly Opcode Opcode = Opcode.KillClient;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint Resource = resource;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct FreeColormapType(uint colormapId)
 {
     public readonly Opcode Opcode = Opcode.FreeColormap;
@@ -272,6 +282,44 @@ internal readonly struct CreateColormapType(ColormapAlloc alloc, uint colormapId
     public readonly uint ColorMapId = colormapId;
     public readonly uint Window = window;
     public readonly uint Visual = visual;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct CopyGCType(uint srcGc, uint dstGc, GCMask mask)
+{
+    public readonly Opcode OpCode = Opcode.CopyGC;
+    private readonly byte _pad0 = 0;
+    public readonly ushort Length = 4;
+    public readonly uint SourceGC = srcGc;
+    public readonly uint DestinationGC = dstGc;
+    public readonly GCMask GCMake = mask;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ImageText16Type(uint drawable, uint gc, short x, short y, int textLength)
+{
+    public readonly Opcode OpCode = Opcode.ImageText16;
+    private readonly byte _pad0 = (byte)textLength;
+    public readonly ushort Length = (ushort)(4 + ((2 * textLength).AddPadding() / 4));
+    public readonly uint Drawable = drawable;
+    public readonly uint GC = gc;
+    public readonly short X = x;
+    public readonly short Y = y;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ImageText8Type(uint drawable, uint gc, short x, short y, int textLength)
+{
+    public readonly Opcode OpCode = Opcode.ImageText8;
+    private readonly byte _pad0 = (byte)textLength;
+    public readonly ushort Length = (ushort)(4 + (textLength.AddPadding() / 4));
+    public readonly uint Drawable = drawable;
+    public readonly uint GC = gc;
+    public readonly short X = x;
+    public readonly short Y = y;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]

@@ -586,17 +586,12 @@ internal class XProto : IXProto
 
     void IXProto.ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
     {
+        var request = new ImageText16Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = 16 + (text.Length * 2).AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.ImageText16;
-            scratchBuffer[1] = (byte)text.Length;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], drawable);
-            MemoryMarshal.Write(scratchBuffer[8..12], gc);
-            MemoryMarshal.Write(scratchBuffer[12..14], x);
-            MemoryMarshal.Write(scratchBuffer[14..16], y);
+            MemoryMarshal.Write(scratchBuffer[0..16], request);
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer);
@@ -604,13 +599,7 @@ internal class XProto : IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.ImageText16;
-            scratchBuffer[1] = (byte)text.Length;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], drawable);
-            MemoryMarshal.Write(scratchBuffer[8..12], gc);
-            MemoryMarshal.Write(scratchBuffer[12..14], x);
-            MemoryMarshal.Write(scratchBuffer[14..16], y);
+            MemoryMarshal.Write(scratchBuffer[0..16], request);
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -619,17 +608,12 @@ internal class XProto : IXProto
 
     void IXProto.ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
     {
+        var request = new ImageText8Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = 16 + text.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.ImageText8;
-            scratchBuffer[1] = (byte)text.Length;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], drawable);
-            MemoryMarshal.Write(scratchBuffer[8..12], gc);
-            MemoryMarshal.Write(scratchBuffer[12..14], x);
-            MemoryMarshal.Write(scratchBuffer[14..16], y);
+            MemoryMarshal.Write(scratchBuffer[0..16], request);
             text.CopyTo(scratchBuffer[16..(text.Length + 16)]);
             scratchBuffer[(16 + text.Length)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer);
@@ -637,13 +621,7 @@ internal class XProto : IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.ImageText8;
-            scratchBuffer[1] = (byte)text.Length;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], drawable);
-            MemoryMarshal.Write(scratchBuffer[8..12], gc);
-            MemoryMarshal.Write(scratchBuffer[12..14], x);
-            MemoryMarshal.Write(scratchBuffer[14..16], y);
+            MemoryMarshal.Write(scratchBuffer[0..16], request);
             text.CopyTo(scratchBuffer[16..(text.Length + 16)]);
             scratchBuffer[(16 + text.Length)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -658,12 +636,8 @@ internal class XProto : IXProto
 
     void IXProto.KillClient(uint resource)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.KillClient;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], resource);
-        _socket.SendExact(scratchBuffer);
+        var request = new KillClientType(resource);
+        _socket.Send(ref request);
     }
 
     void IXProto.ListExtensions()
