@@ -970,13 +970,8 @@ internal class XProto : IXProto
 
     void IXProto.SetInputFocus(InputFocusMode mode, uint focus, uint time)
     {
-        Span<byte> scratchBuffer = stackalloc byte[12];
-        scratchBuffer[0] = (byte)Opcode.SetInputFocus;
-        scratchBuffer[1] = (byte)mode;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 3);
-        MemoryMarshal.Write(scratchBuffer[4..8], focus);
-        MemoryMarshal.Write(scratchBuffer[8..12], time);
-        _socket.SendExact(scratchBuffer);
+        var request = new SetInputFocusType(mode, focus, time);
+        _socket.Send(ref request);
     }
 
     void IXProto.SetModifierMapping()

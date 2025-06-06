@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RotatingValues", "Examples\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LifeCycleOfColorMap", "Examples\LifeCycleOfColorMap\LifeCycleOfColorMap.csproj", "{E404DEE0-E11D-479B-8E34-948BC8E9C20C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoucasChange", "Examples\FoucasChange\FoucasChange.csproj", "{1F0A9AD5-5AEB-43EC-838E-220D30872378}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,18 @@ Global
 		{E404DEE0-E11D-479B-8E34-948BC8E9C20C}.Release|x64.Build.0 = Release|Any CPU
 		{E404DEE0-E11D-479B-8E34-948BC8E9C20C}.Release|x86.ActiveCfg = Release|Any CPU
 		{E404DEE0-E11D-479B-8E34-948BC8E9C20C}.Release|x86.Build.0 = Release|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Debug|x64.Build.0 = Debug|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Debug|x86.Build.0 = Debug|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Release|x64.ActiveCfg = Release|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Release|x64.Build.0 = Release|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Release|x86.ActiveCfg = Release|Any CPU
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +111,7 @@ Global
 		{52445E6B-E8C7-7394-BCED-23959B9C2225} = {3817ABB2-8DFC-4C5A-9103-92198F43A941}
 		{4B9FF6FC-EED1-42BC-94FA-CD802E29E905} = {3817ABB2-8DFC-4C5A-9103-92198F43A941}
 		{E404DEE0-E11D-479B-8E34-948BC8E9C20C} = {3817ABB2-8DFC-4C5A-9103-92198F43A941}
+		{1F0A9AD5-5AEB-43EC-838E-220D30872378} = {3817ABB2-8DFC-4C5A-9103-92198F43A941}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {34E68139-A24A-49E2-91B8-4A775950FCD5}
