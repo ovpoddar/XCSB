@@ -276,14 +276,8 @@ internal class XProto : IXProto
 
     void IXProto.CopyGC(uint srcGc, uint dstGc, GCMask mask)
     {
-        Span<byte> scratchBuffer = stackalloc byte[16];
-        scratchBuffer[0] = (byte)Opcode.CopyGC;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<short>(scratchBuffer[2..4], 4);
-        MemoryMarshal.Write(scratchBuffer[4..8], srcGc);
-        MemoryMarshal.Write(scratchBuffer[8..12], dstGc);
-        MemoryMarshal.Write(scratchBuffer[12..16], mask);
-        _socket.SendExact(scratchBuffer);
+        var request = new CopyGCType(srcGc, dstGc,mask);
+        _socket.Send(ref request);
     }
 
     void IXProto.CopyPlane()

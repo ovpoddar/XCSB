@@ -21,9 +21,9 @@ x.CreateWindow(
     0, []);
 x.MapWindow(win);
 
-
 var fontId = x.NewId();
 x.OpenFont("fixed", fontId);
+
 var _gc = x.NewId();
 x.CreateGC(_gc, win, GCMask.Foreground | GCMask.Background | GCMask.Font, [screen.BlackPixel, screen.WhitePixel, fontId]);
 
@@ -33,14 +33,14 @@ string[] colors = ["Red", "Green", "Blue"];
 string[] propNames = ["COLOR_A", "COLOR_B", "COLOR_C"];
 var atoms = new uint[3];
 
-for (int i = 0; i < colors.Length; i++)
+for (var i = 0; i < colors.Length; i++)
 {
     var reply = x.InternAtom(false, propNames[i]);
     atoms[i] = reply.Atom;
     x.ChangeProperty<byte>(PropertyMode.Replace, win, atoms[i], 31, Encoding.UTF8.GetBytes(colors[i]));
 }
 
-for (int i = 0; i < 6; i++)
+for (var i = 0; i < 6; i++)
 {
     var reply = x.GetProperty(false, win, atoms[0], 31, 0, 32);
     if (reply.Data.Length > 0)
@@ -53,6 +53,8 @@ for (int i = 0; i < 6; i++)
     Thread.Sleep(1000);
 }
 
+foreach (var atom in atoms)
+    x.DeleteProperty(win, atom);
 
 x.ImageText8(win, _gc, 10, 40, "Change the GC's foreground red to white"u8);
 Thread.Sleep(5000);
@@ -74,11 +76,26 @@ rect.y += 60;
 
 x.PolyFillRectangle(win, gc, [rect]);
 
+x.FreeGC(gc);
 Thread.Sleep(3000);
 
-foreach (var atom in atoms)
-    x.DeleteProperty(win, atom);
+var gc1 = x.NewId();
+var gc2 = x.NewId();
+x.CreateGC(gc1, win, GCMask.Foreground, [0x0000FF]);
+x.CreateGC(gc2, win, 0, []);
+rect.x -= 15;
+rect.y -= 65;
+x.PolyFillRectangle(win, gc1, [rect]);
+Thread.Sleep(1500);
 
+x.CopyGC(gc1, gc2, GCMask.Foreground);
+rect.x += 20;
+rect.y += 60;
+
+x.PolyFillRectangle(win, gc2, [rect]);
+
+x.FreeGC(gc1);
+Thread.Sleep(3000);
 x.Dispose();
 return 0;
 
