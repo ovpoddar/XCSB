@@ -203,6 +203,18 @@ internal readonly struct DeletePropertyType(uint window, uint atom)
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ConfigureWindowType(uint window, ConfigureValueMask mask, int argsLength)
+{
+    public readonly Opcode opcode = Opcode.ConfigureWindow;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + argsLength);
+    public readonly uint Window = window;
+    public readonly ConfigureValueMask Mask = mask;
+    private readonly ushort _pad1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct SetInputFocusType(InputFocusMode mode, uint focus, uint time)
 {
     public readonly Opcode opcode = Opcode.SetInputFocus;
@@ -402,11 +414,11 @@ internal readonly struct GetPropertyType(bool delete, uint window, uint property
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct CreateWindowType(uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth,
+internal readonly struct CreateWindowType(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth,
     ClassType classType, uint rootVisualId, ValueMask mask, int argsLength)
 {
     public readonly Opcode OpCode = Opcode.CreateWindow;
-    private readonly byte _pad0;
+    public readonly byte Depth = depth;
     public readonly ushort Length = (ushort)(8 + argsLength);
     public readonly uint Window = window;
     public readonly uint Parent = parent;

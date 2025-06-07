@@ -9,7 +9,7 @@ using Xcsb.Models.Event;
 using var c = XcsbClient.Initialized();
 
 var window = c.NewId();
-c.CreateWindow(
+c.CreateWindow(0,
     window,
     c.HandshakeSuccessResponseBody.Screens[0].Root,
  0,

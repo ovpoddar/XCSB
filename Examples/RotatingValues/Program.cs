@@ -13,7 +13,7 @@ var screen = x.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
 
 var win = x.NewId();
-x.CreateWindow(
+x.CreateWindow(screen.RootDepth.DepthValue,
     win,
     root,
     0, 0, 300, 200,

@@ -16,7 +16,7 @@ uint color_unfocused = 0x888888; // Gray when unfocused
 
 // Create first window
 var window1 = x.NewId();
-x.CreateWindow(window1,
+x.CreateWindow(screen.RootDepth.DepthValue,window1,
     screen.Root,
     50, 50, 300, 200,
     2,
@@ -31,7 +31,8 @@ x.MapWindow(window1);
 
 // Create second window
 var window2 = x.NewId();
-x.CreateWindow(window2,
+x.CreateWindow(screen.RootDepth.DepthValue,
+    window2,
     screen.Root,
     400, 50, 300, 200,
     2,

@@ -218,28 +218,21 @@ internal class XProto : IXProto
     void IXProto.ConfigureWindow(uint window, ConfigureValueMask mask, params uint[] args)
     {
         var requiredBuffer = 12 + args.Length * 4;
+        var request = new ConfigureWindowType(window, mask, args.Length);
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.ConfigureWindow;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], window);
-            MemoryMarshal.Write(scratchBuffer[8..10], mask);
-            MemoryMarshal.Write(scratchBuffer[10..12], 0);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<uint, byte>(args)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.ConfigureWindow;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], window);
-            MemoryMarshal.Write(scratchBuffer[8..10], mask);
-            MemoryMarshal.Write(scratchBuffer[10..12], 0);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<uint, byte>(args)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
@@ -328,7 +321,7 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.CreateWindow(uint window,
+    void IXProto.CreateWindow(byte depth, uint window,
         uint parent,
         short x,
         short y,
@@ -342,7 +335,8 @@ internal class XProto : IXProto
     )
     {
         // todo: optamice
-        var request = new CreateWindowType(window,
+        var request = new CreateWindowType(depth,
+            window,
             parent,
             x, y, width, height,
             borderWidth,
@@ -465,13 +459,10 @@ internal class XProto : IXProto
         }
         else
         {
-            requiredBuffer -= requestSize;
-
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            Encoding.ASCII.GetBytes(atomName, scratchBuffer.Slice(atomName.Length));
-            scratchBuffer[(atomName.Length)..requiredBuffer].Clear();
-
-            _socket.Send(ref request);
+            MemoryMarshal.Write(scratchBuffer[0..requestSize], in request);
+            Encoding.ASCII.GetBytes(atomName, scratchBuffer.Slice(requestSize, atomName.Length));
+            scratchBuffer[(requestSize + atomName.Length)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
