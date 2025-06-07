@@ -258,18 +258,13 @@ internal class XProto : IXProto
 
     void IXProto.CopyColormapAndFree(uint colormapId, uint srcColormapId)
     {
-        Span<byte> scratchBuffer = stackalloc byte[12];
-        scratchBuffer[0] = (byte)Opcode.CopyColormapAndFree;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<short>(scratchBuffer[2..4], 3);
-        MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
-        MemoryMarshal.Write(scratchBuffer[8..12], srcColormapId);
-        _socket.SendExact(scratchBuffer);
+        var request = new CopyColormapAndFreeType(colormapId, srcColormapId);
+        _socket.Send(ref request);
     }
 
     void IXProto.CopyGC(uint srcGc, uint dstGc, GCMask mask)
     {
-        var request = new CopyGCType(srcGc, dstGc,mask);
+        var request = new CopyGCType(srcGc, dstGc, mask);
         _socket.Send(ref request);
     }
 
@@ -356,12 +351,9 @@ internal class XProto : IXProto
 
     void IXProto.DestroySubwindows(uint window)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.DestroySubwindows;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write(scratchBuffer[2..4], (ushort)2);
-        MemoryMarshal.Write(scratchBuffer[4..8], window);
-        _socket.SendExact(scratchBuffer);
+
+        var request = new DestroySubWindowsType(window);
+        _socket.Send(ref request);
     }
 
     void IXProto.DestroyWindow(uint window)
@@ -880,15 +872,8 @@ internal class XProto : IXProto
 
     void IXProto.ReparentWindow(uint window, uint parent, short x, short y)
     {
-        Span<byte> scratchBuffer = stackalloc byte[16];
-        scratchBuffer[0] = (byte)Opcode.ReparentWindow;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<short>(scratchBuffer[2..4], 4);
-        MemoryMarshal.Write(scratchBuffer[4..8], window);
-        MemoryMarshal.Write(scratchBuffer[8..12], parent);
-        MemoryMarshal.Write(scratchBuffer[12..14], x);
-        MemoryMarshal.Write(scratchBuffer[14..16], y);
-        _socket.SendExact(scratchBuffer);
+        var request = new ReparentWindowType(window, parent, x, y);
+        _socket.Send(ref request);
     }
 
     void IXProto.RotateProperties(uint window, ushort delta, params uint[] properties)

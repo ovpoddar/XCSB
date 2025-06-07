@@ -23,8 +23,8 @@ x.CreateWindow(screen.RootDepth.DepthValue,
     root,
     0, 0, 500, 500,
     0, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
-    Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask,//| Xcsb.Masks.ValueMask.Colormap,
-    [screen.WhitePixel, (uint)EventMask.ExposureMask]);//, colormap]);
+    Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask| Xcsb.Masks.ValueMask.Colormap,
+    [screen.WhitePixel, (uint)EventMask.ExposureMask, colormap]);
 
 x.InstallColormap(colormap);
 Console.WriteLine("Colormap installed.");
@@ -44,7 +44,21 @@ x.ConfigureWindow(win, ConfigureValueMask.X | ConfigureValueMask.Y | ConfigureVa
     [100, 100, 300, 300]);
 Console.WriteLine("Window resized and moved to (100,100).");
 Thread.Sleep(5000);
+x.DestroyWindow(win);
 
+
+Thread.Sleep(1500);
+win = x.NewId();
+x.CreateWindow(screen.RootDepth.DepthValue,
+    win,
+    root,
+    0, 0, 500, 500,
+    0, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
+    Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask,
+    [screen.WhitePixel, (uint)EventMask.ExposureMask]);
+x.MapWindow(win);
+Console.WriteLine("Reloading.");
+Thread.Sleep(1500);
 
 var sub = x.NewId();
 x.CreateWindow(0,

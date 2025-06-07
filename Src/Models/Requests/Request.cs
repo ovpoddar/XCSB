@@ -126,6 +126,16 @@ internal readonly struct UnmapWindowType(uint window)
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct DestroySubWindowsType(uint window)
+{
+    public readonly Opcode OpCode = Opcode.DestroySubwindows;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint Window = window;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct CirculateWindowType(Direction direction, uint window)
 {
     public readonly Opcode OpCode = Opcode.CirculateWindow;
@@ -199,6 +209,17 @@ internal readonly struct DeletePropertyType(uint window, uint atom)
     public readonly ushort Length = 3;
     public readonly uint Window = window;
     public readonly uint Atom = atom;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct CopyColormapAndFreeType(uint colormapId, uint srcColormapId)
+{
+    public readonly Opcode opcode = Opcode.CopyColormapAndFree;
+    private readonly byte _pad0;
+    public readonly ushort Length = 3;
+    public readonly uint ColorMapId = colormapId;
+    public readonly uint SourceColorMapId = srcColormapId;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
@@ -325,10 +346,23 @@ internal readonly struct CopyGCType(uint srcGc, uint dstGc, GCMask mask)
 internal readonly struct ImageText16Type(uint drawable, uint gc, short x, short y, int textLength)
 {
     public readonly Opcode OpCode = Opcode.ImageText16;
-    private readonly byte _pad0 = (byte)textLength;
+    public readonly byte TextLength = (byte)textLength;
     public readonly ushort Length = (ushort)(4 + ((2 * textLength).AddPadding() / 4));
     public readonly uint Drawable = drawable;
     public readonly uint GC = gc;
+    public readonly short X = x;
+    public readonly short Y = y;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ReparentWindowType(uint window, uint parent, short x, short y)
+{
+    public readonly Opcode OpCode = Opcode.ReparentWindow;
+    private readonly byte _pad0;
+    public readonly ushort Length = 4;
+    public readonly uint Window = window;
+    public readonly uint Parent = parent;
     public readonly short X = x;
     public readonly short Y = y;
 }
