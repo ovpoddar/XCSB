@@ -141,16 +141,13 @@ internal class XProto : IXProto
 
     void IXProto.ChangePointerControl(Acceleration? acceleration, ushort? threshold)
     {
-        Span<byte> scratchBuffer = stackalloc byte[12];
-        scratchBuffer[0] = (byte)Opcode.ChangePointerControl;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 3);
-        MemoryMarshal.Write(scratchBuffer[4..6], acceleration?.Numerator ?? 0);
-        MemoryMarshal.Write(scratchBuffer[6..8], acceleration?.Denominator ?? 0);
-        MemoryMarshal.Write(scratchBuffer[8..10], threshold ?? 0);
-        scratchBuffer[11] = (byte)(acceleration is not null ? 1 : 0);
-        scratchBuffer[12] = (byte)(threshold.HasValue ? 1 : 0);
-        _socket.SendExact(scratchBuffer);
+        var request = new ChangePointerControlType(
+            acceleration?.Numerator ?? 0,
+            acceleration?.Denominator ?? 0,
+            threshold ?? 0,
+            (byte)(acceleration is null ? 0 : 1),
+            (byte)(threshold.HasValue ? 1 : 0));
+        _socket.Send(ref request);
     }
 
     void IXProto.ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
@@ -181,12 +178,8 @@ internal class XProto : IXProto
 
     void IXProto.ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.ChangeSaveSet;
-        scratchBuffer[1] = (byte)changeSaveSetMode;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], window);
-        _socket.SendExact(scratchBuffer);
+        var request = new ChangeSaveSetType(changeSaveSetMode, window);
+        _socket.Send(ref request);
     }
 
     void IXProto.ChangeWindowAttributes(uint window, ValueMask mask, params uint[] args)
@@ -239,16 +232,8 @@ internal class XProto : IXProto
 
     void IXProto.ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp)
     {
-        Span<byte> scratchBuffer = stackalloc byte[24];
-        scratchBuffer[0] = (byte)Opcode.ConvertSelection;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 6);
-        MemoryMarshal.Write(scratchBuffer[4..8], requestor);
-        MemoryMarshal.Write(scratchBuffer[8..12], selection);
-        MemoryMarshal.Write(scratchBuffer[12..16], target);
-        MemoryMarshal.Write(scratchBuffer[16..20], property);
-        MemoryMarshal.Write(scratchBuffer[20..24], timestamp);
-        _socket.SendExact(scratchBuffer);
+        var request =new ConvertSelectionType(requestor, selection, target, property, timestamp);
+        _socket.Send(ref request);
     }
 
     void IXProto.CopyArea()
@@ -654,12 +639,8 @@ internal class XProto : IXProto
 
     void IXProto.MapSubwindows(uint window)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.MapSubwindows;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], window);
-        _socket.SendExact(scratchBuffer);
+        var request = new MapSubWindowsType(window);
+        _socket.Send(ref request);
     }
 
     void IXProto.MapWindow(uint window)
@@ -1090,12 +1071,8 @@ internal class XProto : IXProto
 
     void IXProto.UnmapSubwindows(uint window)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.UnmapSubwindows;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], window);
-        _socket.SendExact(scratchBuffer);
+        var request = new UnMapSubwindowsType(window);
+        _socket.Send(ref request);
     }
 
     void IXProto.UnmapWindow(uint window)
