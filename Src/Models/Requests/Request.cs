@@ -18,6 +18,33 @@ internal readonly struct BellType(sbyte percent)
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ForceScreenSaverType(ForceScreenSaverMode mode)
+{
+    public readonly Opcode Opcode = Opcode.ForceScreenSaver;
+    public readonly ForceScreenSaverMode Mode = mode;
+    public readonly ushort Length = 1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct SetAccessControlType(AccessControlMode mode)
+{
+    public readonly Opcode Opcode = Opcode.SetAccessControl;
+    public readonly AccessControlMode Mode = mode;
+    public readonly ushort Length = 1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct SetCloseDownModeType(CloseDownMode mode)
+{
+    public readonly Opcode Opcode = Opcode.SetCloseDownMode;
+    public readonly CloseDownMode Mode = mode;
+    public readonly ushort Length = 1;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct GrabServerType()
 {
     public readonly Opcode Opcode = Opcode.GrabServer;
@@ -156,6 +183,16 @@ internal readonly struct UnMapSubwindowsType(uint window)
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct StoreColorsType(uint colormapId, int itemLength)
+{
+    public readonly Opcode OpCode = Opcode.StoreColors;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(2 + (itemLength /3));
+    public readonly uint ColorMapId = colormapId;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct CirculateWindowType(Direction direction, uint window)
 {
     public readonly Opcode OpCode = Opcode.CirculateWindow;
@@ -176,10 +213,30 @@ internal readonly struct FreeGCType(uint gc)
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct FreeCursorType(uint cursorId)
+{
+    public readonly Opcode OpCode = Opcode.FreeCursor;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint CursorId = cursorId;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct AllowEventsType(EventsMode mode, uint time)
 {
     public readonly Opcode OpCode = Opcode.AllowEvents;
     public readonly EventsMode Mode = mode;
+    public readonly ushort Length = 2;
+    public readonly uint Time = time;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct UngrabPointerType(uint time)
+{
+    public readonly Opcode OpCode = Opcode.UngrabPointer;
+    private readonly byte _pad0;
     public readonly ushort Length = 2;
     public readonly uint Time = time;
 }
@@ -311,6 +368,17 @@ internal readonly struct PolyFillRectangleType(uint drawable, uint gc, int recta
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct FreeColorsType(uint colormapId, uint planeMask, int pixelsLength)
+{
+    public readonly Opcode opcode = Opcode.FreeColors;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + pixelsLength);
+    public readonly uint ColorMapId = colormapId;
+    public readonly uint PlaneMask = planeMask;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct RotatePropertiesType(uint window, int propertiesLength, ushort delta)
 {
     public readonly Opcode opcode = Opcode.RotateProperties;
@@ -323,8 +391,8 @@ internal readonly struct RotatePropertiesType(uint window, int propertiesLength,
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct ChangePointerControlType(ushort accelerationNumerator, 
-    ushort accelerationDenominator, 
+internal readonly struct ChangePointerControlType(ushort accelerationNumerator,
+    ushort accelerationDenominator,
     ushort threshold,
     byte doAcceleration,
     byte doThreshold
@@ -338,6 +406,19 @@ internal readonly struct ChangePointerControlType(ushort accelerationNumerator,
     public readonly ushort Threshold = threshold;
     public readonly byte DoAcceleration = doAcceleration;
     public readonly byte DoThreshold = doThreshold;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct SetScreenSaverType(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
+{
+    public readonly Opcode OpCode = Opcode.SetScreenSaver;
+    private readonly byte _pad0 = 0;
+    public readonly ushort Length = 3;
+    public readonly short TimeOut = timeout;
+    public readonly short Interval = interval;
+    public readonly TriState PreferBlanking = preferBlanking;
+    public readonly TriState AllowExposures = allowExposures;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
@@ -388,6 +469,18 @@ internal readonly struct CopyGCType(uint srcGc, uint dstGc, GCMask mask)
     public readonly uint SourceGC = srcGc;
     public readonly uint DestinationGC = dstGc;
     public readonly GCMask GCMake = mask;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct SetSelectionOwnerType(uint owner, uint atom, uint timestamp)
+{
+    public readonly Opcode OpCode = Opcode.SetSelectionOwner;
+    private readonly byte _pad0 = 0;
+    public readonly ushort Length = 4;
+    public readonly uint Owner = owner;
+    public readonly uint Atom = atom;
+    public readonly uint Timestamp = timestamp;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
@@ -471,11 +564,11 @@ internal readonly struct ConvertSelectionType(uint requestor, uint selection, ui
     public readonly Opcode OpCode = Opcode.ConvertSelection;
     private readonly byte _pad0 = 0;
     public readonly ushort Length = 6;
-    public readonly uint Requestor  = requestor;
-    public readonly uint Selection  = selection;
-    public readonly uint Target  = target;
-    public readonly uint Property  = property;
-    public readonly uint TimeStamp  = timestamp;
+    public readonly uint Requestor = requestor;
+    public readonly uint Selection = selection;
+    public readonly uint Target = target;
+    public readonly uint Property = property;
+    public readonly uint TimeStamp = timestamp;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
