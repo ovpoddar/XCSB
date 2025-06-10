@@ -21,6 +21,19 @@ x.CreateWindow(screen.RootDepth.DepthValue,
     0, []);
 x.MapWindow(win);
 
+
+
+var grabResult = x.GrabPointer(false,
+    screen.Root,
+    64,
+    GrabMode.Asynchronous, GrabMode.Asynchronous,
+    0, 0, 0);
+
+Console.WriteLine($"Grab status {grabResult.Status}");
+
+x.UngrabPointer(0);
+Console.WriteLine("Ungrab pointer completed.");
+
 var fontId = x.NewId();
 x.OpenFont("fixed", fontId);
 
@@ -75,7 +88,6 @@ rect.x += 20;
 rect.y += 60;
 
 x.PolyFillRectangle(win, gc, [rect]);
-
 x.FreeGC(gc);
 Thread.Sleep(3000);
 
@@ -96,6 +108,44 @@ x.PolyFillRectangle(win, gc2, [rect]);
 
 x.FreeGC(gc1);
 Thread.Sleep(3000);
+
+x.ChangePointerControl(new Acceleration { Denominator = 2, Numerator = 1 }, 4);
+Console.WriteLine("Pointer control changed: acceleration 2:1, threshold 4 pixels");
+Thread.Sleep(3000);
+
+x.ChangeSaveSet(ChangeSaveSetMode.Insert, win);
+Console.WriteLine("Window added to save set");
+Thread.Sleep(3000);
+
+x.ChangeSaveSet(ChangeSaveSetMode.Delete, win);
+Console.WriteLine("Window removed from save set");
+Thread.Sleep(3000);
+
+x.ConvertSelection(win, 1, 31, 9, 0);
+Console.WriteLine("Selection conversion requested");
+Thread.Sleep(3000);
+
+
+x.SetScreenSaver(5, 10, TriState.Yes, TriState.Yes);
+Console.WriteLine("Screen saver set: 5s timeout, blanking preferred");
+Thread.Sleep(20000);
+
+
+x.ForceScreenSaver(ForceScreenSaverMode.Activate);
+Console.WriteLine("Screen saver activated");
+Thread.Sleep(3000);
+
+x.ForceScreenSaver(ForceScreenSaverMode.Reset);
+Console.WriteLine("Screen saver reset");
+Thread.Sleep(3000);
+
+x.NoOperation([]);
+Console.WriteLine("NoOperation");
+Thread.Sleep(3000);
+
+
+x.SetCloseDownMode(CloseDownMode.Destroy);
+
 x.Dispose();
 return 0;
 
@@ -108,6 +158,6 @@ uint GetNameColor(Span<byte> name, Screen screen)
         return 0x0000FF;
     else if (name.Slice(0, 5).SequenceEqual("Green"u8))
         return 0x00FF00;
-    
+
     return screen.WhitePixel;
 }
