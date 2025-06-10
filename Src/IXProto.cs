@@ -50,7 +50,7 @@ public interface IXProto : IDisposable
     void GetSelectionOwner();
     void ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp);
     void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt);
-    void GrabPointer();
+    GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp);
     void UngrabPointer(uint time);
     void GrabButton();
     void UngrabButton();

@@ -232,7 +232,7 @@ internal class XProto : IXProto
 
     void IXProto.ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp)
     {
-        var request =new ConvertSelectionType(requestor, selection, target, property, timestamp);
+        var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
         _socket.Send(ref request);
     }
 
@@ -354,11 +354,8 @@ internal class XProto : IXProto
 
     void IXProto.ForceScreenSaver(ForceScreenSaverMode mode)
     {
-        Span<byte> scratchBuffer = stackalloc byte[4];
-        scratchBuffer[0] = (byte)Opcode.ForceScreenSaver;
-        scratchBuffer[1] = (byte)mode;
-        MemoryMarshal.Write(scratchBuffer[2..4], 1);
-        _socket.SendExact(scratchBuffer);
+        var request = new ForceScreenSaverType(mode);
+        _socket.Send(ref request);
     }
 
     void IXProto.FreeColormap(uint colormapId)
@@ -535,9 +532,14 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.GrabPointer()
+    GrabPointerReply IXProto.GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp)
     {
-        throw new NotImplementedException();
+        var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, timeStamp);
+        _socket.Send(ref request);
+
+        Span<byte> response = stackalloc byte[Marshal.SizeOf<GrabPointerReply>()];
+        _socket.ReceiveExact(response);
+        return response.ToStruct<GrabPointerReply>();
     }
 
     void IXProto.GrabServer()
@@ -908,11 +910,8 @@ internal class XProto : IXProto
 
     void IXProto.SetCloseDownMode(CloseDownMode mode)
     {
-        Span<byte> scratchBuffer = stackalloc byte[4];
-        scratchBuffer[0] = (byte)Opcode.SetCloseDownMode;
-        scratchBuffer[1] = (byte)mode;
-        MemoryMarshal.Write(scratchBuffer[2..4], 1);
-        _socket.SendExact(scratchBuffer);
+        var request = new SetCloseDownModeType(mode);
+        _socket.Send(ref request);
     }
 
     void IXProto.SetDashes()
@@ -943,16 +942,8 @@ internal class XProto : IXProto
 
     void IXProto.SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
     {
-        Span<byte> scratchBuffer = stackalloc byte[12];
-        scratchBuffer[0] = (byte)Opcode.SetScreenSaver;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 3);
-        MemoryMarshal.Write(scratchBuffer[4..6], timeout);
-        MemoryMarshal.Write(scratchBuffer[6..8], interval);
-        scratchBuffer[8] = (byte)preferBlanking;
-        scratchBuffer[9] = (byte)allowExposures;
-        MemoryMarshal.Write<ushort>(scratchBuffer[10..12], 2);
-        _socket.SendExact(scratchBuffer);
+        var request = new SetScreenSaverType(timeout, interval, preferBlanking, allowExposures);
+        _socket.Send(ref request);
     }
 
     void IXProto.SetSelectionOwner(uint owner, uint atom, uint timestamp)
@@ -1049,12 +1040,8 @@ internal class XProto : IXProto
 
     void IXProto.UngrabPointer(uint time)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.UngrabPointer;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], time);
-        _socket.SendExact(scratchBuffer);
+        var request = new UngrabPointerType(time);
+        _socket.Send(ref request);
     }
 
     void IXProto.UngrabServer()

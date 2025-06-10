@@ -590,6 +590,22 @@ internal readonly struct WarpPointerType(uint srcWindow, uint destWindow, short 
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct GrabPointerType(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp)
+{
+    public readonly Opcode OpCode = Opcode.GrabPointer;
+    public readonly byte OwnerEvents = (byte)(ownerEvents ? 1 : 0);
+    public readonly ushort Length = 6;
+    public readonly uint GrabWindow = grabWindow;
+    public readonly ushort Mask = mask;
+    private readonly GrabMode _pointerMode = pointerMode;
+    private readonly GrabMode _keyboardMode = keyboardMode;
+    private readonly uint _confineTo = confineTo;
+    private readonly uint _cursor = cursor;
+    private readonly uint _timeStamp = timeStamp;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct GetPropertyType(bool delete, uint window, uint property, uint type, uint offset, uint length)
 {
     public readonly Opcode OpCode = Opcode.GetProperty;
