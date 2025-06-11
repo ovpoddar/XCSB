@@ -960,14 +960,12 @@ internal class XProto : IXProto
 
     void IXProto.StoreColors(uint colormapId, params ColorItem[] item)
     {
+        var request = new StoreColorsType(colormapId, item.Length);
         var requiredBuffer = 8 + 12 * item.Length;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.StoreColors;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+            MemoryMarshal.Write(scratchBuffer[0..8], request);
             item.CopyTo(MemoryMarshal.Cast<byte, ColorItem>(scratchBuffer[8..requiredBuffer]));
             scratchBuffer[^1] = 0;
             _socket.SendExact(scratchBuffer);
@@ -975,10 +973,7 @@ internal class XProto : IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.StoreColors;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
+            MemoryMarshal.Write(scratchBuffer[0..8], request);
             item.CopyTo(MemoryMarshal.Cast<byte, ColorItem>(scratchBuffer[8..requiredBuffer]));
             scratchBuffer[requiredBuffer - 1] = 0;
             _socket.SendExact(scratchBuffer[..requiredBuffer]);

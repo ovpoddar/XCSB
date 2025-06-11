@@ -139,10 +139,20 @@ x.ForceScreenSaver(ForceScreenSaverMode.Reset);
 Console.WriteLine("Screen saver reset");
 Thread.Sleep(3000);
 
-x.NoOperation([]);
+x.NoOperation([1, 3, 323, 32, 2323]);
 Console.WriteLine("NoOperation");
 Thread.Sleep(3000);
 
+
+x.StoreColors(screen.CMap, [new ColorItem
+{
+    Red = 32768,
+    Green = 16384,
+    Blue = 49152,
+    ColorFlag = ColorFlag.Red | ColorFlag.Green | ColorFlag.Blue,
+    Pixel = 1
+}]);
+Console.WriteLine("Color stored successfully at pixel.");
 
 x.SetCloseDownMode(CloseDownMode.Destroy);
 
