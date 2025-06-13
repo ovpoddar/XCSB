@@ -127,7 +127,7 @@ public interface IXProto : IDisposable
     void QueryColors();
     void LookupColor();
     void CreateCursor();
-    void CreateGlyphCursor();
+    void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue);
     void FreeCursor(uint cursorId);
     void RecolorCursor();
     void QueryBestSize();

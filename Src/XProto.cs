@@ -291,9 +291,21 @@ internal class XProto : IXProto
         }
     }
 
-    void IXProto.CreateGlyphCursor()
+    void IXProto.CreateGlyphCursor(uint cursorId,
+        uint sourceFont, 
+        uint fontMask, 
+        char sourceChar, 
+        ushort charMask, 
+        ushort foreRed, 
+        ushort foreGreen, 
+        ushort foreBlue, 
+        ushort backRed,
+        ushort backGreen, 
+        ushort backBlue)
     {
-        throw new NotImplementedException();
+        var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
+            backRed, backGreen, backBlue);
+        _socket.Send(ref request);
     }
 
     void IXProto.CreatePixmap()
@@ -393,12 +405,8 @@ internal class XProto : IXProto
 
     void IXProto.FreeCursor(uint cursorId)
     {
-        Span<byte> scratchBuffer = stackalloc byte[8];
-        scratchBuffer[0] = (byte)Opcode.FreeCursor;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 2);
-        MemoryMarshal.Write(scratchBuffer[4..8], cursorId);
-        _socket.SendExact(scratchBuffer);
+        var request = new FreeCursorType(cursorId);
+        _socket.Send(ref request);
     }
 
     void IXProto.FreeGC(uint gc)
@@ -945,14 +953,8 @@ internal class XProto : IXProto
 
     void IXProto.SetSelectionOwner(uint owner, uint atom, uint timestamp)
     {
-        Span<byte> scratchBuffer = stackalloc byte[16];
-        scratchBuffer[0] = (byte)Opcode.SetSelectionOwner;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 4);
-        MemoryMarshal.Write(scratchBuffer[4..8], owner);
-        MemoryMarshal.Write(scratchBuffer[8..12], atom);
-        MemoryMarshal.Write(scratchBuffer[12..16], timestamp);
-        _socket.SendExact(scratchBuffer);
+        var request = new SetSelectionOwnerType(owner, atom, timestamp);
+        _socket.Send(ref request);
     }
 
     void IXProto.StoreColors(uint colormapId, params ColorItem[] item)

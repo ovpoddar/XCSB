@@ -187,7 +187,7 @@ internal readonly struct StoreColorsType(uint colormapId, int itemLength)
 {
     public readonly Opcode OpCode = Opcode.StoreColors;
     private readonly byte _pad0;
-    public readonly ushort Length = (ushort)(2 + (itemLength /3));
+    public readonly ushort Length = (ushort)(2 + (itemLength / 3));
     public readonly uint ColorMapId = colormapId;
 }
 
@@ -636,4 +636,25 @@ internal readonly struct CreateWindowType(byte depth, uint window, uint parent, 
     public readonly ClassType ClassType = classType;
     public readonly uint RootVisualId = rootVisualId;
     public readonly ValueMask Mask = mask;
+}
+
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal struct CreateGlyphCursorType(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+{
+    public readonly Opcode OpCode = Opcode.CreateGlyphCursor;
+    private readonly byte _pad0;
+    public readonly ushort Length = 8;
+    public readonly uint CursorId = cursorId;
+    public readonly uint SourceFont = sourceFont;
+    public readonly uint FontMask = fontMask;
+    public readonly char SourceChar = sourceChar;
+    public readonly ushort CharMask = charMask;
+    public readonly ushort ForeRed = foreRed;
+    public readonly ushort ForeGreen = foreGreen;
+    public readonly ushort ForeBlue = foreBlue;
+    public readonly ushort BackRed = backRed;
+    public readonly ushort BackGreen = backGreen;
+    public readonly ushort BackBlue = backBlue;
 }

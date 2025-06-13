@@ -161,6 +161,34 @@ x.StoreColors(screen.CMap, [new ColorItem
 }]);
 Console.WriteLine("Color stored successfully at pixel.");
 
+var font = x.NewId();
+
+x.OpenFont("cursor", font);
+
+var cursor = x.NewId();
+x.CreateGlyphCursor(cursor, font, font, 'D', 69, // Arrow cursor
+                       0, 0, 0, 65535, 65535, 65535);
+
+Console.WriteLine("Created cursor with ID: {0}", cursor);
+Thread.Sleep(3000);
+
+x.FreeCursor(cursor);
+Console.WriteLine("freed cursor");
+
+x.CloseFont(font);
+
+
+
+x.SetSelectionOwner(win, 1, 0);
+
+Console.WriteLine("Selection owner set for PRIMARY selection");
+Thread.Sleep(1500);
+
+x.SetSelectionOwner(0, 1, 0);
+
+Console.WriteLine("Selection owner cleared\n");
+
+
 x.SetCloseDownMode(CloseDownMode.Destroy);
 
 x.Dispose();
