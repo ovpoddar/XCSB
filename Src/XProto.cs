@@ -190,10 +190,22 @@ internal class XProto : IXProto
 
     void IXProto.ChangeWindowAttributes(uint window, ValueMask mask, params uint[] args)
     {
-        // todo: optamice
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
-        _socket.Send(ref request);
-        _socket.SendExact(MemoryMarshal.Cast<uint, byte>(args));
+        var requiredBuffer = 12 + args.Length * 4;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.CirculateWindow(Direction direction, uint window)
@@ -332,7 +344,7 @@ internal class XProto : IXProto
         params uint[] args
     )
     {
-        // todo: optamice
+        var requiredBuffer = 32 + args.Length * 4;
         var request = new CreateWindowType(depth,
             window,
             parent,
@@ -342,8 +354,22 @@ internal class XProto : IXProto
             rootVisualId,
             mask,
             args.Length);
-        _socket.Send(ref request);
-        _socket.SendExact(MemoryMarshal.Cast<uint, byte>(args));
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..32], request);
+            MemoryMarshal.Cast<uint, byte>(args)
+                .CopyTo(scratchBuffer[32..requiredBuffer]);
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..32], request);
+            MemoryMarshal.Cast<uint, byte>(args)
+                .CopyTo(scratchBuffer[32..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.DeleteProperty(uint window, uint atom)
