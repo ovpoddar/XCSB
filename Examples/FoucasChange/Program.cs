@@ -1,5 +1,4 @@
-﻿using System;
-using Xcsb;
+﻿using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models.Event;
 
@@ -16,7 +15,7 @@ uint color_unfocused = 0x888888; // Gray when unfocused
 
 // Create first window
 var window1 = x.NewId();
-x.CreateWindow(screen.RootDepth.DepthValue,window1,
+x.CreateWindow(screen.RootDepth.DepthValue, window1,
     screen.Root,
     50, 50, 300, 200,
     2,
