@@ -1,4 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 using Xcsb.Models.Event;
 
 namespace Xcsb.Models;
@@ -19,6 +24,6 @@ public unsafe struct QueryPointerReply
     public readonly KeyButMask Mask;
     private fixed byte _pad0[6];
 
-    public readonly bool IsSameScreen =>
+    public readonly bool IsSameScreen => 
         _sameScreen == 1;
 }

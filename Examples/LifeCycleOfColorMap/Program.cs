@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models.Event;
@@ -22,7 +23,7 @@ x.CreateWindow(screen.RootDepth.DepthValue,
     root,
     0, 0, 500, 500,
     0, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
-    Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask | Xcsb.Masks.ValueMask.Colormap,
+    Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask| Xcsb.Masks.ValueMask.Colormap,
     [screen.WhitePixel, (uint)EventMask.ExposureMask, colormap]);
 
 x.InstallColormap(colormap);

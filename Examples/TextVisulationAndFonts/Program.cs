@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
 using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models;

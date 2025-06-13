@@ -6,5 +6,5 @@ public struct ColorItem
     public ushort Green;
     public ushort Blue;
     public ColorFlag ColorFlag;
-    private readonly byte Pad0;
+    private byte Pad0;
 }

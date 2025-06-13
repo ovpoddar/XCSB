@@ -5,7 +5,7 @@ namespace Xcsb.Models.Event;
 [StructLayout(LayoutKind.Sequential)]
 public struct ReParentNotifyEvent
 {
-    private readonly byte Pad0;
+    private byte Pad0;
     public ushort Sequence;
     public uint Event;
     public uint Window;

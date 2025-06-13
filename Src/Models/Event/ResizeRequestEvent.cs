@@ -5,7 +5,7 @@ namespace Xcsb.Models.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct ResizeRequestEvent
 {
-    private readonly byte Pad0;
+    private byte Pad0;
     public ushort Sequence;
     public uint Window;
     public ushort Width;
