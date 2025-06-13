@@ -18,6 +18,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Models\Requests\*.h" />
+	<Compile Remove="**\Tools*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\LICENSE" Pack="True" PackagePath="\" />
 	<None Include="..\README.md" Pack="True" PackagePath="\" />
   </ItemGroup>

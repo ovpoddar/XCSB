@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+using Xcsb.Models.Event;
+
+namespace Xcsb.Models;
+
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public unsafe struct QueryPointerReply
+{
+    public readonly byte Reply;
+    private readonly byte _sameScreen;
+    public readonly short SequenceNumber;
+    public readonly int LengthReply;
+    public readonly uint Root;
+    public readonly uint child;
+    public readonly short RootX;
+    public readonly short RootY;
+    public readonly short WinX;
+    public readonly short WinY;
+    public readonly KeyButMask Mask;
+    private fixed byte _pad0[6];
+
+    public readonly bool IsSameScreen => 
+        _sameScreen == 1;
+}

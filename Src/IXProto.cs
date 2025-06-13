@@ -11,7 +11,8 @@ public interface IXProto : IDisposable
     ref XEvent GetEvent(Span<byte> scratchBuffer);
 
     uint NewId();
-    void CreateWindow(uint window,
+    void CreateWindow(byte depth, 
+        uint window,
         uint parent,
         short x,
         short y,
@@ -38,17 +39,18 @@ public interface IXProto : IDisposable
     void CirculateWindow(Direction direction, uint window);
     void GetGeometry();
     void QueryTree();
+    InternAtomReply InternAtom(bool onlyIfExist, string atomName);
     void GetAtomName();
     void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args) where T : struct, INumber<T>;
     void DeleteProperty(uint window, uint atom);
-    void GetProperty();
+    GetPropertyReply GetProperty(bool delete, uint window, uint property, uint type, uint offset, uint length);
     void RotateProperties(uint window, ushort delta, params uint[] properties);
     void ListProperties();
     void SetSelectionOwner(uint owner, uint atom, uint timestamp);
     void GetSelectionOwner();
     void ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp);
     void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt);
-    void GrabPointer();
+    GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp);
     void UngrabPointer(uint time);
     void GrabButton();
     void UngrabButton();
@@ -60,7 +62,7 @@ public interface IXProto : IDisposable
     void AllowEvents(EventsMode mode, uint time);
     void GrabServer();
     void UngrabServer();
-    void QueryPointer();
+    QueryPointerReply QueryPointer(uint window);
     void GetMotionEvents();
     void TranslateCoordinates();
     void WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destX, short destY);
@@ -83,7 +85,7 @@ public interface IXProto : IDisposable
     void SetDashes();
     void SetClipRectangles();
     void FreeGC(uint gc);
-    void ClearArea();
+    void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height);
     void CopyArea();
     void CopyPlane();
     void PolyPoint();
@@ -92,7 +94,7 @@ public interface IXProto : IDisposable
     void PolyRectangle();
     void PolyArc();
     void FillPoly();
-    void PolyFillRectangle();
+    void PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles);
     void PolyFillArc();
     void PutImage(ImageFormat format,
         uint drawable,
@@ -115,7 +117,7 @@ public interface IXProto : IDisposable
     void InstallColormap(uint colormapId);
     void UninstallColormap(uint colormapId);
     void ListInstalledColormaps();
-    void AllocColor();
+    AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue);
     void AllocNamedColor();
     void AllocColorCells();
     void AllocColorPlanes();
@@ -125,7 +127,7 @@ public interface IXProto : IDisposable
     void QueryColors();
     void LookupColor();
     void CreateCursor();
-    void CreateGlyphCursor();
+    void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue);
     void FreeCursor(uint cursorId);
     void RecolorCursor();
     void QueryBestSize();
@@ -137,7 +139,7 @@ public interface IXProto : IDisposable
     void GetKeyboardMapping();
     void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args);
     void GetKeyboardControl();
-    void Bell(byte percent);
+    void Bell(sbyte percent);
     void SetPointerMapping();
     void GetPointerMapping();
     void ChangePointerControl(Acceleration acceleration, ushort? threshold);

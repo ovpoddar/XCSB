@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Xcsb.Helpers;
 internal static class GenericHelper
@@ -20,7 +21,7 @@ internal static class GenericHelper
     internal static T Padding<T>(this T pad) where T : INumber<T> =>
         T.CreateChecked(4 - (int.CreateChecked(pad) & 3) & 3);
 
-    internal static void SendExact(this Socket socket, Span<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
+    internal static void SendExact(this Socket socket, scoped ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
     {
         var total = 0;
         while (socket.Connected)
@@ -30,6 +31,10 @@ internal static class GenericHelper
                 break;
         }
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void Send<T>(this Socket socket, scoped ref T value) where T : struct =>
+        socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {

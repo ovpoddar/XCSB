@@ -79,7 +79,7 @@ public static class XcsbClient
         else
         {
             details.Display = displayNumberStart[..dotIndex];
-            var task1 = int.TryParse(displayNumberStart.Slice(1, dotIndex), out var displayNumber);
+            var task1 = int.TryParse(displayNumberStart.Slice(0, dotIndex), out var displayNumber);
             var task2 = int.TryParse(displayNumberStart[(dotIndex + 1)..], out var screenNumber);
             details.DisplayNumber = displayNumber;
             details.ScreenNumber = screenNumber;
