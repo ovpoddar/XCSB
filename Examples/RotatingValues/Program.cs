@@ -143,6 +143,13 @@ x.NoOperation([1, 3, 323, 32, 2323]);
 Console.WriteLine("NoOperation");
 Thread.Sleep(3000);
 
+x.SetAccessControl(AccessControlMode.Enable);
+Console.WriteLine("Access control enabled");
+Thread.Sleep(1500);
+
+x.SetAccessControl(AccessControlMode.Disable);
+Console.WriteLine("Access control disabled");
+Thread.Sleep(1500);
 
 x.StoreColors(screen.CMap, [new ColorItem
 {

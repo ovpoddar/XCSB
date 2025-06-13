@@ -896,11 +896,8 @@ internal class XProto : IXProto
 
     void IXProto.SetAccessControl(AccessControlMode mode)
     {
-        Span<byte> scratchBuffer = stackalloc byte[4];
-        scratchBuffer[0] = (byte)Opcode.SetAccessControl;
-        scratchBuffer[1] = (byte)mode;
-        MemoryMarshal.Write(scratchBuffer[2..4], 1);
-        _socket.SendExact(scratchBuffer);
+        var request = new SetAccessControlType(mode);
+        _socket.Send(ref request);
     }
 
     void IXProto.SetClipRectangles()
