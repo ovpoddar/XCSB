@@ -5,7 +5,7 @@ namespace Xcsb.Models.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct DestroyNotifyEvent
 {
-    private byte Pad0;
+    private readonly byte Pad0;
     public ushort Sequence;
     public uint Event;
     public uint Window;
