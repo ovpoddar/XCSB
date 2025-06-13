@@ -5,7 +5,7 @@ namespace Xcsb.Models.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct SelectionRequestEvent
 {
-    private byte Pad0;
+    private readonly byte Pad0;
     public ushort Sequence;
     public uint Time; // 0 -> current time
     public uint Owner;
