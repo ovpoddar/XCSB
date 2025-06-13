@@ -11,7 +11,7 @@ public interface IXProto : IDisposable
     ref XEvent GetEvent(Span<byte> scratchBuffer);
 
     uint NewId();
-    void CreateWindow(byte depth, 
+    void CreateWindow(byte depth,
         uint window,
         uint parent,
         short x,
