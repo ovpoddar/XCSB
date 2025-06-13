@@ -117,7 +117,7 @@ public interface IXProto : IDisposable
     void InstallColormap(uint colormapId);
     void UninstallColormap(uint colormapId);
     void ListInstalledColormaps();
-    void AllocColor();
+    AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue);
     void AllocNamedColor();
     void AllocColorCells();
     void AllocColorPlanes();

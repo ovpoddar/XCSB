@@ -449,6 +449,20 @@ internal readonly struct ClearAreaType(bool exposures, uint window, short x, sho
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct AllocColorType(uint colorMap, ushort red, ushort green, ushort blue)
+{
+    public readonly Opcode OpCode = Opcode.AllocColor;
+    private readonly byte _pad0;
+    public readonly ushort Length = 4;
+    public readonly uint ColorMap = colorMap;
+    public readonly ushort Red = red;
+    public readonly ushort Green = green;
+    public readonly ushort Blue = blue;
+}
+
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct CreateColormapType(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
 {
     public readonly Opcode OpCode = Opcode.CreateColormap;
@@ -638,10 +652,9 @@ internal readonly struct CreateWindowType(byte depth, uint window, uint parent, 
     public readonly ValueMask Mask = mask;
 }
 
-
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal struct CreateGlyphCursorType(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+internal readonly struct CreateGlyphCursorType(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
 {
     public readonly Opcode OpCode = Opcode.CreateGlyphCursor;
     private readonly byte _pad0;

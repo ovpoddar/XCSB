@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xcsb.Helpers;
 using Xcsb.Masks;
@@ -33,9 +34,14 @@ internal class XProto : IXProto
         _globalId = 0;
     }
 
-    void IXProto.AllocColor()
+    AllocColorReply IXProto.AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
     {
-        throw new NotImplementedException();
+        var request = new AllocColorType(colorMap, red, green, blue);
+        _socket.Send(ref request);
+
+        Span<byte> response = stackalloc byte[Marshal.SizeOf<AllocColorReply>()];
+        _socket.ReceiveExact(response);
+        return response.ToStruct<AllocColorReply>();
     }
 
     void IXProto.AllocColorCells()
@@ -292,15 +298,15 @@ internal class XProto : IXProto
     }
 
     void IXProto.CreateGlyphCursor(uint cursorId,
-        uint sourceFont, 
-        uint fontMask, 
-        char sourceChar, 
-        ushort charMask, 
-        ushort foreRed, 
-        ushort foreGreen, 
-        ushort foreBlue, 
+        uint sourceFont,
+        uint fontMask,
+        char sourceChar,
+        ushort charMask,
+        ushort foreRed,
+        ushort foreGreen,
+        ushort foreBlue,
         ushort backRed,
-        ushort backGreen, 
+        ushort backGreen,
         ushort backBlue)
     {
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
@@ -379,26 +385,19 @@ internal class XProto : IXProto
     void IXProto.FreeColors(uint colormapId, uint planeMask, params uint[] pixels)
     {
         var requiredBuffer = 12 + pixels.Length * 4;
+        var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.FreeColors;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
-            MemoryMarshal.Write(scratchBuffer[8..12], planeMask);
-            pixels.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<uint, byte>(pixels).CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.FreeColors;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], colormapId);
-            MemoryMarshal.Write(scratchBuffer[8..12], planeMask);
-            pixels.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[12..requiredBuffer]));
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<uint, byte>(pixels).CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }

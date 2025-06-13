@@ -21,7 +21,12 @@ x.CreateWindow(screen.RootDepth.DepthValue,
     0, []);
 x.MapWindow(win);
 
+var alloc_cookie = x.AllocColor(screen.CMap, 65535, 0, 0); // Red
+Console.WriteLine("Allocated red color, pixel value: {0}", alloc_cookie.pixel);
 
+// Free the color
+x.FreeColors(screen.CMap, 0, [alloc_cookie.pixel]);
+Console.WriteLine("Color freed successfully");
 
 var grabResult = x.GrabPointer(false,
     screen.Root,
@@ -166,8 +171,7 @@ var font = x.NewId();
 x.OpenFont("cursor", font);
 
 var cursor = x.NewId();
-x.CreateGlyphCursor(cursor, font, font, 'D', 69, // Arrow cursor
-                       0, 0, 0, 65535, 65535, 65535);
+x.CreateGlyphCursor(cursor, font, font, 'D', 69, 0, 0, 0, 65535, 65535, 65535);
 
 Console.WriteLine("Created cursor with ID: {0}", cursor);
 Thread.Sleep(3000);
@@ -177,17 +181,13 @@ Console.WriteLine("freed cursor");
 
 x.CloseFont(font);
 
-
-
 x.SetSelectionOwner(win, 1, 0);
 
 Console.WriteLine("Selection owner set for PRIMARY selection");
 Thread.Sleep(1500);
 
 x.SetSelectionOwner(0, 1, 0);
-
-Console.WriteLine("Selection owner cleared\n");
-
+Console.WriteLine("Selection owner cleared");
 
 x.SetCloseDownMode(CloseDownMode.Destroy);
 
