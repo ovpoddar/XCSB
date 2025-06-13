@@ -10,7 +10,7 @@ public static class XcsbClient
     public static IXProto Initialized()
     {
         var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
-        var connectionDetails = GetSocketInformation(display);
+        var connectionDetails = GetDisplayConfiguration(display);
         var socket = new Socket(AddressFamily.Unix, SocketType.Stream, connectionDetails.Protocol);
         socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.GetSocketPath(display).ToString()));
         if (!socket.Connected)
@@ -21,60 +21,49 @@ public static class XcsbClient
         return result;
     }
 
-    private static ConnectionDetails GetSocketInformation(ReadOnlySpan<char> display)
+    private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)
     {
-        if (!GetDisplayConfiguration(display,
-            out var result))
-            throw new Exception("Initialized failed");
-        return result;
-    }
-
-    private static bool GetDisplayConfiguration(ReadOnlySpan<char> display,
-        out ConnectionDetails details)
-    {
-        details = new ConnectionDetails()
+        var details = new ConnectionDetails()
         {
             DisplayNumber = 0,
             ScreenNumber = 0,
         };
+        if (input.IsEmpty)
+            throw new Exception("Initialized failed");
 
-
-        if (display.IsEmpty)
-            return false;
-
-        var colonIndex = display.LastIndexOf(':');
+        var colonIndex = input.LastIndexOf(':');
         if (colonIndex == -1)
-            return false;
+            throw new Exception("Initialized failed");
 
-        if (display[0] == '/')
-            details.Socket = display[..colonIndex];
+        if (input[0] == '/')
+            details.Socket = input[..colonIndex];
         else
         {
-            var slashIndex = display.IndexOf('/');
+            var slashIndex = input.IndexOf('/');
             if (slashIndex >= 0)
             {
-                details.Protocol = Enum.TryParse(display[..slashIndex], true, out ProtocolType protocol)
+                details.Protocol = Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
                     ? protocol
                     : ProtocolType.Tcp;
-                details.Host = display.Slice(slashIndex + 1, colonIndex);
+                details.Host = input.Slice(slashIndex + 1, colonIndex);
             }
             else
             {
-                details.Host = display[..colonIndex];
+                details.Host = input[..colonIndex];
             }
         }
 
-        var displayNumberStart = display[(colonIndex + 1)..];
+        var displayNumberStart = input[(colonIndex + 1)..];
         if (displayNumberStart.Length == 0)
-            return false;
+            throw new Exception("Initialized failed");
 
         var dotIndex = displayNumberStart.IndexOf('.');
+        bool result;
         if (dotIndex < 0)
         {
             details.Display = displayNumberStart[..];
-            var result = int.TryParse(displayNumberStart[..], out var displayNumber);
+            result = int.TryParse(displayNumberStart[..], out var displayNumber);
             details.DisplayNumber = displayNumber;
-            return result;
         }
         else
         {
@@ -83,10 +72,12 @@ public static class XcsbClient
             var task2 = int.TryParse(displayNumberStart[(dotIndex + 1)..], out var screenNumber);
             details.DisplayNumber = displayNumber;
             details.ScreenNumber = screenNumber;
-            return task1 && task2;
+            result = task1 && task2;
         }
+        if (!result)
+            throw new Exception("Initialized failed");
+        return details;
     }
-
     public static int GetEventSize() =>
         Marshal.SizeOf<XEvent>();
 }
