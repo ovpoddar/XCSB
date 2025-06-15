@@ -10,14 +10,14 @@ namespace Xcsb;
 
 internal static class Connection
 {
-    private static readonly byte[] MAGIC_COOKIE = "MIT-MAGIC-COOKIE-1"u8.ToArray();
+    private static readonly byte[] MAGICCOOKIE = "MIT-MAGIC-COOKIE-1"u8.ToArray();
 
     private static string? _cachedAuthPath;
-    private static readonly object _authPathLock = new();
+    private static readonly object AuthPathLock = new();
 
     internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails, string display)
     {
-        var (response, socket) = MakeHandshake(ref connectionDetails, display, [], []);
+        var (response, socket) = MakeHandshake(connectionDetails, display, [], []);
         if (response.HandshakeStatus == HandshakeStatus.Success && socket is not null)
         {
             var successBody = HandshakeSuccessResponseBody.Read(socket,
@@ -31,7 +31,7 @@ internal static class Connection
 
         foreach (var (authName, authData) in GetAuthInfo(host, dis))
         {
-            (response, socket) = MakeHandshake(ref connectionDetails, display, authName, authData);
+            (response, socket) = MakeHandshake(connectionDetails, display, authName, authData);
             if (response.HandshakeStatus is HandshakeStatus.Success && socket is not null)
             {
                 var successResponseBody = HandshakeSuccessResponseBody.Read(socket, response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
@@ -44,29 +44,37 @@ internal static class Connection
 
     private static string GetAuthFilePath()
     {
-        if (_cachedAuthPath != null)
+        Thread.MemoryBarrier();
+        if (_cachedAuthPath is not null)
             return _cachedAuthPath;
 
-        lock (_authPathLock)
+        lock (AuthPathLock)
         {
-            if (_cachedAuthPath != null)
+            if (_cachedAuthPath is not null)
                 return _cachedAuthPath;
 
+            string result;
             var authPath = Environment.GetEnvironmentVariable("XAUTHORITY");
             if (!string.IsNullOrWhiteSpace(authPath))
             {
-                _cachedAuthPath = authPath;
-                return authPath;
+                result = authPath;
+            }
+            else
+            {
+                var homePath = Environment.GetEnvironmentVariable("HOME");
+                if (string.IsNullOrWhiteSpace(homePath))
+                    throw new InvalidOperationException("Neither XAUTHORITY nor HOME environment variables are set");
+
+                result = Path.Join(homePath, ".Xauthority");
             }
 
-            var homePath = Environment.GetEnvironmentVariable("HOME");
-            if (string.IsNullOrWhiteSpace(homePath))
-                throw new InvalidOperationException("Neither XAUTHORITY nor HOME environment variables are set");
+            Thread.MemoryBarrier();
+            _cachedAuthPath = result;
 
-            _cachedAuthPath = Path.Join(homePath, ".Xauthority");
-            return _cachedAuthPath;
+            return result;
         }
     }
+
     private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(string host, string display)
     {
         var filePath = GetAuthFilePath();
@@ -79,12 +87,12 @@ internal static class Connection
             if (context.Family == ushort.MaxValue || context.Family == byte.MaxValue
                        && context.GetHostAddress(fileStream) == host
                        && (dspy is "" || dspy == display)
-                       && displayName.SequenceEqual(MAGIC_COOKIE))
+                       && displayName.SequenceEqual(MAGICCOOKIE))
                 yield return (displayName, context.GetData(fileStream));
         }
     }
 
-    private static (HandshakeResponseHead, Socket?) MakeHandshake(ref ConnectionDetails connectionDetails,
+    private static (HandshakeResponseHead, Socket?) MakeHandshake(in ConnectionDetails connectionDetails,
         string display,
         Span<byte> authName,
         Span<byte> authData)
@@ -121,6 +129,7 @@ internal static class Connection
         }
         catch (Exception)
         {
+            socket.Dispose();
             return (new HandshakeResponseHead(), null);
         }
     }
