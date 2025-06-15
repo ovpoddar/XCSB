@@ -12,7 +12,6 @@ public static class XcsbClient
         var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
         var connectionDetails = GetDisplayConfiguration(display);
         var connectionResult = Connection.TryConnect(connectionDetails, display);
-        
         var result = new XProto(connectionResult.Item2, connectionResult.Item1);
         return result;
     }
@@ -74,6 +73,7 @@ public static class XcsbClient
             throw new Exception("Initialized failed");
         return details;
     }
+
     public static int GetEventSize() =>
         Marshal.SizeOf<XEvent>();
 }
