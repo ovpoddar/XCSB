@@ -10,57 +10,64 @@ namespace Xcsb;
 
 internal static class Connection
 {
-    private static readonly byte[] MAGICCOOKIE = [77, 73, 84, 45, 77, 65, 71, 73, 67, 45, 67, 79, 79, 75, 73, 69, 45, 49];// "MIT-MAGIC-COOKIE-1";
-    internal static HandshakeSuccessResponseBody TryConnect(Socket socket, ReadOnlySpan<char> host, ReadOnlySpan<char> display)
+    private static readonly byte[] MAGIC_COOKIE = "MIT-MAGIC-COOKIE-1"u8.ToArray();
+    private static string? _cachedAuthPath;
+    private static readonly object _authPathLock = new();
+
+    private static string GetAuthFilePath()
     {
-        var result = MakeHandshake(socket, [], []);
-        if (result.HandshakeStatus is HandshakeStatus.Authenticate or HandshakeStatus.Failed)
+        if (_cachedAuthPath != null)
+            return _cachedAuthPath;
+
+        lock (_authPathLock)
         {
-            Debug.WriteLine($"Connection: Authenticate fail {result.GetStatusMessage(socket)}");
-            var (authName, authData) = GetAuthInfo(host, display);
-            result = MakeHandshake(socket, authName, authData);
+            if (_cachedAuthPath != null)
+                return _cachedAuthPath;
+
+            var authPath = Environment.GetEnvironmentVariable("XAUTHORITY");
+            if (!string.IsNullOrWhiteSpace(authPath))
+            {
+                _cachedAuthPath = authPath;
+                return authPath;
+            }
+
+            var homePath = Environment.GetEnvironmentVariable("HOME");
+            if (string.IsNullOrWhiteSpace(homePath))
+                throw new InvalidOperationException("Neither XAUTHORITY nor HOME environment variables are set");
+
+            _cachedAuthPath = Path.Join(homePath, ".Xauthority");
+            return _cachedAuthPath;
         }
-
-        if (result.HandshakeStatus is HandshakeStatus.Failed or HandshakeStatus.Authenticate)
-            throw new Exception(result.GetStatusMessage(socket).ToString());
-
-        var successResponseBody = HandshakeSuccessResponseBody.Read(socket, result.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
-        return successResponseBody;
     }
-
-    private static (byte[] authName, byte[] authData) GetAuthInfo(ReadOnlySpan<char> host,
+    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(ReadOnlySpan<char> host,
         ReadOnlySpan<char> display)
     {
-        var filePath = Environment.GetEnvironmentVariable("XAUTHORITY");
-        if (string.IsNullOrWhiteSpace(filePath))
-        {
-            filePath = Environment.GetEnvironmentVariable("HOME");
-            if (string.IsNullOrWhiteSpace(filePath))
-                throw new InvalidOperationException("XAUTHORITY not set and HOME not set");
-            filePath = Path.Join(filePath, ".XAuthority");
-        }
-
-        if (!File.Exists(filePath))
-            return ([], []);
-
+        var filePath = GetAuthFilePath();
         using var fileStream = File.OpenRead(filePath);
         while (fileStream.Position <= fileStream.Length)
         {
             var context = new XAuthority(fileStream);
             var dspy = context.GetDisplayNumber(fileStream);
             var displayName = context.GetName(fileStream);
-            if (context.Family == ushort.MaxValue
-                       || context.Family == byte.MaxValue && context.GetHostAddress(fileStream) == host
+            if (context.Family == ushort.MaxValue || context.Family == byte.MaxValue
+                       && context.GetHostAddress(fileStream) == host
                        && (dspy is "" || dspy == display)
-                       && displayName.SequenceEqual(MAGICCOOKIE))
-                return (displayName, context.GetData(fileStream));
+                       && displayName.SequenceEqual(MAGIC_COOKIE))
+                yield return (displayName, context.GetData(fileStream));
+            yield break;
         }
-
-        throw new InvalidOperationException("Invalid XAuthority file present.");
     }
 
-    private static HandshakeResponseHead MakeHandshake(Socket socket, Span<byte> authName, Span<byte> authData)
+    private static (HandshakeResponseHead, Socket) MakeHandshake(ref ConnectionDetails connectionDetails,
+        string display,
+        Span<byte> authName,
+        Span<byte> authData)
     {
+        var socket = new Socket(AddressFamily.Unix, SocketType.Stream, connectionDetails.Protocol);
+        socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.GetSocketPath(display).ToString()));
+        if (!socket.Connected)
+            throw new Exception("Initialized failed");
+
         var request = new HandShakeRequestType((ushort)authName.Length, (ushort)authData.Length);
         socket.Send(ref request);
 
@@ -83,6 +90,34 @@ internal static class Connection
 
         Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
         socket.ReceiveExact(tempBuffer);
-        return tempBuffer.AsStruct<HandshakeResponseHead>();
+        return (tempBuffer.AsStruct<HandshakeResponseHead>(), socket);
     }
+
+    internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails, string display)
+    {
+        var (response, socket) = MakeHandshake(ref connectionDetails, display, [], []);
+        if (response.HandshakeStatus == HandshakeStatus.Success)
+        {
+            var successBody = HandshakeSuccessResponseBody.Read(
+                socket,
+                response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
+            return (successBody, socket);
+        }
+
+        socket.Dispose();
+
+        foreach (var (authName, authData) in GetAuthInfo(connectionDetails.Host, connectionDetails.Display))
+        {
+            (response, socket) = MakeHandshake(ref connectionDetails, display, authData, authData);
+            if (response.HandshakeStatus is HandshakeStatus.Failed or HandshakeStatus.Authenticate)
+            {
+                socket.Dispose();
+                continue;
+            }
+            var successResponseBody = HandshakeSuccessResponseBody.Read(socket, response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
+            return (successResponseBody, socket);
+        }
+        throw new UnauthorizedAccessException("Failed to connect");
+    }
+
 }
