@@ -26,8 +26,8 @@ internal static class Connection
         }
 
         socket?.Dispose();
-        var host = connectionDetails.Host;
-        var dis = connectionDetails.Display;
+        var host = connectionDetails.Host.ToString();
+        var dis = connectionDetails.Display.ToString();
 
         foreach (var (authName, authData) in GetAuthInfo(host, dis))
         {
@@ -67,7 +67,7 @@ internal static class Connection
             return _cachedAuthPath;
         }
     }
-    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(ReadOnlySpan<char> host, ReadOnlySpan<char> display)
+    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(string host, string display)
     {
         var filePath = GetAuthFilePath();
         using var fileStream = File.OpenRead(filePath);
