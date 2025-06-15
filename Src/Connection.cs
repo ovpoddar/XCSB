@@ -99,7 +99,7 @@ internal static class Connection
         var socket = new Socket(AddressFamily.Unix, SocketType.Stream, connectionDetails.Protocol);
         socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.GetSocketPath(display).ToString()));
         if (!socket.Connected)
-            throw new Exception("Initialized failed");
+            throw new Exception("Error connecting to X server");
         try
         {
             var request = new HandShakeRequestType((ushort)authName.Length, (ushort)authData.Length);
