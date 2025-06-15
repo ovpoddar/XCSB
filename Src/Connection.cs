@@ -25,8 +25,8 @@ internal static class Connection
         }
 
         socket?.Dispose();
-        var host = connectionDetails.Host.ToString();
-        var dis = connectionDetails.Display.ToString();
+        ReadOnlyMemory<char> host =  connectionDetails.Host.ToArray();
+        ReadOnlyMemory<char> dis = connectionDetails.Display.ToArray();
 
         foreach (var (authName, authData) in GetAuthInfo(host, dis))
         {
@@ -74,19 +74,19 @@ internal static class Connection
         }
     }
 
-    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(string host, string display)
+    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(ReadOnlyMemory<char> host, ReadOnlyMemory<char> display)
     {
         var filePath = GetAuthFilePath();
+        if (!File.Exists(filePath))
+            throw new UnauthorizedAccessException("Failed to connect");
+        
         using var fileStream = File.OpenRead(filePath);
         while (fileStream.Position <= fileStream.Length)
         {
             var context = new XAuthority(fileStream);
             var dspy = context.GetDisplayNumber(fileStream);
             var displayName = context.GetName(fileStream);
-            if (context.Family == ushort.MaxValue || context.Family == byte.MaxValue
-                       && context.GetHostAddress(fileStream) == host
-                       && (dspy is "" || dspy == display)
-                       && displayName.SequenceEqual(_MagicCookie))
+            if ((dspy is "" || dspy.SequenceEqual(display.Span)) && displayName.SequenceEqual(_MagicCookie))
                 yield return (displayName, context.GetData(fileStream));
         }
     }
