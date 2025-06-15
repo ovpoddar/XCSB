@@ -10,10 +10,10 @@ namespace Xcsb;
 
 internal static class Connection
 {
-    private static readonly byte[] MAGICCOOKIE = "MIT-MAGIC-COOKIE-1"u8.ToArray();
+    private static readonly byte[] _MagicCookie = "MIT-MAGIC-COOKIE-1"u8.ToArray();
 
     private static string? _cachedAuthPath;
-    private static readonly object AuthPathLock = new();
+    private static readonly object _AuthPathLock = new();
 
     internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails, string display)
     {
@@ -48,7 +48,7 @@ internal static class Connection
         if (_cachedAuthPath is not null)
             return _cachedAuthPath;
 
-        lock (AuthPathLock)
+        lock (_AuthPathLock)
         {
             if (_cachedAuthPath is not null)
                 return _cachedAuthPath;
@@ -87,7 +87,7 @@ internal static class Connection
             if (context.Family == ushort.MaxValue || context.Family == byte.MaxValue
                        && context.GetHostAddress(fileStream) == host
                        && (dspy is "" || dspy == display)
-                       && displayName.SequenceEqual(MAGICCOOKIE))
+                       && displayName.SequenceEqual(_MagicCookie))
                 yield return (displayName, context.GetData(fileStream));
         }
     }
