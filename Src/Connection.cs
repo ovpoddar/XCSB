@@ -74,6 +74,7 @@ internal static class Connection
         }
     }
 
+    // TODO: move all the logic to a separate file or a separate project for less cluster
     private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(ReadOnlyMemory<char> host, ReadOnlyMemory<char> display)
     {
         var filePath = GetAuthFilePath();
