@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Masks;
+using Xcsb.Models.Event;
 
 namespace Xcsb.Models.Requests;
 
@@ -497,6 +498,18 @@ internal readonly struct SetSelectionOwnerType(uint owner, uint atom, uint times
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ChangeActivePointerGrabType(uint cursor, uint time, ushort mask)
+{
+    public readonly Opcode OpCode = Opcode.ChangeActivePointerGrab;
+    private readonly byte _pad0 = 0;
+    public readonly ushort Length = 4;
+    public readonly uint Cursor = cursor;
+    public readonly uint Time = time;
+    public readonly ushort Mask = mask;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct ImageText16Type(uint drawable, uint gc, short x, short y, int textLength)
 {
     public readonly Opcode OpCode = Opcode.ImageText16;
@@ -648,6 +661,18 @@ internal readonly struct CreateWindowType(byte depth, uint window, uint parent, 
     public readonly ClassType ClassType = classType;
     public readonly uint RootVisualId = rootVisualId;
     public readonly ValueMask Mask = mask;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct SendEventType(bool propagate, uint destination, uint eventMask, XEvent evnt)
+{
+    public readonly Opcode OpCode = Opcode.SendEvent;
+    public readonly byte Propagate = (byte)(propagate ? 1 : 0);
+    public readonly ushort Length = 11;
+    public readonly uint Destination = destination;
+    public readonly uint EventMask = eventMask;
+    public readonly XEvent XEvent = evnt;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]

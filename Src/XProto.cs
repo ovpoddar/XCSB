@@ -71,15 +71,8 @@ internal class XProto : IXProto
 
     void IXProto.ChangeActivePointerGrab(uint cursor, uint time, ushort mask)
     {
-        Span<byte> scratchBuffer = stackalloc byte[16];
-        scratchBuffer[0] = (byte)Opcode.ChangeActivePointerGrab;
-        scratchBuffer[1] = 0;
-        MemoryMarshal.Write<short>(scratchBuffer[2..4], 4);
-        MemoryMarshal.Write(scratchBuffer[4..8], cursor);
-        MemoryMarshal.Write(scratchBuffer[8..12], time);
-        MemoryMarshal.Write(scratchBuffer[12..14], mask);
-        MemoryMarshal.Write(scratchBuffer[14..16], 0);
-        _socket.SendExact(scratchBuffer);
+        var request = new ChangeActivePointerGrabType(cursor, time, mask);
+        _socket.Send(ref request);
     }
 
     void IXProto.ChangeGC(uint gc, GCMask mask, params uint[] args)
@@ -912,14 +905,8 @@ internal class XProto : IXProto
 
     void IXProto.SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
-        Span<byte> scratchBuffer = stackalloc byte[44];
-        scratchBuffer[0] = (byte)Opcode.SendEvent;
-        scratchBuffer[1] = (byte)(propagate ? 1 : 0);
-        MemoryMarshal.Write<ushort>(scratchBuffer[2..4], 11);
-        MemoryMarshal.Write(scratchBuffer[4..8], destination);
-        MemoryMarshal.Write(scratchBuffer[8..12], eventMask);
-        MemoryMarshal.Write(scratchBuffer[12..44], evnt);
-        _socket.SendExact(scratchBuffer);
+        var request = new SendEventType(propagate, destination, eventMask, evnt);
+        _socket.Send(ref request);
     }
 
     void IXProto.SetAccessControl(AccessControlMode mode)
