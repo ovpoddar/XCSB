@@ -395,6 +395,27 @@ internal readonly struct SetClipRectanglesType(ClipOrdering ordering, uint gc, u
     public readonly ushort ClipY = clipY;
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct PolyPointType(CoordinateMode coordinate, uint drawable, uint gc, int pointsLength)
+{
+    public readonly Opcode opcode = Opcode.PolyPoint;
+    public readonly CoordinateMode Coordinate = coordinate;
+    public readonly ushort Length = (ushort)(3 + pointsLength);
+    public readonly uint Drawable = drawable;
+    public readonly uint Gc = gc;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct PolyLineType(CoordinateMode coordinate, uint drawable, uint gc, int pointsLength)
+{
+    public readonly Opcode opcode = Opcode.PolyLine;
+    public readonly CoordinateMode Coordinate = coordinate;
+    public readonly ushort Length = (ushort)(3 + pointsLength);
+    public readonly uint Drawable = drawable;
+    public readonly uint Gc = gc;
+}
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -405,6 +426,17 @@ internal readonly struct ChangeGCType(uint gc, GCMask mask, int argsLength)
     public readonly ushort Length = (ushort)(3 + argsLength);
     public readonly uint Gc = gc;
     public readonly GCMask Mask = mask;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct PolyRectangleType(uint drawable, uint gc, int rectanglesLength)
+{
+    public readonly Opcode opcode = Opcode.PolyRectangle;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + (rectanglesLength * 2));
+    public readonly uint Drawable = drawable;
+    public readonly uint Gc = gc;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
@@ -425,6 +457,17 @@ internal readonly struct PolyFillRectangleType(uint drawable, uint gc, int recta
     public readonly Opcode opcode = Opcode.PolyFillRectangle;
     private readonly byte _pad0;
     public readonly ushort Length = (ushort)(3 + (2 * rectanglesLength));
+    public readonly uint Drawable = drawable;
+    public readonly uint Mask = gc;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct PolySegmentType(uint drawable, uint gc, int segmentsLength)
+{
+    public readonly Opcode opcode = Opcode.PolySegment;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + (2 * segmentsLength));
     public readonly uint Drawable = drawable;
     public readonly uint Mask = gc;
 }
@@ -530,6 +573,19 @@ internal readonly struct ClearAreaType(bool exposures, uint window, short x, sho
     public readonly short Y = y;
     public readonly ushort Width = width;
     public readonly ushort Height = height;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct FillPolyType(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, int pointsLength)
+{
+    public readonly Opcode opcode = Opcode.FillPoly;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(4 + pointsLength);
+    public readonly uint Drawable = drawable;
+    public readonly uint Gc = gc;
+    public readonly PolyShape Shape = shape;
+    public readonly CoordinateMode Coordinate = coordinate;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]

@@ -107,14 +107,14 @@ public interface IXProto : IDisposable
         ushort width,
         ushort height,
         uint bitPlane);
-    void PolyPoint();
-    void PolyLine();
-    void PolySegment();
-    void PolyRectangle();
-    void PolyArc();
-    void FillPoly();
+    void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
+    void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
+    void PolySegment(uint drawable, uint gc, Segment[] segments);
+    void PolyRectangle(uint drawable, uint gc, Rectangle[] rectangles);
+    void PolyArc(); //todo:imp
+    void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points);
     void PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles);
-    void PolyFillArc();
+    void PolyFillArc();  //todo:imp
     void PutImage(ImageFormat format,
         uint drawable,
         uint gc,
@@ -126,8 +126,8 @@ public interface IXProto : IDisposable
         byte depth,
         Span<byte> data);
     void GetImage();
-    void PolyText8();
-    void PolyText16();
+    void PolyText8();  //todo:imp
+    void PolyText16();  //todo:imp
     void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text);
     void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text);
     void CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual);
@@ -148,7 +148,7 @@ public interface IXProto : IDisposable
     void CreateCursor();
     void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue);
     void FreeCursor(uint cursorId);
-    void RecolorCursor();
+    void RecolorCursor(); //todo: impl
     void QueryBestSize();
     void QueryExtension();
     void ListExtensions();
