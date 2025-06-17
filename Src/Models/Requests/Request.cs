@@ -47,7 +47,7 @@ internal readonly struct SetCloseDownModeType(CloseDownMode mode)
 internal readonly struct GrabServerType()
 {
     public readonly Opcode Opcode = Opcode.GrabServer;
-    private readonly byte _pad0 = 0;
+    private readonly byte _pad0;
     public readonly ushort Length = 1;
 }
 
@@ -56,7 +56,7 @@ internal readonly struct GrabServerType()
 internal readonly struct UnGrabServerType()
 {
     public readonly Opcode Opcode = Opcode.UngrabServer;
-    private readonly byte _pad0 = 0;
+    private readonly byte _pad0;
     public readonly ushort Length = 1;
 }
 
@@ -68,6 +68,16 @@ internal readonly struct QueryPointerType(uint window)
     private readonly byte _pad0;
     public readonly ushort Length = 2;
     public readonly uint Window = window;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct UngrabKeyboardType(uint time)
+{
+    public readonly Opcode Opcode = Opcode.UngrabKeyboard;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint Time = time;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
@@ -98,6 +108,16 @@ internal readonly struct InstallColormapType(uint colormapId)
     private readonly byte _pad0;
     public readonly ushort Length = 2;
     public readonly uint ColorMapId = colormapId;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct FreePixmapType(uint pixmapId)
+{
+    public readonly Opcode Opcode = Opcode.FreePixmap;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly uint PixmapId = pixmapId;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
@@ -192,12 +212,32 @@ internal readonly struct StoreColorsType(uint colormapId, int itemLength)
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct SetFontPathType(ushort itemsLength, int requestLength)
+{
+    public readonly Opcode OpCode = Opcode.SetFontPath;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(2 + (requestLength / 4));
+    public readonly ushort ItemsLength = itemsLength;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct CirculateWindowType(Direction direction, uint window)
 {
     public readonly Opcode OpCode = Opcode.CirculateWindow;
     public readonly Direction Direction = direction;
     public readonly ushort Length = 2;
     public readonly uint Window = window;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ChangeKeyboardControlType(KeyboardControlMask mask, int argsLength)
+{
+    public readonly Opcode OpCode = Opcode.ChangeKeyboardControl;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(2 + argsLength);
+    public readonly KeyboardControlMask Mask = mask;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
@@ -310,6 +350,18 @@ internal readonly struct CopyColormapAndFreeType(uint colormapId, uint srcColorm
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct SetDashesType(uint gc, ushort dashOffset, int dashLength)
+{
+    public readonly Opcode opcode = Opcode.SetDashes;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + (dashLength.AddPadding() / 4));
+    public readonly uint GContext = gc;
+    public readonly ushort DashOffset = dashOffset;
+    public readonly ushort DashLength = (ushort)dashLength;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct ConfigureWindowType(uint window, ConfigureValueMask mask, int argsLength)
 {
     public readonly Opcode opcode = Opcode.ConfigureWindow;
@@ -329,6 +381,18 @@ internal readonly struct SetInputFocusType(InputFocusMode mode, uint focus, uint
     public readonly ushort Length = 3;
     public readonly uint Focus = focus;
     public readonly uint Time = time;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct SetClipRectanglesType(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, int rectanglesLength)
+{
+    public readonly Opcode opcode = Opcode.SetClipRectangles;
+    public readonly ClipOrdering ordering = ordering;
+    public readonly ushort Length = (ushort)(3 + (2 * rectanglesLength));
+    public readonly uint Gc = gc;
+    public readonly ushort ClipX = clipX;
+    public readonly ushort ClipY = clipY;
 }
 
 
@@ -378,6 +442,28 @@ internal readonly struct FreeColorsType(uint colormapId, uint planeMask, int pix
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct UngrabButtonType(Button button, uint grabWindow, ModifierMask modifier)
+{
+    public readonly Opcode opcode = Opcode.UngrabButton;
+    public readonly Button Button = button;
+    public readonly ushort Length = 3;
+    public readonly uint GrabWindow = grabWindow;
+    public readonly ModifierMask Modifier = modifier;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct UngrabKeyType(byte key, uint grabWindow, ModifierMask modifier)
+{
+    public readonly Opcode opcode = Opcode.UngrabKey;
+    public readonly byte Key = key;
+    public readonly ushort Length = 3;
+    public readonly uint GrabWindow = grabWindow;
+    public readonly ModifierMask Modifier = modifier;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct RotatePropertiesType(uint window, int propertiesLength, ushort delta)
 {
     public readonly Opcode opcode = Opcode.RotateProperties;
@@ -412,7 +498,7 @@ internal readonly struct ChangePointerControlType(ushort accelerationNumerator,
 internal readonly struct SetScreenSaverType(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
 {
     public readonly Opcode OpCode = Opcode.SetScreenSaver;
-    private readonly byte _pad0 = 0;
+    private readonly byte _pad0;
     public readonly ushort Length = 3;
     public readonly short TimeOut = timeout;
     public readonly short Interval = interval;
@@ -448,6 +534,20 @@ internal readonly struct ClearAreaType(bool exposures, uint window, short x, sho
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct GrabKeyType(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode, GrabMode keyboardMode)
+{
+    public readonly Opcode OpCode = Opcode.GrabKey;
+    public readonly byte Exposures = (byte)(exposures ? 1 : 0);
+    public readonly ushort Length = 4;
+    public readonly uint GrabWindow = grabWindow;
+    public readonly ModifierMask ModifierMask = mask;
+    public readonly byte KeyCode = keycode;
+    public readonly GrabMode PointerMode = pointerMode;
+    public readonly GrabMode KeyboardMode = keyboardMode;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct AllocColorType(uint colorMap, ushort red, ushort green, ushort blue)
 {
     public readonly Opcode OpCode = Opcode.AllocColor;
@@ -458,7 +558,6 @@ internal readonly struct AllocColorType(uint colorMap, ushort red, ushort green,
     public readonly ushort Green = green;
     public readonly ushort Blue = blue;
 }
-
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -474,10 +573,22 @@ internal readonly struct CreateColormapType(ColormapAlloc alloc, uint colormapId
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct StoreNamedColorType(ColorFlag mode, uint colormapId, uint pixels, int nameLength)
+{
+    public readonly Opcode OpCode = Opcode.StoreNamedColor;
+    public readonly ColorFlag Mode = mode;
+    public readonly ushort Length = (ushort)(4 + (nameLength.AddPadding() / 4));
+    public readonly uint ColorMapId = colormapId;
+    public readonly uint Pixels = pixels;
+    public readonly ushort NameLength = (ushort)nameLength;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct CopyGCType(uint srcGc, uint dstGc, GCMask mask)
 {
     public readonly Opcode OpCode = Opcode.CopyGC;
-    private readonly byte _pad0 = 0;
+    private readonly byte _pad0;
     public readonly ushort Length = 4;
     public readonly uint SourceGC = srcGc;
     public readonly uint DestinationGC = dstGc;
@@ -489,7 +600,7 @@ internal readonly struct CopyGCType(uint srcGc, uint dstGc, GCMask mask)
 internal readonly struct SetSelectionOwnerType(uint owner, uint atom, uint timestamp)
 {
     public readonly Opcode OpCode = Opcode.SetSelectionOwner;
-    private readonly byte _pad0 = 0;
+    private readonly byte _pad0;
     public readonly ushort Length = 4;
     public readonly uint Owner = owner;
     public readonly uint Atom = atom;
@@ -501,7 +612,7 @@ internal readonly struct SetSelectionOwnerType(uint owner, uint atom, uint times
 internal readonly struct ChangeActivePointerGrabType(uint cursor, uint time, ushort mask)
 {
     public readonly Opcode OpCode = Opcode.ChangeActivePointerGrab;
-    private readonly byte _pad0 = 0;
+    private readonly byte _pad0;
     public readonly ushort Length = 4;
     public readonly uint Cursor = cursor;
     public readonly uint Time = time;
@@ -519,6 +630,19 @@ internal readonly struct ImageText16Type(uint drawable, uint gc, short x, short 
     public readonly uint GC = gc;
     public readonly short X = x;
     public readonly short Y = y;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct CreatePixmapType(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
+{
+    public readonly Opcode OpCode = Opcode.CreatePixmap;
+    public readonly byte Depth = depth;
+    public readonly ushort Length = 4;
+    public readonly uint PixmapId = pixmapId;
+    public readonly uint Drawable = drawable;
+    public readonly ushort Width = width;
+    public readonly ushort Height = height;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
@@ -587,7 +711,7 @@ internal readonly struct ChangePropertyType(PropertyMode mode, uint window, uint
 internal readonly struct ConvertSelectionType(uint requestor, uint selection, uint target, uint property, uint timestamp)
 {
     public readonly Opcode OpCode = Opcode.ConvertSelection;
-    private readonly byte _pad0 = 0;
+    private readonly byte _pad0;
     public readonly ushort Length = 6;
     public readonly uint Requestor = requestor;
     public readonly uint Selection = selection;
@@ -622,11 +746,29 @@ internal readonly struct GrabPointerType(bool ownerEvents, uint grabWindow, usho
     public readonly ushort Length = 6;
     public readonly uint GrabWindow = grabWindow;
     public readonly ushort Mask = mask;
-    private readonly GrabMode _pointerMode = pointerMode;
-    private readonly GrabMode _keyboardMode = keyboardMode;
-    private readonly uint _confineTo = confineTo;
-    private readonly uint _cursor = cursor;
-    private readonly uint _timeStamp = timeStamp;
+    public readonly GrabMode PointerMode = pointerMode;
+    public readonly GrabMode KeyboardMode = keyboardMode;
+    public readonly uint ConfineTo = confineTo;
+    public readonly uint Cursor = cursor;
+    public readonly uint TimeStamp = timeStamp;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct GrabButtonType(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
+{
+    public readonly Opcode OpCode = Opcode.GrabButton;
+    public readonly byte OwnerEvents = (byte)(ownerEvents ? 1 : 0);
+    public readonly ushort Length = 6;
+    public readonly uint GrabWindow = grabWindow;
+    public readonly ushort Mask = mask;
+    public readonly GrabMode PointerMode = pointerMode;
+    public readonly GrabMode KeyboardMode = keyboardMode;
+    public readonly uint ConfineTo = confineTo;
+    public readonly uint Cursor = cursor;
+    public readonly Button Button = button;
+    private readonly byte _pad0;
+    public readonly ModifierMask Modifiers = modifiers;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
@@ -641,6 +783,33 @@ internal readonly struct GetPropertyType(bool delete, uint window, uint property
     public readonly uint Type = type;
     public readonly uint Offset = offset;
     public readonly uint Length1 = length;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 28)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct CopyAreaType(
+    uint srcDrawable,
+    uint destDrawable,
+    uint gc,
+    ushort srcX,
+    ushort srcY,
+    ushort destX,
+    ushort destY,
+    ushort width,
+    ushort height)
+{
+    public readonly Opcode OpCode = Opcode.CopyArea;
+    private readonly byte _pad0;
+    public readonly ushort Length = 7;
+    public readonly uint SourceDrawable = srcDrawable;
+    public readonly uint DestinationDrawable = destDrawable;
+    public readonly uint Gc = gc;
+    public readonly ushort SourceX = srcX;
+    public readonly ushort SourceY = srcY;
+    public readonly ushort DestinationX = destX;
+    public readonly ushort DestinationY = destY;
+    public readonly ushort Width = width;
+    public readonly ushort Height = height;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
@@ -661,6 +830,25 @@ internal readonly struct CreateWindowType(byte depth, uint window, uint parent, 
     public readonly ClassType ClassType = classType;
     public readonly uint RootVisualId = rootVisualId;
     public readonly ValueMask Mask = mask;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct CopyPlaneType(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX, ushort destY, ushort width, ushort height, uint bitPlane)
+{
+    public readonly Opcode OpCode = Opcode.CopyPlane;
+    private readonly byte _pad0;
+    public readonly ushort Length = 8;
+    public readonly uint SourceDrawable = srcDrawable;
+    public readonly uint DestinationDrawable = destDrawable;
+    public readonly uint Gc = gc;
+    public readonly ushort SourceX = srcX;
+    public readonly ushort SourceY = srcY;
+    public readonly ushort DestinationX = destX;
+    public readonly ushort DestinationY = destY;
+    public readonly ushort Width = width;
+    public readonly ushort Height = height;
+    public readonly uint BitPlane = bitPlane;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]

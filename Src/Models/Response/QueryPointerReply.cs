@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Models.Event;
 
-namespace Xcsb.Models;
+namespace Xcsb.Models.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public unsafe struct QueryPointerReply

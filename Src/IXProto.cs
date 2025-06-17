@@ -3,13 +3,13 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Event;
 using Xcsb.Models.Handshake;
+using Xcsb.Models.Response;
 
 namespace Xcsb;
 public interface IXProto : IDisposable
 {
     HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
     ref XEvent GetEvent(Span<byte> scratchBuffer);
-
     uint NewId();
     void CreateWindow(byte depth,
         uint window,
@@ -52,13 +52,13 @@ public interface IXProto : IDisposable
     void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt);
     GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp);
     void UngrabPointer(uint time);
-    void GrabButton();
-    void UngrabButton();
+    void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers);
+    void UngrabButton(Button button, uint grabWindow, ModifierMask mask);
     void ChangeActivePointerGrab(uint cursor, uint time, ushort mask);
     void GrabKeyboard();
-    void UngrabKeyboard();
-    void GrabKey();
-    void UngrabKey();
+    void UngrabKeyboard(uint time);
+    void GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode, GrabMode keyboardMode);
+    void UngrabKey(byte key, uint grabWindow, ModifierMask modifier);
     void AllowEvents(EventsMode mode, uint time);
     void GrabServer();
     void UngrabServer();
@@ -75,19 +75,38 @@ public interface IXProto : IDisposable
     void QueryTextExtents();
     void ListFonts();
     void ListFontsWithInfo();
-    void SetFontPath();
+    void SetFontPath(string[] strPaths);
     void GetFontPath();
-    void CreatePixmap();
-    void FreePixmap();
+    void CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height);
+    void FreePixmap(uint pixmapId);
     void CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args);
     void ChangeGC(uint gc, GCMask mask, params uint[] args);
     void CopyGC(uint srcGc, uint dstGc, GCMask mask);
-    void SetDashes();
-    void SetClipRectangles();
+    void SetDashes(uint gc, ushort dashOffset, byte[] dashes);
+    void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Rectangle[] rectangles);
     void FreeGC(uint gc);
     void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height);
-    void CopyArea();
-    void CopyPlane();
+    void CopyArea(
+        uint srcDrawable,
+        uint destDrawable,
+        uint gc,
+        ushort srcX,
+        ushort srcY,
+        ushort destX,
+        ushort destY,
+        ushort width,
+        ushort height);
+    void CopyPlane(
+        uint srcDrawable,
+        uint destDrawable,
+        uint gc,
+        ushort srcX,
+        ushort srcY,
+        ushort destX,
+        ushort destY,
+        ushort width,
+        ushort height,
+        uint bitPlane);
     void PolyPoint();
     void PolyLine();
     void PolySegment();
