@@ -458,7 +458,7 @@ internal readonly struct PolyFillRectangleType(uint drawable, uint gc, int recta
     private readonly byte _pad0;
     public readonly ushort Length = (ushort)(3 + (2 * rectanglesLength));
     public readonly uint Drawable = drawable;
-    public readonly uint Mask = gc;
+    public readonly uint GC = gc;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
@@ -469,7 +469,29 @@ internal readonly struct PolySegmentType(uint drawable, uint gc, int segmentsLen
     private readonly byte _pad0;
     public readonly ushort Length = (ushort)(3 + (2 * segmentsLength));
     public readonly uint Drawable = drawable;
-    public readonly uint Mask = gc;
+    public readonly uint GC = gc;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct PolyArcType(uint drawable, uint gc, int arcLength)
+{
+    public readonly Opcode opcode = Opcode.PolyArc;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + (3 * arcLength));
+    public readonly uint Drawable = drawable;
+    public readonly uint GC = gc;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct PolyFillArcType(uint drawable, uint gc, int arcLength)
+{
+    public readonly Opcode opcode = Opcode.PolyFillArc;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(3 + (3 * arcLength));
+    public readonly uint Drawable = drawable;
+    public readonly uint GC = gc;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
@@ -719,12 +741,28 @@ internal readonly struct ReparentWindowType(uint window, uint parent, short x, s
 internal readonly struct ImageText8Type(uint drawable, uint gc, short x, short y, int textLength)
 {
     public readonly Opcode OpCode = Opcode.ImageText8;
-    private readonly byte _pad0 = (byte)textLength;
+    public readonly byte TextLength = (byte)textLength;
     public readonly ushort Length = (ushort)(4 + (textLength.AddPadding() / 4));
     public readonly uint Drawable = drawable;
     public readonly uint GC = gc;
     public readonly short X = x;
     public readonly short Y = y;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct RecolorCursorType(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+{
+    public readonly Opcode OpCode = Opcode.RecolorCursor;
+    private readonly byte _pad0;
+    public readonly ushort Length = 5;
+    public readonly uint CursorId = cursorId;
+    public readonly ushort ForegroundRed = foreRed;
+    public readonly ushort ForegroundGreen = foreGreen;
+    public readonly ushort ForegroundBlue = foreBlue;
+    public readonly ushort BackgroundRed = backRed;
+    public readonly ushort BackgroundGreen = backGreen;
+    public readonly ushort BackgroundBlue = backBlue;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]

@@ -111,10 +111,10 @@ public interface IXProto : IDisposable
     void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
     void PolySegment(uint drawable, uint gc, Segment[] segments);
     void PolyRectangle(uint drawable, uint gc, Rectangle[] rectangles);
-    void PolyArc(); //todo:imp
+    void PolyArc(uint drawable, uint gc, Arc[] arcs);
     void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points);
     void PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles);
-    void PolyFillArc();  //todo:imp
+    void PolyFillArc(uint drawable, uint gc, Arc[] arcs);
     void PutImage(ImageFormat format,
         uint drawable,
         uint gc,
@@ -148,13 +148,13 @@ public interface IXProto : IDisposable
     void CreateCursor();
     void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue);
     void FreeCursor(uint cursorId);
-    void RecolorCursor(); //todo: impl
+    void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue);
     void QueryBestSize();
     void QueryExtension();
     void ListExtensions();
     void SetModifierMapping();
     void GetModifierMapping();
-    void ChangeKeyboardMapping();
+    void ChangeKeyboardMapping(); //todo:impl
     void GetKeyboardMapping();
     void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args);
     void GetKeyboardControl();
@@ -166,7 +166,7 @@ public interface IXProto : IDisposable
     void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures);
     void GetScreenSaver();
     void ForceScreenSaver(ForceScreenSaverMode mode);
-    void ChangeHosts();
+    void ChangeHosts(); //todo:impl
     void ListHosts();
     void SetAccessControl(AccessControlMode mode);
     void SetCloseDownMode(CloseDownMode mode);
