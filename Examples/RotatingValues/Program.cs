@@ -78,17 +78,17 @@ var gc = x.NewId();
 x.CreateGC(gc, win, GCMask.Foreground, [0xFF0000]);
 var rect = new Rectangle()
 {
-    x = 10,
-    y = 10,
-    width = 100,
-    height = 50,
+    X = 10,
+    Y = 10,
+    Width = 100,
+    Height = 50,
 };
 x.PolyFillRectangle(win, gc, [rect]);
 
 Thread.Sleep(1000);
 x.ChangeGC(gc, GCMask.Foreground, [screen.WhitePixel]);
-rect.x += 20;
-rect.y += 60;
+rect.X += 20;
+rect.Y += 60;
 
 x.PolyFillRectangle(win, gc, [rect]);
 x.FreeGC(gc);
@@ -98,14 +98,14 @@ var gc1 = x.NewId();
 var gc2 = x.NewId();
 x.CreateGC(gc1, win, GCMask.Foreground, [0x0000FF]);
 x.CreateGC(gc2, win, 0, []);
-rect.x -= 15;
-rect.y -= 65;
+rect.X -= 15;
+rect.Y -= 65;
 x.PolyFillRectangle(win, gc1, [rect]);
 Thread.Sleep(1500);
 
 x.CopyGC(gc1, gc2, GCMask.Foreground);
-rect.x += 20;
-rect.y += 60;
+rect.X += 20;
+rect.Y += 60;
 
 x.PolyFillRectangle(win, gc2, [rect]);
 

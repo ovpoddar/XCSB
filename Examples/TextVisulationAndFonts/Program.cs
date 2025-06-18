@@ -100,7 +100,7 @@ while (isRunning)
             c.CreateGC(gc, window, GCMask.Foreground, [0x00ffffff]);
 
             c.PolyFillRectangle(window, gc, [new Rectangle{
-                x = 0,y= 0,width =  500, height = 500
+                X = 0,Y= 0,Width =  500, Height = 500
             }]);
 
             c.FreeGC(gc);
@@ -115,7 +115,7 @@ while (isRunning)
         c.CreateGC(gc, window, GCMask.Foreground, [0x00ff0000]);
 
         c.PolyFillRectangle(window, gc, [new Rectangle{
-                x = 0,y= 0,width =  500, height = 500
+                X = 0,Y= 0,Width =  500, Height = 500
             }]);
 
         c.FreeGC(gc);
