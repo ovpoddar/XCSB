@@ -1,4 +1,7 @@
-﻿namespace Xcsb.Models;
+﻿using System.Runtime.InteropServices;
+
+namespace Xcsb.Models;
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 public struct ColorItem
 {
     public uint Pixel;
@@ -6,5 +9,4 @@ public struct ColorItem
     public ushort Green;
     public ushort Blue;
     public ColorFlag ColorFlag;
-    private readonly byte Pad0;
 }

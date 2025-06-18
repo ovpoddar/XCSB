@@ -11,13 +11,8 @@ public static class XcsbClient
     {
         var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
         var connectionDetails = GetDisplayConfiguration(display);
-        var socket = new Socket(AddressFamily.Unix, SocketType.Stream, connectionDetails.Protocol);
-        socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.GetSocketPath(display).ToString()));
-        if (!socket.Connected)
-            throw new Exception("Initialized failed");
-
-        var connectionResult = Connection.TryConnect(socket, connectionDetails.Host, connectionDetails.Display);
-        var result = new XProto(socket, connectionResult);
+        var connectionResult = Connection.TryConnect(connectionDetails, display);
+        var result = new XProto(connectionResult.Item2, connectionResult.Item1);
         return result;
     }
 
@@ -78,6 +73,7 @@ public static class XcsbClient
             throw new Exception("Initialized failed");
         return details;
     }
+
     public static int GetEventSize() =>
         Marshal.SizeOf<XEvent>();
 }
