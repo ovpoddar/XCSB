@@ -166,7 +166,7 @@ public interface IXProto : IDisposable
     void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures);
     void GetScreenSaver();
     void ForceScreenSaver(ForceScreenSaverMode mode);
-    void ChangeHosts(); //todo:impl
+    void ChangeHosts(HostMode mode, Family family, byte[] address);
     void ListHosts();
     void SetAccessControl(AccessControlMode mode);
     void SetCloseDownMode(CloseDownMode mode);

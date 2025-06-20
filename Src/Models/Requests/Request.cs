@@ -291,6 +291,29 @@ internal readonly struct ChangeSaveSetType(ChangeSaveSetMode changeSaveSetMode, 
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ChangeHostsType(HostMode mode, Family family, int addressLength)
+{
+    public readonly Opcode OpCode = Opcode.ChangeHosts;
+    public readonly HostMode Mode = mode;
+    public readonly ushort Length = (ushort)(2 + (addressLength.AddPadding() / 4));
+    public readonly Family Family = family;
+    private readonly byte _pad0;
+    public readonly ushort AddressLength = (ushort)addressLength;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct ChangeKeyboardMappingType(byte keycodeCount, byte firstKeycode, byte KeysymsPerKeycode, uint[] Keysym)
+{
+    public readonly Opcode OpCode = Opcode.ChangeKeyboardMapping;
+    public readonly byte KeycodeCount;
+    public readonly ushort Length = (ushort)(2 + (keycodeCount * KeysymsPerKeycode));
+    public readonly ushort FirstKeycode = firstKeycode;
+    private readonly ushort _pad0;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 internal readonly struct InternAtomType(bool onlyIfExist, int atomNameLength)
 {
     public readonly Opcode Opcode = Opcode.InternAtom;
