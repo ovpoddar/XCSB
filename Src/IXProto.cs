@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Event;
@@ -154,7 +155,8 @@ public interface IXProto : IDisposable
     void ListExtensions();
     void SetModifierMapping();
     void GetModifierMapping();
-    void ChangeKeyboardMapping(); //todo:impl
+    // suppose need changes
+    void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym);
     void GetKeyboardMapping();
     void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args);
     void GetKeyboardControl();

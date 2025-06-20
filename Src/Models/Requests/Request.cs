@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Masks;
@@ -304,13 +305,13 @@ internal readonly struct ChangeHostsType(HostMode mode, Family family, int addre
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct ChangeKeyboardMappingType(byte keycodeCount, byte firstKeycode, byte KeysymsPerKeycode, uint[] Keysym)
+internal readonly struct ChangeKeyboardMappingType(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode)
 {
     public readonly Opcode OpCode = Opcode.ChangeKeyboardMapping;
-    public readonly byte KeycodeCount;
-    public readonly ushort Length = (ushort)(2 + (keycodeCount * KeysymsPerKeycode));
-    public readonly ushort FirstKeycode = firstKeycode;
-    private readonly ushort _pad0;
+    public readonly byte KeycodeCount = keycodeCount;
+    public readonly ushort Length = (ushort)(2 + (keycodeCount * keysymsPerKeycode));
+    public readonly byte FirstKeycode = firstKeycode;
+    public readonly byte KeysymsPerKeycode = keysymsPerKeycode;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
