@@ -243,9 +243,19 @@ internal class XProto : IXProto
         _socket.Send(ref request);
     }
 
-    void IXProto.CopyArea()
+    void IXProto.CopyArea(
+        uint srcDrawable,
+        uint destDrawable,
+        uint gc,
+        ushort srcX,
+        ushort srcY,
+        ushort destX,
+        ushort destY,
+        ushort width,
+        ushort height)
     {
-        throw new NotImplementedException();
+        var request = new CopyAreaType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height);
+        _socket.Send(ref request);
     }
 
     void IXProto.CopyColormapAndFree(uint colormapId, uint srcColormapId)
@@ -260,9 +270,10 @@ internal class XProto : IXProto
         _socket.Send(ref request);
     }
 
-    void IXProto.CopyPlane()
+    void IXProto.CopyPlane(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX, ushort destY, ushort width, ushort height, uint bitPlane)
     {
-        throw new NotImplementedException();
+        var request = new CopyPlaneType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height, bitPlane);
+        _socket.Send(ref request);
     }
 
     void IXProto.CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual)

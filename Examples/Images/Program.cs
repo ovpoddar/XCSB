@@ -25,6 +25,10 @@ xcsb.ChangeProperty(PropertyMode.Replace, window, 39, 31, Encoding.UTF8.GetBytes
 
 var gc = xcsb.NewId();
 xcsb.CreateGC(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
+
+var white_gc= xcsb.NewId();
+xcsb.CreateGC(white_gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.WhitePixel, 0]);
+
 var requirByte = WIDTH * HEIGHT * 4;
 var data = ArrayPool<byte>.Shared.Rent(requirByte);
 
@@ -60,7 +64,7 @@ while (isRunning)
             gc,
             WIDTH,
             HEIGHT,
-            0, 0, 0,
+            300, 0, 0,
             screen.RootDepth!.DepthValue,
             data.AsSpan()[..requirByte]);
 
@@ -84,6 +88,12 @@ while (isRunning)
         xcsb.PolySegment(window, gc, [
             new Segment{ X1 = 90, Y1 = 55, X2= 100,Y2= 65},
             new Segment{ X1 = 100, Y1 = 55, X2= 90,Y2= 65}]);
+
+        xcsb.CopyArea(window, window, gc,
+            300, 0, 300, HEIGHT + 10, WIDTH, HEIGHT);
+
+        xcsb.CopyPlane(window, window, white_gc,
+            300, 0, 300, (HEIGHT * 2) + 10, WIDTH, HEIGHT, 4);
     }
     buffer.Clear();
 }
