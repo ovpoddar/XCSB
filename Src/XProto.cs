@@ -9,6 +9,7 @@ using Xcsb.Models;
 using Xcsb.Models.Event;
 using Xcsb.Models.Handshake;
 using Xcsb.Models.Requests;
+using Xcsb.Models.Response;
 
 namespace Xcsb;
 
@@ -379,9 +380,27 @@ internal class XProto : IXProto
         _socket.Send(ref request);
     }
 
-    void IXProto.FillPoly()
+    void IXProto.FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points)
     {
-        throw new NotImplementedException();
+        var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
+        var requiredBuffer = 16 + (points.Length * 4);
+
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Cast<Point, byte>(points)
+                .CopyTo(scratchBuffer[16..]);
+            _socket.SendExact(scratchBuffer);
+    }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Cast<Point, byte>(points)
+                .CopyTo(scratchBuffer[16..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.ForceScreenSaver(ForceScreenSaverMode mode)
@@ -723,14 +742,50 @@ internal class XProto : IXProto
         }
     }
 
-    void IXProto.PolyArc()
+    void IXProto.PolyArc(uint drawable, uint gc, Arc[] arcs)
     {
-        throw new NotImplementedException();
+        var request = new PolyArcType(drawable, gc, arcs.Length);
+        var requiredBuffer = Marshal.SizeOf<PolyArcType>() + (arcs.Length * 12);
+
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Arc, byte>(arcs)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+    {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Arc, byte>(arcs)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+    }
     }
 
-    void IXProto.PolyFillArc()
+    void IXProto.PolyFillArc(uint drawable, uint gc, Arc[] arcs)
     {
-        throw new NotImplementedException();
+        var request = new PolyFillArcType(drawable, gc, arcs.Length);
+        var requiredBuffer = Marshal.SizeOf<PolyFillArcType>() + (arcs.Length * 12);
+
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Arc, byte>(arcs)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer);
+    }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Arc, byte>(arcs)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles)
@@ -758,24 +813,96 @@ internal class XProto : IXProto
         }
     }
 
-    void IXProto.PolyLine()
+    void IXProto.PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
     {
-        throw new NotImplementedException();
+        var request = new PolyLineType(coordinate, drawable, gc, points.Length);
+        var requiredBuffer = 12 + (points.Length * 4);
+
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Point, byte>(points)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+    {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Point, byte>(points)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+    }
     }
 
-    void IXProto.PolyPoint()
+    void IXProto.PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
     {
-        throw new NotImplementedException();
+        var request = new PolyPointType(coordinate, drawable, gc, points.Length);
+        var requiredBuffer = 12 + (points.Length * 4);
+
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Point, byte>(points)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer);
+    }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Point, byte>(points)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
-    void IXProto.PolyRectangle()
+    void IXProto.PolyRectangle(uint drawable, uint gc, Rectangle[] rectangles)
     {
-        throw new NotImplementedException();
+        var request = new PolyRectangleType(drawable, gc, rectangles.Length);
+        var requiredBuffer = 12 + (rectangles.Length * 8);
+
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Rectangle, byte>(rectangles)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+    {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Rectangle, byte>(rectangles)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+    }
     }
 
-    void IXProto.PolySegment()
+    void IXProto.PolySegment(uint drawable, uint gc, Segment[] segments)
     {
-        throw new NotImplementedException();
+        var request = new PolySegmentType(drawable, gc, segments.Length);
+        var requiredBuffer = 12 + (segments.Length * 8);
+
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Segment, byte>(segments)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+    {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Segment, byte>(segments)
+                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.PolyText16()

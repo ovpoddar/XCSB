@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 namespace Xcsb.Models;
 public struct Point
 {
-    public int X;
-    public int Y;
+    public ushort X;
+    public ushort Y;
 }

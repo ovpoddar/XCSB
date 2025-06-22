@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace Xcsb.Models;
 public struct Arc
 {
-    public ushort x;
-    public ushort y;
-    public short width;
-    public short height;
-    public ushort angle1;
-    public ushort angle2;
+    public ushort X;
+    public ushort Y;
+    public short Width;
+    public short Height;
+    public ushort Angle1;
+    public ushort Angle2;
 }
