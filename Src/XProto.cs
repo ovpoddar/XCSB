@@ -326,9 +326,10 @@ internal class XProto : IXProto
         _socket.Send(ref request);
     }
 
-    void IXProto.CreatePixmap()
+    void IXProto.CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
-        throw new NotImplementedException();
+        var request = new CreatePixmapType(depth, pixmapId, drawable, width, height);
+        _socket.Send(ref request);
     }
 
     void IXProto.CreateWindow(byte depth, uint window,
@@ -458,9 +459,10 @@ internal class XProto : IXProto
         _socket.Send(ref request);
     }
 
-    void IXProto.FreePixmap()
+    void IXProto.FreePixmap(uint pixmapId)
     {
-        throw new NotImplementedException();
+        var request = new FreePixmapType(pixmapId);
+        _socket.Send(ref request);
     }
 
     void IXProto.GetAtomName()
@@ -1053,9 +1055,27 @@ internal class XProto : IXProto
         _socket.Send(ref request);
     }
 
-    void IXProto.SetClipRectangles()
+    void IXProto.SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Rectangle[] rectangles)
     {
-        throw new NotImplementedException();
+        var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
+        var requiredBuffer = 12 + rectangles.Length * Marshal.SizeOf<Rectangle>();
+
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Rectangle, byte>(rectangles).
+                CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+    {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Cast<Rectangle, byte>(rectangles).
+                CopyTo(scratchBuffer[12..requiredBuffer]);
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.SetCloseDownMode(CloseDownMode mode)
