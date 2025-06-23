@@ -969,16 +969,25 @@ internal readonly struct CopyPlaneType(uint srcDrawable, uint destDrawable, uint
     public readonly uint BitPlane = bitPlane;
 }
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct SendEventType(bool propagate, uint destination, uint eventMask, XEvent evnt)
+internal readonly struct CreateCursorType(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
 {
-    public readonly Opcode OpCode = Opcode.SendEvent;
-    public readonly byte Propagate = (byte)(propagate ? 1 : 0);
-    public readonly ushort Length = 11;
-    public readonly uint Destination = destination;
-    public readonly uint EventMask = eventMask;
-    public readonly XEvent XEvent = evnt;
+    public readonly Opcode OpCode = Opcode.CreateCursor;
+    private readonly byte _pad0;
+    public readonly ushort Length = 8;
+    public readonly uint CursorId = cursorId;
+    public readonly uint Source = source;
+    public readonly uint Mask = mask;
+    public readonly ushort ForeRed = foreRed;
+    public readonly ushort ForeGreen = foreGreen;
+    public readonly ushort ForeBlue = foreBlue;
+    public readonly ushort BackRed = backRed;
+    public readonly ushort BackGreen = backGreen;
+    public readonly ushort BackBlue = backBlue;
+    public readonly ushort X = x;
+    public readonly ushort Y = y;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
@@ -999,4 +1008,16 @@ internal readonly struct CreateGlyphCursorType(uint cursorId, uint sourceFont, u
     public readonly ushort BackRed = backRed;
     public readonly ushort BackGreen = backGreen;
     public readonly ushort BackBlue = backBlue;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct SendEventType(bool propagate, uint destination, uint eventMask, XEvent evnt)
+{
+    public readonly Opcode OpCode = Opcode.SendEvent;
+    public readonly byte Propagate = (byte)(propagate ? 1 : 0);
+    public readonly ushort Length = 11;
+    public readonly uint Destination = destination;
+    public readonly uint EventMask = eventMask;
+    public readonly XEvent XEvent = evnt;
 }

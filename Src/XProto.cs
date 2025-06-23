@@ -282,9 +282,10 @@ internal class XProto : IXProto
         _socket.Send(ref request);
     }
 
-    void IXProto.CreateCursor()
+    void IXProto.CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
-        throw new NotImplementedException();
+        var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y);
+        _socket.Send(ref request);
     }
 
     void IXProto.CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args)
@@ -1009,9 +1010,10 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.RecolorCursor()
+    void IXProto.RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
     {
-        throw new NotImplementedException();
+        var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
+        _socket.Send(ref request);
     }
 
     void IXProto.ReparentWindow(uint window, uint parent, short x, short y)
@@ -1084,9 +1086,26 @@ internal class XProto : IXProto
         _socket.Send(ref request);
     }
 
-    void IXProto.SetDashes()
+    void IXProto.SetDashes(uint gc, ushort dashOffset, byte[] dashes)
     {
-        throw new NotImplementedException();
+        var request = new SetDashesType(gc, dashOffset, dashes.Length);
+        var requiredBuffer = 12 + dashes.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            dashes.CopyTo(scratchBuffer[12..requiredBuffer]);
+            scratchBuffer[^dashes.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+    {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            dashes.CopyTo(scratchBuffer[12..requiredBuffer]);
+            scratchBuffer[^dashes.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.SetFontPath()
