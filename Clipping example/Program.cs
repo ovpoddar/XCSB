@@ -77,5 +77,5 @@ while (isRunning)
             break;
     }
 }
-
+xcsb.FreeGC(gc);
 xcsb.FreePixmap(pixmap);
