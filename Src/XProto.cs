@@ -99,32 +99,44 @@ internal class XProto : IXProto
         }
     }
 
-    void IXProto.ChangeHosts()
+    void IXProto.ChangeHosts(HostMode mode, Family family, byte[] address)
     {
-        throw new NotImplementedException();
+        var request = new ChangeHostsType(mode, family, address.Length);
+        var requiredBuffer = 8 + address.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            address.CopyTo(scratchBuffer[8..requiredBuffer]);
+            scratchBuffer[^address.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer);
+    }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            address.CopyTo(scratchBuffer[8..requiredBuffer]);
+            scratchBuffer[^address.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
     }
 
     void IXProto.ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args)
     {
         var requiredBuffer = 8 + args.Length * 4;
+        var request = new ChangeKeyboardControlType(mask, args.Length);
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.ChangeKeyboardControl;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], mask);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[8..requiredBuffer]));
+            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[8..requiredBuffer]);
             _socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.ChangeKeyboardControl;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
-            MemoryMarshal.Write(scratchBuffer[4..8], mask);
-            args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[8..requiredBuffer]));
+            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[8..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
@@ -571,14 +583,26 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.GrabButton()
+    void IXProto.GrabButton(
+        bool ownerEvents,
+        uint grabWindow,
+        ushort mask,
+        GrabMode pointerMode,
+        GrabMode keyboardMode,
+        uint confineTo,
+        uint cursor,
+        Button button,
+        ModifierMask modifiers)
     {
-        throw new NotImplementedException();
+        var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo,
+             cursor, button, modifiers);
+        _socket.Send(ref request);
     }
 
-    void IXProto.GrabKey()
+    void IXProto.GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode, GrabMode keyboardMode)
     {
-        throw new NotImplementedException();
+        var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
+        _socket.Send(ref request);
     }
 
     void IXProto.GrabKeyboard()
@@ -1201,14 +1225,16 @@ internal class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    void IXProto.UngrabButton()
+    void IXProto.UngrabButton(Button button, uint grabWindow, ModifierMask mask)
     {
-        throw new NotImplementedException();
+        var request = new UngrabButtonType(button, grabWindow, mask);
+        _socket.Send(ref request);
     }
 
-    void IXProto.UngrabKey()
+    void IXProto.UngrabKey(byte key, uint grabWindow, ModifierMask modifier)
     {
-        throw new NotImplementedException();
+        var request = new UngrabKeyType(key, grabWindow, modifier);
+        _socket.Send(ref request);
     }
 
     void IXProto.UngrabKeyboard()

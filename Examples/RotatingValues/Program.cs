@@ -19,11 +19,11 @@ x.CreateWindow(screen.RootDepth.DepthValue,
     0, []);
 x.MapWindow(win);
 
-var alloc_cookie = x.AllocColor(screen.CMap, 65535, 0, 0); // Red
-Console.WriteLine("Allocated red color, pixel value: {0}", alloc_cookie.pixel);
+var alloc_cookie = x.AllocColor(screen.DefaultColormap, 65535, 0, 0); // Red
+Console.WriteLine("Allocated red color, Pixel value: {0}", alloc_cookie.Pixel);
 
 // Free the color
-x.FreeColors(screen.CMap, 0, [alloc_cookie.pixel]);
+x.FreeColors(screen.DefaultColormap, 0, [alloc_cookie.Pixel]);
 Console.WriteLine("Color freed successfully");
 
 var grabResult = x.GrabPointer(false,
@@ -154,7 +154,7 @@ x.SetAccessControl(AccessControlMode.Disable);
 Console.WriteLine("Access control disabled");
 Thread.Sleep(1500);
 
-x.StoreColors(screen.CMap, [new ColorItem
+x.StoreColors(screen.DefaultColormap, [new ColorItem
 {
     Red = 32768,
     Green = 16384,
@@ -162,7 +162,7 @@ x.StoreColors(screen.CMap, [new ColorItem
     ColorFlag = ColorFlag.Red | ColorFlag.Green | ColorFlag.Blue,
     Pixel = 1
 }]);
-Console.WriteLine("Color stored successfully at pixel.");
+Console.WriteLine("Color stored successfully at Pixel.");
 
 var font = x.NewId();
 

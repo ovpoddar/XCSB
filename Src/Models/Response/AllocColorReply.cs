@@ -8,10 +8,10 @@ public readonly struct AllocColorReply
     public readonly byte ResponseType;
     private readonly byte _pad0;
     public readonly ushort Sequence;
-    public readonly uint length;
+    public readonly uint Length;
     public readonly ushort Red;
     public readonly ushort Green;
     public readonly ushort Blue;
     private readonly ushort _pad1;
-    public readonly uint pixel;
+    public readonly uint Pixel;
 }
