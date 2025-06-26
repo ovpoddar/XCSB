@@ -76,6 +76,7 @@ while (isRunning)
             break;
         }
         case EventType.Error:
+            isRunning = false;
             Console.WriteLine(evnt.ErrorEvent.ErrorCode);
             break;
     }
