@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Xcsb.Models;
-public struct Point
+public struct Point(ushort x, ushort y)
 {
-    public ushort X;
-    public ushort Y;
+    public ushort X = x;
+    public ushort Y = y;
 }
