@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -11,6 +12,7 @@ using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Event;
+using Xcsb.Models.Handshake;
 using Xcsb.Models.Requests;
 
 namespace Xcsb;
@@ -407,7 +409,7 @@ internal class XBufferProto : IXBufferProto
             return MemoryMarshal.Cast<byte, ErrorEvent>(buffer.AsSpan()[0..received]).ToArray();
         }
         finally
-    {
+        {
             ArrayPool<byte>.Shared.Return(buffer);
             _requestLength = 0;
             _buffer.Clear();
@@ -416,77 +418,153 @@ internal class XBufferProto : IXBufferProto
 
     public void ForceScreenSaver(ForceScreenSaverMode mode)
     {
-        throw new NotImplementedException();
+        var request = new ForceScreenSaverType(mode);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
     public void FreeColormap(uint colormapId)
     {
-        throw new NotImplementedException();
+        var request = new FreeColormapType(colormapId);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
     public void FreeColors(uint colormapId, uint planeMask, params uint[] pixels)
     {
-        throw new NotImplementedException();
+        var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(pixels));
+
+        _requestLength++;
     }
 
     public void FreeCursor(uint cursorId)
     {
-        throw new NotImplementedException();
+        var request = new FreeCursorType(cursorId);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
     public void FreeGC(uint gc)
     {
-        throw new NotImplementedException();
+        var request = new FreeGCType(gc);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
     public void FreePixmap(uint pixmapId)
     {
-        throw new NotImplementedException();
+        var request = new FreePixmapType(pixmapId);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
-    public void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
+    public void GrabButton(
+        bool ownerEvents,
+        uint grabWindow,
+        ushort mask,
+        GrabMode pointerMode,
+        GrabMode keyboardMode,
+        uint confineTo,
+        uint cursor,
+        Button button,
+        ModifierMask modifiers)
     {
-        throw new NotImplementedException();
+        var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
-    public void GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode, GrabMode keyboardMode)
+    public void GrabKey(
+        bool exposures,
+        uint grabWindow,
+        ModifierMask mask,
+        byte keycode,
+        GrabMode pointerMode,
+        GrabMode keyboardMode)
     {
-        throw new NotImplementedException();
+        var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
     public void GrabServer()
     {
-        throw new NotImplementedException();
+        var request = new GrabServerType();
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
+    public void ImageText16(
+        uint drawable,
+        uint gc,
+        short x,
+        short y,
+        ReadOnlySpan<char> text)
     {
-        throw new NotImplementedException();
+        var request = new ImageText16Type(drawable, gc, x, y, text.Length);
+        var requiredBuffer = (text.Length * 2).AddPadding();
+        using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+        _buffer.Add(ref request);
+        Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[..(text.Length * 2)]);
+        scratchBuffer[(text.Length * 2)..requiredBuffer].Clear();
+        _buffer.AddRange(scratchBuffer[..requiredBuffer]);
+
+        _requestLength++;
     }
 
-    public void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
+    public void ImageText8(
+        uint drawable,
+        uint gc,
+        short x,
+        short y,
+        ReadOnlySpan<byte> text)
     {
-        throw new NotImplementedException();
+        var request = new ImageText8Type(drawable, gc, x, y, text.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(text);
+        _buffer.AddRange(new byte[text.Length.Padding()]);
+        _requestLength++;
     }
 
     public void InstallColormap(uint colormapId)
     {
-        throw new NotImplementedException();
+        var request = new InstallColormapType(colormapId);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
     public void KillClient(uint resource)
     {
-        throw new NotImplementedException();
+        var request = new KillClientType(resource);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
     public void MapSubwindows(uint window)
     {
-        throw new NotImplementedException();
+        var request = new MapSubWindowsType(window);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
     public void MapWindow(uint window)
     {
-        throw new NotImplementedException();
+        var request = new MapWindowType(window);
+        _buffer.Add(ref request);
+
+        _requestLength++;
     }
 
     public void NoOperation(params uint[] args)
