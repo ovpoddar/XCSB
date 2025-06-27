@@ -413,16 +413,14 @@ internal class XProto : IXProto
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             MemoryMarshal.Write(scratchBuffer[0..16], request);
-            MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[16..(16 + (args.Length * 4))]);
-            scratchBuffer[(16 + (args.Length * 4))..requiredBuffer].Clear();
+            MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[16..requiredBuffer]);
             _socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
             MemoryMarshal.Write(scratchBuffer[0..16], request);
-            MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[16..(16 + (args.Length * 4))]);
-            scratchBuffer[(16 + (args.Length * 4))..requiredBuffer].Clear();
+            MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[16..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
@@ -508,7 +506,6 @@ internal class XProto : IXProto
 
     public void DestroySubwindows(uint window)
     {
-
         var request = new DestroySubWindowsType(window);
         _socket.Send(ref request);
     }

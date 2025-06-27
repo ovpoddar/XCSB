@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Xcsb.Helpers;
@@ -16,11 +18,13 @@ internal class XBufferProto : IXBufferProto
 {
     private readonly Socket _socket;
     private List<byte> _buffer = new List<byte>();
+    private int _requestLength;
 
     public XBufferProto(Socket socket)
     {
         _socket = socket ?? throw new ArgumentNullException(nameof(socket));
         // todo: pass a configuration object and based on that set up the XBufferProto
+        _requestLength = 0;
     }
 
     public void AllowEvents(
@@ -29,6 +33,7 @@ internal class XBufferProto : IXBufferProto
     {
         var request = new AllowEventsType(mode, time);
         _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void Bell(sbyte percent)
@@ -38,157 +43,375 @@ internal class XBufferProto : IXBufferProto
 
         var request = new BellType(percent);
         _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void ChangeActivePointerGrab(uint cursor, uint time, ushort mask)
+    public void ChangeActivePointerGrab(
+        uint cursor,
+        uint time,
+        ushort mask)
     {
         var request = new ChangeActivePointerGrabType(cursor, time, mask);
         _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void ChangeGC(uint gc, GCMask mask, params uint[] args)
+    public void ChangeGC(
+        uint gc,
+        GCMask mask,
+        params uint[] args)
     {
-        throw new NotImplementedException();
+        var request = new ChangeGCType(gc, mask, args.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+
+        _requestLength++;
     }
 
-    public void ChangeHosts(HostMode mode, Family family, byte[] address)
+    public void ChangeHosts(
+        HostMode mode,
+        Family family,
+        byte[] address)
     {
-        throw new NotImplementedException();
+        var request = new ChangeHostsType(mode, family, address.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(address);
+        _buffer.AddRange(new byte[address.Length.Padding()]);
+
+        _requestLength++;
     }
 
-    public void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args)
+    public void ChangeKeyboardControl(
+        KeyboardControlMask mask,
+        params uint[] args)
     {
-        throw new NotImplementedException();
+        var request = new ChangeKeyboardControlType(mask, args.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        _requestLength++;
     }
 
-    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym)
+    public void ChangeKeyboardMapping(
+        byte keycodeCount,
+        byte firstKeycode,
+        byte keysymsPerKeycode,
+        uint[] Keysym)
     {
-        throw new NotImplementedException();
+        var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(Keysym));
+        _requestLength++;
     }
 
-    public void ChangePointerControl(Acceleration acceleration, ushort? threshold)
+    public void ChangePointerControl(
+        Acceleration acceleration,
+        ushort? threshold)
     {
-        throw new NotImplementedException();
+        var request = new ChangePointerControlType(
+            acceleration?.Numerator ?? 0,
+            acceleration?.Denominator ?? 0,
+            threshold ?? 0,
+            (byte)(acceleration is null ? 0 : 1),
+            (byte)(threshold.HasValue ? 1 : 0));
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args) where T : struct, INumber<T>
+    public void ChangeProperty<T>(
+        PropertyMode mode,
+        uint window,
+        uint property,
+        uint type,
+        params T[] args) where T : struct, INumber<T>
     {
-        throw new NotImplementedException();
+        var size = Marshal.SizeOf<T>();
+        if (size is not 1 or 2 or 4)
+            throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
+        var request = new ChangePropertyType(mode, window, property, type, args.Length, (byte)(size * 8));
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<T, byte>(args));
+        _buffer.AddRange(new byte[args.Length.Padding()]);
+        _requestLength++;
     }
 
-    public void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
+    public void ChangeSaveSet(
+        ChangeSaveSetMode changeSaveSetMode,
+        uint window)
     {
-        throw new NotImplementedException();
+        var request = new ChangeSaveSetType(changeSaveSetMode, window);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void ChangeWindowAttributes(uint window, ValueMask mask, params uint[] args)
+    public void ChangeWindowAttributes(
+        uint window,
+        ValueMask mask,
+        params uint[] args)
     {
-        throw new NotImplementedException();
+        var request = new ChangeWindowAttributesType(window, mask, args.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        _requestLength++;
     }
 
-    public void CirculateWindow(Direction direction, uint window)
+    public void CirculateWindow(
+        Direction direction,
+        uint window)
     {
-        throw new NotImplementedException();
+        var request = new CirculateWindowType(direction, window);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height)
+    public void ClearArea(
+        bool exposures,
+        uint window,
+        short x,
+        short y,
+        ushort width,
+        ushort height)
     {
-        throw new NotImplementedException();
+        var request = new ClearAreaType(exposures, window, x, y, width, height);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void CloseFont(uint fontId)
     {
-        throw new NotImplementedException();
+        var request = new CloseFontType(fontId);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void ConfigureWindow(uint window, ConfigureValueMask mask, params uint[] args)
+    public void ConfigureWindow(
+        uint window,
+        ConfigureValueMask mask,
+        params uint[] args)
     {
-        throw new NotImplementedException();
+        var request = new ConfigureWindowType(window, mask, args.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        _requestLength++;
     }
 
-    public void ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp)
+    public void ConvertSelection(
+        uint requestor,
+        uint selection,
+        uint target,
+        uint property,
+        uint timestamp)
     {
-        throw new NotImplementedException();
+        var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void CopyArea(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX, ushort destY, ushort width, ushort height)
+    public void CopyArea(
+        uint srcDrawable,
+        uint destDrawable,
+        uint gc,
+        ushort srcX,
+        ushort srcY,
+        ushort destX,
+        ushort destY,
+        ushort width,
+        ushort height)
     {
-        throw new NotImplementedException();
+        var request = new CopyAreaType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void CopyColormapAndFree(uint colormapId, uint srcColormapId)
+    public void CopyColormapAndFree(
+        uint colormapId,
+        uint srcColormapId)
     {
-        throw new NotImplementedException();
+        var request = new CopyColormapAndFreeType(colormapId, srcColormapId);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void CopyGC(uint srcGc, uint dstGc, GCMask mask)
+    public void CopyGC(
+        uint srcGc,
+        uint dstGc,
+        GCMask mask)
     {
-        throw new NotImplementedException();
+        var request = new CopyGCType(srcGc, dstGc, mask);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void CopyPlane(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX, ushort destY, ushort width, ushort height, uint bitPlane)
+    public void CopyPlane(
+        uint srcDrawable,
+        uint destDrawable,
+        uint gc,
+        ushort srcX,
+        ushort srcY,
+        ushort destX,
+        ushort destY,
+        ushort width,
+        ushort height,
+        uint bitPlane)
     {
-        throw new NotImplementedException();
+        var request = new CopyPlaneType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height, bitPlane);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
+    public void CreateColormap(
+        ColormapAlloc alloc,
+        uint colormapId,
+        uint window,
+        uint visual)
     {
-        throw new NotImplementedException();
+        var request = new CreateColormapType(alloc, colormapId, window, visual);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
+    public void CreateCursor(
+        uint cursorId,
+        uint source,
+        uint mask,
+        ushort foreRed,
+        ushort foreGreen,
+        ushort foreBlue,
+        ushort backRed,
+        ushort backGreen,
+        ushort backBlue,
+        ushort x,
+        ushort y)
     {
-        throw new NotImplementedException();
+        var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args)
+    public void CreateGC(
+        uint gc,
+        uint drawable,
+        GCMask mask,
+        params uint[] args)
     {
-        throw new NotImplementedException();
+        var request = new CreateGCType(gc, drawable, mask, args.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        _requestLength++;
     }
 
-    public void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+    public void CreateGlyphCursor(
+        uint cursorId,
+        uint sourceFont,
+        uint fontMask,
+        char sourceChar,
+        ushort charMask,
+        ushort foreRed,
+        ushort foreGreen,
+        ushort foreBlue,
+        ushort backRed,
+        ushort backGreen,
+        ushort backBlue)
     {
-        throw new NotImplementedException();
+        var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
+          backRed, backGreen, backBlue);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
+    public void CreatePixmap(
+        byte depth,
+        uint pixmapId,
+        uint drawable,
+        ushort width,
+        ushort height)
     {
-        throw new NotImplementedException();
+        var request = new CreatePixmapType(depth, pixmapId, drawable, width, height);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
+    public void CreateWindow(
+        byte depth,
+        uint window,
+        uint parent,
+        short x,
+        short y,
+        ushort width,
+        ushort height,
+        ushort borderWidth,
+        ClassType classType,
+        uint rootVisualId,
+        ValueMask mask,
+        params uint[] args)
     {
-        throw new NotImplementedException();
+        var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        _requestLength++;
     }
 
-    public void DeleteProperty(uint window, uint atom)
+    public void DeleteProperty(
+        uint window,
+        uint atom)
     {
-        throw new NotImplementedException();
+        var request = new DeletePropertyType(window, atom);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void DestroySubwindows(uint window)
     {
-        throw new NotImplementedException();
+        var request = new DestroySubWindowsType(window);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void DestroyWindow(uint window)
     {
-        throw new NotImplementedException();
+        var request = new DestroyWindowType(window);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points)
     {
-        throw new NotImplementedException();
+        var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<Point, byte>(points));
+        _requestLength++;
     }
 
     public IEnumerable<ErrorEvent> Flush()
     {
-        throw new NotImplementedException();
+        try
+        {
+            _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+            using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
+            var received = _socket.Receive(buffer);
+            return MemoryMarshal.Cast<byte, ErrorEvent>(buffer[0..received]).ToArray();
+        }
+        finally
+        {
+            _requestLength = 0;
+            _buffer.Clear();
+        }
     }
 
-    public Task<IEnumerable<ErrorEvent>> FlushAsync()
+    public async Task<IEnumerable<ErrorEvent>> FlushAsync()
     {
-        throw new NotImplementedException();
+        var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
+        try
+        {
+            _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+            var received = await _socket.ReceiveAsync(buffer);
+            return MemoryMarshal.Cast<byte, ErrorEvent>(buffer.AsSpan()[0..received]).ToArray();
+        }
+        finally
+    {
+            ArrayPool<byte>.Shared.Return(buffer);
+            _requestLength = 0;
+            _buffer.Clear();
+        }
     }
 
     public void ForceScreenSaver(ForceScreenSaverMode mode)
