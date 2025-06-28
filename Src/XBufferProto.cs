@@ -569,7 +569,11 @@ internal class XBufferProto : IXBufferProto
 
     public void NoOperation(params uint[] args)
     {
-        throw new NotImplementedException();
+        var requiredBuffer = 4 + args.Length * 4;
+        _buffer.AddRange([(byte)Opcode.NoOperation, 0]);
+        _buffer.AddRange(BitConverter.GetBytes(requiredBuffer / 4));
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        _requestLength++;
     }
 
     public void OpenFont(string fontName, uint fontId)
@@ -627,14 +631,29 @@ internal class XBufferProto : IXBufferProto
         throw new NotImplementedException();
     }
 
-    public void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+    public void RecolorCursor(
+        uint cursorId,
+        ushort foreRed,
+        ushort foreGreen,
+        ushort foreBlue,
+        ushort backRed,
+        ushort backGreen,
+        ushort backBlue)
     {
-        throw new NotImplementedException();
+        var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void ReparentWindow(uint window, uint parent, short x, short y)
+    public void ReparentWindow(
+        uint window,
+        uint parent,
+        short x,
+        short y)
     {
-        throw new NotImplementedException();
+        var request = new ReparentWindowType(window, parent, x, y);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void RotateProperties(uint window, ushort delta, params uint[] properties)
@@ -672,19 +691,35 @@ internal class XBufferProto : IXBufferProto
         throw new NotImplementedException();
     }
 
-    public void SetInputFocus(InputFocusMode mode, uint focus, uint time)
+    public void SetInputFocus(
+        InputFocusMode mode,
+        uint focus,
+        uint time)
     {
-        throw new NotImplementedException();
+        var request = new SetInputFocusType(mode, focus, time);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
+    public void SetScreenSaver(
+        short timeout,
+        short interval,
+        TriState preferBlanking,
+        TriState allowExposures)
     {
-        throw new NotImplementedException();
+        var request = new SetScreenSaverType(timeout, interval, preferBlanking, allowExposures);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void SetSelectionOwner(uint owner, uint atom, uint timestamp)
+    public void SetSelectionOwner(
+        uint owner,
+        uint atom,
+        uint timestamp)
     {
-        throw new NotImplementedException();
+        var request = new SetSelectionOwnerType(owner, atom, timestamp);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void StoreColors(uint colormapId, params ColorItem[] item)
@@ -697,48 +732,80 @@ internal class XBufferProto : IXBufferProto
         throw new NotImplementedException();
     }
 
-    public void UngrabButton(Button button, uint grabWindow, ModifierMask mask)
+    public void UngrabButton(
+        Button button,
+        uint grabWindow,
+        ModifierMask mask)
     {
-        throw new NotImplementedException();
+        var request = new UngrabButtonType(button, grabWindow, mask);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void UngrabKey(byte key, uint grabWindow, ModifierMask modifier)
+    public void UngrabKey(
+        byte key,
+        uint grabWindow,
+        ModifierMask modifier)
     {
-        throw new NotImplementedException();
+        var request = new UngrabKeyType(key, grabWindow, modifier);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void UngrabKeyboard(uint time)
     {
-        throw new NotImplementedException();
+        var request = new UngrabKeyboardType(time);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void UngrabPointer(uint time)
     {
-        throw new NotImplementedException();
+        var request = new UngrabPointerType(time);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void UngrabServer()
     {
-        throw new NotImplementedException();
+        var request = new UnGrabServerType();
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void UninstallColormap(uint colormapId)
     {
-        throw new NotImplementedException();
+        var request = new UninstallColormapType(colormapId);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void UnmapSubwindows(uint window)
     {
-        throw new NotImplementedException();
+        var request = new UnMapSubwindowsType(window);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void UnmapWindow(uint window)
     {
-        throw new NotImplementedException();
+        var request = new UnmapWindowType(window);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destX, short destY)
+    public void WarpPointer(
+        uint srcWindow,
+        uint destWindow,
+        short srcX,
+        short srcY,
+        ushort srcWidth,
+        ushort srcHeight,
+        short destX,
+        short destY)
     {
-        throw new NotImplementedException();
+        var request = new WarpPointerType(srcWindow, destWindow, srcX, srcY, srcWidth, srcHeight, destX, destY);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 }

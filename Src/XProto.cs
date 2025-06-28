@@ -906,7 +906,7 @@ internal class XProto : IXProto
     public void OpenFont(
         string fontName,
         uint fontId)
-    {
+    { 
         var request = new OpenFontType(fontId, (ushort)fontName.Length);
         var requestSize = Marshal.SizeOf<OpenFontType>();
         var requiredBuffer = requestSize + fontName.Length.AddPadding();
