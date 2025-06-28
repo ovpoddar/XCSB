@@ -8,6 +8,6 @@ using Xcsb.Models.Event;
 namespace Xcsb;
 public interface IXBufferProto : IVoidProto
 {
-    IEnumerable<ErrorEvent> Flush();
-    Task<IEnumerable<ErrorEvent>> FlushAsync();
+    IEnumerable<ErrorEvent> Flush(bool ignoreReturn = false);
+    Task<IEnumerable<ErrorEvent>> FlushAsync(bool ignoreReturn = false);
 }

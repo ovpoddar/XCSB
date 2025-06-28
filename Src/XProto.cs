@@ -906,7 +906,7 @@ internal class XProto : IXProto
     public void OpenFont(
         string fontName,
         uint fontId)
-    { 
+    {
         var request = new OpenFontType(fontId, (ushort)fontName.Length);
         var requestSize = Marshal.SizeOf<OpenFontType>();
         var requiredBuffer = requestSize + fontName.Length.AddPadding();
@@ -999,7 +999,6 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[0..12], request);
             MemoryMarshal.Cast<Rectangle, byte>(rectangles)
                 .CopyTo(scratchBuffer[12..(12 + rectangles.Length * 8)]);
-            scratchBuffer[(12 + rectangles.Length * 8)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer);
         }
         else
@@ -1008,7 +1007,6 @@ internal class XProto : IXProto
             MemoryMarshal.Write(scratchBuffer[0..12], request);
             MemoryMarshal.Cast<Rectangle, byte>(rectangles)
                 .CopyTo(scratchBuffer[12..(12 + rectangles.Length * 8)]);
-            scratchBuffer[(12 + rectangles.Length * 8)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
     }
@@ -1141,27 +1139,27 @@ internal class XProto : IXProto
         byte depth,
         Span<byte> data)
     {
-        // todo: optamice
         var request = new PutImageType(
             format,
             drawable,
             gc, width, height, x, y,
             leftPad, depth,
             data.Length);
-        _socket.Send(ref request);
-        var scratchBufferSize = data.Length.AddPadding();
+        var scratchBufferSize = data.Length.AddPadding() + 24;
         if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
-            data.CopyTo(scratchBuffer[..data.Length]);
-            scratchBuffer[data.Length..].Clear();
+            MemoryMarshal.Write(scratchBuffer[..24], in request);
+            data.CopyTo(scratchBuffer[24..(24 + data.Length)]);
+            scratchBuffer[(24 + data.Length)..].Clear();
             _socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
-            data.CopyTo(scratchBuffer[..data.Length]);
-            scratchBuffer[data.Length..].Clear();
+            MemoryMarshal.Write(scratchBuffer[..24], in request);
+            data.CopyTo(scratchBuffer[24..(24 + data.Length)]);
+            scratchBuffer[(24 + data.Length)..].Clear();
             _socket.SendExact(scratchBuffer[..scratchBufferSize]);
         }
     }

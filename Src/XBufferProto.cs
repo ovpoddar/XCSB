@@ -383,12 +383,13 @@ internal class XBufferProto : IXBufferProto
         _requestLength++;
     }
 
-    public IEnumerable<ErrorEvent> Flush()
+    public IEnumerable<ErrorEvent> Flush(bool ignoreReturn= false)
     {
         try
         {
             _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
             using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
+            if (ignoreReturn) return [];
             var received = _socket.Receive(buffer);
             return MemoryMarshal.Cast<byte, ErrorEvent>(buffer[0..received]).ToArray();
         }
@@ -399,12 +400,13 @@ internal class XBufferProto : IXBufferProto
         }
     }
 
-    public async Task<IEnumerable<ErrorEvent>> FlushAsync()
+    public async Task<IEnumerable<ErrorEvent>> FlushAsync(bool ignoreReturn = false)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
         try
         {
             _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+            if (ignoreReturn) return [];
             var received = await _socket.ReceiveAsync(buffer);
             return MemoryMarshal.Cast<byte, ErrorEvent>(buffer.AsSpan()[0..received]).ToArray();
         }
@@ -593,7 +595,10 @@ internal class XBufferProto : IXBufferProto
 
     public void PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles)
     {
-        throw new NotImplementedException();
+        var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
+        _buffer.Add(ref  request);
+        _buffer.AddRange(MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+        _requestLength++;
     }
 
     public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
@@ -608,7 +613,10 @@ internal class XBufferProto : IXBufferProto
 
     public void PolyRectangle(uint drawable, uint gc, Rectangle[] rectangles)
     {
-        throw new NotImplementedException();
+        var request = new PolyRectangleType(drawable, gc, rectangles.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+        _requestLength++;
     }
 
     public void PolySegment(uint drawable, uint gc, Segment[] segments)
@@ -628,7 +636,16 @@ internal class XBufferProto : IXBufferProto
 
     public void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y, byte leftPad, byte depth, Span<byte> data)
     {
-        throw new NotImplementedException();
+        var request = new PutImageType(
+           format,
+           drawable,
+           gc, width, height, x, y,
+           leftPad, depth,
+           data.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(data);
+        _buffer.AddRange(new byte[data.Length.Padding()]);
+        _requestLength++;
     }
 
     public void RecolorCursor(

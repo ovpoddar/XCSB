@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clipping example", "Example
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grabbing", "Examples\grabbing\Grabbing.csproj", "{6A23580C-87D3-AA77-2689-DAA68A3F9D9C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lazy audit", "Examples\Lazy audit\Lazy audit.csproj", "{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -145,6 +147,18 @@ Global
 		{6A23580C-87D3-AA77-2689-DAA68A3F9D9C}.Release|x64.Build.0 = Release|Any CPU
 		{6A23580C-87D3-AA77-2689-DAA68A3F9D9C}.Release|x86.ActiveCfg = Release|Any CPU
 		{6A23580C-87D3-AA77-2689-DAA68A3F9D9C}.Release|x86.Build.0 = Release|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Debug|x64.Build.0 = Debug|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Debug|x86.Build.0 = Debug|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Release|x64.ActiveCfg = Release|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Release|x64.Build.0 = Release|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Release|x86.ActiveCfg = Release|Any CPU
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -159,6 +173,7 @@ Global
 		{8631736D-FBF7-46D8-95EE-AA34D7CED0BF} = {6E0A4E4C-7EE4-4522-9EA4-99281286ADAD}
 		{01AA4051-83D9-9A81-B318-5F4C92BCFFF2} = {3817ABB2-8DFC-4C5A-9103-92198F43A941}
 		{6A23580C-87D3-AA77-2689-DAA68A3F9D9C} = {3817ABB2-8DFC-4C5A-9103-92198F43A941}
+		{3F9E2413-FF3C-4363-AE37-2A0E7C59C0F8} = {3817ABB2-8DFC-4C5A-9103-92198F43A941}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {34E68139-A24A-49E2-91B8-4A775950FCD5}
