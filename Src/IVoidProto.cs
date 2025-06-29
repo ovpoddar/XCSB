@@ -10,6 +10,13 @@ using Xcsb.Models.Event;
 using Xcsb.Models.Response;
 
 namespace Xcsb;
+// todo: add error handling.
+// ref: _socket.Blocking proprity might help to take a quick peck at the stream
+// then determine if the the request was a success or not. 
+
+// Forcast: the proceassing of read might need a update if i keep getting unorganized responce for the 
+// server. which might need a custome stream reader. which read a small chunk of the reponce 
+// and on later also able to read the whole section.
 public interface IVoidProto
 {
     void CreateWindow(
