@@ -383,7 +383,7 @@ internal class XBufferProto : IXBufferProto
         _requestLength++;
     }
 
-    public IEnumerable<ErrorEvent> Flush(bool ignoreReturn= false)
+    public IEnumerable<ErrorEvent> Flush(bool ignoreReturn = false)
     {
         try
         {
@@ -583,35 +583,67 @@ internal class XBufferProto : IXBufferProto
         throw new NotImplementedException();
     }
 
-    public void PolyArc(uint drawable, uint gc, Arc[] arcs)
+    public void PolyArc(
+        uint drawable,
+        uint gc,
+        Arc[] arcs)
     {
-        throw new NotImplementedException();
+        var request = new PolyArcType(drawable, gc, arcs.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<Arc, byte>(arcs));
+        _requestLength++;
     }
 
-    public void PolyFillArc(uint drawable, uint gc, Arc[] arcs)
+    public void PolyFillArc(
+        uint drawable,
+        uint gc,
+        Arc[] arcs)
     {
-        throw new NotImplementedException();
+        var request = new PolyFillArcType(drawable, gc, arcs.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<Arc, byte>(arcs));
+        _requestLength++;
     }
 
-    public void PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles)
+    public void PolyFillRectangle(
+        uint drawable,
+        uint gc,
+        Rectangle[] rectangles)
     {
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
-        _buffer.Add(ref  request);
+        _buffer.Add(ref request);
         _buffer.AddRange(MemoryMarshal.Cast<Rectangle, byte>(rectangles));
         _requestLength++;
     }
 
-    public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
+    public void PolyLine(
+        CoordinateMode coordinate,
+        uint drawable,
+        uint gc,
+        Point[] points)
     {
-        throw new NotImplementedException();
+        var request = new PolyLineType(coordinate, drawable, gc, points.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<Point, byte>(points));
+        _requestLength++;
     }
 
-    public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
+    public void PolyPoint(
+        CoordinateMode coordinate,
+        uint drawable,
+        uint gc,
+        Point[] points)
     {
-        throw new NotImplementedException();
+        var request = new PolyPointType(coordinate, drawable, gc, points.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<Point, byte>(points));
+        _requestLength++;
     }
 
-    public void PolyRectangle(uint drawable, uint gc, Rectangle[] rectangles)
+    public void PolyRectangle(
+        uint drawable,
+        uint gc,
+        Rectangle[] rectangles)
     {
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         _buffer.Add(ref request);
@@ -619,9 +651,15 @@ internal class XBufferProto : IXBufferProto
         _requestLength++;
     }
 
-    public void PolySegment(uint drawable, uint gc, Segment[] segments)
+    public void PolySegment(
+        uint drawable,
+        uint gc,
+        Segment[] segments)
     {
-        throw new NotImplementedException();
+        var request = new PolySegmentType(drawable, gc, segments.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<Segment, byte>(segments));
+        _requestLength++;
     }
 
     public void PolyText16()
@@ -634,14 +672,19 @@ internal class XBufferProto : IXBufferProto
         throw new NotImplementedException();
     }
 
-    public void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y, byte leftPad, byte depth, Span<byte> data)
+    public void PutImage(
+        ImageFormat format,
+        uint drawable,
+        uint gc,
+        ushort width,
+        ushort height,
+        short x,
+        short y,
+        byte leftPad,
+        byte depth,
+        Span<byte> data)
     {
-        var request = new PutImageType(
-           format,
-           drawable,
-           gc, width, height, x, y,
-           leftPad, depth,
-           data.Length);
+        var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         _buffer.Add(ref request);
         _buffer.AddRange(data);
         _buffer.AddRange(new byte[data.Length.Padding()]);
@@ -673,39 +716,71 @@ internal class XBufferProto : IXBufferProto
         _requestLength++;
     }
 
-    public void RotateProperties(uint window, ushort delta, params uint[] properties)
+    public void RotateProperties(
+        uint window,
+        ushort delta,
+        params uint[] properties)
     {
-        throw new NotImplementedException();
+        var request = new RotatePropertiesType(window, properties.Length, delta);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(properties));
+        _requestLength++;
     }
 
     public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
-        throw new NotImplementedException();
+        var request = new SendEventType(propagate, destination, eventMask, evnt);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
     public void SetAccessControl(AccessControlMode mode)
     {
-        throw new NotImplementedException();
+        var request = new SetAccessControlType(mode);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Rectangle[] rectangles)
+    public void SetClipRectangles(
+        ClipOrdering ordering,
+        uint gc,
+        ushort clipX,
+        ushort clipY,
+        Rectangle[] rectangles)
     {
-        throw new NotImplementedException();
+        var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+        _requestLength++;
     }
 
     public void SetCloseDownMode(CloseDownMode mode)
     {
-        throw new NotImplementedException();
+        var request = new SetCloseDownModeType(mode);
+        _buffer.Add(ref request);
+        _requestLength++;
     }
 
-    public void SetDashes(uint gc, ushort dashOffset, byte[] dashes)
+    public void SetDashes(
+        uint gc,
+        ushort dashOffset,
+        byte[] dashes)
     {
-        throw new NotImplementedException();
+        var request = new SetDashesType(gc, dashOffset, dashes.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(dashes);
+        _buffer.AddRange(new byte[dashes.Length.Padding()]);
+        _requestLength++;
     }
 
     public void SetFontPath(string[] strPaths)
     {
-        throw new NotImplementedException();
+        var request = new SetFontPathType((ushort)strPaths.Length, strPaths.Sum(a => a.Length).AddPadding());
+        _buffer.Add(ref request);
+        foreach (var path in strPaths)
+            _buffer.AddRange(Encoding.ASCII.GetBytes(path));
+        _buffer.AddRange(new byte[strPaths.Sum(a => a.Length).Padding()]);
+        _requestLength++;
     }
 
     public void SetInputFocus(
@@ -739,14 +814,28 @@ internal class XBufferProto : IXBufferProto
         _requestLength++;
     }
 
-    public void StoreColors(uint colormapId, params ColorItem[] item)
+    public void StoreColors(
+        uint colormapId,
+        params ColorItem[] item)
     {
-        throw new NotImplementedException();
+        var request = new StoreColorsType(colormapId, item.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(MemoryMarshal.Cast<ColorItem, byte>(item));
+        _buffer.Add(0);
+        _requestLength++;
     }
 
-    public void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
+    public void StoreNamedColor(
+        ColorFlag mode,
+        uint colormapId,
+        uint pixels,
+        ReadOnlySpan<byte> name)
     {
-        throw new NotImplementedException();
+        var request = new StoreNamedColorType(mode, colormapId, pixels, name.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(name);
+        _buffer.AddRange(new byte[name.Length.Padding()]);
+        _requestLength++;
     }
 
     public void UngrabButton(

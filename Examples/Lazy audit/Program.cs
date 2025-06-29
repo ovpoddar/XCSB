@@ -47,9 +47,7 @@ for (var y = 0; y < HEIGHT; y++)
 }
 
 lazyXcsb.MapWindow(window);
-var result = lazyXcsb.Flush();
-
-Console.WriteLine(result.Count());
+lazyXcsb.Flush(true);
 
 Span<byte> buffer = stackalloc byte[XcsbClient.GetEventSize()];
 var isRunning = true;
@@ -99,7 +97,7 @@ while (isRunning)
 
         lazyXcsb.CopyPlane(window, window, white_gc,
             300, 0, 300, (HEIGHT * 2) + 10, WIDTH, HEIGHT, 4);
-        lazyXcsb.Flush();
+        lazyXcsb.Flush(true);
     }
     buffer.Clear();
 }
