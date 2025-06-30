@@ -494,6 +494,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[32..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void DeleteProperty(
@@ -878,6 +879,8 @@ internal class XProto : IXProto
     {
         var request = new MapWindowType(window);
         _socket.Send(ref request);
+
+        CheckError();
     }
 
     public void NoOperation(params uint[] args)
@@ -1560,5 +1563,17 @@ internal class XProto : IXProto
 
         scratchBuffer[0] = 0;
         return ref scratchBuffer.AsStruct<XEvent>();
+    }
+
+    private void CheckError()
+    {
+        if (!_socket.Poll(0, SelectMode.SelectRead))
+            return;
+
+        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
+        var received = _socket.Receive(buffer);
+        var evnt = buffer.AsStruct<XEvent>();
+        if (evnt.EventType == EventType.Error)
+            throw new Exception();
     }
 }
