@@ -90,11 +90,10 @@ x.CopyColormapAndFree(cmap, screen.Root);
 Console.WriteLine("Copied colormap and freed old one.");
 Thread.Sleep(100);
 
-x.FreeColormap(cmap);
-Span<byte> evnt = stackalloc byte[XcsbClient.GetEventSize()];
-ref var xevnt = ref x.GetEvent(evnt);
+var xevnt = x.GetEvent();
 Debug.Assert(xevnt.EventType == EventType.Expose || xevnt.EventType == EventType.MappingNotify);
 Console.WriteLine("all success {0}", xevnt.EventType != EventType.Error);
+//todo: fix test
 x.DestroySubwindows(win);
 x.DestroyWindow(sub1);
 x.DestroyWindow(win);

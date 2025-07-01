@@ -23,11 +23,10 @@ connection.CreateGC(gc, window, 0, []);
 connection.MapWindow(window);
 show_help();
 
-Span<byte> buffer = stackalloc byte[XcsbClient.GetEventSize()];
 bool isRunning = true;
 while (isRunning)
 {
-    ref var evnt = ref connection.GetEvent(buffer);
+    var evnt = connection.GetEvent();
     switch (evnt.EventType)
     {
         case EventType.Expose:

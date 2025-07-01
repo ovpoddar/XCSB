@@ -12,7 +12,7 @@ public interface IXProto : IVoidProto, IDisposable
     HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
     IXBufferProto BufferCLient { get; }
 
-    ref XEvent GetEvent(Span<byte> scratchBuffer);
+    XEvent GetEvent();
     uint NewId();
     AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue);
     QueryPointerReply QueryPointer(uint window);

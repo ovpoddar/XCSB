@@ -5,7 +5,7 @@ using Xcsb.Helpers;
 namespace Xcsb.Models.Response;
 public unsafe struct GetPropertyReply
 {
-    public byte Reply;
+    public byte Reply; // 1
     public byte Format;
     public ushort Sequence;
     public uint Type;

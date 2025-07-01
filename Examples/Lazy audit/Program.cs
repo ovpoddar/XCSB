@@ -49,12 +49,11 @@ for (var y = 0; y < HEIGHT; y++)
 lazyXcsb.MapWindow(window);
 lazyXcsb.Flush(true);
 
-Span<byte> buffer = stackalloc byte[XcsbClient.GetEventSize()];
 var isRunning = true;
 
 while (isRunning)
 {
-    ref var evnt = ref xcsb.GetEvent(buffer);
+    var evnt = xcsb.GetEvent();
     if (evnt.EventType == EventType.Error)
     {
         Console.WriteLine(evnt.ErrorEvent.ErrorCode.ToString());
@@ -99,5 +98,4 @@ while (isRunning)
             300, 0, 300, (HEIGHT * 2) + 10, WIDTH, HEIGHT, 4);
         lazyXcsb.Flush(true);
     }
-    buffer.Clear();
 }

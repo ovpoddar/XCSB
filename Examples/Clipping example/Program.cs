@@ -97,12 +97,11 @@ xcsb.PolyRectangle(pixmap, gc, [
 xcsb.MapWindow(window);
 
 
-Span<byte> buffer = stackalloc byte[XcsbClient.GetEventSize()];
 var isRunning = true;
 
 while (isRunning)
 {
-    ref var evnt = ref xcsb.GetEvent(buffer);
+    var evnt = xcsb.GetEvent();
     switch (evnt.EventType)
     {
         case Xcsb.Models.Event.EventType.Expose:

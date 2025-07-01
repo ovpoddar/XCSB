@@ -64,11 +64,10 @@ ChangeWindowColor(x, window2, color_unfocused);
 var current_focus = window1;
 
 // Event loop to demonstrate focus changes
-Span<byte> buffer = stackalloc byte[XcsbClient.GetEventSize()];
 var isRunning = true;
 while (isRunning)
 {
-    ref var evnt = ref x.GetEvent(buffer);
+    var evnt = x.GetEvent();
     switch (evnt.EventType)
     {
         case EventType.KeyPress:

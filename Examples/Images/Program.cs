@@ -46,12 +46,11 @@ for (var y = 0; y < HEIGHT; y++)
 
 xcsb.MapWindow(window);
 
-Span<byte> buffer = stackalloc byte[XcsbClient.GetEventSize()];
 var isRunning = true;
 
 while (isRunning)
 {
-    ref var evnt = ref xcsb.GetEvent(buffer);
+    var evnt = xcsb.GetEvent();
     if (evnt.EventType == EventType.Error)
     {
         Console.WriteLine(evnt.ErrorEvent.ErrorCode.ToString());
@@ -95,5 +94,4 @@ while (isRunning)
         xcsb.CopyPlane(window, window, white_gc,
             300, 0, 300, (HEIGHT * 2) + 10, WIDTH, HEIGHT, 4);
     }
-    buffer.Clear();
 }

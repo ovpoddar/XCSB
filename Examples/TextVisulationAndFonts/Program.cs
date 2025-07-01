@@ -23,8 +23,6 @@ c.CreateWindow(0,
 
 c.MapWindow(window);
 var isRunning = true;
-Span<byte> eventBytes = stackalloc byte[Xcsb.XcsbClient.GetEventSize()];
-Debug.Assert(eventBytes.Length == 32);
 
 var fontId = c.NewId();
 var fontId1 = c.NewId();
@@ -32,7 +30,7 @@ var isExecuted = false;
 
 while (isRunning)
 {
-    var Event = c.GetEvent(eventBytes);
+    var Event = c.GetEvent();
     if (Event.EventType == EventType.Error)
     {
         Console.WriteLine(Event.ErrorEvent.ErrorCode.ToString());
@@ -48,17 +46,17 @@ while (isRunning)
                 [0x00ffffff, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask | EventMask.ButtonPressMask)]);
             isExecuted = true;
         }
-        if (Event.InputEvent.Detail == 24)
+        if (Event.InputEvent.Detail == 24)//d
         {
             c.DestroyWindow(window);
             isRunning = false;
         }
-        if (Event.InputEvent.Detail == 46)
+        if (Event.InputEvent.Detail == 46) //c
         {
             c.CirculateWindow(Direction.LowerHighest, window);
         }
 
-        if (Event.EventType == EventType.ButtonPress && Event.InputEvent.Detail == 1)
+        if (Event.EventType == EventType.ButtonPress && Event.InputEvent.Detail == 1) //left
         {
             var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
             Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
@@ -66,14 +64,14 @@ while (isRunning)
             currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
             Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
         }
-        if (Event.InputEvent.Detail == 58)
+        if (Event.InputEvent.Detail == 58) //m
         {
             c.UnmapWindow(window);
             Thread.Sleep(1000);
             c.MapWindow(window);
         }
 
-        if (Event.InputEvent.Detail == 25)
+        if (Event.InputEvent.Detail == 25)// w
         {
 
             c.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", fontId);
@@ -94,7 +92,7 @@ while (isRunning)
             c.CloseFont(fontId);
         }
 
-        if (Event.InputEvent.Detail == 54)
+        if (Event.InputEvent.Detail == 54) //c
         {
             var gc = c.NewId();
             c.CreateGC(gc, window, GCMask.Foreground, [0x00ffffff]);

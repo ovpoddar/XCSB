@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Sockets;
@@ -25,6 +26,8 @@ internal class XProto : IXProto
     private readonly HandshakeSuccessResponseBody _connectionResult;
     private bool _disposedValue;
     private int _globalId;
+    private ushort _sequenceNumber;
+    private Stack<XEvent> _bufferEvents;
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody => _connectionResult;
 
@@ -35,6 +38,8 @@ internal class XProto : IXProto
         _socket = socket;
         _connectionResult = connectionResult;
         _globalId = 0;
+        _sequenceNumber = 0;
+        _bufferEvents = new Stack<XEvent>();
     }
 
     public AllocColorReply AllocColor(
@@ -43,6 +48,7 @@ internal class XProto : IXProto
         ushort green,
         ushort blue)
     {
+        _sequenceNumber++;
         var request = new AllocColorType(colorMap, red, green, blue);
         _socket.Send(ref request);
 
@@ -53,16 +59,19 @@ internal class XProto : IXProto
 
     public void AllocColorCells()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void AllocColorPlanes()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void AllocNamedColor()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
@@ -70,17 +79,23 @@ internal class XProto : IXProto
         EventsMode mode,
         uint time)
     {
+        _sequenceNumber++;
         var request = new AllowEventsType(mode, time);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void Bell(sbyte percent)
     {
+        _sequenceNumber++;
         if (percent is not <= 100 or not >= (-100))
             throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
 
         var request = new BellType(percent);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void ChangeActivePointerGrab(
@@ -88,8 +103,11 @@ internal class XProto : IXProto
         uint time,
         ushort mask)
     {
+        _sequenceNumber++;
         var request = new ChangeActivePointerGrabType(cursor, time, mask);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void ChangeGC(
@@ -97,9 +115,10 @@ internal class XProto : IXProto
         GCMask mask,
         params uint[] args)
     {
+        _sequenceNumber++;
         var request = new ChangeGCType(gc, mask, args.Length);
         var requiredBuffer = 12 + args.Length * 4;
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -116,6 +135,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void ChangeHosts(
@@ -123,8 +143,10 @@ internal class XProto : IXProto
         Family family,
         byte[] address)
     {
+        _sequenceNumber++;
         var request = new ChangeHostsType(mode, family, address.Length);
         var requiredBuffer = 8 + address.Length.AddPadding();
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -141,14 +163,17 @@ internal class XProto : IXProto
             scratchBuffer[^address.Length.Padding()..].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void ChangeKeyboardControl(
         KeyboardControlMask mask,
         params uint[] args)
     {
+        _sequenceNumber++;
         var requiredBuffer = 8 + args.Length * 4;
         var request = new ChangeKeyboardControlType(mask, args.Length);
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -163,6 +188,7 @@ internal class XProto : IXProto
             MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[8..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void ChangeKeyboardMapping(
@@ -171,8 +197,10 @@ internal class XProto : IXProto
         byte keysymsPerKeycode,
         uint[] Keysym)
     {
+        _sequenceNumber++;
         var requiredBuffer = 8 + (keycodeCount * keysymsPerKeycode) * 4;
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -187,19 +215,23 @@ internal class XProto : IXProto
             MemoryMarshal.Cast<uint, byte>(Keysym).CopyTo(scratchBuffer[8..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void ChangePointerControl(
         Acceleration? acceleration,
         ushort? threshold)
     {
+        _sequenceNumber++;
         var request = new ChangePointerControlType(
             acceleration?.Numerator ?? 0,
             acceleration?.Denominator ?? 0,
             threshold ?? 0,
             (byte)(acceleration is null ? 0 : 1),
             (byte)(threshold.HasValue ? 1 : 0));
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     void IVoidProto.ChangeProperty<T>(
@@ -209,12 +241,13 @@ internal class XProto : IXProto
         uint type,
         params T[] args)
     {
+        _sequenceNumber++;
         var size = Marshal.SizeOf<T>();
         if (size is not 1 or 2 or 4)
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
         var request = new ChangePropertyType(mode, window, property, type, args.Length, (byte)(size * 8));
         var requiredBuffer = 24 + (args.Length.AddPadding() * size);
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -231,14 +264,18 @@ internal class XProto : IXProto
             scratchBuffer[(24 + args.Length * size)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void ChangeSaveSet(
         ChangeSaveSetMode changeSaveSetMode,
         uint window)
     {
+        _sequenceNumber++;
         var request = new ChangeSaveSetType(changeSaveSetMode, window);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void ChangeWindowAttributes(
@@ -246,8 +283,10 @@ internal class XProto : IXProto
         ValueMask mask,
         params uint[] args)
     {
+        _sequenceNumber++;
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         var requiredBuffer = 12 + args.Length * 4;
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -262,14 +301,18 @@ internal class XProto : IXProto
             MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void CirculateWindow(
         Direction direction,
         uint window)
     {
+        _sequenceNumber++;
         var request = new CirculateWindowType(direction, window);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void ClearArea(
@@ -280,14 +323,20 @@ internal class XProto : IXProto
         ushort width,
         ushort height)
     {
+        _sequenceNumber++;
         var request = new ClearAreaType(exposures, window, x, y, width, height);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CloseFont(uint fontId)
     {
+        _sequenceNumber++;
         var request = new CloseFontType(fontId);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void ConfigureWindow(
@@ -295,8 +344,10 @@ internal class XProto : IXProto
         ConfigureValueMask mask,
         params uint[] args)
     {
+        _sequenceNumber++;
         var requiredBuffer = 12 + args.Length * 4;
         var request = new ConfigureWindowType(window, mask, args.Length);
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -313,6 +364,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void ConvertSelection(
@@ -322,8 +374,11 @@ internal class XProto : IXProto
         uint property,
         uint timestamp)
     {
+        _sequenceNumber++;
         var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CopyArea(
@@ -337,16 +392,22 @@ internal class XProto : IXProto
         ushort width,
         ushort height)
     {
+        _sequenceNumber++;
         var request = new CopyAreaType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CopyColormapAndFree(
         uint colormapId,
         uint srcColormapId)
     {
+        _sequenceNumber++;
         var request = new CopyColormapAndFreeType(colormapId, srcColormapId);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CopyGC(
@@ -354,8 +415,11 @@ internal class XProto : IXProto
         uint dstGc,
         GCMask mask)
     {
+        _sequenceNumber++;
         var request = new CopyGCType(srcGc, dstGc, mask);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CopyPlane(
@@ -370,8 +434,11 @@ internal class XProto : IXProto
         ushort height,
         uint bitPlane)
     {
+        _sequenceNumber++;
         var request = new CopyPlaneType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height, bitPlane);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CreateColormap(
@@ -380,8 +447,11 @@ internal class XProto : IXProto
         uint window,
         uint visual)
     {
+        _sequenceNumber++;
         var request = new CreateColormapType(alloc, colormapId, window, visual);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CreateCursor(
@@ -397,8 +467,11 @@ internal class XProto : IXProto
         ushort x,
         ushort y)
     {
+        _sequenceNumber++;
         var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CreateGC(
@@ -407,8 +480,10 @@ internal class XProto : IXProto
         GCMask mask,
         params uint[] args)
     {
+        _sequenceNumber++;
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         var requiredBuffer = 16 + (args.Length * 4);
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -423,6 +498,7 @@ internal class XProto : IXProto
             MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[16..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void CreateGlyphCursor(
@@ -438,9 +514,12 @@ internal class XProto : IXProto
         ushort backGreen,
         ushort backBlue)
     {
+        _sequenceNumber++;
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
             backRed, backGreen, backBlue);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CreatePixmap(
@@ -450,8 +529,11 @@ internal class XProto : IXProto
         ushort width,
         ushort height)
     {
+        _sequenceNumber++;
         var request = new CreatePixmapType(depth, pixmapId, drawable, width, height);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void CreateWindow(
@@ -468,6 +550,7 @@ internal class XProto : IXProto
         ValueMask mask,
         params uint[] args)
     {
+        _sequenceNumber++;
         var requiredBuffer = 32 + args.Length * 4;
         var request = new CreateWindowType(depth,
             window,
@@ -478,6 +561,7 @@ internal class XProto : IXProto
             rootVisualId,
             mask,
             args.Length);
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -494,26 +578,36 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[32..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void DeleteProperty(
         uint window,
         uint atom)
     {
+        _sequenceNumber++;
         var request = new DeletePropertyType(window, atom);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void DestroySubwindows(uint window)
     {
+        _sequenceNumber++;
         var request = new DestroySubWindowsType(window);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void DestroyWindow(uint window)
     {
+        _sequenceNumber++;
         var request = new DestroyWindowType(window);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void FillPoly(
@@ -523,9 +617,11 @@ internal class XProto : IXProto
         CoordinateMode coordinate,
         Point[] points)
     {
+        _sequenceNumber++;
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
         var requiredBuffer = 16 + (points.Length * 4);
 
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -542,18 +638,26 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[16..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void ForceScreenSaver(ForceScreenSaverMode mode)
     {
+        _sequenceNumber++;
         var request = new ForceScreenSaverType(mode);
+
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void FreeColormap(uint colormapId)
     {
+        _sequenceNumber++;
         var request = new FreeColormapType(colormapId);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void FreeColors(
@@ -561,8 +665,10 @@ internal class XProto : IXProto
         uint planeMask,
         params uint[] pixels)
     {
+        _sequenceNumber++;
         var requiredBuffer = 12 + pixels.Length * 4;
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -577,28 +683,39 @@ internal class XProto : IXProto
             MemoryMarshal.Cast<uint, byte>(pixels).CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void FreeCursor(uint cursorId)
     {
+        _sequenceNumber++;
         var request = new FreeCursorType(cursorId);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void FreeGC(uint gc)
     {
+        _sequenceNumber++;
         var request = new FreeGCType(gc);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void FreePixmap(uint pixmapId)
     {
+        _sequenceNumber++;
         var request = new FreePixmapType(pixmapId);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void GetAtomName()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
@@ -606,6 +723,7 @@ internal class XProto : IXProto
         bool onlyIfExist,
         string atomName)
     {
+        _sequenceNumber++;
         var request = new InternAtomType(onlyIfExist, atomName.Length);
         var requestSize = Marshal.SizeOf<InternAtomType>();
         var requiredBuffer = requestSize + atomName.Length.AddPadding();
@@ -629,56 +747,68 @@ internal class XProto : IXProto
 
         Span<byte> responce = stackalloc byte[Marshal.SizeOf<InternAtomReply>()];
         _socket.ReceiveExact(responce);
-        return responce.ToStruct<InternAtomReply>();
+        var c = responce.ToStruct<InternAtomReply>();
+        Debug.Assert(c.SequenceNumber == _sequenceNumber--);
+        return c;
     }
 
     public void GetFontPath()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetGeometry()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetImage()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetInputFocus()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetKeyboardControl()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetKeyboardMapping()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetModifierMapping()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetMotionEvents()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetPointerControl()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetPointerMapping()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
@@ -690,6 +820,7 @@ internal class XProto : IXProto
         uint offset,
         uint length)
     {
+        _sequenceNumber++;
         var request = new GetPropertyType(delete, window, property, type, offset, length);
         _socket.Send(ref request);
         return new GetPropertyReply(_socket);
@@ -697,16 +828,19 @@ internal class XProto : IXProto
 
     public void GetScreenSaver()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetSelectionOwner()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void GetWindowAttributes()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
@@ -721,8 +855,11 @@ internal class XProto : IXProto
         Button button,
         ModifierMask modifiers)
     {
+        _sequenceNumber++;
         var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void GrabKey(
@@ -733,12 +870,16 @@ internal class XProto : IXProto
         GrabMode pointerMode,
         GrabMode keyboardMode)
     {
+        _sequenceNumber++;
         var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void GrabKeyboard()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
@@ -752,6 +893,7 @@ internal class XProto : IXProto
         uint cursor,
         uint timeStamp)
     {
+        _sequenceNumber++;
         var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, timeStamp);
         _socket.Send(ref request);
 
@@ -762,8 +904,11 @@ internal class XProto : IXProto
 
     public void GrabServer()
     {
+        _sequenceNumber++;
         var request = new GrabServerType();
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void ImageText16(
@@ -773,8 +918,10 @@ internal class XProto : IXProto
         short y,
         ReadOnlySpan<char> text)
     {
+        _sequenceNumber++;
         var request = new ImageText16Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = 16 + (text.Length * 2).AddPadding();
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -791,6 +938,7 @@ internal class XProto : IXProto
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void ImageText8(
@@ -800,6 +948,7 @@ internal class XProto : IXProto
         short y,
         ReadOnlySpan<byte> text)
     {
+        _sequenceNumber++;
         var request = new ImageText8Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = 16 + text.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -822,66 +971,87 @@ internal class XProto : IXProto
 
     public void InstallColormap(uint colormapId)
     {
+        _sequenceNumber++;
         var request = new InstallColormapType(colormapId);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void KillClient(uint resource)
     {
+        _sequenceNumber++;
         var request = new KillClientType(resource);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void ListExtensions()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void ListFonts()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void ListFontsWithInfo()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void ListHosts()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void ListInstalledColormaps()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void ListProperties()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void LookupColor()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void MapSubwindows(uint window)
     {
+        _sequenceNumber++;
         var request = new MapSubWindowsType(window);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void MapWindow(uint window)
     {
+        _sequenceNumber++;
         var request = new MapWindowType(window);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void NoOperation(params uint[] args)
     {
+        _sequenceNumber++;
         var requiredBuffer = 4 + args.Length * 4;
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -900,16 +1070,18 @@ internal class XProto : IXProto
             args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[4..requiredBuffer]));
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void OpenFont(
         string fontName,
         uint fontId)
     {
+        _sequenceNumber++;
         var request = new OpenFontType(fontId, (ushort)fontName.Length);
         var requestSize = Marshal.SizeOf<OpenFontType>();
         var requiredBuffer = requestSize + fontName.Length.AddPadding();
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -930,6 +1102,7 @@ internal class XProto : IXProto
             _socket.Send(ref request);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void PolyArc(
@@ -937,9 +1110,10 @@ internal class XProto : IXProto
         uint gc,
         Arc[] arcs)
     {
+        _sequenceNumber++;
         var request = new PolyArcType(drawable, gc, arcs.Length);
         var requiredBuffer = Marshal.SizeOf<PolyArcType>() + (arcs.Length * 12);
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -956,6 +1130,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void PolyFillArc(
@@ -963,9 +1138,10 @@ internal class XProto : IXProto
         uint gc,
         Arc[] arcs)
     {
+        _sequenceNumber++;
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
         var requiredBuffer = Marshal.SizeOf<PolyFillArcType>() + (arcs.Length * 12);
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -982,6 +1158,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void PolyFillRectangle(
@@ -989,9 +1166,10 @@ internal class XProto : IXProto
         uint gc,
         Rectangle[] rectangles)
     {
+        _sequenceNumber++;
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = Marshal.SizeOf<PolyFillRectangleType>() + (rectangles.Length * 8);
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1008,6 +1186,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..(12 + rectangles.Length * 8)]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void PolyLine(
@@ -1016,9 +1195,10 @@ internal class XProto : IXProto
         uint gc,
         Point[] points)
     {
+        _sequenceNumber++;
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = 12 + (points.Length * 4);
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1035,6 +1215,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void PolyPoint(
@@ -1043,9 +1224,10 @@ internal class XProto : IXProto
         uint gc,
         Point[] points)
     {
+        _sequenceNumber++;
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = 12 + (points.Length * 4);
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1062,6 +1244,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void PolyRectangle(
@@ -1069,9 +1252,10 @@ internal class XProto : IXProto
         uint gc,
         Rectangle[] rectangles)
     {
+        _sequenceNumber++;
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = 12 + (rectangles.Length * 8);
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1088,6 +1272,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void PolySegment(
@@ -1095,9 +1280,10 @@ internal class XProto : IXProto
         uint gc,
         Segment[] segments)
     {
+        _sequenceNumber++;
         var request = new PolySegmentType(drawable, gc, segments.Length);
         var requiredBuffer = 12 + (segments.Length * 8);
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1114,15 +1300,18 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void PolyText16()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void PolyText8()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
@@ -1138,6 +1327,7 @@ internal class XProto : IXProto
         byte depth,
         Span<byte> data)
     {
+        _sequenceNumber++;
         var request = new PutImageType(
             format,
             drawable,
@@ -1145,6 +1335,7 @@ internal class XProto : IXProto
             leftPad, depth,
             data.Length);
         var scratchBufferSize = data.Length.AddPadding() + 24;
+        CheckError();
         if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
@@ -1161,35 +1352,42 @@ internal class XProto : IXProto
             scratchBuffer[(24 + data.Length)..].Clear();
             _socket.SendExact(scratchBuffer[..scratchBufferSize]);
         }
+        CheckError();
     }
 
     public void QueryBestSize()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void QueryColors()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void QueryExtension()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void QueryFont()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void QueryKeymap()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public QueryPointerReply QueryPointer(uint window)
     {
+        _sequenceNumber++;
         var request = new QueryPointerType(window);
         _socket.Send(ref request);
 
@@ -1200,11 +1398,13 @@ internal class XProto : IXProto
 
     public void QueryTextExtents()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void QueryTree()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
@@ -1217,8 +1417,11 @@ internal class XProto : IXProto
         ushort backGreen,
         ushort backBlue)
     {
+        _sequenceNumber++;
         var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void ReparentWindow(
@@ -1227,8 +1430,11 @@ internal class XProto : IXProto
         short x,
         short y)
     {
+        _sequenceNumber++;
         var request = new ReparentWindowType(window, parent, x, y);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void RotateProperties(
@@ -1236,9 +1442,10 @@ internal class XProto : IXProto
         ushort delta,
         params uint[] properties)
     {
+        _sequenceNumber++;
         var request = new RotatePropertiesType(window, properties.Length, delta);
         var requiredBuffer = 12 + properties.Length * 4;
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1255,6 +1462,7 @@ internal class XProto : IXProto
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void SendEvent(
@@ -1263,14 +1471,20 @@ internal class XProto : IXProto
         uint eventMask,
         XEvent evnt)
     {
+        _sequenceNumber++;
         var request = new SendEventType(propagate, destination, eventMask, evnt);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void SetAccessControl(AccessControlMode mode)
     {
+        _sequenceNumber++;
         var request = new SetAccessControlType(mode);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void SetClipRectangles(
@@ -1280,9 +1494,10 @@ internal class XProto : IXProto
         ushort clipY,
         Rectangle[] rectangles)
     {
+        _sequenceNumber++;
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
         var requiredBuffer = 12 + rectangles.Length * Marshal.SizeOf<Rectangle>();
-
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1299,12 +1514,16 @@ internal class XProto : IXProto
                 CopyTo(scratchBuffer[12..requiredBuffer]);
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void SetCloseDownMode(CloseDownMode mode)
     {
+        _sequenceNumber++;
         var request = new SetCloseDownModeType(mode);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void SetDashes(
@@ -1312,8 +1531,10 @@ internal class XProto : IXProto
         ushort dashOffset,
         byte[] dashes)
     {
+        _sequenceNumber++;
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
         var requiredBuffer = 12 + dashes.Length.AddPadding();
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1330,13 +1551,16 @@ internal class XProto : IXProto
             scratchBuffer[^dashes.Length.Padding()..].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void SetFontPath(string[] strPaths)
     {
+        _sequenceNumber++;
         var request = new SetFontPathType((ushort)strPaths.Length, strPaths.Sum(a => a.Length).AddPadding());
         var requiredBuffer = 8 + strPaths.Sum(a => a.Length).AddPadding();
         var writIndex = 8;
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1361,6 +1585,7 @@ internal class XProto : IXProto
             scratchBuffer[^strPaths.Sum(a => a.Length).Padding()..].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void SetInputFocus(
@@ -1368,17 +1593,22 @@ internal class XProto : IXProto
         uint focus,
         uint time)
     {
+        _sequenceNumber++;
         var request = new SetInputFocusType(mode, focus, time);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void SetModifierMapping()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
     public void SetPointerMapping()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
@@ -1388,8 +1618,11 @@ internal class XProto : IXProto
         TriState preferBlanking,
         TriState allowExposures)
     {
+        _sequenceNumber++;
         var request = new SetScreenSaverType(timeout, interval, preferBlanking, allowExposures);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void SetSelectionOwner(
@@ -1397,16 +1630,21 @@ internal class XProto : IXProto
         uint atom,
         uint timestamp)
     {
+        _sequenceNumber++;
         var request = new SetSelectionOwnerType(owner, atom, timestamp);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void StoreColors(
         uint colormapId,
         params ColorItem[] item)
     {
+        _sequenceNumber++;
         var request = new StoreColorsType(colormapId, item.Length);
         var requiredBuffer = 8 + 12 * item.Length;
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1423,6 +1661,7 @@ internal class XProto : IXProto
             scratchBuffer[requiredBuffer - 1] = 0;
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void StoreNamedColor(
@@ -1431,8 +1670,10 @@ internal class XProto : IXProto
         uint pixels,
         ReadOnlySpan<byte> name)
     {
+        _sequenceNumber++;
         var request = new StoreNamedColorType(mode, colormapId, pixels, name.Length);
         var requiredBuffer = 16 + name.Length.AddPadding();
+        CheckError();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -1449,10 +1690,12 @@ internal class XProto : IXProto
             scratchBuffer[^name.Length.Padding()..].Clear();
             _socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
+        CheckError();
     }
 
     public void TranslateCoordinates()
     {
+        _sequenceNumber++;
         throw new NotImplementedException();
     }
 
@@ -1461,8 +1704,11 @@ internal class XProto : IXProto
         uint grabWindow,
         ModifierMask mask)
     {
+        _sequenceNumber++;
         var request = new UngrabButtonType(button, grabWindow, mask);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void UngrabKey(
@@ -1470,44 +1716,65 @@ internal class XProto : IXProto
         uint grabWindow,
         ModifierMask modifier)
     {
+        _sequenceNumber++;
         var request = new UngrabKeyType(key, grabWindow, modifier);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void UngrabKeyboard(uint time)
     {
+        _sequenceNumber++;
         var request = new UngrabKeyboardType(time);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void UngrabPointer(uint time)
     {
+        _sequenceNumber++;
         var request = new UngrabPointerType(time);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void UngrabServer()
     {
+        _sequenceNumber++;
         var request = new UnGrabServerType();
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void UninstallColormap(uint colormapId)
     {
+        _sequenceNumber++;
         var request = new UninstallColormapType(colormapId);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void UnmapSubwindows(uint window)
     {
+        _sequenceNumber++;
         var request = new UnMapSubwindowsType(window);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void UnmapWindow(uint window)
     {
+        _sequenceNumber++;
         var request = new UnmapWindowType(window);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     public void WarpPointer(
@@ -1520,8 +1787,11 @@ internal class XProto : IXProto
         short destX,
         short destY)
     {
+        _sequenceNumber++;
         var request = new WarpPointerType(srcWindow, destWindow, srcX, srcY, srcWidth, srcHeight, destX, destY);
+        CheckError();
         _socket.Send(ref request);
+        CheckError();
     }
 
     protected virtual void Dispose(bool disposing)
@@ -1545,31 +1815,51 @@ internal class XProto : IXProto
     public uint NewId() =>
         (uint)(_connectionResult.ResourceIDMask & _globalId++ | _connectionResult.ResourceIDBase);
 
-    public ref XEvent GetEvent(Span<byte> scratchBuffer)
+    public XEvent GetEvent()
     {
-        var requiredLength = Marshal.SizeOf<XEvent>();
-        if (scratchBuffer.Length != requiredLength)
-            throw new ArgumentException($"scratchBuffer at least {requiredLength} bytes");
+        if (_bufferEvents.TryPop(out var result))
+        {
+            return result;
+        }
+
+        Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
         if (_socket.Poll(-1, SelectMode.SelectRead))
         {
             var totalRead = _socket.Receive(scratchBuffer);
             if (totalRead != 0)
-                return ref scratchBuffer.AsStruct<XEvent>();
+                return scratchBuffer.ToStruct<XEvent>();
         }
 
         scratchBuffer[0] = 0;
-        return ref scratchBuffer.AsStruct<XEvent>();
+        return scratchBuffer.ToStruct<XEvent>();
     }
 
     private void CheckError([CallerMemberName] string name = "")
     {
-        if (!_socket.Poll(0, SelectMode.SelectRead))
+        if (_socket.Available == 0)
             return;
 
+        if (_socket.Available % Marshal.SizeOf<XEvent>() != 0)
+            throw new UnreachableException(); // if here then some request is not 32 bytes
+
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
-        var received = _socket.Receive(buffer);
-        var evnt = buffer.AsStruct<XEvent>();
-        if (evnt.EventType == EventType.Error)
-            throw new Exception();
+        while (_socket.Available != 0)
+        {
+            _socket.ReceiveExact(buffer);
+            ref var content = ref buffer.AsStruct<XEvent>();
+            if ((int)content.EventType == 1)
+            {
+                //todo: reply found 
+                // could be ignore.
+            }
+            else if (content.EventType == EventType.Error)
+            {
+                throw new Exception($"{content.ErrorEvent.ErrorCode} {name}");
+            }
+            else
+            {
+                _bufferEvents.Push(content);
+            }
+        }
     }
 }
