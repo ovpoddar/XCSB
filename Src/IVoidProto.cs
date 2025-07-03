@@ -14,8 +14,7 @@ namespace Xcsb;
 public interface IVoidProto
 {
     void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth,
-        ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args);
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args);
 
     void ChangeWindowAttributes(uint window, ValueMask mask, params uint[] args);
 
@@ -31,8 +30,7 @@ public interface IVoidProto
     void UnmapWindow(uint window);
     void UnmapSubwindows(uint window);
 
-    void ConfigureWindow(
-        uint window, ConfigureValueMask mask, params uint[] args);
+    void ConfigureWindow(uint window, ConfigureValueMask mask, params uint[] args);
 
     void CirculateWindow(Direction direction, uint window);
 
