@@ -7,7 +7,8 @@ using Xcsb.Models.Handshake;
 using Xcsb.Models.Response;
 
 namespace Xcsb;
-public interface IXProto : IVoidProto, IDisposable
+
+public interface IXProto : IVoidProto, IVoidProtoChecked, IDisposable
 {
     HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
     IXBufferProto BufferCLient { get; }
@@ -16,7 +17,10 @@ public interface IXProto : IVoidProto, IDisposable
     uint NewId();
     AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue);
     QueryPointerReply QueryPointer(uint window);
-    GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp);
+
+    GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+        GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp);
+
     InternAtomReply InternAtom(bool onlyIfExist, string atomName);
     GetPropertyReply GetProperty(bool delete, uint window, uint property, uint type, uint offset, uint length);
     void GetWindowAttributes();
@@ -55,4 +59,3 @@ public interface IXProto : IVoidProto, IDisposable
     void GetScreenSaver();
     void ListHosts();
 }
-
