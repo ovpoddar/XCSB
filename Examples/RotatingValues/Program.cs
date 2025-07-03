@@ -117,13 +117,6 @@ x.ChangePointerControl(new Acceleration { Denominator = 2, Numerator = 1 }, 4);
 Console.WriteLine("Pointer control changed: acceleration 2:1, threshold 4 pixels");
 Thread.Sleep(3000);
 
-x.ChangeSaveSet(ChangeSaveSetMode.Insert, win);
-Console.WriteLine("Window added to save set");
-Thread.Sleep(3000);
-
-x.ChangeSaveSet(ChangeSaveSetMode.Delete, win);
-Console.WriteLine("Window removed from save set");
-Thread.Sleep(3000);
 
 x.ConvertSelection(win, 1, 31, 9, 0);
 Console.WriteLine("Selection conversion requested");
@@ -155,15 +148,6 @@ x.SetAccessControl(AccessControlMode.Disable);
 Console.WriteLine("Access control disabled");
 Thread.Sleep(1500);
 
-x.StoreColors(screen.DefaultColormap, [new ColorItem
-{
-    Red = 32768,
-    Green = 16384,
-    Blue = 49152,
-    ColorFlag = ColorFlag.Red | ColorFlag.Green | ColorFlag.Blue,
-    Pixel = 1
-}]);
-Console.WriteLine("Color stored successfully at Pixel.");
 
 var font = x.NewId();
 
