@@ -55,7 +55,7 @@ while (isRunning)
                 {
                     demo_ungrab_all();
                     connection.FreeGC(gc);
-                    connection.DestroyWindow(window);
+                    connection.KillClient(window);
                     break;
                 }
             }

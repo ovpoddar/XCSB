@@ -62,7 +62,7 @@ Thread.Sleep(1500);
 var sub = x.NewId();
 x.CreateWindow(0,
     sub, win,
-    20, 20, 50, 50, 2,
+    20, 20, 500, 250, 2,
     Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [0xff0000]);
 x.MapWindow(sub);
 
@@ -73,28 +73,33 @@ Thread.Sleep(5000);
 var sub1 = x.NewId();
 x.CreateWindow(0,
     sub1, win,
-    30, 30, 50, 50, 2,
+    30, 30, 500, 250, 2,
     Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [screen.WhitePixel]);
 x.MapSubwindows(win);
 Console.WriteLine("Subwindow mapped.");
 
 Thread.Sleep(5000);
 
-x.ReparentWindow(win, screen.Root, 200, 200);
-Thread.Sleep(5000);
+x.ReparentWindow(sub, sub1, 0, 0);
+Thread.Sleep(millisecondsTimeout: 5000);
 
 
+var colormap1 = x.NewId();
+x.CreateColormap(Xcsb.Models.ColormapAlloc.None,
+    colormap1,
+    root,
+    screen.RootVisualId);
 
 var cmap = x.NewId();
-x.CopyColormapAndFree(cmap, screen.Root);
+x.CopyColormapAndFree(cmap, colormap1);
 Console.WriteLine("Copied colormap and freed old one.");
 Thread.Sleep(100);
 
 var xevnt = x.GetEvent();
 Debug.Assert(xevnt.EventType == EventType.Expose || xevnt.EventType == EventType.MappingNotify);
 Console.WriteLine("all success {0}", xevnt.EventType != EventType.Error);
-//todo: fix test
-x.DestroySubwindows(win);
+
+x.DestroyWindow(sub);
 x.DestroyWindow(sub1);
+x.DestroySubwindows(win);
 x.DestroyWindow(win);
-x.KillClient(win);
