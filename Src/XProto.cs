@@ -748,7 +748,7 @@ internal class XProto : IXProto
         Span<byte> responce = stackalloc byte[Marshal.SizeOf<InternAtomReply>()];
         _socket.ReceiveExact(responce);
         var c = responce.ToStruct<InternAtomReply>();
-        Debug.Assert(c.SequenceNumber == _sequenceNumber--);
+        Debug.Assert(c.SequenceNumber == _sequenceNumber);
         return c;
     }
 
