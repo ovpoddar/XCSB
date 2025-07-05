@@ -170,6 +170,7 @@ public interface IVoidProto
     void SetCloseDownMode(CloseDownMode mode);
     void KillClient(uint resource);
     void NoOperation(params uint[] args);
+    // todo: need a writer for the TEXTITEM16
     void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
-    void PolyText16(); //todo:imp
+    void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
 }

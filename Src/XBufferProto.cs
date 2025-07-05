@@ -512,14 +512,17 @@ internal class XBufferProto : IXBufferProto
         _sequenceNumber++;
     }
 
-    public void PolyText16()
+    public void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
-        throw new NotImplementedException();
+        var request = new PolyText16Type(drawable, gc, x, y, data.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(data);
+        _sequenceNumber++;
     }
 
     public void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
-        var request = new PolyText8Type(data.Length, drawable, gc, x, y);
+        var request = new PolyText8Type(drawable, gc, x, y, data.Length);
         _buffer.Add(ref request);
         _buffer.AddRange(data);
         _sequenceNumber++;

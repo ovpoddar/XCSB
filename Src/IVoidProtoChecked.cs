@@ -170,5 +170,5 @@ public interface IVoidProtoChecked
     void KillClientChecked(uint resource);
     void NoOperationChecked(params uint[] args);
     void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
-    void PolyText16Checked(); //todo:imp
+    void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
 }

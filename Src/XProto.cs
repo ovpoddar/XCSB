@@ -1047,16 +1047,33 @@ internal class XProto : IXProto
         _sequenceNumber++;
     }
 
-    public void PolyText16()
+    public void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
-        throw new NotImplementedException();
+        var request = new PolyText16Type(drawable, gc, x, y, data.Length);
+        var scratchBufferSize = 16 + data.Length.AddPadding();
+        if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+            data.CopyTo(scratchBuffer[16..]);
+            scratchBuffer[^data.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+            data.CopyTo(scratchBuffer[16..]);
+            scratchBuffer[^data.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer[..scratchBufferSize]);
+        }
         _sequenceNumber++;
     }
 
 
     public void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
-        var request = new PolyText8Type(data.Length, drawable, gc, x, y);
+        var request = new PolyText8Type(drawable, gc, x, y, data.Length);
         var scratchBufferSize = 16 + data.Length.AddPadding();
         if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
         {
@@ -2095,10 +2112,10 @@ internal class XProto : IXProto
         CheckError();
     }
 
-    public void PolyText16Checked()
+    public void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
         CheckError();
-        this.PolyText16();
+        this.PolyText16(drawable, gc, x, y, data);
         CheckError();
     }
 
