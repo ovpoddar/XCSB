@@ -27,11 +27,11 @@ internal class XProto : IXProto
     private bool _disposedValue;
     private int _globalId;
     private ushort _sequenceNumber;
-    private Stack<XEvent> _bufferEvents;
+    private readonly Stack<XEvent> _bufferEvents;
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody => _connectionResult;
 
-    public IXBufferProto BufferCLient => new XBufferProto(_socket, _sequenceNumber);
+    public IXBufferProto BufferCLient => new XBufferProto(_socket, this);
 
     public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult)
     {

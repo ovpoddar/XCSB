@@ -47,7 +47,7 @@ for (var y = 0; y < HEIGHT; y++)
 }
 
 lazyXcsb.MapWindow(window);
-lazyXcsb.Flush(true);
+lazyXcsb.Flush();
 
 var isRunning = true;
 
@@ -96,6 +96,6 @@ while (isRunning)
 
         lazyXcsb.CopyPlane(window, window, white_gc,
             300, 0, 300, (HEIGHT * 2) + 10, WIDTH, HEIGHT, 4);
-        lazyXcsb.Flush(true);
+        lazyXcsb.Flush();
     }
 }

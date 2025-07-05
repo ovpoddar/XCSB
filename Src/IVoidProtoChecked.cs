@@ -169,6 +169,7 @@ public interface IVoidProtoChecked
     void SetCloseDownModeChecked(CloseDownMode mode);
     void KillClientChecked(uint resource);
     void NoOperationChecked(params uint[] args);
+    // todo: need a writer for the TEXTITEM16, TEXTITEM8
     void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
     void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
 }
