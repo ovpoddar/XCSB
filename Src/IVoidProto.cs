@@ -50,8 +50,7 @@ public interface IVoidProto
     void UngrabPointer(uint time);
 
     void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
-        uint confineTo,
-        uint cursor, Button button, ModifierMask modifiers);
+        uint confineTo, uint cursor, Button button, ModifierMask modifiers);
 
     void UngrabButton(Button button, uint grabWindow, ModifierMask mask);
 
@@ -70,8 +69,7 @@ public interface IVoidProto
     void UngrabServer();
 
     void WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight,
-        short destX,
-        short destY);
+        short destX, short destY);
 
     void SetInputFocus(InputFocusMode mode, uint focus, uint time);
 
@@ -86,8 +84,7 @@ public interface IVoidProto
 
     void CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args);
 
-    void ChangeGC(
-        uint gc, GCMask mask, params uint[] args);
+    void ChangeGC(uint gc, GCMask mask, params uint[] args);
 
     void CopyGC(uint srcGc, uint dstGc, GCMask mask);
 
@@ -122,8 +119,7 @@ public interface IVoidProto
     void PolyFillArc(uint drawable, uint gc, Arc[] arcs);
 
     void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
-        byte leftPad,
-        byte depth, Span<byte> data);
+        byte leftPad, byte depth, Span<byte> data);
 
     void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text);
 
@@ -145,18 +141,15 @@ public interface IVoidProto
     void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name);
 
     void CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue,
-        ushort backRed,
-        ushort backGreen, ushort backBlue, ushort x, ushort y);
+        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y);
 
     void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
-        ushort foreRed,
-        ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue);
+        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue);
 
     void FreeCursor(uint cursorId);
 
     void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
-        ushort backGreen,
-        ushort backBlue);
+        ushort backGreen, ushort backBlue);
 
     // suppose need changes
     void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym);
@@ -177,6 +170,6 @@ public interface IVoidProto
     void SetCloseDownMode(CloseDownMode mode);
     void KillClient(uint resource);
     void NoOperation(params uint[] args);
-    void PolyText8(); //todo:imp
+    void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
     void PolyText16(); //todo:imp
 }

@@ -49,8 +49,7 @@ public interface IVoidProtoChecked
     void UngrabPointerChecked(uint time);
 
     void GrabButtonChecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
-        uint confineTo,
-        uint cursor, Button button, ModifierMask modifiers);
+        uint confineTo, uint cursor, Button button, ModifierMask modifiers);
 
     void UngrabButtonChecked(Button button, uint grabWindow, ModifierMask mask);
 
@@ -149,8 +148,7 @@ public interface IVoidProtoChecked
     void FreeCursorChecked(uint cursorId);
 
     void RecolorCursorChecked(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
-        ushort backGreen,
-        ushort backBlue);
+        ushort backGreen, ushort backBlue);
 
     // suppose need changes
     void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym);
@@ -171,6 +169,6 @@ public interface IVoidProtoChecked
     void SetCloseDownModeChecked(CloseDownMode mode);
     void KillClientChecked(uint resource);
     void NoOperationChecked(params uint[] args);
-    void PolyText8Checked(); //todo:imp
+    void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
     void PolyText16Checked(); //todo:imp
 }

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models;
@@ -84,6 +85,8 @@ while (isRunning)
 
             c.ImageText16(window, gc, 10, 15, "this is a utf 16 string");
             c.ImageText8(window, gc, 10, 40, "this is a utf 8 string"u8);
+            var data = Encoding.UTF8.GetBytes("Hello world");
+            c.PolyText8Checked(window, gc, 10, 80, [(byte)data.Length, 0, ..data]);
 
             c.FreeGC(gc);
             c.FreeGC(gc1);

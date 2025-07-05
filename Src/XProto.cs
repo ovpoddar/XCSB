@@ -31,7 +31,7 @@ internal class XProto : IXProto
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody => _connectionResult;
 
-    public IXBufferProto BufferCLient => new XBufferProto(_socket);
+    public IXBufferProto BufferCLient => new XBufferProto(_socket, _sequenceNumber);
 
     public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult)
     {
@@ -197,7 +197,8 @@ internal class XProto : IXProto
         _sequenceNumber++;
     }
 
-    void IVoidProto.ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
+
+    public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args) where T : struct, INumber<T>
     {
         var size = Marshal.SizeOf<T>();
         if (size is not 1 or 2 or 4)
@@ -1053,9 +1054,26 @@ internal class XProto : IXProto
     }
 
 
-    public void PolyText8()
+    public void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
-        throw new NotImplementedException();
+        var request = new PolyText8Type(data.Length, drawable, gc, x, y);
+        var scratchBufferSize = 16 + data.Length.AddPadding();
+        if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+            data.CopyTo(scratchBuffer[16..]);
+            scratchBuffer[^data.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+            data.CopyTo(scratchBuffer[16..]);
+            scratchBuffer[^data.Length.Padding()..].Clear();
+            _socket.SendExact(scratchBuffer[..scratchBufferSize]);
+        }
         _sequenceNumber++;
     }
 
@@ -1598,7 +1616,7 @@ internal class XProto : IXProto
         where T : struct, INumber<T>
     {
         CheckError();
-        throw new NotImplementedException();
+        this.ChangeProperty(mode, window, property, type, args);
         CheckError();
     }
 
@@ -2070,10 +2088,10 @@ internal class XProto : IXProto
         CheckError();
     }
 
-    public void PolyText8Checked()
+    public void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
         CheckError();
-        this.PolyText8();
+        this.PolyText8(drawable, gc, x, y, data);
         CheckError();
     }
 
@@ -2083,4 +2101,5 @@ internal class XProto : IXProto
         this.PolyText16();
         CheckError();
     }
+
 }
