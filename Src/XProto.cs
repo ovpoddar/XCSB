@@ -65,6 +65,8 @@ internal class XProto : IXProto
         _sequenceNumber++;
     }
 
+    internal void UpdateSequenceNumber(ushort success) =>
+        _sequenceNumber += success;
 
     public void AllocNamedColor()
     {

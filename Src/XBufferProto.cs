@@ -290,6 +290,7 @@ internal class XBufferProto : IXBufferProto
         }
         finally
         {
+            // todo: calculate success number
             _requestLength = 0;
             _buffer.Clear();
         }
@@ -306,6 +307,7 @@ internal class XBufferProto : IXBufferProto
         }
         finally
         {
+            // todo: calculate success number
             ArrayPool<byte>.Shared.Return(buffer);
             _requestLength = 0;
             _buffer.Clear();
@@ -319,7 +321,8 @@ internal class XBufferProto : IXBufferProto
             _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
             using var buffer = new ArrayPoolUsing<byte>(_socket.Available);
             _socket.Receive(buffer);
-            _xProto.
+            // todo: calculate success number
+            _xProto.UpdateSequenceNumber(1);
         }
         finally
         {
@@ -335,6 +338,7 @@ internal class XBufferProto : IXBufferProto
         {
             _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
             await _socket.ReceiveAsync(buffer);
+            // todo: calculate success number
         }
         finally
         {
