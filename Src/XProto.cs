@@ -26,8 +26,8 @@ internal class XProto : IXProto
     private readonly HandshakeSuccessResponseBody _connectionResult;
     private bool _disposedValue;
     private int _globalId;
-    private ushort _sequenceNumber;
-    private readonly Stack<XEvent> _bufferEvents;
+    internal ushort _sequenceNumber;
+    internal readonly Stack<XEvent> _bufferEvents;
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody => _connectionResult;
 
@@ -64,9 +64,6 @@ internal class XProto : IXProto
         throw new NotImplementedException();
         _sequenceNumber++;
     }
-
-    internal void UpdateSequenceNumber(ushort success) =>
-        _sequenceNumber += success;
 
     public void AllocNamedColor()
     {

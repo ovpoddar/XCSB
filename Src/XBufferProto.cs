@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -320,9 +321,14 @@ internal class XBufferProto : IXBufferProto
         {
             _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
             using var buffer = new ArrayPoolUsing<byte>(_socket.Available);
-            _socket.Receive(buffer);
-            // todo: calculate success number
-            _xProto.UpdateSequenceNumber(1);
+            var received = _socket.Receive(buffer);
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
+                if (evnt.EventType == EventType.Error)
+                    _requestLength--;
+                else if ((int)evnt.EventType == 1)
+                    continue;
+                else
+                    _xProto._bufferEvents.Push(evnt);
         }
         finally
         {
@@ -337,8 +343,14 @@ internal class XBufferProto : IXBufferProto
         try
         {
             _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
-            await _socket.ReceiveAsync(buffer);
-            // todo: calculate success number
+            var received = await _socket.ReceiveAsync(buffer);
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer.AsSpan(0, received)))
+                if (evnt.EventType == EventType.Error)
+                    _requestLength--;
+                else if ((int)evnt.EventType == 1)
+                    continue;
+                else
+                    _xProto._bufferEvents.Push(evnt);
         }
         finally
         {
