@@ -280,35 +280,47 @@ internal class XBufferProto : IXBufferProto
         _requestLength++;
     }
 
-    public IEnumerable<ErrorEvent> FlushChecked()
+    public void FlushChecked()
     {
         try
         {
             _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
             using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
             var received = _socket.Receive(buffer);
-            return MemoryMarshal.Cast<byte, ErrorEvent>(buffer[0..received]).ToArray();
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[0..received]))
+                if (evnt.EventType == EventType.Error)
+                    throw new Exception(evnt.ErrorEvent.ErrorCode.ToString());
+                else if ((int)evnt.EventType == 1)
+                    throw new Exception("internal issue");
+                else
+                    _xProto._bufferEvents.Push(evnt);
         }
         finally
         {
-            // todo: calculate success number
+            _xProto._sequenceNumber += (ushort)_requestLength;
             _requestLength = 0;
             _buffer.Clear();
         }
     }
 
-    public async Task<IEnumerable<ErrorEvent>> FlushCheckedAsync()
+    public async Task FlushCheckedAsync()
     {
         var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
         try
         {
             _socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
             var received = await _socket.ReceiveAsync(buffer);
-            return MemoryMarshal.Cast<byte, ErrorEvent>(buffer.AsSpan()[0..received]).ToArray();
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[0..received]))
+                if (evnt.EventType == EventType.Error)
+                    throw new Exception(evnt.ErrorEvent.ErrorCode.ToString());
+                else if ((int)evnt.EventType == 1)
+                    throw new Exception("internal issue");
+                else
+                    _xProto._bufferEvents.Push(evnt);
         }
         finally
         {
-            // todo: calculate success number
+            _xProto._sequenceNumber += (ushort)_requestLength;
             ArrayPool<byte>.Shared.Return(buffer);
             _requestLength = 0;
             _buffer.Clear();
@@ -332,6 +344,7 @@ internal class XBufferProto : IXBufferProto
         }
         finally
         {
+            _xProto._sequenceNumber += (ushort)_requestLength;
             _requestLength = 0;
             _buffer.Clear();
         }
@@ -354,6 +367,7 @@ internal class XBufferProto : IXBufferProto
         }
         finally
         {
+            _xProto._sequenceNumber += (ushort)_requestLength;
             ArrayPool<byte>.Shared.Return(buffer);
             _requestLength = 0;
             _buffer.Clear();
