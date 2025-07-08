@@ -21,26 +21,21 @@ using static System.Net.Mime.MediaTypeNames;
 namespace Xcsb;
 
 [SkipLocalsInit]
-internal class XProto : IXProto
+internal class XProto : BaseProtoClient, IXProto
 {
     private readonly HandshakeSuccessResponseBody _connectionResult;
     private bool _disposedValue;
     private int _globalId;
-    internal readonly Socket socket;
-    internal ushort sequenceNumber;
-    internal readonly Stack<XEvent> bufferEvents;
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody => _connectionResult;
 
     public IXBufferProto BufferCLient => new XBufferProto(this);
 
-    public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult)
+    public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult) : base(socket)
     {
-        this.socket = socket;
         _connectionResult = connectionResult;
         _globalId = 0;
         sequenceNumber = 0;
-        bufferEvents = new Stack<XEvent>();
     }
 
     public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
@@ -48,10 +43,14 @@ internal class XProto : IXProto
         var request = new AllocColorType(colorMap, red, green, blue);
         socket.Send(ref request);
 
-        Span<byte> response = stackalloc byte[Marshal.SizeOf<AllocColorReply>()];
-        sequenceNumber++;
-        socket.ReceiveExact(response);
-        return response.ToStruct<AllocColorReply>();
+        var (result, error) = Received<AllocColorReply>();
+        if (!error.HasValue && result.HasValue)
+        {
+            sequenceNumber++;
+            Debug.Assert(sequenceNumber == result.Value.Sequence);
+            return result.Value;
+        }
+        throw new XEventException(error!.Value);
     }
 
     public void AllocColorCells()
@@ -549,12 +548,14 @@ internal class XProto : IXProto
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
-        sequenceNumber++;
-        Span<byte> responce = stackalloc byte[Marshal.SizeOf<InternAtomReply>()];
-        socket.ReceiveExact(responce);
-        var c = responce.ToStruct<InternAtomReply>();
-        Debug.Assert(c.SequenceNumber == sequenceNumber);
-        return c;
+        var (result, error) = Received<InternAtomReply>();
+        if (!error.HasValue && result.HasValue)
+        {
+            sequenceNumber++;
+            Debug.Assert(sequenceNumber == result.Value.SequenceNumber);
+            return result.Value;
+        }
+        throw new XEventException(error!.Value);
     }
 
     public void GetFontPath()
@@ -686,11 +687,15 @@ internal class XProto : IXProto
         var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
         socket.Send(ref request);
-        sequenceNumber++;
 
-        Span<byte> response = stackalloc byte[Marshal.SizeOf<GrabPointerReply>()];
-        socket.ReceiveExact(response);
-        return response.ToStruct<GrabPointerReply>();
+        var (result, error) = Received<GrabPointerReply>();
+        if (!error.HasValue && result.HasValue)
+        {
+            sequenceNumber++;
+            Debug.Assert(sequenceNumber == result.Value.Sequence);
+            return result.Value;
+        }
+        throw new XEventException(error!.Value);
     }
 
     public void GrabServer()
@@ -1159,11 +1164,15 @@ internal class XProto : IXProto
     {
         var request = new QueryPointerType(window);
         socket.Send(ref request);
-        sequenceNumber++;
-
-        Span<byte> response = stackalloc byte[Marshal.SizeOf<QueryPointerReply>()];
-        socket.ReceiveExact(response);
-        return response.ToStruct<QueryPointerReply>();
+        
+        var (result, error) = Received<QueryPointerReply>();
+        if (!error.HasValue && result.HasValue)
+        {
+            sequenceNumber++;
+            Debug.Assert(sequenceNumber == result.Value.SequenceNumber);
+            return result.Value;
+        }
+        throw new XEventException(error!.Value);
     }
 
     public void QueryTextExtents()

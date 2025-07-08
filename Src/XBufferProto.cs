@@ -19,15 +19,14 @@ using Xcsb.Models.Requests;
 
 namespace Xcsb;
 
-internal class XBufferProto : IXBufferProto
+internal class XBufferProto : BaseProtoClient, IXBufferProto
 {
-    private readonly XProto _xProto;
+    //private readonly XProto _xProto;
     private List<byte> _buffer = new List<byte>();
     private int _requestLength;
 
-    public XBufferProto(XProto xProto)
+    public XBufferProto(XProto xProto) : base(xProto.socket)
     {
-        _xProto = xProto;
         // todo: pass a configuration object and based on that set up the XBufferProto
         _requestLength = 0;
     }
@@ -283,20 +282,20 @@ internal class XBufferProto : IXBufferProto
     {
         try
         {
-            _xProto.socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+            socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
             using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
-            var received = _xProto.socket.Receive(buffer);
+            var received = socket.Receive(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[0..received]))
                 if (evnt.EventType == EventType.Error)
                     throw new XEventException(evnt.ErrorEvent);
                 else if ((int)evnt.EventType == 1)
                     throw new Exception("internal issue");
                 else
-                    _xProto.bufferEvents.Push(evnt);
+                    bufferEvents.Push(evnt);
         }
         finally
         {
-            _xProto.sequenceNumber += (ushort)_requestLength;
+            sequenceNumber += (ushort)_requestLength;
             _requestLength = 0;
             _buffer.Clear();
         }
@@ -307,19 +306,19 @@ internal class XBufferProto : IXBufferProto
         var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
         try
         {
-            _xProto.socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
-            var received = await _xProto.socket.ReceiveAsync(buffer);
+            socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+            var received = await socket.ReceiveAsync(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[0..received]))
                 if (evnt.EventType == EventType.Error)
                     throw new XEventException(evnt.ErrorEvent);
                 else if ((int)evnt.EventType == 1)
                     throw new Exception("internal issue");
                 else
-                    _xProto.bufferEvents.Push(evnt);
+                    bufferEvents.Push(evnt);
         }
         finally
         {
-            _xProto.sequenceNumber += (ushort)_requestLength;
+            sequenceNumber += (ushort)_requestLength;
             ArrayPool<byte>.Shared.Return(buffer);
             _requestLength = 0;
             _buffer.Clear();
@@ -330,20 +329,20 @@ internal class XBufferProto : IXBufferProto
     {
         try
         {
-            _xProto.socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
-            using var buffer = new ArrayPoolUsing<byte>(_xProto.socket.Available);
-            var received = _xProto.socket.Receive(buffer);
+            socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+            using var buffer = new ArrayPoolUsing<byte>(socket.Available);
+            var received = socket.Receive(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
                 if (evnt.EventType == EventType.Error)
                     _requestLength--;
                 else if ((int)evnt.EventType == 1)
                     continue;
                 else
-                    _xProto.bufferEvents.Push(evnt);
+                    bufferEvents.Push(evnt);
         }
         finally
         {
-            _xProto.sequenceNumber += (ushort)_requestLength;
+            sequenceNumber += (ushort)_requestLength;
             _requestLength = 0;
             _buffer.Clear();
         }
@@ -354,19 +353,19 @@ internal class XBufferProto : IXBufferProto
         var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
         try
         {
-            _xProto.socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
-            var received = await _xProto.socket.ReceiveAsync(buffer);
+            socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+            var received = await socket.ReceiveAsync(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer.AsSpan(0, received)))
                 if (evnt.EventType == EventType.Error)
                     _requestLength--;
                 else if ((int)evnt.EventType == 1)
                     continue;
                 else
-                    _xProto.bufferEvents.Push(evnt);
+                    bufferEvents.Push(evnt);
         }
         finally
         {
-            _xProto.sequenceNumber += (ushort)_requestLength;
+            sequenceNumber += (ushort)_requestLength;
             ArrayPool<byte>.Shared.Return(buffer);
             _requestLength = 0;
             _buffer.Clear();
