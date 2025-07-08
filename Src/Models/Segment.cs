@@ -1,12 +1,9 @@
 ﻿namespace Xcsb.Models;
-internal readonly ref struct Segment<T> where T : struct
-{
-    public T Position { get; }
-    public T Length { get; }
 
-    public Segment(T position, T length)
-    {
-        Position = position;
-        Length = length;
-    }
+public struct Segment(ushort x1, ushort y1, ushort x2, ushort y2)
+{
+    public ushort X1 = x1;
+    public ushort Y1 = y1;
+    public ushort X2 = x2;
+    public ushort Y2 = y2;
 }

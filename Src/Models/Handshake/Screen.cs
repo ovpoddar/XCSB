@@ -8,7 +8,7 @@ namespace Xcsb.Models.Handshake;
 public class Screen
 {
     public uint Root;
-    public uint CMap;
+    public uint DefaultColormap;
     public uint WhitePixel;
     public uint BlackPixel;
     public int InputMask;
@@ -43,7 +43,7 @@ public class Screen
             MHeight = screen.MHeight,
             MinMaps = screen.MinMaps,
             MaxMaps = screen.MaxMaps,
-            CMap = screen.CMap,
+            DefaultColormap = screen.CMap,
             WhitePixel = screen.WhitePixel,
             InputMask = screen.InputMask,
             _rootDepth = screen.RootDepth,

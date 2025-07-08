@@ -74,6 +74,4 @@ public static class XcsbClient
         return details;
     }
 
-    public static int GetEventSize() =>
-        Marshal.SizeOf<XEvent>();
 }

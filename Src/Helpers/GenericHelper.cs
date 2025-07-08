@@ -46,4 +46,7 @@ internal static class GenericHelper
                 break;
         }
     }
+
+    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : struct =>
+        list.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
 }

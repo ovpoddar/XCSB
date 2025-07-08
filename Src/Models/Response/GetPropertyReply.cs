@@ -2,10 +2,10 @@
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 
-namespace Xcsb.Models;
+namespace Xcsb.Models.Response;
 public unsafe struct GetPropertyReply
 {
-    public byte Reply;
+    public byte Reply; // 1
     public byte Format;
     public ushort Sequence;
     public uint Type;
@@ -25,7 +25,7 @@ public unsafe struct GetPropertyReply
         var data = new byte[propertyReply.Length * 4];
         if (data.Length != 0)
             socket.ReceiveExact(data);
-        this.Data = data;
+        Data = data;
     }
 
 
