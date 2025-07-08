@@ -552,7 +552,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (!error.HasValue && result.HasValue)
         {
             sequenceNumber++;
-            Debug.Assert(sequenceNumber == result.Value.SequenceNumber);
+            Debug.Assert(sequenceNumber == result.Value.Sequence);
             return result.Value;
         }
         throw new XEventException(error!.Value);
@@ -1169,7 +1169,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (!error.HasValue && result.HasValue)
         {
             sequenceNumber++;
-            Debug.Assert(sequenceNumber == result.Value.SequenceNumber);
+            Debug.Assert(sequenceNumber == result.Value.Sequence);
             return result.Value;
         }
         throw new XEventException(error!.Value);

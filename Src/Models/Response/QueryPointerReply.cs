@@ -8,7 +8,7 @@ public unsafe struct QueryPointerReply
 {
     public readonly byte Reply; // 1
     private readonly byte _sameScreen;
-    public readonly short SequenceNumber;
+    public readonly short Sequence;
     public readonly int LengthReply;
     public readonly uint Root;
     public readonly uint child;
