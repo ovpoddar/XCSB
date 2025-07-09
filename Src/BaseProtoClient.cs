@@ -20,7 +20,7 @@ internal class BaseProtoClient
         bufferEvents = new Stack<XEvent>();
     }
 
-    internal (T? result, ErrorEvent? error) Received<T>() where T : struct
+    internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : struct
     {
         if (socket.Available == 0)
             socket.Poll(-1, SelectMode.SelectRead);
@@ -42,5 +42,29 @@ internal class BaseProtoClient
             }
         }
         throw new Exception();
+    }
+
+    internal ErrorEvent? Received()
+    {
+        if (socket.Available == 0)
+            return null;
+
+        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
+        while (socket.Available != 0)
+        {
+            socket.ReceiveExact(buffer);
+            ref var content = ref buffer.AsStruct<XEvent>();
+            switch (content.EventType)
+            {
+                case EventType.Error:
+                    return content.ErrorEvent;
+                case (EventType)1:
+                    break;
+                default:
+                    bufferEvents.Push(content);
+                    break;
+            }
+        }
+        return null;
     }
 }

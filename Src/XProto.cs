@@ -43,7 +43,7 @@ internal class XProto : BaseProtoClient, IXProto
         var request = new AllocColorType(colorMap, red, green, blue);
         socket.Send(ref request);
 
-        var (result, error) = Received<AllocColorReply>();
+        var (result, error) = ReceivedResponse<AllocColorReply>();
         if (!error.HasValue && result.HasValue)
         {
             sequenceNumber++;
@@ -548,11 +548,11 @@ internal class XProto : BaseProtoClient, IXProto
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
-        var (result, error) = Received<InternAtomReply>();
+        var (result, error) = ReceivedResponse<InternAtomReply>();
         if (!error.HasValue && result.HasValue)
         {
             sequenceNumber++;
-            Debug.Assert(sequenceNumber == result.Value.SequenceNumber);
+            Debug.Assert(sequenceNumber == result.Value.Sequence);
             return result.Value;
         }
         throw new XEventException(error!.Value);
@@ -688,7 +688,7 @@ internal class XProto : BaseProtoClient, IXProto
             timeStamp);
         socket.Send(ref request);
 
-        var (result, error) = Received<GrabPointerReply>();
+        var (result, error) = ReceivedResponse<GrabPointerReply>();
         if (!error.HasValue && result.HasValue)
         {
             sequenceNumber++;
@@ -1165,11 +1165,11 @@ internal class XProto : BaseProtoClient, IXProto
         var request = new QueryPointerType(window);
         socket.Send(ref request);
         
-        var (result, error) = Received<QueryPointerReply>();
+        var (result, error) = ReceivedResponse<QueryPointerReply>();
         if (!error.HasValue && result.HasValue)
         {
             sequenceNumber++;
-            Debug.Assert(sequenceNumber == result.Value.SequenceNumber);
+            Debug.Assert(sequenceNumber == result.Value.Sequence);
             return result.Value;
         }
         throw new XEventException(error!.Value);
@@ -1520,120 +1520,85 @@ internal class XProto : BaseProtoClient, IXProto
                 return scratchBuffer.ToStruct<XEvent>();
         }
 
-        scratchBuffer[0] = 0;
+        scratchBuffer.Clear();
         return scratchBuffer.ToStruct<XEvent>();
     }
 
     private void CheckError([CallerMemberName] string name = "")
     {
-        if (socket.Available == 0)
-            return;
-
-        if (socket.Available % Marshal.SizeOf<XEvent>() != 0)
-            throw new UnreachableException(); // if here then some request is not 32 bytes
-
-        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
-        while (socket.Available != 0)
-        {
-            socket.ReceiveExact(buffer);
-            ref var content = ref buffer.AsStruct<XEvent>();
-            if ((int)content.EventType == 1)
-            {
-                //todo: reply found 
-                // could be ignore.
-            }
-            else if (content.EventType == EventType.Error)
-            {
-                throw new XEventException(content.ErrorEvent);
-            }
-            else
-            {
-                bufferEvents.Push(content);
-            }
-        }
+        var error = this.Received();
+        if (error.HasValue) throw new XEventException(error.Value);
     }
 
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
         ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
     {
-        CheckError();
         this.CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args);
         CheckError();
     }
 
     public void ChangeWindowAttributesChecked(uint window, ValueMask mask, params uint[] args)
     {
-        CheckError();
         this.ChangeWindowAttributes(window, mask, args);
         CheckError();
     }
 
     public void DestroyWindowChecked(uint window)
     {
-        CheckError();
         this.DestroyWindow(window);
         CheckError();
     }
 
     public void DestroySubwindowsChecked(uint window)
     {
-        CheckError();
         this.DestroySubwindows(window);
         CheckError();
     }
 
     public void ChangeSaveSetChecked(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
-        CheckError();
         this.ChangeSaveSet(changeSaveSetMode, window);
         CheckError();
     }
 
     public void ReparentWindowChecked(uint window, uint parent, short x, short y)
     {
-        CheckError();
         this.ReparentWindow(window, parent, x, y);
         CheckError();
     }
 
     public void MapWindowChecked(uint window)
     {
-        CheckError();
         this.MapWindow(window);
         CheckError();
     }
 
     public void MapSubwindowsChecked(uint window)
     {
-        CheckError();
         this.MapSubwindows(window);
         CheckError();
     }
 
     public void UnmapWindowChecked(uint window)
     {
-        CheckError();
         this.UnmapWindow(window);
         CheckError();
     }
 
     public void UnmapSubwindowsChecked(uint window)
     {
-        CheckError();
         this.UnmapSubwindows(window);
         CheckError();
     }
 
     public void ConfigureWindowChecked(uint window, ConfigureValueMask mask, params uint[] args)
     {
-        CheckError();
         this.ConfigureWindow(window, mask, args);
         CheckError();
     }
 
     public void CirculateWindowChecked(Direction direction, uint window)
     {
-        CheckError();
         this.CirculateWindow(direction, window);
         CheckError();
     }
@@ -1641,49 +1606,42 @@ internal class XProto : BaseProtoClient, IXProto
     public void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
         where T : struct, INumber<T>
     {
-        CheckError();
         this.ChangeProperty(mode, window, property, type, args);
         CheckError();
     }
 
     public void DeletePropertyChecked(uint window, uint atom)
     {
-        CheckError();
         this.DeleteProperty(window, atom);
         CheckError();
     }
 
     public void RotatePropertiesChecked(uint window, ushort delta, params uint[] properties)
     {
-        CheckError();
         this.RotateProperties(window, delta, properties);
         CheckError();
     }
 
     public void SetSelectionOwnerChecked(uint owner, uint atom, uint timestamp)
     {
-        CheckError();
         this.SetSelectionOwner(owner, atom, timestamp);
         CheckError();
     }
 
     public void ConvertSelectionChecked(uint requestor, uint selection, uint target, uint property, uint timestamp)
     {
-        CheckError();
         this.ConvertSelection(requestor, selection, target, property, timestamp);
         CheckError();
     }
 
     public void SendEventChecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
-        CheckError();
         this.SendEvent(propagate, destination, eventMask, evnt);
         CheckError();
     }
 
     public void UngrabPointerChecked(uint time)
     {
-        CheckError();
         this.UngrabPointer(time);
         CheckError();
     }
@@ -1691,28 +1649,24 @@ internal class XProto : BaseProtoClient, IXProto
     public void GrabButtonChecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
     {
-        CheckError();
         this.GrabButton(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers);
         CheckError();
     }
 
     public void UngrabButtonChecked(Button button, uint grabWindow, ModifierMask mask)
     {
-        CheckError();
         this.UngrabButton(button, grabWindow, mask);
         CheckError();
     }
 
     public void ChangeActivePointerGrabChecked(uint cursor, uint time, ushort mask)
     {
-        CheckError();
         this.ChangeActivePointerGrab(cursor, time, mask);
         CheckError();
     }
 
     public void UngrabKeyboardChecked(uint time)
     {
-        CheckError();
         this.UngrabKeyboard(time);
         CheckError();
     }
@@ -1720,35 +1674,30 @@ internal class XProto : BaseProtoClient, IXProto
     public void GrabKeyChecked(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
-        CheckError();
         this.GrabKey(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
         CheckError();
     }
 
     public void UngrabKeyChecked(byte key, uint grabWindow, ModifierMask modifier)
     {
-        CheckError();
         this.UngrabKey(key, grabWindow, modifier);
         CheckError();
     }
 
     public void AllowEventsChecked(EventsMode mode, uint time)
     {
-        CheckError();
         this.AllowEvents(mode, time);
         CheckError();
     }
 
     public void GrabServerChecked()
     {
-        CheckError();
         this.GrabServer();
         CheckError();
     }
 
     public void UngrabServerChecked()
     {
-        CheckError();
         this.UngrabServer();
         CheckError();
     }
@@ -1756,77 +1705,66 @@ internal class XProto : BaseProtoClient, IXProto
     public void WarpPointerChecked(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth,
         ushort srcHeight, short destX, short destY)
     {
-        CheckError();
         this.WarpPointer(srcWindow, destWindow, srcX, srcY, srcWidth, srcHeight, destX, destY);
         CheckError();
     }
 
     public void SetInputFocusChecked(InputFocusMode mode, uint focus, uint time)
     {
-        CheckError();
         this.SetInputFocus(mode, focus, time);
         CheckError();
     }
 
     public void OpenFontChecked(string fontName, uint fontId)
     {
-        CheckError();
         this.OpenFont(fontName, fontId);
         CheckError();
     }
 
     public void CloseFontChecked(uint fontId)
     {
-        CheckError();
         this.CloseFont(fontId);
         CheckError();
     }
 
     public void SetFontPathChecked(string[] strPaths)
     {
-        CheckError();
         this.SetFontPath(strPaths);
         CheckError();
     }
 
     public void CreatePixmapChecked(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
-        CheckError();
         this.CreatePixmap(depth, pixmapId, drawable, width, height);
         CheckError();
     }
 
     public void FreePixmapChecked(uint pixmapId)
     {
-        CheckError();
         this.FreePixmap(pixmapId);
         CheckError();
     }
 
     public void CreateGCChecked(uint gc, uint drawable, GCMask mask, params uint[] args)
     {
-        CheckError();
         this.CreateGC(gc, drawable, mask, args);
         CheckError();
     }
 
     public void ChangeGCChecked(uint gc, GCMask mask, params uint[] args)
     {
-        CheckError();
         this.ChangeGC(gc, mask, args);
         CheckError();
     }
 
     public void CopyGCChecked(uint srcGc, uint dstGc, GCMask mask)
     {
-        CheckError();
         this.CopyGC(srcGc, dstGc, mask);
         CheckError();
     }
 
     public void SetDashesChecked(uint gc, ushort dashOffset, byte[] dashes)
     {
-        CheckError();
         this.SetDashes(gc, dashOffset, dashes);
         CheckError();
     }
@@ -1834,21 +1772,18 @@ internal class XProto : BaseProtoClient, IXProto
     public void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
         Rectangle[] rectangles)
     {
-        CheckError();
         this.SetClipRectangles(ordering, gc, clipX, clipY, rectangles);
         CheckError();
     }
 
     public void FreeGCChecked(uint gc)
     {
-        CheckError();
         this.FreeGC(gc);
         CheckError();
     }
 
     public void ClearAreaChecked(bool exposures, uint window, short x, short y, ushort width, ushort height)
     {
-        CheckError();
         this.ClearArea(exposures, window, x, y, width, height);
         CheckError();
     }
@@ -1856,7 +1791,6 @@ internal class XProto : BaseProtoClient, IXProto
     public void CopyAreaChecked(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX,
         ushort destY, ushort width, ushort height)
     {
-        CheckError();
         this.CopyArea(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height);
         CheckError();
     }
@@ -1864,63 +1798,54 @@ internal class XProto : BaseProtoClient, IXProto
     public void CopyPlaneChecked(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX,
         ushort destY, ushort width, ushort height, uint bitPlane)
     {
-        CheckError();
         this.CopyPlane(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height, bitPlane);
         CheckError();
     }
 
     public void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
     {
-        CheckError();
         this.PolyPoint(coordinate, drawable, gc, points);
         CheckError();
     }
 
     public void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
     {
-        CheckError();
         this.PolyLine(coordinate, drawable, gc, points);
         CheckError();
     }
 
     public void PolySegmentChecked(uint drawable, uint gc, Segment[] segments)
     {
-        CheckError();
         this.PolySegment(drawable, gc, segments);
         CheckError();
     }
 
     public void PolyRectangleChecked(uint drawable, uint gc, Rectangle[] rectangles)
     {
-        CheckError();
         this.PolyRectangle(drawable, gc, rectangles);
         CheckError();
     }
 
     public void PolyArcChecked(uint drawable, uint gc, Arc[] arcs)
     {
-        CheckError();
         this.PolyArc(drawable, gc, arcs);
         CheckError();
     }
 
     public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points)
     {
-        CheckError();
         this.FillPoly(drawable, gc, shape, coordinate, points);
         CheckError();
     }
 
     public void PolyFillRectangleChecked(uint drawable, uint gc, Rectangle[] rectangles)
     {
-        CheckError();
         this.PolyFillRectangle(drawable, gc, rectangles);
         CheckError();
     }
 
     public void PolyFillArcChecked(uint drawable, uint gc, Arc[] arcs)
     {
-        CheckError();
         this.PolyFillArc(drawable, gc, arcs);
         CheckError();
     }
@@ -1928,77 +1853,66 @@ internal class XProto : BaseProtoClient, IXProto
     public void PutImageChecked(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x,
         short y, byte leftPad, byte depth, Span<byte> data)
     {
-        CheckError();
         this.PutImage(format, drawable, gc, width, height, x, y, leftPad, depth, data);
         CheckError();
     }
 
     public void ImageText8Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
     {
-        CheckError();
         this.ImageText8(drawable, gc, x, y, text);
         CheckError();
     }
 
     public void ImageText16Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
     {
-        CheckError();
         this.ImageText16(drawable, gc, x, y, text);
         CheckError();
     }
 
     public void CreateColormapChecked(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
-        CheckError();
         this.CreateColormap(alloc, colormapId, window, visual);
         CheckError();
     }
 
     public void FreeColormapChecked(uint colormapId)
     {
-        CheckError();
         this.FreeColormap(colormapId);
         CheckError();
     }
 
     public void CopyColormapAndFreeChecked(uint colormapId, uint srcColormapId)
     {
-        CheckError();
         this.CopyColormapAndFree(colormapId, srcColormapId);
         CheckError();
     }
 
     public void InstallColormapChecked(uint colormapId)
     {
-        CheckError();
         this.InstallColormap(colormapId);
         CheckError();
     }
 
     public void UninstallColormapChecked(uint colormapId)
     {
-        CheckError();
         this.UninstallColormap(colormapId);
         CheckError();
     }
 
     public void FreeColorsChecked(uint colormapId, uint planeMask, params uint[] pixels)
     {
-        CheckError();
         this.FreeColors(colormapId, planeMask, pixels);
         CheckError();
     }
 
     public void StoreColorsChecked(uint colormapId, params ColorItem[] item)
     {
-        CheckError();
         this.StoreColors(colormapId, item);
         CheckError();
     }
 
     public void StoreNamedColorChecked(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
     {
-        CheckError();
         this.StoreNamedColor(mode, colormapId, pixels, name);
         CheckError();
     }
@@ -2006,7 +1920,6 @@ internal class XProto : BaseProtoClient, IXProto
     public void CreateCursorChecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
         ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
-        CheckError();
         this.CreateCursor(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y);
         CheckError();
     }
@@ -2015,7 +1928,6 @@ internal class XProto : BaseProtoClient, IXProto
         ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen,
         ushort backBlue)
     {
-        CheckError();
         this.CreateGlyphCursor(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
             backRed, backGreen, backBlue);
         CheckError();
@@ -2023,7 +1935,6 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void FreeCursorChecked(uint cursorId)
     {
-        CheckError();
         this.FreeCursor(cursorId);
         CheckError();
     }
@@ -2031,7 +1942,6 @@ internal class XProto : BaseProtoClient, IXProto
     public void RecolorCursorChecked(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
         ushort backGreen, ushort backBlue)
     {
-        CheckError();
         this.RecolorCursor(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
         CheckError();
     }
@@ -2039,91 +1949,78 @@ internal class XProto : BaseProtoClient, IXProto
     public void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
         uint[] Keysym)
     {
-        CheckError();
         this.ChangeKeyboardMapping(keycodeCount, firstKeycode, keysymsPerKeycode, Keysym);
         CheckError();
     }
 
     public void BellChecked(sbyte percent)
     {
-        CheckError();
         this.Bell(percent);
         CheckError();
     }
 
     public void ChangeKeyboardControlChecked(KeyboardControlMask mask, params uint[] args)
     {
-        CheckError();
         this.ChangeKeyboardControl(mask, args);
         CheckError();
     }
 
     public void ChangePointerControlChecked(Acceleration acceleration, ushort? threshold)
     {
-        CheckError();
         this.ChangePointerControl(acceleration, threshold);
         CheckError();
     }
 
     public void SetScreenSaverChecked(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
     {
-        CheckError();
         this.SetScreenSaver(timeout, interval, preferBlanking, allowExposures);
         CheckError();
     }
 
     public void ForceScreenSaverChecked(ForceScreenSaverMode mode)
     {
-        CheckError();
         this.ForceScreenSaver(mode);
         CheckError();
     }
 
     public void ChangeHostsChecked(HostMode mode, Family family, byte[] address)
     {
-        CheckError();
         this.ChangeHosts(mode, family, address);
         CheckError();
     }
 
     public void SetAccessControlChecked(AccessControlMode mode)
     {
-        CheckError();
         this.SetAccessControl(mode);
         CheckError();
     }
 
     public void SetCloseDownModeChecked(CloseDownMode mode)
     {
-        CheckError();
         this.SetCloseDownMode(mode);
         CheckError();
     }
 
     public void KillClientChecked(uint resource)
     {
-        CheckError();
         this.KillClient(resource);
         CheckError();
     }
 
     public void NoOperationChecked(params uint[] args)
     {
-        CheckError();
         this.NoOperation(args);
         CheckError();
     }
 
     public void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
-        CheckError();
         this.PolyText8(drawable, gc, x, y, data);
         CheckError();
     }
 
     public void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
-        CheckError();
         this.PolyText16(drawable, gc, x, y, data);
         CheckError();
     }

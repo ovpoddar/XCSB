@@ -6,7 +6,7 @@ public unsafe struct InternAtomReply
 {
     public readonly byte Reply; // 1
     private readonly byte _pad0;
-    public readonly ushort SequenceNumber;
+    public readonly ushort Sequence;
     public readonly uint ReplyLength;
     public readonly uint Atom;
 }
