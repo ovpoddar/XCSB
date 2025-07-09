@@ -96,6 +96,10 @@ xcsb.PolyRectangle(pixmap, gc, [
 
 xcsb.MapWindow(window);
 
+xcsb.FreeCursor(cursor);
+xcsb.FreePixmap(cursor_pixmap);
+xcsb.FreePixmap(cursor_mask);
+xcsb.FreeGC(cursor_gc);
 
 var isRunning = true;
 
@@ -124,12 +128,6 @@ while (isRunning)
 
 }
 
-
-
 xcsb.FreePixmap(pixmap);
-xcsb.FreeCursor(cursor);
-xcsb.FreePixmap(cursor_pixmap);
-xcsb.FreePixmap(cursor_mask);
-xcsb.FreeGC(cursor_gc);
 xcsb.FreeGC(gc);
 xcsb.DestroyWindow(window);

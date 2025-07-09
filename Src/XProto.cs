@@ -1520,7 +1520,7 @@ internal class XProto : BaseProtoClient, IXProto
                 return scratchBuffer.ToStruct<XEvent>();
         }
 
-        scratchBuffer[0] = 0;
+        scratchBuffer.Clear();
         return scratchBuffer.ToStruct<XEvent>();
     }
 
