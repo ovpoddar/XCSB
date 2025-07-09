@@ -11,20 +11,6 @@ using Xcsb.Models.Response;
 
 namespace Xcsb;
 
-/* effected by big request
- PutImage	
-PolyFillRectangle	
-PolySegment, PolyLine	
-PolyText8, PolyText16	
-ChangeProperty	
-SendEvent	
-StoreColors / StoreNamedColor	
-ListFontsWithInfo	
-Font requests	
-Render extension
-GLX or XVideo ext
- */
-
 public interface IVoidProto
 {
     void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
