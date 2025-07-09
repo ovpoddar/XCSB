@@ -9,7 +9,7 @@ public struct MotionEvent
     public ushort Sequence;
     public uint Time;
     public uint Root;
-    public uint Event;
+    public uint Window;
     public uint Child;
     public short RootX;
     public short RootY;

@@ -1,4 +1,5 @@
-﻿using Xcsb;
+﻿using System.Runtime.InteropServices;
+using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models.Event;
 
@@ -23,7 +24,7 @@ x.CreateWindow(screen.RootDepth.DepthValue, window1,
     screen.RootVisualId,
     ValueMask.BackgroundPixel | ValueMask.EventMask,
     [color_focused, (uint)(EventMask.KeyPressMask | EventMask.KeyReleaseMask |EventMask.ButtonPressMask
-    | EventMask.FocusChangeMask | EventMask.ExposureMask)]
+    | EventMask.FocusChangeMask | EventMask.ExposureMask | EventMask.PointerMotionMask)]
     );
 
 x.MapWindow(window1);
@@ -40,7 +41,7 @@ x.CreateWindow(screen.RootDepth.DepthValue,
     ValueMask.BackgroundPixel | ValueMask.EventMask,
     [color_unfocused, (uint)(
         EventMask.KeyPressMask | EventMask.KeyReleaseMask | EventMask.ButtonPressMask|
-        EventMask.FocusChangeMask | EventMask.ExposureMask)]
+        EventMask.FocusChangeMask | EventMask.ExposureMask | EventMask.PointerMotionMask)]
     );
 
 
@@ -59,6 +60,9 @@ Thread.Sleep(1000);
 x.SetInputFocus(Xcsb.Models.InputFocusMode.PointerRoot, window1, 0);
 ChangeWindowColor(x, window1, color_focused);
 ChangeWindowColor(x, window2, color_unfocused);
+
+var gc = x.NewId();
+x.CreateGC(gc, window1, GCMask.Foreground | GCMask.Background, [screen.BlackPixel, screen.WhitePixel]);
 
 // Track current focused window
 var current_focus = window1;
@@ -155,6 +159,18 @@ while (isRunning)
                 }
                 break;
             }
+        case EventType.MotionNotify:
+            var poient = new Xcsb.Models.Point(
+                (ushort)evnt.MotionEvent.EventX,
+                (ushort)evnt.MotionEvent.EventY);
+            x.PolyPoint(Xcsb.Models.CoordinateMode.Origin, evnt.MotionEvent.Window, gc, [poient]);
+            if (evnt.MotionEvent.Window == window1)
+            {
+                var evn = evnt;
+                evn.MotionEvent.Window = window2;
+                x.SendEvent(true, window2, (uint)EventMask.PointerMotionMask, evn);
+            }
+            break;
     }
 }
 
