@@ -106,18 +106,12 @@ internal static class GenericHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Send<T>(this Socket socket, scoped ref T value) where T : struct
-    {
-#if NETSTANDARD
-        var size = Unsafe.SizeOf<T>();
-        using var buffer = new ArrayPoolUsing<byte>(size);
-        var bufferPtr = buffer.Slice(size);
-        Unsafe.WriteUnaligned(ref bufferPtr[0], value);
-        socket.SendExact(buffer.AsSpan(size), 0);
-#else
-        socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
-#endif
-    }
+    internal static void Send<T>(this Socket socket, scoped in T value) where T : unmanaged =>
+        socket.SendExact(MemoryMarshal.AsBytes(value.AsReadOnlySpan()));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static unsafe ReadOnlySpan<byte> AsReadOnlySpan<T>(this T @struct) where T : unmanaged => 
+        new ReadOnlySpan<byte>(&@struct, sizeof(T));
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
@@ -145,7 +139,7 @@ internal static class GenericHelper
 #endif
     }
 
-    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : struct
+    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged
     {
 #if NETSTANDARD
         var size = Unsafe.SizeOf<T>();
@@ -154,7 +148,7 @@ internal static class GenericHelper
         Unsafe.WriteUnaligned(ref bytes[0], value);
         list.AddRange((byte[])buffer);
 #else
-        list.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
+        list.AddRange(MemoryMarshal.AsBytes(value.AsReadOnlySpan()));
 #endif
     }
 }

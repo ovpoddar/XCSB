@@ -73,5 +73,22 @@ internal static class DotnetStandardSupportHelper
 
         return tcs.Task;
     }
+
+    internal static void ReadExactly(this Stream stream, Span<byte> buffer)
+    {
+        var total = 0;
+        var array = ArrayPool<byte>.Shared.Rent(buffer.Length);
+        try
+        {
+            buffer.CopyTo(array);
+            while (total < buffer.Length)
+                total += stream.Read(array, total, buffer.Length - total);
+
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(array);
+        }
+    }
 }
 #endif

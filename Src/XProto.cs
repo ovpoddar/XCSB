@@ -43,7 +43,7 @@ internal class XProto : BaseProtoClient, IXProto
     public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
     {
         var request = new AllocColorType(colorMap, red, green, blue);
-        socket.Send(ref request);
+        socket.Send(in request);
 
         var (result, error) = ReceivedResponse<AllocColorReply>();
         if (!error.HasValue && result.HasValue)
@@ -77,7 +77,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void AllowEvents(EventsMode mode, uint time)
     {
         var request = new AllowEventsType(mode, time);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -87,14 +87,14 @@ internal class XProto : BaseProtoClient, IXProto
             throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
 
         var request = new BellType(percent);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void ChangeActivePointerGrab(uint cursor, uint time, ushort mask)
     {
         var request = new ChangeActivePointerGrabType(cursor, time, mask);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -194,7 +194,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
             threshold ?? 0, (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -233,7 +233,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
         var request = new ChangeSaveSetType(changeSaveSetMode, window);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -262,21 +262,21 @@ internal class XProto : BaseProtoClient, IXProto
     public void CirculateWindow(Direction direction, uint window)
     {
         var request = new CirculateWindowType(direction, window);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height)
     {
         var request = new ClearAreaType(exposures, window, x, y, width, height);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void CloseFont(uint fontId)
     {
         var request = new CloseFontType(fontId);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -307,7 +307,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp)
     {
         var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -315,21 +315,21 @@ internal class XProto : BaseProtoClient, IXProto
         ushort destY, ushort width, ushort height)
     {
         var request = new CopyAreaType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void CopyColormapAndFree(uint colormapId, uint srcColormapId)
     {
         var request = new CopyColormapAndFreeType(colormapId, srcColormapId);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void CopyGC(uint srcGc, uint dstGc, GCMask mask)
     {
         var request = new CopyGCType(srcGc, dstGc, mask);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -338,14 +338,14 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new CopyPlaneType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height,
             bitPlane);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
         var request = new CreateColormapType(alloc, colormapId, window, visual);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -354,7 +354,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -385,14 +385,14 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
         var request = new CreatePixmapType(depth, pixmapId, drawable, width, height);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -425,21 +425,21 @@ internal class XProto : BaseProtoClient, IXProto
     public void DeleteProperty(uint window, uint atom)
     {
         var request = new DeletePropertyType(window, atom);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void DestroySubwindows(uint window)
     {
         var request = new DestroySubWindowsType(window);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void DestroyWindow(uint window)
     {
         var request = new DestroyWindowType(window);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -470,14 +470,14 @@ internal class XProto : BaseProtoClient, IXProto
     public void ForceScreenSaver(ForceScreenSaverMode mode)
     {
         var request = new ForceScreenSaverType(mode);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void FreeColormap(uint colormapId)
     {
         var request = new FreeColormapType(colormapId);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -506,21 +506,21 @@ internal class XProto : BaseProtoClient, IXProto
     public void FreeCursor(uint cursorId)
     {
         var request = new FreeCursorType(cursorId);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void FreeGC(uint gc)
     {
         var request = new FreeGCType(gc);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void FreePixmap(uint pixmapId)
     {
         var request = new FreePixmapType(pixmapId);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -637,7 +637,7 @@ internal class XProto : BaseProtoClient, IXProto
     public GetPropertyReply GetProperty(bool delete, uint window, uint property, uint type, uint offset, uint length)
     {
         var request = new GetPropertyType(delete, window, property, type, offset, length);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
         return new GetPropertyReply(socket);
     }
@@ -668,7 +668,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -676,7 +676,7 @@ internal class XProto : BaseProtoClient, IXProto
         GrabMode keyboardMode)
     {
         var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -692,7 +692,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
-        socket.Send(ref request);
+        socket.Send(in request);
 
         var (result, error) = ReceivedResponse<GrabPointerReply>();
         if (!error.HasValue && result.HasValue)
@@ -707,7 +707,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void GrabServer()
     {
         var request = new GrabServerType();
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -762,14 +762,14 @@ internal class XProto : BaseProtoClient, IXProto
     public void InstallColormap(uint colormapId)
     {
         var request = new InstallColormapType(colormapId);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void KillClient(uint resource)
     {
         var request = new KillClientType(resource);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -825,14 +825,14 @@ internal class XProto : BaseProtoClient, IXProto
     public void MapSubwindows(uint window)
     {
         var request = new MapSubWindowsType(window);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void MapWindow(uint window)
     {
         var request = new MapWindowType(window);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -880,7 +880,7 @@ internal class XProto : BaseProtoClient, IXProto
             Encoding.ASCII.GetBytes(fontName, scratchBuffer.Slice(fontName.Length));
             scratchBuffer[(fontName.Length)..requiredBuffer].Clear();
 
-            socket.Send(ref request);
+            socket.Send(in request);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
@@ -1166,7 +1166,7 @@ internal class XProto : BaseProtoClient, IXProto
     public QueryPointerReply QueryPointer(uint window)
     {
         var request = new QueryPointerType(window);
-        socket.Send(ref request);
+        socket.Send(in request);
         
         var (result, error) = ReceivedResponse<QueryPointerReply>();
         if (!error.HasValue && result.HasValue)
@@ -1196,14 +1196,14 @@ internal class XProto : BaseProtoClient, IXProto
         ushort backGreen, ushort backBlue)
     {
         var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void ReparentWindow(uint window, uint parent, short x, short y)
     {
         var request = new ReparentWindowType(window, parent, x, y);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -1233,14 +1233,14 @@ internal class XProto : BaseProtoClient, IXProto
     public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
         var request = new SendEventType(propagate, destination, eventMask, evnt);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void SetAccessControl(AccessControlMode mode)
     {
         var request = new SetAccessControlType(mode);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -1269,7 +1269,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void SetCloseDownMode(CloseDownMode mode)
     {
         var request = new SetCloseDownModeType(mode);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -1335,7 +1335,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void SetInputFocus(InputFocusMode mode, uint focus, uint time)
     {
         var request = new SetInputFocusType(mode, focus, time);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -1356,14 +1356,14 @@ internal class XProto : BaseProtoClient, IXProto
     public void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
     {
         var request = new SetScreenSaverType(timeout, interval, preferBlanking, allowExposures);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void SetSelectionOwner(uint owner, uint atom, uint timestamp)
     {
         var request = new SetSelectionOwnerType(owner, atom, timestamp);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -1425,56 +1425,56 @@ internal class XProto : BaseProtoClient, IXProto
     public void UngrabButton(Button button, uint grabWindow, ModifierMask mask)
     {
         var request = new UngrabButtonType(button, grabWindow, mask);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void UngrabKey(byte key, uint grabWindow, ModifierMask modifier)
     {
         var request = new UngrabKeyType(key, grabWindow, modifier);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void UngrabKeyboard(uint time)
     {
         var request = new UngrabKeyboardType(time);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void UngrabPointer(uint time)
     {
         var request = new UngrabPointerType(time);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void UngrabServer()
     {
         var request = new UnGrabServerType();
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void UninstallColormap(uint colormapId)
     {
         var request = new UninstallColormapType(colormapId);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void UnmapSubwindows(uint window)
     {
         var request = new UnMapSubwindowsType(window);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
     public void UnmapWindow(uint window)
     {
         var request = new UnmapWindowType(window);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
@@ -1482,7 +1482,7 @@ internal class XProto : BaseProtoClient, IXProto
         short destX, short destY)
     {
         var request = new WarpPointerType(srcWindow, destWindow, srcX, srcY, srcWidth, srcHeight, destX, destY);
-        socket.Send(ref request);
+        socket.Send(in request);
         sequenceNumber++;
     }
 
