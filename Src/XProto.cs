@@ -105,7 +105,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(args)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
@@ -113,7 +113,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(args)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -129,7 +129,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             address.CopyTo(scratchBuffer[8..requiredBuffer]);
             scratchBuffer[^address.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer);
@@ -137,7 +137,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             address.CopyTo(scratchBuffer[8..requiredBuffer]);
             scratchBuffer[^address.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -153,14 +153,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[8..requiredBuffer]);
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[8..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
@@ -175,14 +175,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             MemoryMarshal.Cast<uint, byte>(Keysym).CopyTo(scratchBuffer[8..requiredBuffer]);
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             MemoryMarshal.Cast<uint, byte>(Keysym).CopyTo(scratchBuffer[8..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
@@ -213,7 +213,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..24], request);
+            MemoryMarshal.Write(scratchBuffer[0..24], ref request);
             MemoryMarshal.Cast<T, byte>(args).CopyTo(scratchBuffer[24..(24 + args.Length * size)]);
             scratchBuffer[(24 + args.Length * size)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer);
@@ -221,7 +221,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..24], request);
+            MemoryMarshal.Write(scratchBuffer[0..24], ref request);
             MemoryMarshal.Cast<T, byte>(args).CopyTo(scratchBuffer[24..(24 + args.Length * size)]);
             scratchBuffer[(24 + args.Length * size)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -244,14 +244,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
@@ -287,7 +287,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(args)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
@@ -295,7 +295,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(args)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -365,14 +365,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[16..requiredBuffer]);
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             MemoryMarshal.Cast<uint, byte>(args).CopyTo(scratchBuffer[16..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
@@ -405,7 +405,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..32], request);
+            MemoryMarshal.Write(scratchBuffer[0..32], ref request);
             MemoryMarshal.Cast<uint, byte>(args)
                 .CopyTo(scratchBuffer[32..requiredBuffer]);
             socket.SendExact(scratchBuffer);
@@ -413,7 +413,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..32], request);
+            MemoryMarshal.Write(scratchBuffer[0..32], ref request);
             MemoryMarshal.Cast<uint, byte>(args)
                 .CopyTo(scratchBuffer[32..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -450,7 +450,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             MemoryMarshal.Cast<Point, byte>(points)
                 .CopyTo(scratchBuffer[16..]);
             socket.SendExact(scratchBuffer);
@@ -458,7 +458,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             MemoryMarshal.Cast<Point, byte>(points)
                 .CopyTo(scratchBuffer[16..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -488,14 +488,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(pixels).CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(pixels).CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
@@ -539,7 +539,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..requestSize], in request);
+            MemoryMarshal.Write(scratchBuffer[0..requestSize], ref request);
             Encoding.ASCII.GetBytes(atomName, scratchBuffer.Slice(requestSize, atomName.Length));
             scratchBuffer[(requestSize + atomName.Length)..requiredBuffer].Clear();
 
@@ -548,7 +548,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..requestSize], in request);
+            MemoryMarshal.Write(scratchBuffer[0..requestSize], ref request);
             Encoding.ASCII.GetBytes(atomName, scratchBuffer.Slice(requestSize, atomName.Length));
             scratchBuffer[(requestSize + atomName.Length)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -718,7 +718,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer);
@@ -726,7 +726,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -742,7 +742,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             text.CopyTo(scratchBuffer[16..(text.Length + 16)]);
             scratchBuffer[(16 + text.Length)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer);
@@ -750,7 +750,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             text.CopyTo(scratchBuffer[16..(text.Length + 16)]);
             scratchBuffer[(16 + text.Length)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -843,14 +843,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..4], request);
+            MemoryMarshal.Write(scratchBuffer[0..4], ref request);
             args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[4..requiredBuffer]));
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..4], request);
+            MemoryMarshal.Write(scratchBuffer[0..4], ref request);
             args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[4..requiredBuffer]));
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
@@ -866,7 +866,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..requestSize], in request);
+            MemoryMarshal.Write(scratchBuffer[0..requestSize], ref request);
             Encoding.ASCII.GetBytes(fontName, scratchBuffer.Slice(requestSize, fontName.Length));
             scratchBuffer[(requestSize + fontName.Length)..requiredBuffer].Clear();
 
@@ -894,7 +894,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Arc, byte>(arcs)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
@@ -902,7 +902,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Arc, byte>(arcs)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -918,7 +918,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Arc, byte>(arcs)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
@@ -926,7 +926,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Arc, byte>(arcs)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -942,7 +942,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Rectangle, byte>(rectangles)
                 .CopyTo(scratchBuffer[12..(12 + rectangles.Length * 8)]);
             socket.SendExact(scratchBuffer);
@@ -950,7 +950,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Rectangle, byte>(rectangles)
                 .CopyTo(scratchBuffer[12..(12 + rectangles.Length * 8)]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -966,7 +966,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Point, byte>(points)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
@@ -974,7 +974,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Point, byte>(points)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -990,7 +990,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Point, byte>(points)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
@@ -998,7 +998,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Point, byte>(points)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -1014,7 +1014,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Rectangle, byte>(rectangles)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
@@ -1022,7 +1022,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Rectangle, byte>(rectangles)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -1038,7 +1038,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Segment, byte>(segments)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
@@ -1046,7 +1046,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Segment, byte>(segments)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -1062,7 +1062,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
-            MemoryMarshal.Write(scratchBuffer[..16], in request);
+            MemoryMarshal.Write(scratchBuffer[..16], ref request);
             data.CopyTo(scratchBuffer[16..]);
             scratchBuffer[^data.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer);
@@ -1070,7 +1070,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
-            MemoryMarshal.Write(scratchBuffer[..16], in request);
+            MemoryMarshal.Write(scratchBuffer[..16], ref request);
             data.CopyTo(scratchBuffer[16..]);
             scratchBuffer[^data.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer[..scratchBufferSize]);
@@ -1086,7 +1086,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
-            MemoryMarshal.Write(scratchBuffer[..16], in request);
+            MemoryMarshal.Write(scratchBuffer[..16], ref request);
             data.CopyTo(scratchBuffer[16..]);
             scratchBuffer[^data.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer);
@@ -1094,7 +1094,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
-            MemoryMarshal.Write(scratchBuffer[..16], in request);
+            MemoryMarshal.Write(scratchBuffer[..16], ref request);
             data.CopyTo(scratchBuffer[16..]);
             scratchBuffer[^data.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer[..scratchBufferSize]);
@@ -1111,7 +1111,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
-            MemoryMarshal.Write(scratchBuffer[..24], in request);
+            MemoryMarshal.Write(scratchBuffer[..24], ref request);
             data.CopyTo(scratchBuffer[24..(24 + data.Length)]);
             scratchBuffer[(24 + data.Length)..].Clear();
             socket.SendExact(scratchBuffer);
@@ -1119,7 +1119,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
-            MemoryMarshal.Write(scratchBuffer[..24], in request);
+            MemoryMarshal.Write(scratchBuffer[..24], ref request);
             data.CopyTo(scratchBuffer[24..(24 + data.Length)]);
             scratchBuffer[(24 + data.Length)..].Clear();
             socket.SendExact(scratchBuffer[..scratchBufferSize]);
@@ -1214,14 +1214,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(properties).CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<uint, byte>(properties)
                 .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -1251,14 +1251,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Rectangle, byte>(rectangles).CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             MemoryMarshal.Cast<Rectangle, byte>(rectangles).CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
@@ -1280,7 +1280,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             dashes.CopyTo(scratchBuffer[12..requiredBuffer]);
             scratchBuffer[^dashes.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer);
@@ -1288,7 +1288,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], request);
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
             dashes.CopyTo(scratchBuffer[12..requiredBuffer]);
             scratchBuffer[^dashes.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -1305,7 +1305,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             foreach (var item in strPaths)
             {
                 Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
@@ -1318,7 +1318,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             foreach (var item in strPaths)
             {
                 Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
@@ -1374,7 +1374,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             item.CopyTo(MemoryMarshal.Cast<byte, ColorItem>(scratchBuffer[8..requiredBuffer]));
             scratchBuffer[^1] = 0;
             socket.SendExact(scratchBuffer);
@@ -1382,7 +1382,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..8], request);
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
             item.CopyTo(MemoryMarshal.Cast<byte, ColorItem>(scratchBuffer[8..requiredBuffer]));
             scratchBuffer[requiredBuffer - 1] = 0;
             socket.SendExact(scratchBuffer[..requiredBuffer]);
@@ -1398,7 +1398,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             name.CopyTo(scratchBuffer[16..(name.Length + 16)]);
             scratchBuffer[^name.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer);
@@ -1406,7 +1406,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..16], request);
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             name.CopyTo(scratchBuffer[16..(name.Length + 16)]);
             scratchBuffer[^name.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
