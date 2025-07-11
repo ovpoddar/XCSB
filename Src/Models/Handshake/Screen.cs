@@ -23,7 +23,11 @@ public class Screen
     public bool SaveUnders;
     private byte _rootDepth;
     public Depth? RootDepth => Depths.FirstOrDefault(a => a.DepthValue == _rootDepth);
+#if NETSTANDARD
+    public Depth[] Depths = [];
+#else
     public required Depth[] Depths;
+#endif
 
     public static Screen Read(Socket socket, ref int currentlyRead)
     {

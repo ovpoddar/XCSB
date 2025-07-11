@@ -20,7 +20,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Xcsb;
 
+#if !NETSTANDARD
 [SkipLocalsInit]
+#endif
 internal class XProto : BaseProtoClient, IXProto
 {
     private readonly HandshakeSuccessResponseBody _connectionResult;
@@ -197,7 +199,11 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args) where T : struct, INumber<T>
+    public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
+         where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
     {
         var size = Marshal.SizeOf<T>();
         if (size is not 1 or 2 or 4)
@@ -1601,7 +1607,10 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
-        where T : struct, INumber<T>
+          where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
     {
         this.ChangeProperty(mode, window, property, type, args);
         CheckError();

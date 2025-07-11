@@ -35,7 +35,11 @@ public interface IVoidProto
     void CirculateWindow(Direction direction, uint window);
 
     void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
-        where T : struct, INumber<T>;
+         where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
+        ;
 
     void DeleteProperty(uint window, uint atom);
 

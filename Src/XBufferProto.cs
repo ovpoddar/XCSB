@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -100,7 +99,10 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
-        where T : struct, INumber<T>
+         where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
     {
         var size = Marshal.SizeOf<T>();
         if (size is not 1 or 2 or 4)
@@ -282,7 +284,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     {
         try
         {
+#if NETSTANDARD
+            socket.SendExact(_buffer.ToArray());
+#else
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+#endif
             using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
             var received = socket.Receive(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[0..received]))
@@ -306,7 +312,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
         try
         {
+#if NETSTANDARD
+            socket.SendExact(_buffer.ToArray());
+#else
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+#endif
             var received = await socket.ReceiveAsync(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[0..received]))
                 if (evnt.EventType == EventType.Error)
@@ -329,7 +339,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     {
         try
         {
+#if NETSTANDARD
+            socket.SendExact(_buffer.ToArray());
+#else
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+#endif
             using var buffer = new ArrayPoolUsing<byte>(socket.Available);
             var received = socket.Receive(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
@@ -353,7 +367,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
         try
         {
+#if NETSTANDARD
+            socket.SendExact(_buffer.ToArray());
+#else
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+#endif
             var received = await socket.ReceiveAsync(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer.AsSpan(0, received)))
                 if (evnt.EventType == EventType.Error)

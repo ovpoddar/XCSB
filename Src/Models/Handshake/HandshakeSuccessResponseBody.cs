@@ -7,20 +7,20 @@ using Xcsb.Helpers;
 namespace Xcsb.Models.Handshake;
 public class HandshakeSuccessResponseBody
 {
-    public uint ReleaseNumber { get; set; }
-    public uint ResourceIDBase { get; set; }
-    public uint ResourceIDMask { get; set; }
-    public uint MotionBufferSize { get; set; }
-    public ushort MaxRequestLength { get; set; }
-    public ImageOrder ImageByteOrder { get; set; }
-    public BitOrder BitmapBitOrder { get; set; }
-    public byte BitmapScanLineUnit { get; set; }
-    public byte BitmapScanLinePad { get; set; }
-    public byte MinKeyCode { get; set; }
-    public byte MaxKeyCode { get; set; }
-    public string VendorName { get; set; } = null!;
-    public required Format[] Formats { get; set; }
-    public required Screen[] Screens { get; set; }
+    public uint ReleaseNumber { get; private set; }
+    public uint ResourceIDBase { get; private set; }
+    public uint ResourceIDMask { get; private set; }
+    public uint MotionBufferSize { get; private set; }
+    public ushort MaxRequestLength { get; private set; }
+    public ImageOrder ImageByteOrder { get; private set; }
+    public BitOrder BitmapBitOrder { get; private set; }
+    public byte BitmapScanLineUnit { get; private set; }
+    public byte BitmapScanLinePad { get; private set; }
+    public byte MinKeyCode { get; private set; }
+    public byte MaxKeyCode { get; private set; }
+    public string VendorName { get; private set; } = null!;
+    public Format[] Formats { get; private set; } = [];
+    public Screen[] Screens { get; private set; } = [];
 
     internal static HandshakeSuccessResponseBody Read(Socket socket, int additionalDataLength)
     {

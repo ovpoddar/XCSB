@@ -21,7 +21,7 @@ internal struct ArrayPoolUsing<T> : IDisposable
     public ArrayPoolUsing<T> Rent(int size)
     {
         if (size == 0) return this;
-        ArgumentOutOfRangeException.ThrowIfNegative(size);
+        if (size < 0) throw new ArgumentOutOfRangeException(nameof(size));
 
         if (_values != null)
             _arrayPool.Return(_values, _clearArray);
@@ -56,11 +56,29 @@ internal struct ArrayPoolUsing<T> : IDisposable
         return _values.AsSpan(start, length);
     }
 
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly Span<T> AsSpan() =>
+        _values.AsSpan(0, _length);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly Span<T> AsSpan(int length) =>
+        length > _length
+            ? throw new ArgumentOutOfRangeException(nameof(length))
+            : _values.AsSpan(0, length);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly Span<T> AsSpan(int start, int length) =>
+        start + length > _length
+            ? throw new ArgumentOutOfRangeException(nameof(length))
+            : _values.AsSpan(start, length);
+
     public readonly T this[int index]
     {
         get
         {
-            ArgumentNullException.ThrowIfNull(_values);
+            if (_values is null)
+                throw new ArgumentNullException(nameof(_values));
             if ((uint)index >= (uint)_values.Length)
                 throw new IndexOutOfRangeException();
             return _values[index];
@@ -68,13 +86,16 @@ internal struct ArrayPoolUsing<T> : IDisposable
 
         set
         {
-            ArgumentNullException.ThrowIfNull(_values);
+            if (_values is null)
+                throw new ArgumentNullException(nameof(_values));
+
             if ((uint)index >= (uint)_values.Length)
                 throw new IndexOutOfRangeException();
             _values[index] = value;
         }
     }
 
+    // todo remove this
     public readonly Span<T> this[Range range]
     {
         get

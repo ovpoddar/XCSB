@@ -7,7 +7,11 @@ namespace Xcsb.Models.Handshake;
 public class Depth
 {
     public byte DepthValue;
+#if NETSTANDARD
+    public Visual[] Visuals = [];
+#else
     public required Visual[] Visuals;
+#endif
 
     public static Depth Read(Socket socket, ref int currentlyRead)
     {

@@ -34,7 +34,11 @@ public interface IVoidProtoChecked
     void CirculateWindowChecked(Direction direction, uint window);
 
     void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
-        where T : struct, INumber<T>;
+        where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
+        ;
 
     void DeletePropertyChecked(uint window, uint atom);
 

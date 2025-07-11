@@ -1,4 +1,6 @@
-﻿using System.Net.Sockets;
+﻿using System.Buffers;
+using System.Drawing;
+using System.Net.Sockets;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -12,41 +14,147 @@ internal static class GenericHelper
     internal static T ToStruct<T>(this Span<byte> @bytes) where T : struct =>
         Unsafe.As<byte, T>(ref @bytes[0]);
 
-    internal static T AddPadding<T>(this T pad) where T : INumber<T>
+    internal static T AddPadding<T>(this T pad) where T :
+#if NETSTANDARD
+    struct
+    {
+        object result;
+        if (typeof(T) == typeof(byte))
+        {
+            result = (byte)((byte)(object)pad + (4 - ((byte)(object)pad & 3) & 3));
+        }
+        else if (typeof(T) == typeof(ushort))
+        {
+            result = (ushort)((ushort)(object)pad + (4 - ((ushort)(object)pad & 3) & 3));
+        }
+        else if (typeof(T) == typeof(int))
+        {
+            result = (int)(object)pad + (4 - ((int)(object)pad & 3) & 3);
+        }
+        else if (typeof(T) == typeof(uint))
+        {
+            result = (uint)(object)pad + (4 - ((uint)(object)pad & 3) & 3); ;
+        }
+        else
+        {
+            throw new ArgumentException($"Padding not implemented for type {typeof(T)}");
+        }
+        return (T)result;
+#else
+    INumber<T>
     {
         var value = int.CreateChecked(pad);
         return T.CreateChecked(value + (4 - (value & 3) & 3));
+#endif
     }
 
-    internal static T Padding<T>(this T pad) where T : INumber<T> =>
-        T.CreateChecked(4 - (int.CreateChecked(pad) & 3) & 3);
+    internal static T Padding<T>(this T pad) where T :
+#if NETSTANDARD
+    struct
+    {
+        object result;
+
+        if (typeof(T) == typeof(byte))
+            result = (byte)((4 - ((byte)(object)pad & 3)) & 3);
+        else if (typeof(T) == typeof(ushort))
+            result = (ushort)((4 - ((ushort)(object)pad & 3)) & 3);
+        else if (typeof(T) == typeof(int))
+            result = (4 - ((int)(object)pad & 3)) & 3;
+        else if (typeof(T) == typeof(uint))
+            result = (4 - ((uint)(object)pad & 3)) & 3;
+        else
+            throw new ArgumentException($"Padding not implemented for type {typeof(T)}");
+
+        return (T)result;
+#else
+    INumber<T>
+    {
+        return T.CreateChecked(4 - (int.CreateChecked(pad) & 3) & 3);
+    
+#endif
+    }
 
     internal static void SendExact(this Socket socket, scoped ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
     {
         var total = 0;
-        while (socket.Connected)
+#if NETSTANDARD
+        var array = ArrayPool<byte>.Shared.Rent(buffer.Length);
+        try
         {
-            total += socket.Send(buffer[total..], socketFlags);
-            if (total == buffer.Length)
-                break;
+            buffer.CopyTo(array);
+            while (total < buffer.Length)
+            {
+                var sent = socket.Send(array, total, buffer.Length - total, socketFlags);
+                if (sent <= 0)
+                    throw new SocketException();
+                total += sent;
+            }
         }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(array);
+        }
+#else
+        while (total < buffer.Length)
+        {
+            var sent =  socket.Send(buffer[total..], socketFlags);
+            if (sent <= 0)
+                throw new SocketException();
+            total += sent;
+        }
+#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Send<T>(this Socket socket, scoped ref T value) where T : struct =>
+    internal static void Send<T>(this Socket socket, scoped ref T value) where T : struct
+    {
+#if NETSTANDARD
+        var size = Unsafe.SizeOf<T>();
+        using var buffer = new ArrayPoolUsing<byte>(size);
+        var bufferPtr = buffer.Slice(size);
+        Unsafe.WriteUnaligned(ref bufferPtr[0], value);
+        socket.SendExact(buffer.AsSpan(size), 0);
+#else
         socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
+#endif
+    }
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
         var total = 0;
+#if NETSTANDARD
+        var array = ArrayPool<byte>.Shared.Rent(buffer.Length);
+        try
+        {
+            buffer.CopyTo(array);
+            while (total < buffer.Length)
+                total += socket.Receive(array, total, buffer.Length - total, SocketFlags.None);
+
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(array);
+        }
+#else
         while (socket.Connected)
         {
             total += socket.Receive(buffer[total..]);
             if (total == buffer.Length)
                 break;
         }
+#endif
     }
 
-    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : struct =>
+    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : struct
+    {
+#if NETSTANDARD
+        var size = Unsafe.SizeOf<T>();
+        using var buffer = new ArrayPoolUsing<byte>(size);
+        Span<byte> bytes = buffer;
+        Unsafe.WriteUnaligned(ref bytes[0], value);
+        list.AddRange((byte[])buffer);
+#else
         list.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
+#endif
+    }
 }
