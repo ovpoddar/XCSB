@@ -832,22 +832,19 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void NoOperation(params uint[] args)
     {
+        var request = new NoOperationType(args.Length);
         var requiredBuffer = 4 + args.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer[0] = (byte)Opcode.NoOperation;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[0..4], request);
             args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[4..requiredBuffer]));
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer[0] = (byte)Opcode.NoOperation;
-            scratchBuffer[1] = 0;
-            MemoryMarshal.Write(scratchBuffer[2..4], (ushort)(requiredBuffer / 4));
+            MemoryMarshal.Write(scratchBuffer[0..4], request);
             args.AsSpan().CopyTo(MemoryMarshal.Cast<byte, uint>(scratchBuffer[4..requiredBuffer]));
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
