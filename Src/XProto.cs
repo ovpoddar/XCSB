@@ -52,6 +52,7 @@ internal class XProto : BaseProtoClient, IXProto
             Debug.Assert(sequenceNumber == result.Value.Sequence);
             return result.Value;
         }
+
         throw new XEventException(error!.Value);
     }
 
@@ -200,7 +201,7 @@ internal class XProto : BaseProtoClient, IXProto
 
 
     public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
-         where T : struct
+        where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
@@ -561,6 +562,7 @@ internal class XProto : BaseProtoClient, IXProto
             Debug.Assert(sequenceNumber == result.Value.Sequence);
             return result.Value;
         }
+
         throw new XEventException(error!.Value);
     }
 
@@ -701,6 +703,7 @@ internal class XProto : BaseProtoClient, IXProto
             Debug.Assert(sequenceNumber == result.Value.Sequence);
             return result.Value;
         }
+
         throw new XEventException(error!.Value);
     }
 
@@ -1075,6 +1078,7 @@ internal class XProto : BaseProtoClient, IXProto
             scratchBuffer[^data.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer[..scratchBufferSize]);
         }
+
         sequenceNumber++;
     }
 
@@ -1099,6 +1103,7 @@ internal class XProto : BaseProtoClient, IXProto
             scratchBuffer[^data.Length.Padding()..].Clear();
             socket.SendExact(scratchBuffer[..scratchBufferSize]);
         }
+
         sequenceNumber++;
     }
 
@@ -1167,7 +1172,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new QueryPointerType(window);
         socket.Send(in request);
-        
+
         var (result, error) = ReceivedResponse<QueryPointerReply>();
         if (!error.HasValue && result.HasValue)
         {
@@ -1175,6 +1180,7 @@ internal class XProto : BaseProtoClient, IXProto
             Debug.Assert(sequenceNumber == result.Value.Sequence);
             return result.Value;
         }
+
         throw new XEventException(error!.Value);
     }
 
@@ -1510,21 +1516,32 @@ internal class XProto : BaseProtoClient, IXProto
 
     public XEvent GetEvent()
     {
+#if NETSTANDARD
+        if (bufferEvents.Count != 0)
+            return bufferEvents.Pop();
+#else
         if (bufferEvents.TryPop(out var result))
-        {
             return result;
-        }
+#endif
 
+#if NETSTANDARD
+        using var scratchBuffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>());
+#else
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
+#endif
+
         if (socket.Poll(-1, SelectMode.SelectRead))
         {
             var totalRead = socket.Receive(scratchBuffer);
-            if (totalRead != 0)
-                return scratchBuffer.ToStruct<XEvent>();
+            if (totalRead == 0)
+                scratchBuffer.AsSpan().Clear();
         }
 
-        scratchBuffer.Clear();
+#if NETSTANDARD
+        return scratchBuffer.AsSpan().ToStruct<XEvent>();
+#else
         return scratchBuffer.ToStruct<XEvent>();
+#endif
     }
 
     private void CheckError([CallerMemberName] string name = "")
@@ -1607,7 +1624,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
-          where T : struct
+        where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
@@ -2030,5 +2047,4 @@ internal class XProto : BaseProtoClient, IXProto
         this.PolyText16(drawable, gc, x, y, data);
         CheckError();
     }
-
 }
