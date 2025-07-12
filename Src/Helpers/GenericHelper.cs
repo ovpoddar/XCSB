@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Drawing;
 using System.Net.Sockets;
@@ -99,12 +100,19 @@ internal static class GenericHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Send<T>(this Socket socket, scoped in T value) where T : unmanaged =>
-        socket.SendExact(MemoryMarshal.AsBytes(value.AsReadOnlySpan()));
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static unsafe ReadOnlySpan<byte> AsReadOnlySpan<T>(this T @struct) where T : unmanaged =>
-        new ReadOnlySpan<byte>(&@struct, sizeof(T));
+    internal unsafe static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged
+    {
+#if NETSTANDARD
+        fixed (byte* pointer = &Unsafe.As<T, byte>(ref value))
+        {
+            var buffer = new ReadOnlySpan<byte>(pointer, Unsafe.SizeOf<T>());
+            socket.SendExact(buffer);
+        }
+#else
+        var buffer = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
+        socket.SendExact(buffer);
+#endif
+    }
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
@@ -132,32 +140,38 @@ internal static class GenericHelper
 #endif
     }
 
-    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged
+    internal unsafe static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged
     {
 #if NETSTANDARD
-        var size = Unsafe.SizeOf<T>();
-        using var buffer = new ArrayPoolUsing<byte>(size);
-        Span<byte> bytes = buffer;
-        Unsafe.WriteUnaligned(ref bytes[0], value);
-        list.AddRange((byte[])buffer);
+        fixed (byte* pointer = &Unsafe.As<T, byte>(ref value))
+        {
+            var buffer = new ReadOnlySpan<byte>(pointer, Marshal.SizeOf<T>());
+            list.AddRange(buffer);
+        }
 #else
-        list.AddRange(MemoryMarshal.AsBytes(value.AsReadOnlySpan()));
+        var buffer = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
+        list.AddRange(buffer);
 #endif
     }
 
-    //todo: verify
     internal static void WriteRequest<T>(this Span<byte> writeBuffer, ref T requestType, int size,
         ReadOnlySpan<byte> requestBody) where T : unmanaged
     {
 #if NETSTANDARD
 #else
-        MemoryMarshal.Write(writeBuffer[0..size], in requestType);
-        requestBody.CopyTo(writeBuffer[size..requestBody.Length]);
-        if (requestBody.Length % 4 == 0)
-            return;
-        Debug.Assert(writeBuffer.Length - requestBody.Length >= 4);
-        Debug.Assert(writeBuffer.Length - requestBody.Length == requestBody.Length.Padding());
-        writeBuffer[requestBody.Length..writeBuffer.Length].Clear();
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(writeBuffer), requestType);
+        requestBody.CopyTo(writeBuffer[size..]);
+        var remainder = requestBody.Length.Padding();
+        if (remainder != 0)
+        {
+            var paddingStart = size + requestBody.Length;
+            var paddingCount = 4 - remainder;
+
+            ref byte paddingRef = ref writeBuffer[paddingStart];
+            if (paddingCount >= 1) paddingRef = 0;
+            if (paddingCount >= 2) Unsafe.Add(ref paddingRef, 1) = 0;
+            if (paddingCount >= 3) Unsafe.Add(ref paddingRef, 2) = 0;
+        }
 #endif
     }
 }

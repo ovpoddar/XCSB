@@ -104,7 +104,7 @@ internal static class Connection
         try
         {
             var request = new HandShakeRequestType((ushort)authName.Length, (ushort)authData.Length);
-            socket.Send(in request);
+            socket.Send(ref request);
 
             var namePaddedLength = authName.Length.AddPadding();
             var scratchBufferSize = namePaddedLength + authData.Length.AddPadding();
