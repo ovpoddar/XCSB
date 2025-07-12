@@ -12,7 +12,7 @@ namespace Xcsb;
 internal class BaseProtoClient
 {
     internal readonly Socket socket;
-    internal ushort sequenceNumber;
+    internal ushort sequenceNumber; 
     internal readonly Stack<XEvent> bufferEvents;
     public BaseProtoClient(Socket socket)
     {

@@ -102,21 +102,24 @@ internal class XProto : BaseProtoClient, IXProto
     public void ChangeGC(uint gc, GCMask mask, params uint[] args)
     {
         var request = new ChangeGCType(gc, mask, args.Length);
-        var requiredBuffer = 12 + args.Length * 4;
+        var argsBufferSize = args.Length * 4;
+        var requiredBuffer = 12 + argsBufferSize;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
-            MemoryMarshal.Cast<uint, byte>(args)
-                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            scratchBuffer.WriteRequest(ref request, 12, MemoryMarshal.Cast<uint, byte>(args));
+            // MemoryMarshal.Write(scratchBuffer[0..12], ref request);
+            // MemoryMarshal.Cast<uint, byte>(args)
+            //     .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
-            MemoryMarshal.Cast<uint, byte>(args)
-                .CopyTo(scratchBuffer[12..requiredBuffer]);
+            scratchBuffer.AsSpan(requiredBuffer).WriteRequest(ref request, 12, MemoryMarshal.Cast<uint, byte>(args));
+            // MemoryMarshal.Write(scratchBuffer[0..12], ref request);
+            // MemoryMarshal.Cast<uint, byte>(args)
+            //     .CopyTo(scratchBuffer[12..requiredBuffer]);
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
@@ -1534,12 +1537,13 @@ internal class XProto : BaseProtoClient, IXProto
         {
             var totalRead = socket.Receive(scratchBuffer);
             if (totalRead == 0)
+#if NETSTANDARD
                 scratchBuffer.AsSpan().Clear();
         }
-
-#if NETSTANDARD
         return scratchBuffer.AsSpan().ToStruct<XEvent>();
 #else
+                scratchBuffer.Clear();
+        }
         return scratchBuffer.ToStruct<XEvent>();
 #endif
     }
