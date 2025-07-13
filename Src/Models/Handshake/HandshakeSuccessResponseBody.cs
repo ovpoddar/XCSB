@@ -84,7 +84,7 @@ public class HandshakeSuccessResponseBody
             socket.ReceiveExact(scratchBuffer);
 #if NETSTANDARD
             fixed (byte* ptr = &scratchBuffer.GetPinnableReference())
-                result.VendorName = Encoding.ASCII.GetString(ptr, scratchBuffer.Length - 1).TrimEnd();
+                result.VendorName = Encoding.ASCII.GetString(ptr, scratchBuffer.Length).TrimEnd();
 #else
             result.VendorName = Encoding.ASCII.GetString(scratchBuffer).TrimEnd();
 #endif

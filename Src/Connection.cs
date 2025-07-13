@@ -23,22 +23,25 @@ internal static class Connection
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
             return (successBody, socket);
         }
-
         socket?.Dispose();
+
         ReadOnlyMemory<char> host =  connectionDetails.Host.ToArray();
         ReadOnlyMemory<char> dis = connectionDetails.Display.ToArray();
+        ReadOnlySpan<char> error = [];
 
         foreach (var (authName, authData) in GetAuthInfo(host, dis))
         {
             (response, socket) = MakeHandshake(connectionDetails, display, authName, authData);
             if (response.HandshakeStatus is HandshakeStatus.Success && socket is not null)
             {
-                var successResponseBody = HandshakeSuccessResponseBody.Read(socket, response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
-                return (successResponseBody, socket);
+                var successBody = HandshakeSuccessResponseBody.Read(socket, response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
+                return (successBody, socket);
             }
+            if (socket is not null)
+                error = response.GetStatusMessage(socket);
             socket?.Dispose();
         }
-        throw new UnauthorizedAccessException("Failed to connect");
+        throw new UnauthorizedAccessException(error.ToString());
     }
 
     private static string GetAuthFilePath()

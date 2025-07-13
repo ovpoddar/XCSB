@@ -157,21 +157,15 @@ internal static class GenericHelper
     internal static void WriteRequest<T>(this Span<byte> writeBuffer, ref T requestType, int size,
         ReadOnlySpan<byte> requestBody) where T : unmanaged
     {
-#if NETSTANDARD
-#else
         Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(writeBuffer), requestType);
+#if NETSTANDARD
+        requestBody.CopyTo(writeBuffer.Slice(size));
+#else
         requestBody.CopyTo(writeBuffer[size..]);
-        var remainder = requestBody.Length.Padding();
-        if (remainder != 0)
-        {
-            var paddingStart = size + requestBody.Length;
-            var paddingCount = 4 - remainder;
-
-            ref byte paddingRef = ref writeBuffer[paddingStart];
-            if (paddingCount >= 1) paddingRef = 0;
-            if (paddingCount >= 2) Unsafe.Add(ref paddingRef, 1) = 0;
-            if (paddingCount >= 3) Unsafe.Add(ref paddingRef, 2) = 0;
-        }
 #endif
+        var remainder = requestBody.Length.Padding();
+        if (remainder == 0) return;
+        var paddingStart = size + requestBody.Length;
+        writeBuffer.Slice(paddingStart, remainder).Clear();
     }
 }

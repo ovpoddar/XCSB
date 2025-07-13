@@ -29,9 +29,8 @@ internal struct HandshakeResponseHead
         Span<byte> buffer = stackalloc byte[dataLength * 4];
         socket.ReceiveExact(buffer);
 #if NETSTANDARD
-        // todo: size verify
         fixed (byte* ptr = &buffer.GetPinnableReference())
-            return Encoding.ASCII.GetString(ptr, buffer.Length - 1).TrimEnd();
+            return Encoding.ASCII.GetString(ptr, buffer.Length).TrimEnd().AsSpan();
 #else
         return Encoding.ASCII.GetString(buffer).TrimEnd();
 #endif

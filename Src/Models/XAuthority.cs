@@ -48,9 +48,8 @@ internal readonly ref struct XAuthority
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
 #if NETSTANDARD
-        // todo: size verify
         fixed (byte* ptr = &result.GetPinnableReference())
-            return Encoding.ASCII.GetString(ptr, result.Length - 1);
+            return Encoding.ASCII.GetString(ptr, result.Length).AsSpan();
 #else
         return Encoding.ASCII.GetString(result);
 #endif
@@ -64,9 +63,8 @@ internal readonly ref struct XAuthority
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
 #if NETSTANDARD
-        // todo: size verify
         fixed (byte* ptr = &result.GetPinnableReference())
-            return Encoding.ASCII.GetString(ptr, result.Length - 1);
+            return Encoding.ASCII.GetString(ptr, result.Length).AsSpan();
 #else
         return Encoding.ASCII.GetString(result);
 #endif
