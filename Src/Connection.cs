@@ -14,8 +14,10 @@ internal static class Connection
     private static string? _cachedAuthPath;
     private static readonly object _AuthPathLock = new();
 
-    internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails, string display)
+    internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails,
+        string display)
     {
+        ReadOnlySpan<char> error = [];
         var (response, socket) = MakeHandshake(connectionDetails, display, [], []);
         if (response.HandshakeStatus == HandshakeStatus.Success && socket is not null)
         {
@@ -23,24 +25,29 @@ internal static class Connection
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
             return (successBody, socket);
         }
+
+        if (socket is not null)
+            error = response.GetStatusMessage(socket);
         socket?.Dispose();
 
-        ReadOnlyMemory<char> host =  connectionDetails.Host.ToArray();
+        ReadOnlyMemory<char> host = connectionDetails.Host.ToArray();
         ReadOnlyMemory<char> dis = connectionDetails.Display.ToArray();
-        ReadOnlySpan<char> error = [];
 
         foreach (var (authName, authData) in GetAuthInfo(host, dis))
         {
             (response, socket) = MakeHandshake(connectionDetails, display, authName, authData);
             if (response.HandshakeStatus is HandshakeStatus.Success && socket is not null)
             {
-                var successBody = HandshakeSuccessResponseBody.Read(socket, response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
+                var successBody = HandshakeSuccessResponseBody.Read(socket,
+                    response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
                 return (successBody, socket);
             }
+
             if (socket is not null)
                 error = response.GetStatusMessage(socket);
             socket?.Dispose();
         }
+
         throw new UnauthorizedAccessException(error.ToString());
     }
 
@@ -78,19 +85,23 @@ internal static class Connection
     }
 
     // TODO: move all the logic to a separate file or a separate project for less cluster
-    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(ReadOnlyMemory<char> host, ReadOnlyMemory<char> display)
+    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(ReadOnlyMemory<char> host,
+        ReadOnlyMemory<char> display)
     {
         var filePath = GetAuthFilePath();
         if (!File.Exists(filePath))
             throw new UnauthorizedAccessException("Failed to connect");
-        
+
         using var fileStream = File.OpenRead(filePath);
         while (fileStream.Position <= fileStream.Length)
         {
             var context = new XAuthority(fileStream);
             var dspy = context.GetDisplayNumber(fileStream);
             var displayName = context.GetName(fileStream);
-            if ((dspy is "" || dspy.SequenceEqual(display.Span)) && displayName.SequenceEqual(_MagicCookie))
+
+            if ((host.Span is "" or " " || host.Span.SequenceEqual(context.GetHostAddress(fileStream)))
+                && (dspy is "" || dspy.SequenceEqual(display.Span))
+                && displayName.SequenceEqual(_MagicCookie))
                 yield return (displayName, context.GetData(fileStream));
         }
     }
