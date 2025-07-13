@@ -30,11 +30,11 @@ internal class BaseProtoClient
         {
             socket.ReceiveExact(buffer);
             ref var content = ref buffer.AsStruct<XEvent>();
-            switch (content.EventType)
+            switch (content)
             {
-                case EventType.Error:
+                case { EventType: EventType.Error }:
                     return (null, content.ErrorEvent);
-                case (EventType)1:
+                case { EventType: (EventType)1 }:
                     return (buffer.AsStruct<T>(), null);
                 default:
                     bufferEvents.Push(content);

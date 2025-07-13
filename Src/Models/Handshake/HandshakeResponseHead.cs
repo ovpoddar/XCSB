@@ -8,18 +8,14 @@ namespace Xcsb.Models.Handshake;
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 8)]
 internal struct HandshakeResponseHead
 {
-    [FieldOffset(0)]
-    public HandshakeStatus HandshakeStatus;
-    [FieldOffset(0)]
-    public HandshakeResponseHeadSuccess HandshakeResponseHeadSuccess;
-    [FieldOffset(0)]
-    public HandshakeResponseHeadFailed HandshakeResponseHeadFailed;
-    [FieldOffset(0)]
-    public HandshakeResponseHeadAuthenticate HandshakeResponseHeadAuthenticate;
+    [FieldOffset(0)] public HandshakeStatus HandshakeStatus;
+    [FieldOffset(0)] public HandshakeResponseHeadSuccess HandshakeResponseHeadSuccess;
+    [FieldOffset(0)] public HandshakeResponseHeadFailed HandshakeResponseHeadFailed;
+    [FieldOffset(0)] public HandshakeResponseHeadAuthenticate HandshakeResponseHeadAuthenticate;
 
     // for multipal call it will fail
     // todo: caching can be helpful but not needed
-    internal readonly ReadOnlySpan<char> GetStatusMessage(Socket socket)
+    internal readonly unsafe ReadOnlySpan<char> GetStatusMessage(Socket socket)
     {
         if (HandshakeStatus == HandshakeStatus.Success)
             return ReadOnlySpan<char>.Empty;
@@ -32,6 +28,12 @@ internal struct HandshakeResponseHead
 
         Span<byte> buffer = stackalloc byte[dataLength * 4];
         socket.ReceiveExact(buffer);
+#if NETSTANDARD
+        // todo: size verify
+        fixed (byte* ptr = &buffer.GetPinnableReference())
+            return Encoding.ASCII.GetString(ptr, buffer.Length - 1).TrimEnd();
+#else
         return Encoding.ASCII.GetString(buffer).TrimEnd();
+#endif
     }
 }

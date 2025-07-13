@@ -12,6 +12,7 @@ internal readonly ref struct XAuthority
     private readonly DataRange _displayNumber;
     private readonly DataRange _name;
     private readonly DataRange _data;
+
     public XAuthority(Stream stream)
     {
         Span<byte> scratchBuffer = stackalloc byte[2];
@@ -39,24 +40,36 @@ internal readonly ref struct XAuthority
         stream.Seek(scratchLength, SeekOrigin.Current);
     }
 
-    public ReadOnlySpan<char> GetHostAddress(Stream stream)
+    public unsafe ReadOnlySpan<char> GetHostAddress(Stream stream)
     {
         var oldPosition = stream.Position;
         Span<byte> result = stackalloc byte[_hostAddress.Length];
         stream.Seek(_hostAddress.Position, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
+#if NETSTANDARD
+        // todo: size verify
+        fixed (byte* ptr = &result.GetPinnableReference())
+            return Encoding.ASCII.GetString(ptr, result.Length - 1);
+#else
         return Encoding.ASCII.GetString(result);
+#endif
     }
 
-    public ReadOnlySpan<char> GetDisplayNumber(Stream stream)
+    public unsafe ReadOnlySpan<char> GetDisplayNumber(Stream stream)
     {
         var oldPosition = stream.Position;
         Span<byte> result = stackalloc byte[_displayNumber.Length];
         stream.Seek(_displayNumber.Position, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
+#if NETSTANDARD
+        // todo: size verify
+        fixed (byte* ptr = &result.GetPinnableReference())
+            return Encoding.ASCII.GetString(ptr, result.Length - 1);
+#else
         return Encoding.ASCII.GetString(result);
+#endif
     }
 
     public byte[] GetName(Stream stream)

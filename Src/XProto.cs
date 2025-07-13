@@ -117,7 +117,11 @@ internal class XProto : BaseProtoClient, IXProto
             scratchBuffer.AsSpan(requiredBuffer).WriteRequest(ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -143,7 +147,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 8,
                 address);
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -169,7 +177,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 8,
                 MemoryMarshal.Cast<uint, byte>(args));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -193,7 +205,11 @@ internal class XProto : BaseProtoClient, IXProto
             scratchBuffer.AsSpan(requiredBuffer).WriteRequest(ref requiredBuffer,
                 8,
                 MemoryMarshal.Cast<uint, byte>(Keysym));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -235,7 +251,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 24,
                 MemoryMarshal.Cast<T, byte>(args));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -268,7 +288,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -315,7 +339,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -395,7 +423,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 16,
                 MemoryMarshal.Cast<uint, byte>(args));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -439,7 +471,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 32,
                 MemoryMarshal.Cast<uint, byte>(args));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -486,7 +522,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 16,
                 MemoryMarshal.Cast<Point, byte>(points));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -526,7 +566,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(pixels));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -581,7 +625,11 @@ internal class XProto : BaseProtoClient, IXProto
             MemoryMarshal.Write(scratchBuffer[0..requestSize], ref request);
             Encoding.ASCII.GetBytes(atomName, scratchBuffer.Slice(requestSize, atomName.Length));
             scratchBuffer[(requestSize + atomName.Length)..requiredBuffer].Clear();
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         var (result, error) = ReceivedResponse<InternAtomReply>();
@@ -759,7 +807,11 @@ internal class XProto : BaseProtoClient, IXProto
             MemoryMarshal.Write(scratchBuffer[0..16], ref request);
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(16 + text.Length * 2)..requiredBuffer].Clear();
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -772,18 +824,26 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
-            text.CopyTo(scratchBuffer[16..(text.Length + 16)]);
-            scratchBuffer[(16 + text.Length)..requiredBuffer].Clear();
+            scratchBuffer.WriteRequest(
+                ref request,
+                16,
+                text
+            );
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
-            text.CopyTo(scratchBuffer[16..(text.Length + 16)]);
-            scratchBuffer[(16 + text.Length)..requiredBuffer].Clear();
+            scratchBuffer.AsSpan(requiredBuffer).WriteRequest(
+                ref request,
+                16,
+                text
+            );
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -886,7 +946,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 4,
                 MemoryMarshal.Cast<uint, byte>(args));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -915,7 +979,11 @@ internal class XProto : BaseProtoClient, IXProto
             scratchBuffer[(fontName.Length)..requiredBuffer].Clear();
 
             socket.Send(ref request);
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -941,7 +1009,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<Arc, byte>(arcs));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -967,7 +1039,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<Arc, byte>(arcs));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -993,7 +1069,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1019,7 +1099,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<Point, byte>(points));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1045,7 +1129,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<Point, byte>(points));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1071,7 +1159,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1097,7 +1189,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<Segment, byte>(segments));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1123,7 +1219,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 16,
                 data);
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1150,7 +1250,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 16,
                 data);
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1178,7 +1282,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 24,
                 data);
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1282,7 +1390,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(properties));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1322,7 +1434,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1355,7 +1471,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 12,
                 dashes);
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1390,7 +1510,11 @@ internal class XProto : BaseProtoClient, IXProto
             }
 
             scratchBuffer[^strPaths.Sum(a => a.Length).Padding()..].Clear();
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1453,7 +1577,11 @@ internal class XProto : BaseProtoClient, IXProto
                 8,
                 MemoryMarshal.Cast<ColorItem, byte>(item));
             scratchBuffer[requiredBuffer - 1] = 0;
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;
@@ -1479,7 +1607,11 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 16,
                 name);
+#if NETSTANDARD
+            socket.SendExact(scratchBuffer.AsSpan(requiredBuffer));
+#else            
             socket.SendExact(scratchBuffer[..requiredBuffer]);
+#endif
         }
 
         sequenceNumber++;

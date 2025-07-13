@@ -5,6 +5,7 @@ using System.Text;
 using Xcsb.Helpers;
 
 namespace Xcsb.Models.Handshake;
+
 public class HandshakeSuccessResponseBody
 {
     public uint ReleaseNumber { get; private set; }
@@ -67,31 +68,37 @@ public class HandshakeSuccessResponseBody
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
-            socket.ReceiveExact(scratchBuffer[..requireByte]);
+            socket.ReceiveExact(scratchBuffer.AsSpan(requireByte));
             MemoryMarshal.Cast<byte, Format>(scratchBuffer)
                 .CopyTo(result.Formats);
         }
+
         return requireByte;
     }
 
-    private static int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int length)
+    private static unsafe int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int length)
     {
         if (length < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[length];
             socket.ReceiveExact(scratchBuffer);
+#if NETSTANDARD
+            fixed (byte* ptr = &scratchBuffer.GetPinnableReference())
+                result.VendorName = Encoding.ASCII.GetString(ptr, scratchBuffer.Length - 1).TrimEnd();
+#else
             result.VendorName = Encoding.ASCII.GetString(scratchBuffer).TrimEnd();
+#endif
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(length);
-            socket.ReceiveExact(scratchBuffer[..length]);
+            socket.ReceiveExact(scratchBuffer.AsSpan(length));
             result.VendorName = Encoding.ASCII.GetString(scratchBuffer).TrimEnd();
         }
+
         return length;
     }
 }
-
 
 [StructLayout(LayoutKind.Sequential)]
 file struct _handshakeSuccessResponseBody
@@ -110,5 +117,5 @@ file struct _handshakeSuccessResponseBody
     public byte BitmapScanLinePad { get; set; }
     public byte MinKeyCode { get; set; }
     public byte MaxKeyCode { get; set; }
-    public int Padding { get; set; }
+    private int Padding { get; set; }
 }

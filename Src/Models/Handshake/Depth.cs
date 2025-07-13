@@ -42,10 +42,11 @@ public class Depth
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
-            socket.ReceiveExact(scratchBuffer[..requireByte]);
+            socket.ReceiveExact(scratchBuffer.AsSpan(0, requireByte));
             MemoryMarshal.Cast<byte, Visual>(scratchBuffer)
                 .CopyTo(depth.Visuals);
         }
+
         return requireByte;
     }
 }
