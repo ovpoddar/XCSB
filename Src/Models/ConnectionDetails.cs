@@ -17,10 +17,11 @@ internal ref struct ConnectionDetails
             return display;
         return RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
 #if NETSTANDARD
-            ? $"{Host.ToString()}:{6000 + DisplayNumber}"
+            ? $"{Host.ToString()}:{6000 + DisplayNumber}".AsSpan()
+            : $"/tmp/.X11-unix/X{DisplayNumber}".AsSpan();
 #else
             ? $"{Host}:{6000 + DisplayNumber}"
-#endif
             : $"/tmp/.X11-unix/X{DisplayNumber}";
+#endif
     }
 }

@@ -20,7 +20,6 @@ namespace Xcsb;
 
 internal class XBufferProto : BaseProtoClient, IXBufferProto
 {
-    //private readonly XProto _xProto;
     private List<byte> _buffer = new List<byte>();
     private int _requestLength;
 
@@ -470,9 +469,10 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     {
         //todo: update
         var request = new ImageText16Type(drawable, gc, x, y, text.Length);
+        _buffer.Add(ref request);
+        
         var requiredBuffer = (text.Length * 2).AddPadding();
         using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-        _buffer.Add(ref request);
         Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[..(text.Length * 2)]);
         scratchBuffer[(text.Length * 2)..requiredBuffer].Clear();
         _buffer.AddRange(scratchBuffer[..requiredBuffer]);
