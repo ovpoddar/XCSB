@@ -4,7 +4,7 @@ using Xcsb.Models.Event;
 namespace Xcsb.Models.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public unsafe struct QueryPointerReply
+public readonly struct QueryPointerReply
 {
     public readonly byte Reply; // 1
     private readonly byte _sameScreen;

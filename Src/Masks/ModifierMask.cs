@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Xcsb.Masks;
+﻿namespace Xcsb.Masks;
 public enum ModifierMask : ushort
 {
     Shift = 1,

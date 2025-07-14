@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Xcsb;
+﻿using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models.Event;
 

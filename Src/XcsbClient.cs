@@ -1,7 +1,5 @@
 ﻿using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 
 namespace Xcsb;
 
@@ -37,7 +35,7 @@ public static class XcsbClient
             var slashIndex = input.IndexOf('/');
             if (slashIndex >= 0)
             {
-                details.Protocol = 
+                details.Protocol =
 #if NETSTANDARD
                     Enum.TryParse(input[..slashIndex].ToString(), true, out ProtocolType protocol)
 #else
@@ -47,7 +45,7 @@ public static class XcsbClient
                     : ProtocolType.Tcp;
                 // todo this does not looks right 
                 // verify this
-                details.Host = input.Slice(slashIndex + 1, colonIndex); 
+                details.Host = input.Slice(slashIndex + 1, colonIndex);
             }
             else
             {

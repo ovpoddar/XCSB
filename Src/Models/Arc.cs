@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Xcsb.Models;
+﻿namespace Xcsb.Models;
 public struct Arc(ushort x, ushort y, short width, short height, ushort angle1, ushort angle2)
 {
     public ushort X = x;

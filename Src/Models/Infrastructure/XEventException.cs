@@ -1,11 +1,10 @@
-﻿using System.Diagnostics;
-using Xcsb.Models.Event;
+﻿using Xcsb.Models.Event;
 
 namespace Xcsb.Models.Infrastructure;
 
 public class XEventException : Exception
 {
-    public XEventException(ErrorEvent errorEvent, string methodName = "") 
+    public XEventException(ErrorEvent errorEvent, string methodName = "")
         : base(GetErrorMessage(errorEvent.ErrorCode))
     {
         base.Source = methodName;

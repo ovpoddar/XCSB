@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Xcsb.Helpers;
 using Xcsb.Models.Event;
 
@@ -12,7 +7,7 @@ namespace Xcsb;
 internal class BaseProtoClient
 {
     internal readonly Socket socket;
-    internal ushort sequenceNumber; 
+    internal ushort sequenceNumber;
     internal readonly Stack<XEvent> bufferEvents;
     public BaseProtoClient(Socket socket)
     {

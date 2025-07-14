@@ -2,7 +2,7 @@
 
 namespace Xcsb.Models.Response;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public unsafe struct InternAtomReply
+public readonly struct InternAtomReply
 {
     public readonly byte Reply; // 1
     private readonly byte _pad0;

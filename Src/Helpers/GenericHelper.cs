@@ -1,9 +1,4 @@
-﻿using System;
-using System.Buffers;
-using System.Diagnostics;
-using System.Drawing;
-using System.Net.Sockets;
-using System.Numerics;
+﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -31,7 +26,7 @@ internal static class GenericHelper
         else if (typeof(T) == typeof(int))
             result = (int)(object)pad + (4 - ((int)(object)pad & 3) & 3);
         else if (typeof(T) == typeof(uint))
-            result = (uint)(object)pad + (4 - ((uint)(object)pad & 3) & 3); 
+            result = (uint)(object)pad + (4 - ((uint)(object)pad & 3) & 3);
         else
             throw new ArgumentException($"Padding not implemented for type {typeof(T)}");
         return (T)result;
@@ -85,7 +80,7 @@ internal static class GenericHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal unsafe static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged
+    internal static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged
     {
         var buffer = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
         socket.SendExact(buffer);
@@ -102,7 +97,7 @@ internal static class GenericHelper
         }
     }
 
-    internal unsafe static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged
+    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged
     {
         var buffer = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
         list.AddRange(buffer);

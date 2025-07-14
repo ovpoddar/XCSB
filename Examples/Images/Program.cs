@@ -26,7 +26,7 @@ xcsb.ChangeProperty(PropertyMode.Replace, window, 39, 31, Encoding.UTF8.GetBytes
 var gc = xcsb.NewId();
 xcsb.CreateGC(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
 
-var white_gc= xcsb.NewId();
+var white_gc = xcsb.NewId();
 xcsb.CreateGC(white_gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.WhitePixel, 0]);
 
 var requirByte = WIDTH * HEIGHT * 4;

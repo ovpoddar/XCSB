@@ -1,10 +1,5 @@
-﻿using System;
-using System.Buffers;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Diagnostics;
 using System.Net.Sockets;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -16,7 +11,6 @@ using Xcsb.Models.Handshake;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Requests;
 using Xcsb.Models.Response;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Xcsb;
 
@@ -753,7 +747,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            
+
 #if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..16], ref request);
 #else
@@ -766,7 +760,7 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            
+
 #if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..16], ref request);
 #else

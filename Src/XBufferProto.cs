@@ -1,18 +1,11 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Buffers;
 using System.Net.Sockets;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Event;
-using Xcsb.Models.Handshake;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Requests;
 
@@ -20,7 +13,7 @@ namespace Xcsb;
 
 internal class XBufferProto : BaseProtoClient, IXBufferProto
 {
-    private List<byte> _buffer = new List<byte>();
+    private readonly List<byte> _buffer = new();
     private int _requestLength;
 
     public XBufferProto(XProto xProto) : base(xProto.socket)
@@ -471,7 +464,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _buffer.Add(ref request);
         _buffer.AddRange(Encoding.BigEndianUnicode.GetBytes(text.ToString()));
         _buffer.AddRange(new byte[text.Length.Padding()]);
-        
+
         _requestLength++;
     }
 
