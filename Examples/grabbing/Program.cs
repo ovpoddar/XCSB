@@ -27,7 +27,8 @@ bool isRunning = true;
 while (isRunning)
 {
     var evnt = connection.GetEvent();
-    switch (evnt.EventType)
+    if (!evnt.HasValue) return 0;
+    switch (evnt.Value.EventType)
     {
         case EventType.Expose:
             draw_interface();
@@ -35,14 +36,14 @@ while (isRunning)
 
         case EventType.KeyPress:
         {
-            if (evnt.InputEvent.Detail == 45 && evnt.InputEvent.State == KeyButMask.Control)
+            if (evnt.Value.InputEvent.Detail == 45 && evnt.Value.InputEvent.State == KeyButMask.Control)
             {
                 Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
-                connection.AllowEvents(EventsMode.SyncKeyboard, evnt.InputEvent.TimeStamp);
+                connection.AllowEvents(EventsMode.SyncKeyboard, evnt.Value.InputEvent.TimeStamp);
                 break;
             }
 
-            switch (evnt.InputEvent.Detail)
+            switch (evnt.Value.InputEvent.Detail)
             {
                 case 10: demo_change_hosts(); break; // 1
                 case 11: demo_keyboard_control(); break; // 2
@@ -65,7 +66,7 @@ while (isRunning)
 
         case EventType.ButtonPress:
         {
-            var bp = evnt.InputEvent;
+            var bp = evnt.Value.InputEvent;
             if (bp.Detail == 3 && (bp.State == KeyButMask.Control))
             {
                 Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
@@ -76,7 +77,7 @@ while (isRunning)
         }
         case EventType.Error:
             isRunning = false;
-            Console.WriteLine(evnt.ErrorEvent.ErrorCode);
+            Console.WriteLine(evnt.Value.ErrorEvent.ErrorCode);
             break;
     }
 }

@@ -71,24 +71,6 @@ internal static class GenericHelper
         SocketFlags socketFlags = SocketFlags.None)
     {
         var total = 0;
-#if NETSTANDARD
-        var array = ArrayPool<byte>.Shared.Rent(buffer.Length);
-        try
-        {
-            buffer.CopyTo(array);
-            while (total < buffer.Length)
-            {
-                var sent = socket.Send(array, total, buffer.Length - total, socketFlags);
-                if (sent <= 0)
-                    throw new SocketException();
-                total += sent;
-            }
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(array);
-        }
-#else
         while (total < buffer.Length)
         {
             var sent = socket.Send(buffer[total..], socketFlags);
@@ -96,73 +78,37 @@ internal static class GenericHelper
                 throw new SocketException();
             total += sent;
         }
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal unsafe static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged
     {
-#if NETSTANDARD
-        fixed (byte* pointer = &Unsafe.As<T, byte>(ref value))
-        {
-            var buffer = new ReadOnlySpan<byte>(pointer, Unsafe.SizeOf<T>());
-            socket.SendExact(buffer);
-        }
-#else
         var buffer = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
         socket.SendExact(buffer);
-#endif
     }
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
         var total = 0;
-#if NETSTANDARD
-        var array = ArrayPool<byte>.Shared.Rent(buffer.Length);
-        try
-        {
-            buffer.CopyTo(array);
-            while (total < buffer.Length)
-                total += socket.Receive(array, total, buffer.Length - total, SocketFlags.None);
-
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(array);
-        }
-#else
         while (socket.Connected)
         {
             total += socket.Receive(buffer[total..]);
             if (total == buffer.Length)
                 break;
         }
-#endif
     }
 
     internal unsafe static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged
     {
-#if NETSTANDARD
-        fixed (byte* pointer = &Unsafe.As<T, byte>(ref value))
-        {
-            var buffer = new ReadOnlySpan<byte>(pointer, Marshal.SizeOf<T>());
-            list.AddRange(buffer);
-        }
-#else
         var buffer = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
         list.AddRange(buffer);
-#endif
     }
 
     internal static void WriteRequest<T>(this Span<byte> writeBuffer, ref T requestType, int size,
         ReadOnlySpan<byte> requestBody) where T : unmanaged
     {
         Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(writeBuffer), requestType);
-#if NETSTANDARD
-        requestBody.CopyTo(writeBuffer.Slice(size));
-#else
         requestBody.CopyTo(writeBuffer[size..]);
-#endif
         var remainder = requestBody.Length.Padding();
         if (remainder == 0) return;
         var paddingStart = size + requestBody.Length;

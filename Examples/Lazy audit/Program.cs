@@ -54,12 +54,13 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.EventType == EventType.Error)
+    if (!evnt.HasValue) return;
+    if (evnt.Value.EventType == EventType.Error)
     {
-        Console.WriteLine(evnt.ErrorEvent.ErrorCode.ToString());
+        Console.WriteLine(evnt.Value.ErrorEvent.ErrorCode.ToString());
         isRunning = false;
     }
-    if (evnt.EventType == EventType.Expose)
+    if (evnt.Value.EventType == EventType.Expose)
     {
         lazyXcsb.PutImage(ImageFormat.ZPixmap,
             window,

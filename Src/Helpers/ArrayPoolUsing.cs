@@ -95,8 +95,6 @@ internal struct ArrayPoolUsing<T> : IDisposable
         }
     }
 
-
-#if !NETSTANDARD
     public readonly Span<T> this[Range range]
     {
         get
@@ -105,5 +103,4 @@ internal struct ArrayPoolUsing<T> : IDisposable
             return _values.AsSpan(range);
         }
     }
-#endif
 }

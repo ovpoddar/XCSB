@@ -47,12 +47,8 @@ internal readonly ref struct XAuthority
         stream.Seek(_hostAddress.Position, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
-#if NETSTANDARD
-        fixed (byte* ptr = &result.GetPinnableReference())
-            return Encoding.ASCII.GetString(ptr, result.Length).AsSpan();
-#else
+
         return Encoding.ASCII.GetString(result);
-#endif
     }
 
     public unsafe ReadOnlySpan<char> GetDisplayNumber(Stream stream)
@@ -62,12 +58,7 @@ internal readonly ref struct XAuthority
         stream.Seek(_displayNumber.Position, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
-#if NETSTANDARD
-        fixed (byte* ptr = &result.GetPinnableReference())
-            return Encoding.ASCII.GetString(ptr, result.Length).AsSpan();
-#else
         return Encoding.ASCII.GetString(result);
-#endif
     }
 
     public byte[] GetName(Stream stream)

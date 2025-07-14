@@ -467,16 +467,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 
     public void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
     {
-        //todo: update
         var request = new ImageText16Type(drawable, gc, x, y, text.Length);
         _buffer.Add(ref request);
+        _buffer.AddRange(Encoding.BigEndianUnicode.GetBytes(text.ToString()));
+        _buffer.AddRange(new byte[text.Length.Padding()]);
         
-        var requiredBuffer = (text.Length * 2).AddPadding();
-        using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-        Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[..(text.Length * 2)]);
-        scratchBuffer[(text.Length * 2)..requiredBuffer].Clear();
-        _buffer.AddRange(scratchBuffer[..requiredBuffer]);
-
         _requestLength++;
     }
 

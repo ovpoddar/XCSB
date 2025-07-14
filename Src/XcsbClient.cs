@@ -37,9 +37,15 @@ public static class XcsbClient
             var slashIndex = input.IndexOf('/');
             if (slashIndex >= 0)
             {
-                details.Protocol = Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
+                details.Protocol = 
+#if NETSTANDARD
+                    Enum.TryParse(input[..slashIndex].ToString(), true, out ProtocolType protocol)
+#else
+                    Enum.TryParse(input[..slashIndex], true, out var protocol)
+#endif
                     ? protocol
-                    : ProtocolType.Tcp;
+                    :
+                ProtocolType.Tcp;
                 details.Host = input.Slice(slashIndex + 1, colonIndex);
             }
             else
@@ -69,9 +75,9 @@ public static class XcsbClient
             details.ScreenNumber = screenNumber;
             result = task1 && task2;
         }
+
         if (!result)
             throw new Exception("Initialized failed");
         return details;
     }
-
 }
