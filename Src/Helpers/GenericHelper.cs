@@ -26,6 +26,8 @@ internal static class GenericHelper
             result = (byte)((byte)(object)pad + (4 - ((byte)(object)pad & 3) & 3));
         else if (typeof(T) == typeof(ushort))
             result = (ushort)((ushort)(object)pad + (4 - ((ushort)(object)pad & 3) & 3));
+        else if (typeof(T) == typeof(short))
+            result = (short)((short)(object)pad + (4 - ((short)(object)pad & 3) & 3));
         else if (typeof(T) == typeof(int))
             result = (int)(object)pad + (4 - ((int)(object)pad & 3) & 3);
         else if (typeof(T) == typeof(uint))
@@ -51,6 +53,8 @@ internal static class GenericHelper
             result = (byte)((4 - ((byte)(object)pad & 3)) & 3);
         else if (typeof(T) == typeof(ushort))
             result = (ushort)((4 - ((ushort)(object)pad & 3)) & 3);
+        else if (typeof(T) == typeof(short))
+            result = (short)((4 - ((short)(object)pad & 3)) & 3);
         else if (typeof(T) == typeof(int))
             result = (4 - ((int)(object)pad & 3)) & 3;
         else if (typeof(T) == typeof(uint))
