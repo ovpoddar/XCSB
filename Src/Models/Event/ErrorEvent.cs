@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 
 namespace Xcsb.Models.Event;
+
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 31)]
 public unsafe struct ErrorEvent
 {

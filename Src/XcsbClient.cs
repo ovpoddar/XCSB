@@ -16,10 +16,10 @@ public static class XcsbClient
 
     private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)
     {
-        var details = new ConnectionDetails()
+        var details = new ConnectionDetails
         {
             DisplayNumber = 0,
-            ScreenNumber = 0,
+            ScreenNumber = 0
         };
         if (input.IsEmpty)
             throw new Exception("Initialized failed");
@@ -29,7 +29,9 @@ public static class XcsbClient
             throw new Exception("Initialized failed");
 
         if (input[0] == '/')
+        {
             details.Socket = input[..colonIndex];
+        }
         else
         {
             var slashIndex = input.IndexOf('/');
@@ -41,8 +43,8 @@ public static class XcsbClient
 #else
                     Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
 #endif
-                    ? protocol
-                    : ProtocolType.Tcp;
+                        ? protocol
+                        : ProtocolType.Tcp;
                 // todo this does not looks right 
                 // verify this
                 details.Host = input.Slice(slashIndex + 1, colonIndex);

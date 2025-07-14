@@ -1,17 +1,7 @@
-﻿using System.Buffers;
-using System.Net.Sockets;
-
-namespace Xcsb.Helpers;
+﻿namespace Xcsb.Helpers;
 #if NETSTANDARD
 internal static class DotnetStandardSupportHelper
 {
-    internal static void AddRange(this List<byte> list, Span<byte> buffer)
-    {
-        var scratchBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
-        list.AddRange(scratchBuffer.Take(buffer.Length));
-        ArrayPool<byte>.Shared.Return(scratchBuffer);
-    }
-
     internal static void AddRange(this List<byte> list, ReadOnlySpan<byte> buffer)
     {
         var scratchBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);

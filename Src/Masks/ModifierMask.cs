@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Masks;
+
 public enum ModifierMask : ushort
 {
     Shift = 1,
@@ -9,5 +10,5 @@ public enum ModifierMask : ushort
     MiddleButton = 32,
     ScrollWellUp = 64, // todo: verify
     ScrollWellDown = 128, // todo: verify
-    Any = 32768,
+    Any = 32768
 }

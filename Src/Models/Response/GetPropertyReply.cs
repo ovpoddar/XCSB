@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 
 namespace Xcsb.Models.Response;
+
 public struct GetPropertyReply
 {
     public byte Reply; // 1
@@ -11,6 +12,7 @@ public struct GetPropertyReply
     public uint Type;
 
     public byte[] Data;
+
     internal GetPropertyReply(Socket socket)
     {
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<_GetPropertyReply>()];
@@ -30,7 +32,7 @@ public struct GetPropertyReply
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-    private readonly unsafe struct _GetPropertyReply
+    private readonly struct _GetPropertyReply
     {
         public readonly byte Reply;
         public readonly byte Format;

@@ -31,7 +31,7 @@ public class HandshakeSuccessResponseBody
         readIndex += scratchBuffer.Length;
 
         ref var successResponseBody = ref scratchBuffer.AsStruct<_handshakeSuccessResponseBody>();
-        var result = new HandshakeSuccessResponseBody()
+        var result = new HandshakeSuccessResponseBody
         {
             ReleaseNumber = successResponseBody.ReleaseNumber,
             ResourceIDBase = successResponseBody.ResourceIDBase,
@@ -45,7 +45,7 @@ public class HandshakeSuccessResponseBody
             MinKeyCode = successResponseBody.MinKeyCode,
             MaxKeyCode = successResponseBody.MaxKeyCode,
             Formats = new Format[successResponseBody.FormatsNumber],
-            Screens = new Screen[successResponseBody.ScreensNumber],
+            Screens = new Screen[successResponseBody.ScreensNumber]
         };
         readIndex += SetVendorName(result, socket, successResponseBody.VendorLength.AddPadding());
         readIndex += SettFormats(result, socket);
@@ -68,7 +68,7 @@ public class HandshakeSuccessResponseBody
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
-            socket.ReceiveExact(scratchBuffer.AsSpan(requireByte));
+            socket.ReceiveExact(scratchBuffer[..requireByte]);
             MemoryMarshal.Cast<byte, Format>(scratchBuffer)
                 .CopyTo(result.Formats);
         }
@@ -87,7 +87,7 @@ public class HandshakeSuccessResponseBody
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(length);
-            socket.ReceiveExact(scratchBuffer.AsSpan(length));
+            socket.ReceiveExact(scratchBuffer[..length]);
             result.VendorName = Encoding.ASCII.GetString(scratchBuffer).TrimEnd();
         }
 

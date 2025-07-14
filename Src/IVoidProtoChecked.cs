@@ -1,6 +1,9 @@
 ﻿using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Event;
+#if !NETSTANDARD
+using System.Numerics;
+#endif
 
 namespace Xcsb;
 
@@ -32,7 +35,7 @@ public interface IVoidProtoChecked
 #if !NETSTANDARD
         , INumber<T>
 #endif
-        ;
+    ;
 
     void DeletePropertyChecked(uint window, uint atom);
 
@@ -65,8 +68,9 @@ public interface IVoidProtoChecked
     void GrabServerChecked();
     void UngrabServerChecked();
 
-    void WarpPointerChecked(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight,
-        short destX, short destY);
+    void WarpPointerChecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
+        ushort srcHeight,
+        short destinationX, short destinationY);
 
     void SetInputFocusChecked(InputFocusMode mode, uint focus, uint time);
 
@@ -93,11 +97,13 @@ public interface IVoidProtoChecked
 
     void ClearAreaChecked(bool exposures, uint window, short x, short y, ushort width, ushort height);
 
-    void CopyAreaChecked(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX,
-        ushort destY, ushort width, ushort height);
+    void CopyAreaChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX,
+        ushort destinationY, ushort width, ushort height);
 
-    void CopyPlaneChecked(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX,
-        ushort destY, ushort width, ushort height, uint bitPlane);
+    void CopyPlaneChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX,
+        ushort destinationY, ushort width, ushort height, uint bitPlane);
 
     void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
 
@@ -166,7 +172,9 @@ public interface IVoidProtoChecked
     void SetAccessControlChecked(AccessControlMode mode);
     void SetCloseDownModeChecked(CloseDownMode mode);
     void KillClientChecked(uint resource);
+
     void NoOperationChecked(params uint[] args);
+
     // todo: need a writer for the TEXTITEM16, TEXTITEM8
     void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
     void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);

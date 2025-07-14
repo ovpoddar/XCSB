@@ -10,7 +10,7 @@ internal readonly struct ImageText8Type(uint drawable, uint gc, short x, short y
 {
     public readonly Opcode OpCode = Opcode.ImageText8;
     public readonly byte TextLength = (byte)textLength;
-    public readonly ushort Length = (ushort)(4 + (textLength.AddPadding() / 4));
+    public readonly ushort Length = (ushort)(4 + textLength.AddPadding() / 4);
     public readonly uint Drawable = drawable;
     public readonly uint GC = gc;
     public readonly short X = x;

@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Models;
+
 public class Acceleration
 {
 #if !NETSTANDARD

@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Helpers;
@@ -8,12 +7,15 @@ using Xcsb.Models;
 using Xcsb.Models.Event;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Requests;
+#if !NETSTANDARD
+using System.Numerics;
+#endif
 
 namespace Xcsb;
 
 internal class XBufferProto : BaseProtoClient, IXBufferProto
 {
-    private readonly List<byte> _buffer = new();
+    private readonly List<byte> _buffer = [];
     private int _requestLength;
 
     public XBufferProto(XProto xProto) : base(xProto.socket)
@@ -31,7 +33,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 
     public void Bell(sbyte percent)
     {
-        if (percent is not <= 100 or not >= (-100))
+        if (percent is not <= 100 or not >= -100)
             throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
 
         var request = new BellType(percent);
@@ -73,11 +75,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym)
+    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] keysym)
     {
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         _buffer.Add(ref request);
-        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(Keysym));
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(keysym));
         _requestLength++;
     }
 
@@ -157,11 +159,13 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void CopyArea(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX,
-        ushort destY,
+    public void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX,
+        ushort destinationY,
         ushort width, ushort height)
     {
-        var request = new CopyAreaType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height);
+        var request = new CopyAreaType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height);
         _buffer.Add(ref request);
         _requestLength++;
     }
@@ -180,11 +184,13 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void CopyPlane(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX,
-        ushort destY,
+    public void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX,
+        ushort destinationY,
         ushort width, ushort height, uint bitPlane)
     {
-        var request = new CopyPlaneType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height,
+        var request = new CopyPlaneType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height,
             bitPlane);
         _buffer.Add(ref request);
         _requestLength++;
@@ -283,7 +289,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #endif
             using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
             var received = socket.Receive(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer.AsSpan(0, received)))
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
                 if (evnt.EventType == EventType.Error)
                     throw new XEventException(evnt.ErrorEvent);
                 else if ((int)evnt.EventType == 1)
@@ -310,7 +316,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
 #endif
             var received = await socket.ReceiveAsync(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer.AsSpan(0, received)))
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
                 if (evnt.EventType == EventType.Error)
                     throw new XEventException(evnt.ErrorEvent);
                 else if ((int)evnt.EventType == 1)
@@ -338,7 +344,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #endif
             using var buffer = new ArrayPoolUsing<byte>(socket.Available);
             var received = socket.Receive(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer.AsSpan(0, received)))
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
                 if (evnt.EventType == EventType.Error)
                     _requestLength--;
                 else if ((int)evnt.EventType == 1)
@@ -365,7 +371,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
 #endif
             var received = await socket.ReceiveAsync(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer.AsSpan(0, received)))
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
                 if (evnt.EventType == EventType.Error)
                     _requestLength--;
                 else if ((int)evnt.EventType == 1)
@@ -773,11 +779,13 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight,
-        short destX,
-        short destY)
+    public void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
+        ushort srcHeight,
+        short destinationX,
+        short destinationY)
     {
-        var request = new WarpPointerType(srcWindow, destWindow, srcX, srcY, srcWidth, srcHeight, destX, destY);
+        var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
+            destinationY);
         _buffer.Add(ref request);
         _requestLength++;
     }

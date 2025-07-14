@@ -11,4 +11,3 @@ internal readonly struct NoOperationType(int argsLength)
     private readonly byte _pad0;
     public readonly ushort Length = (ushort)(1 + argsLength);
 }
-

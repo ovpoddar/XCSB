@@ -5,8 +5,11 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct HandShakeRequestType(ushort nameLength, ushort dataLength,
-    ushort majorVersion = 11, ushort minorVersion = 0)
+internal readonly struct HandShakeRequestType(
+    ushort nameLength,
+    ushort dataLength,
+    ushort majorVersion = 11,
+    ushort minorVersion = 0)
 {
     public readonly byte ByteOrder = (byte)(BitConverter.IsLittleEndian ? 'l' : 'B');
     private readonly byte _pad0;

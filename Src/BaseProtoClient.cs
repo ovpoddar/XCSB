@@ -4,11 +4,13 @@ using Xcsb.Helpers;
 using Xcsb.Models.Event;
 
 namespace Xcsb;
+
 internal class BaseProtoClient
 {
+    internal readonly Stack<XEvent> bufferEvents;
     internal readonly Socket socket;
     internal ushort sequenceNumber;
-    internal readonly Stack<XEvent> bufferEvents;
+
     public BaseProtoClient(Socket socket)
     {
         this.socket = socket;
@@ -36,6 +38,7 @@ internal class BaseProtoClient
                     break;
             }
         }
+
         throw new Exception();
     }
 
@@ -95,6 +98,7 @@ internal class BaseProtoClient
                     break;
             }
         }
+
         return null;
     }
 }

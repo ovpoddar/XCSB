@@ -1,6 +1,9 @@
 ﻿using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Event;
+#if !NETSTANDARD
+using System.Numerics;
+#endif
 
 namespace Xcsb;
 
@@ -28,11 +31,11 @@ public interface IVoidProto
     void CirculateWindow(Direction direction, uint window);
 
     void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
-         where T : struct
+        where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
-        ;
+    ;
 
     void DeleteProperty(uint window, uint atom);
 
@@ -65,8 +68,8 @@ public interface IVoidProto
     void GrabServer();
     void UngrabServer();
 
-    void WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight,
-        short destX, short destY);
+    void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight,
+        short destinationX, short destinationY);
 
     void SetInputFocus(InputFocusMode mode, uint focus, uint time);
 
@@ -93,10 +96,12 @@ public interface IVoidProto
 
     void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height);
 
-    void CopyArea(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX, ushort destY,
+    void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX,
+        ushort destinationY,
         ushort width, ushort height);
 
-    void CopyPlane(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX, ushort destY,
+    void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX,
+        ushort destinationY,
         ushort width, ushort height, uint bitPlane);
 
     void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
@@ -149,7 +154,7 @@ public interface IVoidProto
         ushort backGreen, ushort backBlue);
 
     // suppose need changes
-    void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] keysym);
+    void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym);
 
     void Bell(sbyte percent);
 
@@ -166,7 +171,9 @@ public interface IVoidProto
     void SetAccessControl(AccessControlMode mode);
     void SetCloseDownMode(CloseDownMode mode);
     void KillClient(uint resource);
+
     void NoOperation(params uint[] args);
+
     // todo: need a writer for the TEXTITEM16, TEXTITEM8
     void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
     void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);

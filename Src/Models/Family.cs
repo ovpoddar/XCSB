@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Models;
+
 public enum Family : byte
 {
     Internet,

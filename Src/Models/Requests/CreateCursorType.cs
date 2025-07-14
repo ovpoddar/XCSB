@@ -5,7 +5,18 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct CreateCursorType(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
+internal readonly struct CreateCursorType(
+    uint cursorId,
+    uint source,
+    uint mask,
+    ushort foreRed,
+    ushort foreGreen,
+    ushort foreBlue,
+    ushort backRed,
+    ushort backGreen,
+    ushort backBlue,
+    ushort x,
+    ushort y)
 {
     public readonly Opcode OpCode = Opcode.CreateCursor;
     private readonly byte _pad0;

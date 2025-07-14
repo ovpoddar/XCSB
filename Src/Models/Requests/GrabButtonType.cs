@@ -6,7 +6,16 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct GrabButtonType(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
+internal readonly struct GrabButtonType(
+    bool ownerEvents,
+    uint grabWindow,
+    ushort mask,
+    GrabMode pointerMode,
+    GrabMode keyboardMode,
+    uint confineTo,
+    uint cursor,
+    Button button,
+    ModifierMask modifiers)
 {
     public readonly Opcode OpCode = Opcode.GrabButton;
     public readonly byte OwnerEvents = (byte)(ownerEvents ? 1 : 0);

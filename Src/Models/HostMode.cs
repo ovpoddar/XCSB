@@ -3,5 +3,5 @@
 public enum HostMode : byte
 {
     Insert = 0,
-    Delete = 1,
+    Delete = 1
 }

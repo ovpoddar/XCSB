@@ -1,6 +1,7 @@
 ﻿namespace Xcsb.Masks;
+
 [Flags]
-public enum KeyboardControlMask : int
+public enum KeyboardControlMask
 {
     KeyClickPercent = 1,
     BellPercent = 2,

@@ -6,8 +6,19 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct CreateWindowType(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth,
-    ClassType classType, uint rootVisualId, ValueMask mask, int argsLength)
+internal readonly struct CreateWindowType(
+    byte depth,
+    uint window,
+    uint parent,
+    short x,
+    short y,
+    ushort width,
+    ushort height,
+    ushort borderWidth,
+    ClassType classType,
+    uint rootVisualId,
+    ValueMask mask,
+    int argsLength)
 {
     public readonly Opcode OpCode = Opcode.CreateWindow;
     public readonly byte Depth = depth;

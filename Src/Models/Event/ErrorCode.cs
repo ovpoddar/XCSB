@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Models.Event;
+
 public enum ErrorCode : byte
 {
     Request = 1,

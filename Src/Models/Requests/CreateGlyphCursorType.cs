@@ -5,7 +5,18 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct CreateGlyphCursorType(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+internal readonly struct CreateGlyphCursorType(
+    uint cursorId,
+    uint sourceFont,
+    uint fontMask,
+    char sourceChar,
+    ushort charMask,
+    ushort foreRed,
+    ushort foreGreen,
+    ushort foreBlue,
+    ushort backRed,
+    ushort backGreen,
+    ushort backBlue)
 {
     public readonly Opcode OpCode = Opcode.CreateGlyphCursor;
     private readonly byte _pad0;

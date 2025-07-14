@@ -11,7 +11,7 @@ const int HEIGHT = 50;
 var xcsb = XcsbClient.Initialized();
 var window = xcsb.NewId();
 var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
-var lazyXcsb = xcsb.BufferCLient;
+var lazyXcsb = xcsb.BufferClient;
 
 xcsb.CreateWindow(screen.RootDepth.DepthValue,
     window,

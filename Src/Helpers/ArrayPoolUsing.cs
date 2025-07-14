@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 
 namespace Xcsb.Helpers;
+
 internal struct ArrayPoolUsing<T> : IDisposable
 {
     private readonly ArrayPool<T> _arrayPool;
@@ -36,17 +37,14 @@ internal struct ArrayPoolUsing<T> : IDisposable
             _arrayPool.Return(_values, _clearArray);
     }
 
-    public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing) =>
-        arrayPoolUsing._values ?? [];
-
-    public static implicit operator Span<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
-        arrayPoolUsing._values.AsSpan(0, arrayPoolUsing._length);
-
-    public readonly Span<T> Slice(int length)
+    public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing)
     {
-        if (length < 0 || length >= _length)
-            throw new ArgumentOutOfRangeException(nameof(length));
-        return _values.AsSpan(0, length);
+        return arrayPoolUsing._values ?? [];
+    }
+
+    public static implicit operator Span<T>(ArrayPoolUsing<T> arrayPoolUsing)
+    {
+        return arrayPoolUsing._values.AsSpan(0, arrayPoolUsing._length);
     }
 
     public readonly Span<T> Slice(int start, int length)
@@ -55,23 +53,6 @@ internal struct ArrayPoolUsing<T> : IDisposable
             throw new ArgumentOutOfRangeException(nameof(length));
         return _values.AsSpan(start, length);
     }
-
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly Span<T> AsSpan() =>
-        _values.AsSpan(0, _length);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly Span<T> AsSpan(int length) =>
-        length > _length
-            ? throw new ArgumentOutOfRangeException(nameof(length))
-            : _values.AsSpan(0, length);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly Span<T> AsSpan(int start, int length) =>
-        start + length > _length
-            ? throw new ArgumentOutOfRangeException(nameof(length))
-            : _values.AsSpan(start, length);
 
     public readonly T this[int index]
     {
@@ -95,12 +76,8 @@ internal struct ArrayPoolUsing<T> : IDisposable
         }
     }
 
-    public readonly Span<T> this[Range range]
-    {
-        get
-        {
-            if (_values is null) return [];
-            return _values.AsSpan(range);
-        }
-    }
+    public readonly Span<T> this[Range range] =>
+        _values is null
+            ? []
+            : _values.AsSpan(range);
 }

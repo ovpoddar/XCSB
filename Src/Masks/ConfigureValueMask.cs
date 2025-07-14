@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Masks;
+
 [Flags]
 public enum ConfigureValueMask : ushort
 {

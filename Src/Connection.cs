@@ -125,14 +125,14 @@ internal static class Connection
             if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
             {
                 Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
-                authName.CopyTo(scratchBuffer[0..]);
+                authName.CopyTo(scratchBuffer[..]);
                 authData.CopyTo(scratchBuffer[namePaddedLength..]);
                 socket.SendExact(scratchBuffer);
             }
             else
             {
                 using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
-                authName.CopyTo(scratchBuffer[0..]);
+                authName.CopyTo(scratchBuffer[..]);
                 authData.CopyTo(scratchBuffer[namePaddedLength..]);
                 socket.SendExact(scratchBuffer[..scratchBufferSize]);
             }

@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Models;
+
 public struct Arc(ushort x, ushort y, short width, short height, ushort angle1, ushort angle2)
 {
     public ushort X = x;

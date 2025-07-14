@@ -1,6 +1,7 @@
 ﻿namespace Xcsb.Masks;
+
 [Flags]
-public enum GCMask : int
+public enum GCMask
 {
     Function = 1,
     PlaneMask = 2,
@@ -24,5 +25,5 @@ public enum GCMask : int
     ClipMask = 524288,
     DashOffset = 1048576,
     DashList = 2097152,
-    ArcMode = 4194304,
+    ArcMode = 4194304
 }

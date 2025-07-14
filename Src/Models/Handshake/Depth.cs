@@ -20,7 +20,7 @@ public class Depth
         currentlyRead += scratchBuffer.Length;
 
         ref var depth = ref scratchBuffer.AsStruct<_Depth>();
-        var result = new Depth()
+        var result = new Depth
         {
             DepthValue = depth.DepthValue,
             Visuals = new Visual[depth.VisualsLength]
@@ -42,7 +42,7 @@ public class Depth
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
-            socket.ReceiveExact(scratchBuffer.AsSpan(0, requireByte));
+            socket.ReceiveExact(scratchBuffer[..requireByte]);
             MemoryMarshal.Cast<byte, Visual>(scratchBuffer)
                 .CopyTo(depth.Visuals);
         }

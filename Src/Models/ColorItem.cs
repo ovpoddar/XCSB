@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 
 namespace Xcsb.Models;
+
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 public struct ColorItem
 {

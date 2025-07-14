@@ -6,7 +6,13 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct GrabKeyType(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode, GrabMode keyboardMode)
+internal readonly struct GrabKeyType(
+    bool exposures,
+    uint grabWindow,
+    ModifierMask mask,
+    byte keycode,
+    GrabMode pointerMode,
+    GrabMode keyboardMode)
 {
     public readonly Opcode OpCode = Opcode.GrabKey;
     public readonly byte Exposures = (byte)(exposures ? 1 : 0);

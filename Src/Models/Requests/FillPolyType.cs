@@ -5,7 +5,12 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct FillPolyType(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, int pointsLength)
+internal readonly struct FillPolyType(
+    uint drawable,
+    uint gc,
+    PolyShape shape,
+    CoordinateMode coordinate,
+    int pointsLength)
 {
     public readonly Opcode opcode = Opcode.FillPoly;
     private readonly byte _pad0;

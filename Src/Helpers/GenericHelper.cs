@@ -1,16 +1,23 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#if !NETSTANDARD
+using System.Numerics;
+#endif
 
 namespace Xcsb.Helpers;
 
 internal static class GenericHelper
 {
-    internal static ref T AsStruct<T>(this Span<byte> @bytes) where T : struct =>
-        ref Unsafe.As<byte, T>(ref @bytes[0]);
+    internal static ref T AsStruct<T>(this Span<byte> bytes) where T : struct
+    {
+        return ref Unsafe.As<byte, T>(ref bytes[0]);
+    }
 
-    internal static T ToStruct<T>(this Span<byte> @bytes) where T : struct =>
-        Unsafe.As<byte, T>(ref @bytes[0]);
+    internal static T ToStruct<T>(this Span<byte> bytes) where T : struct
+    {
+        return Unsafe.As<byte, T>(ref bytes[0]);
+    }
 
     internal static T AddPadding<T>(this T pad) where T :
 #if NETSTANDARD
@@ -34,7 +41,7 @@ internal static class GenericHelper
         INumber<T>
     {
         var value = int.CreateChecked(pad);
-        return T.CreateChecked(value + (4 - (value & 3) & 3));
+        return T.CreateChecked(value + ((4 - (value & 3)) & 3));
 #endif
     }
 
@@ -61,7 +68,7 @@ internal static class GenericHelper
 #else
         INumber<T>
     {
-        return T.CreateChecked(4 - (int.CreateChecked(pad) & 3) & 3);
+        return T.CreateChecked((4 - (int.CreateChecked(pad) & 3)) & 3);
 
 #endif
     }

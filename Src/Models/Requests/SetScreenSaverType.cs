@@ -5,7 +5,11 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct SetScreenSaverType(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
+internal readonly struct SetScreenSaverType(
+    short timeout,
+    short interval,
+    TriState preferBlanking,
+    TriState allowExposures)
 {
     public readonly Opcode OpCode = Opcode.SetScreenSaver;
     private readonly byte _pad0;
