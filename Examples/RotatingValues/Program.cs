@@ -113,7 +113,12 @@ x.PolyFillRectangle(win, gc2, [rect]);
 x.FreeGC(gc1);
 Thread.Sleep(3000);
 
-x.ChangePointerControl(new Acceleration(1, 2), 4);
+var accl = new Acceleration
+{
+    Denominator = 1,
+    Numerator = 2
+};
+x.ChangePointerControl(accl, 4);
 Console.WriteLine("Pointer control changed: acceleration 2:1, threshold 4 pixels");
 Thread.Sleep(3000);
 

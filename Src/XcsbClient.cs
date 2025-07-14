@@ -41,11 +41,10 @@ public static class XcsbClient
 #if NETSTANDARD
                     Enum.TryParse(input[..slashIndex].ToString(), true, out ProtocolType protocol)
 #else
-                    Enum.TryParse(input[..slashIndex], true, out var protocol)
+                    Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
 #endif
                     ? protocol
-                    :
-                ProtocolType.Tcp;
+                    : ProtocolType.Tcp;
                 details.Host = input.Slice(slashIndex + 1, colonIndex);
             }
             else
