@@ -15,7 +15,7 @@ internal struct HandshakeResponseHead
 
     // for multipal call it will fail
     // todo: caching can be helpful but not needed
-    internal readonly unsafe ReadOnlySpan<char> GetStatusMessage(Socket socket)
+    internal readonly ReadOnlySpan<char> GetStatusMessage(Socket socket)
     {
         if (HandshakeStatus == HandshakeStatus.Success)
             return ReadOnlySpan<char>.Empty;

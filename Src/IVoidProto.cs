@@ -149,7 +149,7 @@ public interface IVoidProto
         ushort backGreen, ushort backBlue);
 
     // suppose need changes
-    void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym);
+    void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] keysym);
 
     void Bell(sbyte percent);
 

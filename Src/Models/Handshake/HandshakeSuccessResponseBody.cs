@@ -76,7 +76,7 @@ public class HandshakeSuccessResponseBody
         return requireByte;
     }
 
-    private static unsafe int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int length)
+    private static int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int length)
     {
         if (length < GlobalSetting.StackAllocThreshold)
         {

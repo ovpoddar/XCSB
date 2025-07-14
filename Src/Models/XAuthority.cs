@@ -40,7 +40,7 @@ internal readonly ref struct XAuthority
         stream.Seek(scratchLength, SeekOrigin.Current);
     }
 
-    public unsafe ReadOnlySpan<char> GetHostAddress(Stream stream)
+    public ReadOnlySpan<char> GetHostAddress(Stream stream)
     {
         var oldPosition = stream.Position;
         Span<byte> result = stackalloc byte[_hostAddress.Length];
@@ -51,7 +51,7 @@ internal readonly ref struct XAuthority
         return Encoding.ASCII.GetString(result);
     }
 
-    public unsafe ReadOnlySpan<char> GetDisplayNumber(Stream stream)
+    public ReadOnlySpan<char> GetDisplayNumber(Stream stream)
     {
         var oldPosition = stream.Position;
         Span<byte> result = stackalloc byte[_displayNumber.Length];
