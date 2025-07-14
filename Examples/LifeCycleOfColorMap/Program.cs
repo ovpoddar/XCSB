@@ -96,8 +96,8 @@ Console.WriteLine("Copied colormap and freed old one.");
 Thread.Sleep(100);
 
 var xevnt = x.GetEvent();
-Debug.Assert(xevnt.EventType == EventType.Expose || xevnt.EventType == EventType.MappingNotify);
-Console.WriteLine("all success {0}", xevnt.EventType != EventType.Error);
+Debug.Assert(xevnt!.Value.EventType == EventType.Expose || xevnt!.Value.EventType == EventType.MappingNotify);
+Console.WriteLine("all success {0}", xevnt!.Value.EventType != EventType.Error);
 
 x.DestroyWindow(sub);
 x.DestroyWindow(sub1);

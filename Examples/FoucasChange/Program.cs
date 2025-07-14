@@ -72,12 +72,13 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = x.GetEvent();
-    switch (evnt.EventType)
+    if (!evnt.HasValue) return;
+    switch (evnt.Value.EventType)
     {
         case EventType.KeyPress:
             {
                 // Tab key (keycode 23) - switch focus between windows
-                if (evnt.InputEvent.Detail == 23)
+                if (evnt.Value.InputEvent.Detail == 23)
                 {
                     if (current_focus == window1)
                     {
@@ -96,7 +97,7 @@ while (isRunning)
                 }
 
                 // 'q' key (keycode 24) - quit
-                if (evnt.InputEvent.Detail == 24)
+                if (evnt.Value.InputEvent.Detail == 24)
                 {
                     isRunning = false;
                 }
@@ -106,13 +107,13 @@ while (isRunning)
             {
                 // Update background color when focus changes
 
-                if (evnt.FocusEvent.Event == window1 || evnt.FocusEvent.Event == window2)
+                if (evnt.Value.FocusEvent.Event == window1 || evnt.Value.FocusEvent.Event == window2)
                 {
-                    ChangeWindowColor(x, (uint)evnt.FocusEvent.Event, color_focused);
-                    current_focus = (uint)evnt.FocusEvent.Event;
+                    ChangeWindowColor(x, (uint)evnt.Value.FocusEvent.Event, color_focused);
+                    current_focus = (uint)evnt.Value.FocusEvent.Event;
 
                     // Set the other window to unfocused color
-                    var other_window = (evnt.FocusEvent.Event == window1) ? window2 : window1;
+                    var other_window = (evnt.Value.FocusEvent.Event == window1) ? window2 : window1;
                     ChangeWindowColor(x, other_window, color_unfocused);
                 }
                 break;
@@ -120,25 +121,25 @@ while (isRunning)
         case EventType.FocusOut:
             {
                 // Change to unfocused color when losing focus
-                if (evnt.FocusEvent.Event == window1 || evnt.FocusEvent.Event == window2)
+                if (evnt.Value.FocusEvent.Event == window1 || evnt.Value.FocusEvent.Event == window2)
                 {
-                    ChangeWindowColor(x, (uint)evnt.FocusEvent.Event, color_unfocused);
+                    ChangeWindowColor(x, (uint)evnt.Value.FocusEvent.Event, color_unfocused);
                 }
                 break;
             }
         case EventType.ButtonPress:
             {
                 // Set focus to the clicked window and update colors
-                x.SetInputFocus(Xcsb.Models.InputFocusMode.PointerRoot, evnt.InputEvent.EventWindow, 0);
+                x.SetInputFocus(Xcsb.Models.InputFocusMode.PointerRoot, evnt.Value.InputEvent.EventWindow, 0);
 
                 // Update colors immediately
-                if (evnt.InputEvent.EventWindow == window1)
+                if (evnt.Value.InputEvent.EventWindow == window1)
                 {
                     ChangeWindowColor(x, window1, color_focused);
                     ChangeWindowColor(x, window2, color_unfocused);
                     current_focus = window1;
                 }
-                else if (evnt.InputEvent.EventWindow == window2)
+                else if (evnt.Value.InputEvent.EventWindow == window2)
                 {
                     ChangeWindowColor(x, window2, color_focused);
                     ChangeWindowColor(x, window1, color_unfocused);
@@ -149,24 +150,24 @@ while (isRunning)
         case EventType.Expose:
             {
                 // Redraw window contents when exposed
-                if (evnt.ExposeEvent.Window == current_focus)
+                if (evnt.Value.ExposeEvent.Window == current_focus)
                 {
-                    ChangeWindowColor(x, evnt.ExposeEvent.Window, color_focused);
+                    ChangeWindowColor(x, evnt.Value.ExposeEvent.Window, color_focused);
                 }
-                else if (evnt.ExposeEvent.Window == window1 || evnt.ExposeEvent.Window == window2)
+                else if (evnt.Value.ExposeEvent.Window == window1 || evnt.Value.ExposeEvent.Window == window2)
                 {
-                    ChangeWindowColor(x, evnt.ExposeEvent.Window, color_unfocused);
+                    ChangeWindowColor(x, evnt.Value.ExposeEvent.Window, color_unfocused);
                 }
                 break;
             }
         case EventType.MotionNotify:
             var poient = new Xcsb.Models.Point(
-                (ushort)evnt.MotionEvent.EventX,
-                (ushort)evnt.MotionEvent.EventY);
-            x.PolyPoint(Xcsb.Models.CoordinateMode.Origin, evnt.MotionEvent.Window, gc, [poient]);
-            if (evnt.MotionEvent.Window == window1)
+                (ushort)evnt.Value.MotionEvent.EventX,
+                (ushort)evnt.Value.MotionEvent.EventY);
+            x.PolyPoint(Xcsb.Models.CoordinateMode.Origin, evnt.Value.MotionEvent.Window, gc, [poient]);
+            if (evnt.Value.MotionEvent.Window == window1)
             {
-                var evn = evnt;
+                var evn = evnt.Value;
                 evn.MotionEvent.Window = window2;
                 x.SendEvent(true, window2, (uint)EventMask.PointerMotionMask, evn);
             }
