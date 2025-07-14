@@ -9,10 +9,10 @@ namespace Xcsb;
 
 internal static class Connection
 {
-    private static readonly byte[] _MagicCookie = "MIT-MAGIC-COOKIE-1"u8.ToArray();
+    private static readonly byte[] MagicCookie = "MIT-MAGIC-COOKIE-1"u8.ToArray();
 
     private static string? _cachedAuthPath;
-    private static readonly object _authPathLock = new();
+    private static readonly object AuthPathLock = new();
 
     internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails,
         string display)
@@ -57,7 +57,7 @@ internal static class Connection
         if (_cachedAuthPath is not null)
             return _cachedAuthPath;
 
-        lock (_authPathLock)
+        lock (AuthPathLock)
         {
             if (_cachedAuthPath is not null)
                 return _cachedAuthPath;
@@ -101,7 +101,7 @@ internal static class Connection
 
             if ((host.Span is "" or " " || host.Span.SequenceEqual(context.GetHostAddress(fileStream)))
                 && (dspy is "" || dspy.SequenceEqual(display.Span))
-                && displayName.SequenceEqual(_MagicCookie))
+                && displayName.SequenceEqual(MagicCookie))
                 yield return (displayName, context.GetData(fileStream));
         }
     }
@@ -125,16 +125,16 @@ internal static class Connection
             if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
             {
                 Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
-                authName.CopyTo(scratchBuffer.Slice(0));
-                authData.CopyTo(scratchBuffer.Slice(namePaddedLength));
+                authName.CopyTo(scratchBuffer[0..]);
+                authData.CopyTo(scratchBuffer[namePaddedLength..]);
                 socket.SendExact(scratchBuffer);
             }
             else
             {
                 using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
-                authName.CopyTo(scratchBuffer.Slice(0));
-                authData.CopyTo(scratchBuffer.Slice(namePaddedLength));
-                socket.SendExact(scratchBuffer.AsSpan(scratchBufferSize));
+                authName.CopyTo(scratchBuffer[0..]);
+                authData.CopyTo(scratchBuffer[namePaddedLength..]);
+                socket.SendExact(scratchBuffer[..scratchBufferSize]);
             }
 
             Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];

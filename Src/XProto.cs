@@ -46,14 +46,12 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
 
         var (result, error) = ReceivedResponse<AllocColorReply>();
-        if (!error.HasValue && result.HasValue)
-        {
-            sequenceNumber++;
-            Debug.Assert(sequenceNumber == result.Value.Sequence);
-            return result.Value;
-        }
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
 
-        throw new XEventException(error!.Value);
+        sequenceNumber++;
+        Debug.Assert(sequenceNumber == result.Value.Sequence);
+        return result.Value;
     }
 
     public void AllocColorCells()
@@ -84,7 +82,7 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void Bell(sbyte percent)
     {
-        if (percent is not <= 100 or not >= (-100))
+        if (percent is > 100 or < (-100))
             throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
 
         var request = new BellType(percent);
@@ -106,7 +104,8 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(ref request,
+            scratchBuffer.WriteRequest(
+                ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
             socket.SendExact(scratchBuffer);
@@ -175,24 +174,26 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym)
+    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] keysym)
     {
         var requiredBuffer = 8 + (keycodeCount * keysymsPerKeycode) * 4;
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(ref requiredBuffer,
+            scratchBuffer.WriteRequest(
+                ref request,
                 8,
-                MemoryMarshal.Cast<uint, byte>(Keysym));
+                MemoryMarshal.Cast<uint, byte>(keysym));
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            scratchBuffer.AsSpan(requiredBuffer).WriteRequest(ref requiredBuffer,
+            scratchBuffer.AsSpan(requiredBuffer).WriteRequest(
+                ref request,
                 8,
-                MemoryMarshal.Cast<uint, byte>(Keysym));
+                MemoryMarshal.Cast<uint, byte>(keysym));
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
@@ -202,7 +203,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void ChangePointerControl(Acceleration? acceleration, ushort? threshold)
     {
         var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
-            threshold ?? 0, (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
+            threshold ?? 0, (byte)(acceleration is null ? 0 : 1),
+            (byte)(threshold.HasValue ? 1 : 0));
         socket.Send(ref request);
         sequenceNumber++;
     }
@@ -218,7 +220,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (size is not 1 or 2 or 4)
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
         var request = new ChangePropertyType(mode, window, property, type, args.Length, (byte)(size * 8));
-        var requiredBuffer = 24 + (args.Length.AddPadding() * size);
+        var requiredBuffer = 24 + (size * args.Length.AddPadding());
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
@@ -567,7 +569,11 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+#if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[0..8], in request);
+#endif
             Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
             scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer);
@@ -575,22 +581,23 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+#if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[0..8], in request);
+#endif
             Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
             scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
         var (result, error) = ReceivedResponse<InternAtomReply>();
-        if (!error.HasValue && result.HasValue)
-        {
-            sequenceNumber++;
-            Debug.Assert(sequenceNumber == result.Value.Sequence);
-            return result.Value;
-        }
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
 
-        // assert the sequence number is not same.
-        throw new XEventException(error!.Value);
+        sequenceNumber++;
+        Debug.Assert(sequenceNumber == result.Value.Sequence);
+        return result.Value;
     }
 
     public void GetFontPath()
@@ -746,17 +753,27 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            
+#if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[0..16], in request);
+#endif
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
-            scratchBuffer[(text.Length * 2 +16)..requiredBuffer].Clear();
+            scratchBuffer[(text.Length * 2 + 16)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            
+#if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[0..16], in request);
+#endif
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
-            scratchBuffer[(text.Length * 2 +16)..requiredBuffer].Clear();
+            scratchBuffer[(text.Length * 2 + 16)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
@@ -901,17 +918,25 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+#if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..12], ref request);
-            Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length+ 12)]);
-            scratchBuffer[(fontName.Length+ 12 )..requiredBuffer].Clear();
+#else
+            MemoryMarshal.Write(scratchBuffer[0..12], in request);
+#endif
+            Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
+            scratchBuffer[(fontName.Length + 12)..requiredBuffer].Clear();
             socket.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+#if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..12], ref request);
-            Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length+ 12)]);
-            scratchBuffer[(fontName.Length+ 12 )..requiredBuffer].Clear();
+#else
+            MemoryMarshal.Write(scratchBuffer[0..12], in request);
+#endif
+            Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
+            scratchBuffer[(fontName.Length + 12)..requiredBuffer].Clear();
 
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
@@ -1367,7 +1392,11 @@ internal class XProto : BaseProtoClient, IXProto
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+#if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[0..8], in request);
+#endif
             foreach (var item in strPaths)
             {
                 Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
@@ -1380,8 +1409,11 @@ internal class XProto : BaseProtoClient, IXProto
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-
+#if NETSTANDARD
             MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[0..8], in request);
+#endif
             foreach (var item in strPaths)
             {
                 Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
@@ -1585,13 +1617,14 @@ internal class XProto : BaseProtoClient, IXProto
             if (totalRead == 0)
                 return null;
         }
+
         return scratchBuffer.ToStruct<XEvent>();
     }
 
     private void CheckError([CallerMemberName] string name = "")
     {
         var error = this.Received();
-        if (error.HasValue) throw new XEventException(error.Value);
+        if (error.HasValue) throw new XEventException(error.Value, name);
     }
 
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
@@ -2014,9 +2047,9 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
-        uint[] Keysym)
+        uint[] keysym)
     {
-        this.ChangeKeyboardMapping(keycodeCount, firstKeycode, keysymsPerKeycode, Keysym);
+        this.ChangeKeyboardMapping(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
         CheckError();
     }
 

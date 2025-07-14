@@ -45,7 +45,9 @@ public static class XcsbClient
 #endif
                     ? protocol
                     : ProtocolType.Tcp;
-                details.Host = input.Slice(slashIndex + 1, colonIndex);
+                // todo this does not looks right 
+                // verify this
+                details.Host = input.Slice(slashIndex + 1, colonIndex); 
             }
             else
             {
@@ -68,7 +70,7 @@ public static class XcsbClient
         else
         {
             details.Display = displayNumberStart[..dotIndex];
-            var task1 = int.TryParse(displayNumberStart.Slice(0, dotIndex), out var displayNumber);
+            var task1 = int.TryParse(displayNumberStart[..dotIndex], out var displayNumber);
             var task2 = int.TryParse(displayNumberStart[(dotIndex + 1)..], out var screenNumber);
             details.DisplayNumber = displayNumber;
             details.ScreenNumber = screenNumber;
