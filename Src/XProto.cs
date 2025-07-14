@@ -1573,9 +1573,6 @@ internal class XProto : BaseProtoClient, IXProto
     public uint NewId() =>
         (uint)(_connectionResult.ResourceIDMask & _globalId++ | _connectionResult.ResourceIDBase);
 
-    // if null then time to close
-    // can retun error and event
-    // check the type
     public XEvent? GetEvent()
     {
         if (bufferEvents.TryPop(out var result))
