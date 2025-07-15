@@ -10,6 +10,9 @@ using Xcsb.Models.Requests;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
+#if NETSTANDARD
+using Xcsb.Helpers;
+#endif
 
 namespace Xcsb;
 
@@ -185,9 +188,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX,
-        ushort destinationY,
-        ushort width, ushort height, uint bitPlane)
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
     {
         var request = new CopyPlaneType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height,
@@ -204,8 +205,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue,
-        ushort backRed,
-        ushort backGreen, ushort backBlue, ushort x, ushort y)
+        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
         var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
@@ -222,8 +222,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
-        ushort foreRed,
-        ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
     {
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
@@ -239,8 +238,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth,
-        ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
     {
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
@@ -438,8 +436,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
-        uint confineTo,
-        uint cursor, Button button, ModifierMask modifiers)
+        uint confineTo, uint cursor, Button button, ModifierMask modifiers)
     {
         var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
@@ -602,8 +599,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
-        byte leftPad,
-        byte depth, Span<byte> data)
+        byte leftPad, byte depth, Span<byte> data)
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         _buffer.Add(ref request);
@@ -613,8 +609,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
-        ushort backGreen,
-        ushort backBlue)
+        ushort backGreen, ushort backBlue)
     {
         var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
         _buffer.Add(ref request);
@@ -780,9 +775,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
-        ushort srcHeight,
-        short destinationX,
-        short destinationY)
+        ushort srcHeight, short destinationX, short destinationY)
     {
         var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);

@@ -5,10 +5,8 @@ namespace Xcsb.Models.Infrastructure;
 public class XEventException : Exception
 {
     public XEventException(ErrorEvent errorEvent, string methodName = "")
-        : base(GetErrorMessage(errorEvent.ErrorCode))
-    {
+        : base(GetErrorMessage(errorEvent.ErrorCode)) =>
         base.Source = methodName;
-    }
 
     private static string GetErrorMessage(ErrorCode errorCode)
     {

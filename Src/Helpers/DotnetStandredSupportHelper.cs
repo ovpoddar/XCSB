@@ -1,5 +1,8 @@
-﻿namespace Xcsb.Helpers;
-#if NETSTANDARD
+﻿#if NETSTANDARD
+using System.Buffers;
+using System.Net.Sockets;
+
+namespace Xcsb.Helpers;
 internal static class DotnetStandardSupportHelper
 {
     internal static void AddRange(this List<byte> list, ReadOnlySpan<byte> buffer)

@@ -25,6 +25,10 @@ internal class XProto : BaseProtoClient, IXProto
     private bool _disposedValue;
     private int _globalId;
 
+    public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
+
+    public IXBufferProto BufferClient => new XBufferProto(this);
+
     public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult) : base(socket)
     {
         HandshakeSuccessResponseBody = connectionResult;
@@ -32,9 +36,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber = 0;
     }
 
-    public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
-
-    public IXBufferProto BufferClient => new XBufferProto(this);
 
     public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
     {
@@ -334,8 +335,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX,
-        ushort destinationY, ushort width, ushort height)
+        ushort destinationX, ushort destinationY, ushort width, ushort height)
     {
         var request = new CopyAreaType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height);
@@ -358,8 +358,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX,
-        ushort destinationY, ushort width, ushort height, uint bitPlane)
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
     {
         var request = new CopyPlaneType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height,
@@ -1608,8 +1607,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
-        ushort srcHeight,
-        short destinationX, short destinationY)
+        ushort srcHeight, short destinationX, short destinationY)
     {
         var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
@@ -1908,16 +1906,14 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void CopyAreaChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX,
-        ushort destinationY, ushort width, ushort height)
+        ushort destinationX, ushort destinationY, ushort width, ushort height)
     {
         CopyArea(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height);
         CheckError();
     }
 
     public void CopyPlaneChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX,
-        ushort destinationY, ushort width, ushort height, uint bitPlane)
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
     {
         CopyPlane(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height,
             bitPlane);

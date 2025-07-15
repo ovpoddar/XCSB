@@ -20,9 +20,13 @@ public class HandshakeSuccessResponseBody
     public byte MinKeyCode { get; private set; }
     public byte MaxKeyCode { get; private set; }
     public string VendorName { get; private set; } = null!;
+#if NETSTANDARD
     public Format[] Formats { get; private set; } = [];
     public Screen[] Screens { get; private set; } = [];
-
+#else
+    public required Format[] Formats { get; set; }
+    public required Screen[] Screens { get; set; }
+#endif
     internal static HandshakeSuccessResponseBody Read(Socket socket, int additionalDataLength)
     {
         var readIndex = 0;

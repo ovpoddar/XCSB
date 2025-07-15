@@ -9,15 +9,11 @@ namespace Xcsb.Helpers;
 
 internal static class GenericHelper
 {
-    internal static ref T AsStruct<T>(this Span<byte> bytes) where T : struct
-    {
-        return ref Unsafe.As<byte, T>(ref bytes[0]);
-    }
+    internal static ref T AsStruct<T>(this Span<byte> bytes) where T : struct => 
+        ref Unsafe.As<byte, T>(ref bytes[0]);
 
-    internal static T ToStruct<T>(this Span<byte> bytes) where T : struct
-    {
-        return Unsafe.As<byte, T>(ref bytes[0]);
-    }
+    internal static T ToStruct<T>(this Span<byte> bytes) where T : struct => 
+        Unsafe.As<byte, T>(ref bytes[0]);
 
     internal static T AddPadding<T>(this T pad) where T :
 #if NETSTANDARD
@@ -87,11 +83,8 @@ internal static class GenericHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged
-    {
-        var buffer = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
-        socket.SendExact(buffer);
-    }
+    internal static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged => 
+        socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
@@ -104,11 +97,9 @@ internal static class GenericHelper
         }
     }
 
-    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged
-    {
-        var buffer = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
-        list.AddRange(buffer);
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged =>
+        list.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
 
     internal static void WriteRequest<T>(this Span<byte> writeBuffer, ref T requestType, int size,
         ReadOnlySpan<byte> requestBody) where T : unmanaged

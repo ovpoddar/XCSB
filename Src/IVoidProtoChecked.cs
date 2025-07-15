@@ -69,8 +69,7 @@ public interface IVoidProtoChecked
     void UngrabServerChecked();
 
     void WarpPointerChecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
-        ushort srcHeight,
-        short destinationX, short destinationY);
+        ushort srcHeight, short destinationX, short destinationY);
 
     void SetInputFocusChecked(InputFocusMode mode, uint focus, uint time);
 
@@ -98,12 +97,10 @@ public interface IVoidProtoChecked
     void ClearAreaChecked(bool exposures, uint window, short x, short y, ushort width, ushort height);
 
     void CopyAreaChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX,
-        ushort destinationY, ushort width, ushort height);
+        ushort destinationX, ushort destinationY, ushort width, ushort height);
 
     void CopyPlaneChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX,
-        ushort destinationY, ushort width, ushort height, uint bitPlane);
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane);
 
     void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
 
