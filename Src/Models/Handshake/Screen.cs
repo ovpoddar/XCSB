@@ -4,7 +4,6 @@ using Xcsb.Helpers;
 
 namespace Xcsb.Models.Handshake;
 
-
 public class Screen
 {
     public uint Root;
@@ -23,7 +22,11 @@ public class Screen
     public bool SaveUnders;
     private byte _rootDepth;
     public Depth? RootDepth => Depths.FirstOrDefault(a => a.DepthValue == _rootDepth);
+#if NETSTANDARD
+    public Depth[] Depths = [];
+#else
     public required Depth[] Depths;
+#endif
 
     public static Screen Read(Socket socket, ref int currentlyRead)
     {
@@ -32,7 +35,7 @@ public class Screen
         currentlyRead += scratchBuffer.Length;
 
         ref var screen = ref scratchBuffer.AsStruct<_screen>();
-        var result = new Screen()
+        var result = new Screen
         {
             BackingStore = screen.BackingStore,
             RootVisualId = screen.RootVisualId,
@@ -49,16 +52,14 @@ public class Screen
             _rootDepth = screen.RootDepth,
             SaveUnders = screen.SaveUnders != 0,
             Root = screen.Root,
-            Depths = new Depth[screen.NumberOfDepth],
+            Depths = new Depth[screen.NumberOfDepth]
         };
 
         for (var i = 0; i < result.Depths.Length; i++)
             result.Depths[i] = Depth.Read(socket, ref currentlyRead);
         return result;
     }
-
 }
-
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 file struct _screen

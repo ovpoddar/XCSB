@@ -1,6 +1,9 @@
 ﻿using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Text;
+#if NETSTANDARD
+using Xcsb.Helpers;
+#endif
 
 namespace Xcsb.Models;
 
@@ -11,6 +14,7 @@ internal readonly ref struct XAuthority
     private readonly DataRange _displayNumber;
     private readonly DataRange _name;
     private readonly DataRange _data;
+
     public XAuthority(Stream stream)
     {
         Span<byte> scratchBuffer = stackalloc byte[2];
@@ -45,6 +49,7 @@ internal readonly ref struct XAuthority
         stream.Seek(_hostAddress.Position, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
+
         return Encoding.ASCII.GetString(result);
     }
 

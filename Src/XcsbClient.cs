@@ -1,7 +1,5 @@
 ﻿using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 
 namespace Xcsb;
 
@@ -18,10 +16,10 @@ public static class XcsbClient
 
     private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)
     {
-        var details = new ConnectionDetails()
+        var details = new ConnectionDetails
         {
             DisplayNumber = 0,
-            ScreenNumber = 0,
+            ScreenNumber = 0
         };
         if (input.IsEmpty)
             throw new Exception("Initialized failed");
@@ -31,15 +29,24 @@ public static class XcsbClient
             throw new Exception("Initialized failed");
 
         if (input[0] == '/')
+        {
             details.Socket = input[..colonIndex];
+        }
         else
         {
             var slashIndex = input.IndexOf('/');
             if (slashIndex >= 0)
             {
-                details.Protocol = Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
-                    ? protocol
-                    : ProtocolType.Tcp;
+                details.Protocol =
+#if NETSTANDARD
+                    Enum.TryParse(input[..slashIndex].ToString(), true, out ProtocolType protocol)
+#else
+                    Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
+#endif
+                        ? protocol
+                        : ProtocolType.Tcp;
+                // todo this does not looks right 
+                // verify this
                 details.Host = input.Slice(slashIndex + 1, colonIndex);
             }
             else
@@ -63,15 +70,15 @@ public static class XcsbClient
         else
         {
             details.Display = displayNumberStart[..dotIndex];
-            var task1 = int.TryParse(displayNumberStart.Slice(0, dotIndex), out var displayNumber);
+            var task1 = int.TryParse(displayNumberStart[..dotIndex], out var displayNumber);
             var task2 = int.TryParse(displayNumberStart[(dotIndex + 1)..], out var screenNumber);
             details.DisplayNumber = displayNumber;
             details.ScreenNumber = screenNumber;
             result = task1 && task2;
         }
+
         if (!result)
             throw new Exception("Initialized failed");
         return details;
     }
-
 }

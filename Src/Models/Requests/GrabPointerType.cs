@@ -5,7 +5,15 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct GrabPointerType(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp)
+internal readonly struct GrabPointerType(
+    bool ownerEvents,
+    uint grabWindow,
+    ushort mask,
+    GrabMode pointerMode,
+    GrabMode keyboardMode,
+    uint confineTo,
+    uint cursor,
+    uint timeStamp)
 {
     public readonly Opcode OpCode = Opcode.GrabPointer;
     public readonly byte OwnerEvents = (byte)(ownerEvents ? 1 : 0);

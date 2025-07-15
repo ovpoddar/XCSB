@@ -28,5 +28,5 @@ public enum EventMask : uint
     FocusChangeMask = 2097152,
     PropertyChangeMask = 4194304,
     ColormapChangeMask = 8388608,
-    OwnerGrabButtonMask = 16777216,
+    OwnerGrabButtonMask = 16777216
 }

@@ -14,5 +14,5 @@ public enum KeyButMask : ushort
     Button2 = 9,
     Button3 = 10,
     Button4 = 11,
-    Button5 = 12,
+    Button5 = 12
 }

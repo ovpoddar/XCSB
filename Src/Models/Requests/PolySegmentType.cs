@@ -9,7 +9,7 @@ internal readonly struct PolySegmentType(uint drawable, uint gc, int segmentsLen
 {
     public readonly Opcode opcode = Opcode.PolySegment;
     private readonly byte _pad0;
-    public readonly ushort Length = (ushort)(3 + (2 * segmentsLength));
+    public readonly ushort Length = (ushort)(3 + 2 * segmentsLength);
     public readonly uint Drawable = drawable;
     public readonly uint GC = gc;
 }

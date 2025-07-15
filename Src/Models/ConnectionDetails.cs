@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 
 namespace Xcsb.Models;
+
 internal ref struct ConnectionDetails
 {
     public ReadOnlySpan<char> Socket { get; set; }
@@ -15,9 +16,12 @@ internal ref struct ConnectionDetails
     {
         if (Socket.Length != 0)
             return display;
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            return $"{Host}:{6000 + DisplayNumber}";
-        else
-            return $"/tmp/.X11-unix/X{DisplayNumber}";
+        return RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+#if NETSTANDARD
+            ? $"{Host.ToString()}:{6000 + DisplayNumber}"
+#else
+            ? $"{Host}:{6000 + DisplayNumber}"
+#endif
+            : $"/tmp/.X11-unix/X{DisplayNumber}";
     }
 }

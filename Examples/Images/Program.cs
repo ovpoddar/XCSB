@@ -26,7 +26,7 @@ xcsb.ChangeProperty(PropertyMode.Replace, window, 39, 31, Encoding.UTF8.GetBytes
 var gc = xcsb.NewId();
 xcsb.CreateGC(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
 
-var white_gc= xcsb.NewId();
+var white_gc = xcsb.NewId();
 xcsb.CreateGC(white_gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.WhitePixel, 0]);
 
 var requirByte = WIDTH * HEIGHT * 4;
@@ -51,12 +51,13 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.EventType == EventType.Error)
+    if (!evnt.HasValue) return;
+    if (evnt.Value.EventType == EventType.Error)
     {
-        Console.WriteLine(evnt.ErrorEvent.ErrorCode.ToString());
+        Console.WriteLine(evnt.Value.ErrorEvent.ErrorCode.ToString());
         isRunning = false;
     }
-    if (evnt.EventType == EventType.Expose)
+    if (evnt.Value.EventType == EventType.Expose)
     {
         xcsb.PutImage(ImageFormat.ZPixmap,
             window,

@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Models;
+
 public enum CloseDownMode : byte
 {
     Destroy,

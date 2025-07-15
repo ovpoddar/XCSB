@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 
 namespace Xcsb.Helpers;
+
 internal struct ArrayPoolUsing<T> : IDisposable
 {
     private readonly ArrayPool<T> _arrayPool;
@@ -21,7 +22,7 @@ internal struct ArrayPoolUsing<T> : IDisposable
     public ArrayPoolUsing<T> Rent(int size)
     {
         if (size == 0) return this;
-        ArgumentOutOfRangeException.ThrowIfNegative(size);
+        if (size < 0) throw new ArgumentOutOfRangeException(nameof(size));
 
         if (_values != null)
             _arrayPool.Return(_values, _clearArray);
@@ -36,17 +37,14 @@ internal struct ArrayPoolUsing<T> : IDisposable
             _arrayPool.Return(_values, _clearArray);
     }
 
-    public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing) =>
-        arrayPoolUsing._values ?? [];
-
-    public static implicit operator Span<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
-        arrayPoolUsing._values.AsSpan(0, arrayPoolUsing._length);
-
-    public readonly Span<T> Slice(int length)
+    public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing)
     {
-        if (length < 0 || length >= _length)
-            throw new ArgumentOutOfRangeException(nameof(length));
-        return _values.AsSpan(0, length);
+        return arrayPoolUsing._values ?? [];
+    }
+
+    public static implicit operator Span<T>(ArrayPoolUsing<T> arrayPoolUsing)
+    {
+        return arrayPoolUsing._values.AsSpan(0, arrayPoolUsing._length);
     }
 
     public readonly Span<T> Slice(int start, int length)
@@ -60,7 +58,8 @@ internal struct ArrayPoolUsing<T> : IDisposable
     {
         get
         {
-            ArgumentNullException.ThrowIfNull(_values);
+            if (_values is null)
+                throw new ArgumentNullException(nameof(_values));
             if ((uint)index >= (uint)_values.Length)
                 throw new IndexOutOfRangeException();
             return _values[index];
@@ -68,19 +67,17 @@ internal struct ArrayPoolUsing<T> : IDisposable
 
         set
         {
-            ArgumentNullException.ThrowIfNull(_values);
+            if (_values is null)
+                throw new ArgumentNullException(nameof(_values));
+
             if ((uint)index >= (uint)_values.Length)
                 throw new IndexOutOfRangeException();
             _values[index] = value;
         }
     }
 
-    public readonly Span<T> this[Range range]
-    {
-        get
-        {
-            if (_values is null) return [];
-            return _values.AsSpan(range);
-        }
-    }
+    public readonly Span<T> this[Range range] =>
+        _values is null
+            ? []
+            : _values.AsSpan(range);
 }

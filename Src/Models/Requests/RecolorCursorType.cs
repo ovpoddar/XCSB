@@ -5,7 +5,14 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct RecolorCursorType(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+internal readonly struct RecolorCursorType(
+    uint cursorId,
+    ushort foreRed,
+    ushort foreGreen,
+    ushort foreBlue,
+    ushort backRed,
+    ushort backGreen,
+    ushort backBlue)
 {
     public readonly Opcode OpCode = Opcode.RecolorCursor;
     private readonly byte _pad0;

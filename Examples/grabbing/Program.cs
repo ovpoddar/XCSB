@@ -27,56 +27,57 @@ bool isRunning = true;
 while (isRunning)
 {
     var evnt = connection.GetEvent();
-    switch (evnt.EventType)
+    if (!evnt.HasValue) return 0;
+    switch (evnt.Value.EventType)
     {
         case EventType.Expose:
             draw_interface();
             break;
 
         case EventType.KeyPress:
-        {
-            if (evnt.InputEvent.Detail == 45 && evnt.InputEvent.State == KeyButMask.Control)
             {
-                Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
-                connection.AllowEvents(EventsMode.SyncKeyboard, evnt.InputEvent.TimeStamp);
+                if (evnt.Value.InputEvent.Detail == 45 && evnt.Value.InputEvent.State == KeyButMask.Control)
+                {
+                    Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
+                    connection.AllowEvents(EventsMode.SyncKeyboard, evnt.Value.InputEvent.TimeStamp);
+                    break;
+                }
+
+                switch (evnt.Value.InputEvent.Detail)
+                {
+                    case 10: demo_change_hosts(); break; // 1
+                    case 11: demo_keyboard_control(); break; // 2
+                    case 12: demo_grab_button(); break; // 3
+                    case 13: demo_grab_key(); break; // 4
+                    case 14: demo_store_color(); break; // 5
+                    case 15: demo_ungrab_all(); break; // 6
+                    case 43: show_help(); break; // h
+                    case 24:
+                        {
+                            demo_ungrab_all();
+                            connection.FreeGC(gc);
+                            connection.KillClient(window);
+                            break;
+                        }
+                }
+
                 break;
             }
 
-            switch (evnt.InputEvent.Detail)
-            {
-                case 10: demo_change_hosts(); break; // 1
-                case 11: demo_keyboard_control(); break; // 2
-                case 12: demo_grab_button(); break; // 3
-                case 13: demo_grab_key(); break; // 4
-                case 14: demo_store_color(); break; // 5
-                case 15: demo_ungrab_all(); break; // 6
-                case 43: show_help(); break; // h
-                case 24:
-                {
-                    demo_ungrab_all();
-                    connection.FreeGC(gc);
-                    connection.KillClient(window);
-                    break;
-                }
-            }
-
-            break;
-        }
-
         case EventType.ButtonPress:
-        {
-            var bp = evnt.InputEvent;
-            if (bp.Detail == 3 && (bp.State == KeyButMask.Control))
             {
-                Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
-                connection.AllowEvents(EventsMode.SyncPointer, bp.TimeStamp);
-            }
+                var bp = evnt.Value.InputEvent;
+                if (bp.Detail == 3 && (bp.State == KeyButMask.Control))
+                {
+                    Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
+                    connection.AllowEvents(EventsMode.SyncPointer, bp.TimeStamp);
+                }
 
-            break;
-        }
+                break;
+            }
         case EventType.Error:
             isRunning = false;
-            Console.WriteLine(evnt.ErrorEvent.ErrorCode);
+            Console.WriteLine(evnt.Value.ErrorEvent.ErrorCode);
             break;
     }
 }
@@ -127,7 +128,7 @@ void demo_store_color()
     Console.WriteLine("=== StoreNamedColor Demo ===\n");
     var cookie = connection.AllocColor(colormap, 65535, 0, 0);
     Console.WriteLine("StoreNamedColor: Red color allocated, Pixel value: %u\n", cookie.Pixel);
-    connection.ChangeGC(gc, GCMask.Foreground,  cookie.Pixel);
+    connection.ChangeGC(gc, GCMask.Foreground, cookie.Pixel);
     connection.PolyFillRectangle(window, gc, [new Rectangle() { X = 300, Y = 50, Width = 80, Height = 30 }]);
 }
 

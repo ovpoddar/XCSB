@@ -11,7 +11,7 @@ const int HEIGHT = 50;
 var xcsb = XcsbClient.Initialized();
 var window = xcsb.NewId();
 var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
-var lazyXcsb = xcsb.BufferCLient;
+var lazyXcsb = xcsb.BufferClient;
 
 xcsb.CreateWindow(screen.RootDepth.DepthValue,
     window,
@@ -54,12 +54,13 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.EventType == EventType.Error)
+    if (!evnt.HasValue) return;
+    if (evnt.Value.EventType == EventType.Error)
     {
-        Console.WriteLine(evnt.ErrorEvent.ErrorCode.ToString());
+        Console.WriteLine(evnt.Value.ErrorEvent.ErrorCode.ToString());
         isRunning = false;
     }
-    if (evnt.EventType == EventType.Expose)
+    if (evnt.Value.EventType == EventType.Expose)
     {
         lazyXcsb.PutImage(ImageFormat.ZPixmap,
             window,

@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Models.Handshake;
+
 public enum BackingStores : byte
 {
     Never = 0,

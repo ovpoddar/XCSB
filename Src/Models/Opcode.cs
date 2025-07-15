@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Models;
+
 internal enum Opcode : byte
 {
     CreateWindow = 1,
@@ -120,5 +121,5 @@ internal enum Opcode : byte
     GetPointerMapping,
     SetModifierMapping,
     GetModifierMapping,
-    NoOperation = 127,
+    NoOperation = 127
 }

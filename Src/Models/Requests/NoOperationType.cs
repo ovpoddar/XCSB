@@ -5,9 +5,9 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct SetCloseDownModeType(CloseDownMode mode)
+internal readonly struct NoOperationType(int argsLength)
 {
-    public readonly Opcode Opcode = Opcode.SetCloseDownMode;
-    public readonly CloseDownMode Mode = mode;
-    public readonly ushort Length = 1;
+    public readonly Opcode opcode = Opcode.NoOperation;
+    private readonly byte _pad0;
+    public readonly ushort Length = (ushort)(1 + argsLength);
 }

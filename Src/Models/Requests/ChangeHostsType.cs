@@ -10,7 +10,7 @@ internal readonly struct ChangeHostsType(HostMode mode, Family family, int addre
 {
     public readonly Opcode OpCode = Opcode.ChangeHosts;
     public readonly HostMode Mode = mode;
-    public readonly ushort Length = (ushort)(2 + (addressLength.AddPadding() / 4));
+    public readonly ushort Length = (ushort)(2 + addressLength.AddPadding() / 4);
     public readonly Family Family = family;
     private readonly byte _pad0;
     public readonly ushort AddressLength = (ushort)addressLength;

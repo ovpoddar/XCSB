@@ -1,8 +1,10 @@
 # Xcsb
 
-> ⚠️ **Warning:** Xcsb is currently in an unstable state. APIs and functionality may change without notice. Not all methods are implemented. Use in production environments is not recommended.
+> ⚠️ **Warning:** Xcsb is currently in an unstable state. APIs and functionality may change without notice. Not all
+> methods are implemented. Use in production environments is not recommended.
 
-**Xcsb** is a .NET library that lets you talk directly to the X11 Window System. For .NET developers, this means you can build cross-platform desktop apps that interact with X11 servers.
+**Xcsb** is a .NET library that lets you talk directly to the X11 Window System. For .NET developers, this means you can
+build cross-platform desktop apps that interact with X11 servers.
 
 ## Features
 
@@ -41,19 +43,24 @@ For more detailed documentation and advanced usage, see the [Wiki](https://githu
 
 ## Contributing
 
-Contributions are welcome! If you need a feature that is not yet implemented, add it yourself and add a PR. The Xcsb project aims to be approachable for contributors of all levels.
+Contributions are welcome! If you need a feature that is not yet implemented, add it yourself and add a PR. The Xcsb
+project aims to be approachable for contributors of all levels.
 
-> **Note:** Not all methods have example code associated with them. If you implement a new feature or method, please consider adding an example to help others.
+> **Note:** Not all methods have example code associated with them. If you implement a new feature or method, please
+> consider adding an example to help others.
 
 To implement a missing feature:
 
-1. Review the [X11 Protocol Reference](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html) and [xcb-proto Documentation](https://xcb.freedesktop.org/manual/) to understand the protocol details. or if you have experience you can skip this.
+1. Review the [X11 Protocol Reference](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html)
+   and [xcb-proto Documentation](https://xcb.freedesktop.org/manual/) to understand the protocol details. or if you have
+   experience you can skip this.
 2. Fork the repository and create a new branch for your feature.
 3. Add or modify code following the project's style and structure.
 4. Write tests if possible, or write an example to demonstrate it. put at least one.
 5. Submit a pull request describing your changes and referencing the relevant protocol documentation.
 
-If you have questions or need guidance, please open an issue or start a discussion on [GitHub](https://github.com/your-repo/Xcsb).
+If you have questions or need guidance, please open an issue or start a discussion
+on [GitHub](https://github.com/your-repo/Xcsb).
 
 ## License
 

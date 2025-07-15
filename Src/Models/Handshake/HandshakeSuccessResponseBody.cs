@@ -5,23 +5,28 @@ using System.Text;
 using Xcsb.Helpers;
 
 namespace Xcsb.Models.Handshake;
+
 public class HandshakeSuccessResponseBody
 {
-    public uint ReleaseNumber { get; set; }
-    public uint ResourceIDBase { get; set; }
-    public uint ResourceIDMask { get; set; }
-    public uint MotionBufferSize { get; set; }
-    public ushort MaxRequestLength { get; set; }
-    public ImageOrder ImageByteOrder { get; set; }
-    public BitOrder BitmapBitOrder { get; set; }
-    public byte BitmapScanLineUnit { get; set; }
-    public byte BitmapScanLinePad { get; set; }
-    public byte MinKeyCode { get; set; }
-    public byte MaxKeyCode { get; set; }
-    public string VendorName { get; set; } = null!;
+    public uint ReleaseNumber { get; private set; }
+    public uint ResourceIDBase { get; private set; }
+    public uint ResourceIDMask { get; private set; }
+    public uint MotionBufferSize { get; private set; }
+    public ushort MaxRequestLength { get; private set; }
+    public ImageOrder ImageByteOrder { get; private set; }
+    public BitOrder BitmapBitOrder { get; private set; }
+    public byte BitmapScanLineUnit { get; private set; }
+    public byte BitmapScanLinePad { get; private set; }
+    public byte MinKeyCode { get; private set; }
+    public byte MaxKeyCode { get; private set; }
+    public string VendorName { get; private set; } = null!;
+#if NETSTANDARD
+    public Format[] Formats { get; private set; } = [];
+    public Screen[] Screens { get; private set; } = [];
+#else
     public required Format[] Formats { get; set; }
     public required Screen[] Screens { get; set; }
-
+#endif
     internal static HandshakeSuccessResponseBody Read(Socket socket, int additionalDataLength)
     {
         var readIndex = 0;
@@ -30,7 +35,7 @@ public class HandshakeSuccessResponseBody
         readIndex += scratchBuffer.Length;
 
         ref var successResponseBody = ref scratchBuffer.AsStruct<_handshakeSuccessResponseBody>();
-        var result = new HandshakeSuccessResponseBody()
+        var result = new HandshakeSuccessResponseBody
         {
             ReleaseNumber = successResponseBody.ReleaseNumber,
             ResourceIDBase = successResponseBody.ResourceIDBase,
@@ -44,7 +49,7 @@ public class HandshakeSuccessResponseBody
             MinKeyCode = successResponseBody.MinKeyCode,
             MaxKeyCode = successResponseBody.MaxKeyCode,
             Formats = new Format[successResponseBody.FormatsNumber],
-            Screens = new Screen[successResponseBody.ScreensNumber],
+            Screens = new Screen[successResponseBody.ScreensNumber]
         };
         readIndex += SetVendorName(result, socket, successResponseBody.VendorLength.AddPadding());
         readIndex += SettFormats(result, socket);
@@ -71,6 +76,7 @@ public class HandshakeSuccessResponseBody
             MemoryMarshal.Cast<byte, Format>(scratchBuffer)
                 .CopyTo(result.Formats);
         }
+
         return requireByte;
     }
 
@@ -88,10 +94,10 @@ public class HandshakeSuccessResponseBody
             socket.ReceiveExact(scratchBuffer[..length]);
             result.VendorName = Encoding.ASCII.GetString(scratchBuffer).TrimEnd();
         }
+
         return length;
     }
 }
-
 
 [StructLayout(LayoutKind.Sequential)]
 file struct _handshakeSuccessResponseBody
@@ -110,5 +116,5 @@ file struct _handshakeSuccessResponseBody
     public byte BitmapScanLinePad { get; set; }
     public byte MinKeyCode { get; set; }
     public byte MaxKeyCode { get; set; }
-    public int Padding { get; set; }
+    private int Padding { get; set; }
 }

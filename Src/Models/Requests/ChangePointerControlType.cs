@@ -5,7 +5,8 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct ChangePointerControlType(ushort accelerationNumerator,
+internal readonly struct ChangePointerControlType(
+    ushort accelerationNumerator,
     ushort accelerationDenominator,
     ushort threshold,
     byte doAcceleration,

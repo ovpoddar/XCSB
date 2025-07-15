@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Masks;
+
 [Flags]
 public enum ValueMask : uint
 {
@@ -16,6 +17,5 @@ public enum ValueMask : uint
     EventMask = 2048,
     DoNotPropagateMask = 4096,
     Colormap = 8192,
-    Cursor = 16384,
+    Cursor = 16384
 }
-

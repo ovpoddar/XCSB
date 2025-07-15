@@ -106,7 +106,8 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    switch (evnt.EventType)
+    if (!evnt.HasValue) return;
+    switch (evnt.Value.EventType)
     {
         case Xcsb.Models.Event.EventType.Expose:
             {

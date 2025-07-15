@@ -12,6 +12,7 @@ public struct SelectionRequestEvent
     public uint Requestor;
     public uint Selection;
     public uint Target;
+
     public uint Property; // has some fixed value but assuming can have more than that so not adding them
     // if its less than 68 it map to some value 
 }

@@ -7,7 +7,11 @@ namespace Xcsb.Models.Handshake;
 public class Depth
 {
     public byte DepthValue;
+#if NETSTANDARD
+    public Visual[] Visuals = [];
+#else
     public required Visual[] Visuals;
+#endif
 
     public static Depth Read(Socket socket, ref int currentlyRead)
     {
@@ -16,7 +20,7 @@ public class Depth
         currentlyRead += scratchBuffer.Length;
 
         ref var depth = ref scratchBuffer.AsStruct<_Depth>();
-        var result = new Depth()
+        var result = new Depth
         {
             DepthValue = depth.DepthValue,
             Visuals = new Visual[depth.VisualsLength]
@@ -42,6 +46,7 @@ public class Depth
             MemoryMarshal.Cast<byte, Visual>(scratchBuffer)
                 .CopyTo(depth.Visuals);
         }
+
         return requireByte;
     }
 }

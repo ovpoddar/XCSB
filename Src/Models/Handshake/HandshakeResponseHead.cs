@@ -8,14 +8,10 @@ namespace Xcsb.Models.Handshake;
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 8)]
 internal struct HandshakeResponseHead
 {
-    [FieldOffset(0)]
-    public HandshakeStatus HandshakeStatus;
-    [FieldOffset(0)]
-    public HandshakeResponseHeadSuccess HandshakeResponseHeadSuccess;
-    [FieldOffset(0)]
-    public HandshakeResponseHeadFailed HandshakeResponseHeadFailed;
-    [FieldOffset(0)]
-    public HandshakeResponseHeadAuthenticate HandshakeResponseHeadAuthenticate;
+    [FieldOffset(0)] public HandshakeStatus HandshakeStatus;
+    [FieldOffset(0)] public HandshakeResponseHeadSuccess HandshakeResponseHeadSuccess;
+    [FieldOffset(0)] public HandshakeResponseHeadFailed HandshakeResponseHeadFailed;
+    [FieldOffset(0)] public HandshakeResponseHeadAuthenticate HandshakeResponseHeadAuthenticate;
 
     // for multipal call it will fail
     // todo: caching can be helpful but not needed

@@ -5,7 +5,12 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct ConvertSelectionType(uint requestor, uint selection, uint target, uint property, uint timestamp)
+internal readonly struct ConvertSelectionType(
+    uint requestor,
+    uint selection,
+    uint target,
+    uint property,
+    uint timestamp)
 {
     public readonly Opcode OpCode = Opcode.ConvertSelection;
     private readonly byte _pad0;

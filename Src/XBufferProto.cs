@@ -1,28 +1,24 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Numerics;
-using System.Reflection.Metadata;
+﻿using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Event;
-using Xcsb.Models.Handshake;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Requests;
+#if !NETSTANDARD
+using System.Numerics;
+#endif
+#if NETSTANDARD
+using Xcsb.Helpers;
+#endif
 
 namespace Xcsb;
 
 internal class XBufferProto : BaseProtoClient, IXBufferProto
 {
-    //private readonly XProto _xProto;
-    private List<byte> _buffer = new List<byte>();
+    private readonly List<byte> _buffer = [];
     private int _requestLength;
 
     public XBufferProto(XProto xProto) : base(xProto.socket)
@@ -40,7 +36,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 
     public void Bell(sbyte percent)
     {
-        if (percent is not <= 100 or not >= (-100))
+        if (percent is not <= 100 or not >= -100)
             throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
 
         var request = new BellType(percent);
@@ -82,11 +78,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym)
+    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] keysym)
     {
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         _buffer.Add(ref request);
-        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(Keysym));
+        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(keysym));
         _requestLength++;
     }
 
@@ -100,7 +96,10 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
-        where T : struct, INumber<T>
+        where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
     {
         var size = Marshal.SizeOf<T>();
         if (size is not 1 or 2 or 4)
@@ -163,11 +162,13 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void CopyArea(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX,
-        ushort destY,
+    public void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX,
+        ushort destinationY,
         ushort width, ushort height)
     {
-        var request = new CopyAreaType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height);
+        var request = new CopyAreaType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height);
         _buffer.Add(ref request);
         _requestLength++;
     }
@@ -186,11 +187,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void CopyPlane(uint srcDrawable, uint destDrawable, uint gc, ushort srcX, ushort srcY, ushort destX,
-        ushort destY,
-        ushort width, ushort height, uint bitPlane)
+    public void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
     {
-        var request = new CopyPlaneType(srcDrawable, destDrawable, gc, srcX, srcY, destX, destY, width, height,
+        var request = new CopyPlaneType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height,
             bitPlane);
         _buffer.Add(ref request);
         _requestLength++;
@@ -204,8 +205,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue,
-        ushort backRed,
-        ushort backGreen, ushort backBlue, ushort x, ushort y)
+        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
         var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
@@ -222,8 +222,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
-        ushort foreRed,
-        ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
     {
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
@@ -239,8 +238,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth,
-        ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
     {
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
@@ -282,10 +280,14 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     {
         try
         {
+#if NETSTANDARD
+            socket.SendExact(_buffer.ToArray());
+#else
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+#endif
             using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
             var received = socket.Receive(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[0..received]))
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
                 if (evnt.EventType == EventType.Error)
                     throw new XEventException(evnt.ErrorEvent);
                 else if ((int)evnt.EventType == 1)
@@ -306,9 +308,13 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
         try
         {
+#if NETSTANDARD
+            socket.SendExact(_buffer.ToArray());
+#else
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+#endif
             var received = await socket.ReceiveAsync(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[0..received]))
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
                 if (evnt.EventType == EventType.Error)
                     throw new XEventException(evnt.ErrorEvent);
                 else if ((int)evnt.EventType == 1)
@@ -329,7 +335,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     {
         try
         {
+#if NETSTANDARD
+            socket.SendExact(_buffer.ToArray());
+#else
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+#endif
             using var buffer = new ArrayPoolUsing<byte>(socket.Available);
             var received = socket.Receive(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
@@ -353,9 +363,13 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
         try
         {
+#if NETSTANDARD
+            socket.SendExact(_buffer.ToArray());
+#else
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+#endif
             var received = await socket.ReceiveAsync(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer.AsSpan(0, received)))
+            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
                 if (evnt.EventType == EventType.Error)
                     _requestLength--;
                 else if ((int)evnt.EventType == 1)
@@ -422,8 +436,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
-        uint confineTo,
-        uint cursor, Button button, ModifierMask modifiers)
+        uint confineTo, uint cursor, Button button, ModifierMask modifiers)
     {
         var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
@@ -451,12 +464,9 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     public void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
     {
         var request = new ImageText16Type(drawable, gc, x, y, text.Length);
-        var requiredBuffer = (text.Length * 2).AddPadding();
-        using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
         _buffer.Add(ref request);
-        Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[..(text.Length * 2)]);
-        scratchBuffer[(text.Length * 2)..requiredBuffer].Clear();
-        _buffer.AddRange(scratchBuffer[..requiredBuffer]);
+        _buffer.AddRange(Encoding.BigEndianUnicode.GetBytes(text.ToString()));
+        _buffer.AddRange(new byte[text.Length.Padding()]);
 
         _requestLength++;
     }
@@ -589,8 +599,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
-        byte leftPad,
-        byte depth, Span<byte> data)
+        byte leftPad, byte depth, Span<byte> data)
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         _buffer.Add(ref request);
@@ -600,8 +609,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
-        ushort backGreen,
-        ushort backBlue)
+        ushort backGreen, ushort backBlue)
     {
         var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
         _buffer.Add(ref request);
@@ -766,11 +774,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void WarpPointer(uint srcWindow, uint destWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight,
-        short destX,
-        short destY)
+    public void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
+        ushort srcHeight, short destinationX, short destinationY)
     {
-        var request = new WarpPointerType(srcWindow, destWindow, srcX, srcY, srcWidth, srcHeight, destX, destY);
+        var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
+            destinationY);
         _buffer.Add(ref request);
         _requestLength++;
     }

@@ -9,13 +9,15 @@ namespace Xcsb;
 
 internal static class Connection
 {
-    private static readonly byte[] _MagicCookie = "MIT-MAGIC-COOKIE-1"u8.ToArray();
+    private static readonly byte[] MagicCookie = "MIT-MAGIC-COOKIE-1"u8.ToArray();
 
     private static string? _cachedAuthPath;
-    private static readonly object _AuthPathLock = new();
+    private static readonly object AuthPathLock = new();
 
-    internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails, string display)
+    internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails,
+        string display)
     {
+        ReadOnlySpan<char> error = [];
         var (response, socket) = MakeHandshake(connectionDetails, display, [], []);
         if (response.HandshakeStatus == HandshakeStatus.Success && socket is not null)
         {
@@ -24,8 +26,11 @@ internal static class Connection
             return (successBody, socket);
         }
 
+        if (socket is not null)
+            error = response.GetStatusMessage(socket);
         socket?.Dispose();
-        ReadOnlyMemory<char> host =  connectionDetails.Host.ToArray();
+
+        ReadOnlyMemory<char> host = connectionDetails.Host.ToArray();
         ReadOnlyMemory<char> dis = connectionDetails.Display.ToArray();
 
         foreach (var (authName, authData) in GetAuthInfo(host, dis))
@@ -33,12 +38,17 @@ internal static class Connection
             (response, socket) = MakeHandshake(connectionDetails, display, authName, authData);
             if (response.HandshakeStatus is HandshakeStatus.Success && socket is not null)
             {
-                var successResponseBody = HandshakeSuccessResponseBody.Read(socket, response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
-                return (successResponseBody, socket);
+                var successBody = HandshakeSuccessResponseBody.Read(socket,
+                    response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
+                return (successBody, socket);
             }
+
+            if (socket is not null)
+                error = response.GetStatusMessage(socket);
             socket?.Dispose();
         }
-        throw new UnauthorizedAccessException("Failed to connect");
+
+        throw new UnauthorizedAccessException(error.ToString());
     }
 
     private static string GetAuthFilePath()
@@ -47,7 +57,7 @@ internal static class Connection
         if (_cachedAuthPath is not null)
             return _cachedAuthPath;
 
-        lock (_AuthPathLock)
+        lock (AuthPathLock)
         {
             if (_cachedAuthPath is not null)
                 return _cachedAuthPath;
@@ -64,7 +74,7 @@ internal static class Connection
                 if (string.IsNullOrWhiteSpace(homePath))
                     throw new InvalidOperationException("Neither XAUTHORITY nor HOME environment variables are set");
 
-                result = Path.Join(homePath, ".Xauthority");
+                result = Path.Combine(homePath, ".Xauthority");
             }
 
             Thread.MemoryBarrier();
@@ -75,19 +85,23 @@ internal static class Connection
     }
 
     // TODO: move all the logic to a separate file or a separate project for less cluster
-    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(ReadOnlyMemory<char> host, ReadOnlyMemory<char> display)
+    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(ReadOnlyMemory<char> host,
+        ReadOnlyMemory<char> display)
     {
         var filePath = GetAuthFilePath();
         if (!File.Exists(filePath))
             throw new UnauthorizedAccessException("Failed to connect");
-        
+
         using var fileStream = File.OpenRead(filePath);
         while (fileStream.Position <= fileStream.Length)
         {
             var context = new XAuthority(fileStream);
             var dspy = context.GetDisplayNumber(fileStream);
             var displayName = context.GetName(fileStream);
-            if ((dspy is "" || dspy.SequenceEqual(display.Span)) && displayName.SequenceEqual(_MagicCookie))
+
+            if ((host.Span is "" or " " || host.Span.SequenceEqual(context.GetHostAddress(fileStream)))
+                && (dspy is "" || dspy.SequenceEqual(display.Span))
+                && displayName.SequenceEqual(MagicCookie))
                 yield return (displayName, context.GetData(fileStream));
         }
     }
@@ -111,14 +125,14 @@ internal static class Connection
             if (scratchBufferSize < GlobalSetting.StackAllocThreshold)
             {
                 Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
-                authName.CopyTo(scratchBuffer[0..]);
+                authName.CopyTo(scratchBuffer[..]);
                 authData.CopyTo(scratchBuffer[namePaddedLength..]);
                 socket.SendExact(scratchBuffer);
             }
             else
             {
                 using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
-                authName.CopyTo(scratchBuffer[0..]);
+                authName.CopyTo(scratchBuffer[..]);
                 authData.CopyTo(scratchBuffer[namePaddedLength..]);
                 socket.SendExact(scratchBuffer[..scratchBufferSize]);
             }

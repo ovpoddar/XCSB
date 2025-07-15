@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Models.Event;
+
 public enum StackMode : byte
 {
     Above,
