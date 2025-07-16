@@ -6,7 +6,7 @@ jobs:
     continue-on-error: false
     steps:
       - name: Checkout code
-        uses: actions/checkout t@v2
+        uses: actions/checkout @v2
       - name: Setting Up dotnet
         uses: actions/setup-dotnet@v4
         with:
