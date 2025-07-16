@@ -14,6 +14,6 @@ jobs:
       - name: Cleaning project
         run: dotnet clean ./Src/Xcsb.csproj
       - name: Building Project
-        run: dotnet build ./Src/Xcsb.csproj -c Release
+        run: dotnet build ./Src/Xcsb.csproj -c Release -o ./output
       - name: Debugging
-        run: ls ./Src/bin/Release/ 
+        run: ls ./output
