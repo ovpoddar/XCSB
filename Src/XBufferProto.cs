@@ -10,9 +10,6 @@ using Xcsb.Models.Requests;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
-#if NETSTANDARD
-using Xcsb.Helpers;
-#endif
 
 namespace Xcsb;
 
