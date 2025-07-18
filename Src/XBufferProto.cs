@@ -275,57 +275,26 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 
     public void FlushChecked()
     {
-        try
-        {
 #if NETSTANDARD
-            socket.SendExact(_buffer.ToArray());
+        socket.SendExact(_buffer.ToArray());
 #else
             socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
 #endif
-            using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
-            var received = socket.Receive(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
-                if (evnt.EventType == EventType.Error)
-                    throw new XEventException(evnt.ErrorEvent);
-                else if ((int)evnt.EventType == 1)
-                    throw new Exception("internal issue");
-                else
-                    bufferEvents.Push(evnt);
-        }
-        finally
-        {
-            sequenceNumber += (ushort)_requestLength;
-            _requestLength = 0;
-            _buffer.Clear();
-        }
-    }
+        using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
+        var received = socket.Receive(buffer);
+        foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
+            if (evnt.EventType == EventType.Error)
+                throw new XEventException(evnt.ErrorEvent);
+            else if ((int)evnt.EventType == 1)
+                throw new Exception("internal issue");
+            else
+            {
+                bufferEvents.Push(evnt);
 
-    public async Task FlushCheckedAsync()
-    {
-        var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
-        try
-        {
-#if NETSTANDARD
-            socket.SendExact(_buffer.ToArray());
-#else
-            socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
-#endif
-            var received = await socket.ReceiveAsync(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
-                if (evnt.EventType == EventType.Error)
-                    throw new XEventException(evnt.ErrorEvent);
-                else if ((int)evnt.EventType == 1)
-                    throw new Exception("internal issue");
-                else
-                    bufferEvents.Push(evnt);
-        }
-        finally
-        {
-            sequenceNumber += (ushort)_requestLength;
-            ArrayPool<byte>.Shared.Return(buffer);
-            _requestLength = 0;
-            _buffer.Clear();
-        }
+                sequenceNumber += (ushort)_requestLength;
+                _requestLength = 0;
+                _buffer.Clear();
+            }
     }
 
     public void Flush()
@@ -350,34 +319,6 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         finally
         {
             sequenceNumber += (ushort)_requestLength;
-            _requestLength = 0;
-            _buffer.Clear();
-        }
-    }
-
-    public async Task FlushAsync()
-    {
-        var buffer = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<XEvent>() * _requestLength);
-        try
-        {
-#if NETSTANDARD
-            socket.SendExact(_buffer.ToArray());
-#else
-            socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
-#endif
-            var received = await socket.ReceiveAsync(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
-                if (evnt.EventType == EventType.Error)
-                    _requestLength--;
-                else if ((int)evnt.EventType == 1)
-                    continue;
-                else
-                    bufferEvents.Push(evnt);
-        }
-        finally
-        {
-            sequenceNumber += (ushort)_requestLength;
-            ArrayPool<byte>.Shared.Return(buffer);
             _requestLength = 0;
             _buffer.Clear();
         }

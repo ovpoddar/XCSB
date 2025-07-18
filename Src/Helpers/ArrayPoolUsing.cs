@@ -37,15 +37,17 @@ internal struct ArrayPoolUsing<T> : IDisposable
             _arrayPool.Return(_values, _clearArray);
     }
 
-    public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing)
-    {
-        return arrayPoolUsing._values ?? [];
-    }
+    public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing) =>
+        arrayPoolUsing._values ?? [];
 
-    public static implicit operator Span<T>(ArrayPoolUsing<T> arrayPoolUsing)
-    {
-        return arrayPoolUsing._values.AsSpan(0, arrayPoolUsing._length);
-    }
+
+    public static implicit operator ArraySegment<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
+        arrayPoolUsing._values is null
+            ? []
+            : new ArraySegment<T>(arrayPoolUsing._values, 0, arrayPoolUsing._length);
+
+    public static implicit operator Span<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
+        arrayPoolUsing._values.AsSpan(0, arrayPoolUsing._length);
 
     public readonly Span<T> Slice(int start, int length)
     {
