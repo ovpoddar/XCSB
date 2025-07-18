@@ -1622,6 +1622,12 @@ internal class XProto : BaseProtoClient, IXProto
         GC.SuppressFinalize(this);
     }
 
+    public void WaitForEvent()
+    {
+        if (!IsEventAvailable())
+            socket.Poll(-1, SelectMode.SelectRead);
+    }
+
     public uint NewId()
     {
         return (uint)((HandshakeSuccessResponseBody.ResourceIDMask & _globalId++) |
@@ -1643,6 +1649,9 @@ internal class XProto : BaseProtoClient, IXProto
 
         return scratchBuffer.ToStruct<XEvent>();
     }
+
+    public bool IsEventAvailable() =>
+        bufferEvents.Any() || socket.Available >= Unsafe.SizeOf<XEvent>();
 
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
         ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
