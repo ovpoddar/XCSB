@@ -17,5 +17,8 @@ jobs:
         run: dotnet build ./Src/Xcsb.csproj -c Release -o ./output
       - name: Pack Project
         run: dotnet pack ./Src/Xcsb.csproj -c Release -o ./output --no-restore
+
+      - name: debug print
+        run: ll ./output && ls ./output
       # - name: Publish to Nuget pack
       #   run: dotnet nuget push ./output/Xcsb.*.nupkg --skip-duplicate -k ${{ secrets.NUGET_PERMANANT_API_KEY }} -s https://api.nuget.org/v3/index.json 
