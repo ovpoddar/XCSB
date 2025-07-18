@@ -29,6 +29,7 @@ public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IDispo
     ///     Thrown when a protocol-level error occurs while attempting to retrieve the event from the X server.
     /// </exception>
     XEvent? GetEvent();
+    Task<XEvent?> GetEventAsync();
     bool IsEventAvailable();
     void WaitForEvent();
     uint NewId();

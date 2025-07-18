@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -1648,6 +1649,29 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         return scratchBuffer.ToStruct<XEvent>();
+    }
+
+
+    public async Task<XEvent?> GetEventAsync()
+    {
+        if (bufferEvents.TryPop(out var result))
+        {
+            return result;
+        }
+        var size = Marshal.SizeOf<XEvent>();
+        var scratchBuffer = ArrayPool<byte>.Shared.Rent(size);
+        try
+        {
+            if (await socket.ReceiveAsync(scratchBuffer) == 0)
+            {
+                return null;
+            }
+            return scratchBuffer.AsSpan(0, size).ToStruct<XEvent>();
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(scratchBuffer);
+        }
     }
 
     public bool IsEventAvailable() =>
