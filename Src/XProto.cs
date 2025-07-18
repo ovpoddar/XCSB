@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -24,10 +25,11 @@ internal class XProto : BaseProtoClient, IXProto
 {
     private bool _disposedValue;
     private int _globalId;
+    private XBufferProto? _xBufferProto;
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
 
-    public IXBufferProto BufferClient => new XBufferProto(this);
+    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
 
     public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult) : base(socket)
     {
