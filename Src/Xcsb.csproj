@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.1;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.1;net8.0;net9.0;</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Title>Xcsb</Title>
-        <Version>1.0.0-beta4</Version>
+        <Version>1.0.0-beta4.1</Version>
         <Authors>Ov Poddar</Authors>
         <Description>Xcsb is a .NET library that lets you talk directly to the X11 Window System. For .NET developers, this means you can build cross-platform desktop apps that interact with X11 servers.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
