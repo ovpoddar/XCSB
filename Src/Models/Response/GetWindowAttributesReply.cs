@@ -7,7 +7,7 @@ using Xcsb.Models.Handshake;
 namespace Xcsb.Models.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
-public readonly struct GetWindowAttributesReply
+public readonly struct GetWindowAttributesReply : IXBaseResponse
 {
     public readonly byte ResponseType; // 1
     public readonly BackingStores Stores;
@@ -33,7 +33,7 @@ public readonly struct GetWindowAttributesReply
     public bool MapIsInstalled => _mapIsInstalled == 1;
     public bool OverrideRedirect => _overrideRedirect == 1;
 
-    internal bool Verify()
+    public bool Verify()
     {
         return this.ResponseType == 1 && this.Length == 3;
     }

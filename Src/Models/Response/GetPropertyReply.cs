@@ -4,7 +4,7 @@ using Xcsb.Helpers;
 
 namespace Xcsb.Models.Response;
 
-public struct GetPropertyReply
+public struct GetPropertyReply : IXBaseResponse
 {
     public byte Reply; // 1
     public byte Format;
@@ -41,5 +41,10 @@ public struct GetPropertyReply
         public readonly uint Type;
         public readonly uint BytesAfter;
         public readonly uint ValueLength;
+    }
+
+    public bool Verify()
+    {
+        return this.Reply == 1 && this.Data.Length / 4 == 0;
     }
 }

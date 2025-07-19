@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Models.Response;
+﻿namespace Xcsb.Models;
 
 public enum ClassResponseType : byte
 {

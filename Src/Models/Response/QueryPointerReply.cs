@@ -1,10 +1,11 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Helpers;
 using Xcsb.Models.Event;
 
 namespace Xcsb.Models.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct QueryPointerReply
+public readonly struct QueryPointerReply : IXBaseResponse
 {
     public readonly byte Reply; // 1
     private readonly byte _sameScreen;
@@ -18,6 +19,11 @@ public readonly struct QueryPointerReply
     public readonly short WinY;
     public readonly KeyButMask Mask;
 
-    public readonly bool IsSameScreen =>
-        _sameScreen == 1;
+    public readonly bool IsSameScreen => _sameScreen == 1;
+
+    public bool Verify()
+    {
+        
+        return this.Reply == 1 && this.LengthReply == 0;
+    }
 }

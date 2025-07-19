@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models.Event;
+using Xcsb.Models.Response;
 
 namespace Xcsb;
 
@@ -17,7 +18,7 @@ internal class BaseProtoClient
         bufferEvents = new Stack<XEvent>();
     }
 
-    internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : unmanaged
+    internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : unmanaged, IXBaseResponse
     {
         if (socket.Available == 0)
             socket.Poll(-1, SelectMode.SelectRead);

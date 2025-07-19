@@ -619,10 +619,16 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void GetGeometry()
+    public GetGeometryReply GetGeometry(uint drawable)
     {
-        throw new NotImplementedException();
+        var request = new GetGeometryType(drawable);
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetGeometryReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -711,6 +717,8 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetWindowAttributesReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
+        
+        sequenceNumber++;
         return result.Value;
     }
 
