@@ -17,12 +17,12 @@ internal class BaseProtoClient
         bufferEvents = new Stack<XEvent>();
     }
 
-    internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : struct
+    internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : unmanaged
     {
         if (socket.Available == 0)
             socket.Poll(-1, SelectMode.SelectRead);
 
-        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
+        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<T>()];
         while (socket.Available != 0)
         {
             socket.ReceiveExact(buffer);

@@ -704,10 +704,14 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void GetWindowAttributes()
+    public GetWindowAttributesReply GetWindowAttributes(uint window)
     {
-        throw new NotImplementedException();
-        sequenceNumber++;
+        var request = new GetWindowAttributesType(window);
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetWindowAttributesReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        return result.Value;
     }
 
 

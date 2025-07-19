@@ -13,7 +13,7 @@ public interface IResponseProto
 
     InternAtomReply InternAtom(bool onlyIfExist, string atomName);
     GetPropertyReply GetProperty(bool delete, uint window, uint property, uint type, uint offset, uint length);
-    void GetWindowAttributes();
+    GetWindowAttributesReply GetWindowAttributes(uint window);
     void GetGeometry();
     void QueryTree();
     void GetAtomName();
