@@ -1299,10 +1299,12 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void QueryTree()
+    public QueryTreeReply QueryTree(uint window)
     {
-        throw new NotImplementedException();
+        var request = new QueryTreeType(window);
+        socket.Send(ref request);
         sequenceNumber++;
+        return new QueryTreeReply(socket);
     }
 
 

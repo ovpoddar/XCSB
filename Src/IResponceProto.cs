@@ -15,7 +15,7 @@ public interface IResponseProto
     GetPropertyReply GetProperty(bool delete, uint window, uint property, uint type, uint offset, uint length);
     GetWindowAttributesReply GetWindowAttributes(uint window);
     GetGeometryReply GetGeometry(uint drawable);
-    void QueryTree();
+    QueryTreeReply QueryTree(uint window);
     void GetAtomName();
     void ListProperties();
     void GetSelectionOwner();
