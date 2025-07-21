@@ -11,12 +11,12 @@ public readonly struct GetWindowAttributesReply : IXBaseResponse
 {
     public readonly byte ResponseType; // 1
     public readonly BackingStores Stores;
-    public readonly ushort Sequence;
+    public readonly ushort Sequence; 
     public readonly uint Length;
     public readonly uint VisualId;
     public readonly ClassResponseType Class;
-    public readonly byte BitGravity;
-    public readonly byte WinGravity;
+    public readonly Gravity BitGravity;
+    public readonly Gravity WinGravity;
     public readonly uint BackingPlane;
     public readonly uint BackingPixel;
     private readonly byte _saveUnder;
@@ -24,9 +24,9 @@ public readonly struct GetWindowAttributesReply : IXBaseResponse
     public readonly MapState MapState;
     private readonly byte _overrideRedirect;
     public readonly uint Colormap;
-    public readonly uint AllEventMasks;
-    public readonly uint YourEventMask;
-    public readonly ushort DoNotPropagateMask;
+    public readonly uint AllEventMasks; // EventMask
+    public readonly uint YourEventMask; // EventMask
+    public readonly ushort DoNotPropagateMask; // EventMask
 
 
     public bool SaveUnder => _saveUnder == 1;
