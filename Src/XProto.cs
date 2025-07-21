@@ -705,10 +705,16 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void GetSelectionOwner()
+    public GetSelectionOwnerReply GetSelectionOwner(uint atom)
     {
-        throw new NotImplementedException();
+        var request = new GetSelectionOwnerType(atom);
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetSelectionOwnerReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return result.Value;
     }
 
 

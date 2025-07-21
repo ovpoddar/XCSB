@@ -18,7 +18,7 @@ public interface IResponseProto
     QueryTreeReply QueryTree(uint window);
     GetAtomNameReply GetAtomName(uint atom);
     ListPropertiesReply ListProperties(uint window);
-    void GetSelectionOwner();
+    GetSelectionOwnerReply GetSelectionOwner(uint atom);
     void GrabKeyboard();
     void GetMotionEvents();
     void TranslateCoordinates();
