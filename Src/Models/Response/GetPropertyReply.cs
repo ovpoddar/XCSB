@@ -6,10 +6,12 @@ namespace Xcsb.Models.Response;
 
 public struct GetPropertyReply : IXBaseResponse
 {
-    public byte Reply; // 1
-    public byte Format;
-    public ushort Sequence;
-    public uint Type;
+    private readonly _GetPropertyReply _response;
+
+    public readonly byte Reply => _response.Reply; // 1
+    public readonly byte Format => _response.Format;
+    public readonly ushort Sequence => _response.Sequence;
+    public readonly uint Type => _response.Type;
 
     public byte[] Data;
 
@@ -17,17 +19,18 @@ public struct GetPropertyReply : IXBaseResponse
     {
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<_GetPropertyReply>()];
         socket.ReceiveExact(buffer);
+        _response = buffer.AsStruct<_GetPropertyReply>();
 
-        ref var propertyReply = ref buffer.AsStruct<_GetPropertyReply>();
-        Reply = propertyReply.Reply;
-        Format = propertyReply.Format;
-        Sequence = propertyReply.Sequence;
-        Type = propertyReply.Type;
-
-        var data = new byte[propertyReply.Length * 4];
-        if (data.Length != 0)
+        if (_response.Length == 0)
+        {
+            Data = [];
+        }
+        else
+        {
+            var data = new byte[_response.Length * 4];
             socket.ReceiveExact(data);
-        Data = data;
+            Data = data;
+        }
     }
 
 
@@ -45,6 +48,6 @@ public struct GetPropertyReply : IXBaseResponse
 
     public bool Verify()
     {
-        return this.Reply == 1 && this.Data.Length / 4 == 0;
+        return this.Reply == 1 && this._response.ValueLength == this._response.Length && this._response.Length % 4 == 0;
     }
 }

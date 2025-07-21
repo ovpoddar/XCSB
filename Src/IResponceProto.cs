@@ -16,8 +16,8 @@ public interface IResponseProto
     GetWindowAttributesReply GetWindowAttributes(uint window);
     GetGeometryReply GetGeometry(uint drawable);
     QueryTreeReply QueryTree(uint window);
-    void GetAtomName();
-    void ListProperties();
+    GetAtomNameReply GetAtomName(uint atom);
+    ListPropertiesReply ListProperties(uint window);
     void GetSelectionOwner();
     void GrabKeyboard();
     void GetMotionEvents();

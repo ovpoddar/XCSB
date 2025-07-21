@@ -567,10 +567,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void GetAtomName()
+    public GetAtomNameReply GetAtomName(uint atom)
     {
-        throw new NotImplementedException();
+        var request = new GetAtomNameType(atom);
+        socket.Send(ref request);
         sequenceNumber++;
+        return new GetAtomNameReply(socket);
     }
 
 
@@ -882,10 +884,12 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void ListProperties()
+    public ListPropertiesReply ListProperties(uint window)
     {
-        throw new NotImplementedException();
+        var request = new ListPropertiesType(window);
+        socket.Send(ref request);
         sequenceNumber++;
+        return new ListPropertiesReply(socket);
     }
 
 

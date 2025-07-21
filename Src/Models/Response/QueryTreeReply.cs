@@ -6,28 +6,24 @@ namespace Xcsb.Models.Response;
 
 public struct QueryTreeReply : IXBaseResponse
 {
-    public byte Reply;
-    public ushort Sequence;
-    public uint Root;
-    public uint Parent;
+    private readonly _QueryTreeReply _response;
+    public readonly byte Reply => _response.Reply;
+    public readonly ushort Sequence => _response.Sequence;
+    public readonly uint Root => _response.Root;
+    public readonly uint Parent => _response.Parent;
     public uint[] WindowChildren;
 
     public QueryTreeReply(Socket socket)
     {
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<_QueryTreeReply>()];
         socket.ReceiveExact(buffer);
-        ref var queryTreeReply = ref buffer.AsStruct<_QueryTreeReply>();
-        Reply = queryTreeReply.Reply;
-        Sequence = queryTreeReply.Sequence;
-        Root = queryTreeReply.Root;
-        Parent = queryTreeReply.Parent;
+        _response = buffer.AsStruct<_QueryTreeReply>();
 
-        var windowChildrenLenght = queryTreeReply.WindowChildrenLenght * 4;
-        if (windowChildrenLenght == 0)
+        if (_response.WindowChildrenLenght == 0)
             WindowChildren = [];
         else
         {
-            var windowChildren = new ArrayPoolUsing<byte>(windowChildrenLenght);
+            using var windowChildren = new ArrayPoolUsing<byte>(_response.WindowChildrenLenght * 4);
             socket.ReceiveExact(windowChildren);
             WindowChildren = MemoryMarshal.Cast<byte, uint>(windowChildren).ToArray();
         }
