@@ -15,6 +15,10 @@ public struct GetPropertyReply : IXBaseResponse
 
     public byte[] Data;
 
+    // todo: try to move the first read to caller 
+    // leave the calling here so can avoid the private
+    // storing of response and also call the verify and
+    // verify the sequence 
     internal GetPropertyReply(Socket socket)
     {
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<_GetPropertyReply>()];

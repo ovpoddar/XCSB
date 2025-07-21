@@ -11,6 +11,10 @@ public struct ListPropertiesReply : IXBaseResponse
     public readonly ushort Sequence => _response.Sequence;
     public uint[] Atoms;
 
+    // todo: try to move the first read to caller 
+    // leave the calling here so can avoid the private
+    // storing of response and also call the verify and
+    // verify the sequence 
     public ListPropertiesReply(Socket socket)
     {
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<_ListPropertiesReply>()];

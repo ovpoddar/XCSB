@@ -23,7 +23,6 @@ public readonly struct QueryPointerReply : IXBaseResponse
 
     public bool Verify()
     {
-        
         return this.Reply == 1 && this.LengthReply == 0;
     }
 }

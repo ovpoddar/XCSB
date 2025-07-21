@@ -13,6 +13,10 @@ public struct QueryTreeReply : IXBaseResponse
     public readonly uint Parent => _response.Parent;
     public uint[] WindowChildren;
 
+    // todo: try to move the first read to caller 
+    // leave the calling here so can avoid the private
+    // storing of response and also call the verify and
+    // verify the sequence 
     public QueryTreeReply(Socket socket)
     {
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<_QueryTreeReply>()];
