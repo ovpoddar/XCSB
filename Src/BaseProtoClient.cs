@@ -33,7 +33,10 @@ internal class BaseProtoClient
                 case { EventType: EventType.Error }:
                     return (null, content.ErrorEvent);
                 case { EventType: (EventType)1 }:
-                    return (buffer.AsStruct<T>(), null);
+                    var result = buffer.AsStruct<T>();
+                    return result.Verify()
+                        ? (result, null)
+                        : (null, null); // todo: fix the reporting
                 default:
                     bufferEvents.Push(content);
                     break;

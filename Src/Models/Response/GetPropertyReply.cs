@@ -1,57 +1,34 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Models.Response.Internals;
 
 namespace Xcsb.Models.Response;
 
-public struct GetPropertyReply : IXBaseResponse
+public readonly struct GetPropertyReply
 {
-    private readonly _GetPropertyReply _response;
+    public readonly byte Reply;
+    public readonly byte Format;
+    public readonly ushort Sequence;
+    public readonly uint Type;
+    public readonly byte[] Data;
 
-    public readonly byte Reply => _response.Reply; // 1
-    public readonly byte Format => _response.Format;
-    public readonly ushort Sequence => _response.Sequence;
-    public readonly uint Type => _response.Type;
-
-    public byte[] Data;
-
-    // todo: try to move the first read to caller 
-    // leave the calling here so can avoid the private
-    // storing of response and also call the verify and
-    // verify the sequence 
-    internal GetPropertyReply(Socket socket)
+    internal GetPropertyReply(GetPropertyResponse response, Socket socket)
     {
-        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<_GetPropertyReply>()];
-        socket.ReceiveExact(buffer);
-        _response = buffer.AsStruct<_GetPropertyReply>();
-
-        if (_response.Length == 0)
-        {
+        this.Reply = response.Reply;
+        this.Format = response.Format;
+        this.Sequence = response.Sequence;
+        this.Type = response.Type;
+        
+        if (response.Length == 0)
             Data = [];
-        }
         else
         {
-            var data = new byte[_response.Length * 4];
+            var data = new byte[response.Length * 4];
             socket.ReceiveExact(data);
             Data = data;
         }
     }
 
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-    private readonly struct _GetPropertyReply
-    {
-        public readonly byte Reply;
-        public readonly byte Format;
-        public readonly ushort Sequence;
-        public readonly uint Length;
-        public readonly uint Type;
-        public readonly uint BytesAfter;
-        public readonly uint ValueLength;
-    }
-
-    public bool Verify()
-    {
-        return this.Reply == 1 && this._response.ValueLength == this._response.Length && this._response.Length % 4 == 0;
-    }
 }

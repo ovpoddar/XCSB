@@ -12,6 +12,7 @@ using Xcsb.Models.Handshake;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Requests;
 using Xcsb.Models.Response;
+using Xcsb.Models.Response.Internals;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -571,8 +572,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetAtomNameType(atom);
         socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetAtomNameResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+
         sequenceNumber++;
-        return new GetAtomNameReply(socket);
+        return new GetAtomNameReply(result.Value, socket);
     }
 
 
@@ -628,7 +633,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetGeometryReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return result.Value;
     }
@@ -694,8 +699,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetPropertyType(delete, window, property, type, offset, length);
         socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetPropertyResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+
         sequenceNumber++;
-        return new GetPropertyReply(socket);
+        return new GetPropertyReply(result.Value, socket);
     }
 
     public void GetScreenSaver()
@@ -712,7 +721,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetSelectionOwnerReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return result.Value;
     }
@@ -725,7 +734,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetWindowAttributesReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return result.Value;
     }
@@ -894,8 +903,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new ListPropertiesType(window);
         socket.Send(ref request);
+        var (result, error) = ReceivedResponse<ListPropertiesResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+
         sequenceNumber++;
-        return new ListPropertiesReply(socket);
+        return new ListPropertiesReply(result.Value, socket);
     }
 
 
@@ -1313,8 +1326,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new QueryTreeType(window);
         socket.Send(ref request);
+        var (result, error) = ReceivedResponse<QueryTreeResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+
         sequenceNumber++;
-        return new QueryTreeReply(socket);
+        return new QueryTreeReply(result.Value, socket);
     }
 
 

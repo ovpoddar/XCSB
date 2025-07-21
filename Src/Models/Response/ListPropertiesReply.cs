@@ -1,42 +1,28 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Models.Response.Internals;
 
 namespace Xcsb.Models.Response;
 
-public struct ListPropertiesReply : IXBaseResponse
+public struct ListPropertiesReply
 {
-    private readonly _ListPropertiesReply _response;
-    public readonly byte Reply => _response.Reply;
-    public readonly ushort Sequence => _response.Sequence;
+    public readonly byte Reply;
+    public readonly ushort Sequence;
     public uint[] Atoms;
 
-    // todo: try to move the first read to caller 
-    // leave the calling here so can avoid the private
-    // storing of response and also call the verify and
-    // verify the sequence 
-    public ListPropertiesReply(Socket socket)
+    internal ListPropertiesReply(ListPropertiesResponse response, Socket socket)
     {
-        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<_ListPropertiesReply>()];
-        socket.ReceiveExact(buffer);
-        _response = buffer.ToStruct<_ListPropertiesReply>();
-        var atoms = new ArrayPoolUsing<byte>((int)_response.NumberOfProperties * 4);
-        socket.ReceiveExact(atoms);
-        Atoms = MemoryMarshal.Cast<byte, uint>(atoms).ToArray();
-    }
+        Reply = response.Reply;
+        Sequence = response.Sequence;
 
-    public bool Verify()
-    {
-        return this.Reply == 1 && this._response.Length == this._response.NumberOfProperties;
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-    private readonly struct _ListPropertiesReply
-    {
-        public readonly byte Reply;
-        private readonly byte _pad0;
-        public readonly ushort Sequence;
-        public readonly uint Length;
-        public readonly ushort NumberOfProperties;
+        if (response.NumberOfProperties == 0)
+            Atoms = [];
+        else
+        {
+            var atoms = new ArrayPoolUsing<byte>(response.NumberOfProperties * 4);
+            socket.ReceiveExact(atoms);
+            Atoms = MemoryMarshal.Cast<byte, uint>(atoms).ToArray();
+        }
     }
 }
