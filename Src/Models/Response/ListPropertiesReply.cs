@@ -5,11 +5,11 @@ using Xcsb.Models.Response.Internals;
 
 namespace Xcsb.Models.Response;
 
-public struct ListPropertiesReply
+public readonly struct ListPropertiesReply
 {
     public readonly byte Reply;
     public readonly ushort Sequence;
-    public uint[] Atoms;
+    public readonly uint[] Atoms;
 
     internal ListPropertiesReply(ListPropertiesResponse response, Socket socket)
     {

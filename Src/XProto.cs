@@ -707,10 +707,16 @@ internal class XProto : BaseProtoClient, IXProto
         return new GetPropertyReply(result.Value, socket);
     }
 
-    public void GetScreenSaver()
+    public GetScreenSaverReply GetScreenSaver()
     {
-        throw new NotImplementedException();
+        var request = new GetScreenSaverType();
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetScreenSaverReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -885,10 +891,16 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void ListHosts()
+    public ListHostsReply ListHosts()
     {
-        throw new NotImplementedException();
+        var request = new ListHostsType();
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<ListHostsResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return new ListHostsReply(result.Value, socket);
     }
 
 

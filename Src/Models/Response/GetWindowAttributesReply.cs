@@ -29,9 +29,9 @@ public readonly struct GetWindowAttributesReply : IXBaseResponse
     public readonly ushort DoNotPropagateMask; // EventMask
 
 
-    public bool SaveUnder => _saveUnder == 1;
-    public bool MapIsInstalled => _mapIsInstalled == 1;
-    public bool OverrideRedirect => _overrideRedirect == 1;
+    public readonly bool SaveUnder => _saveUnder == 1;
+    public readonly bool MapIsInstalled => _mapIsInstalled == 1;
+    public readonly bool OverrideRedirect => _overrideRedirect == 1;
 
     public bool Verify()
     {

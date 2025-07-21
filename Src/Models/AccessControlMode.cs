@@ -2,6 +2,6 @@
 
 public enum AccessControlMode : byte
 {
-    Disable,
-    Enable
+    Disable = 0,
+    Enable = 1
 }

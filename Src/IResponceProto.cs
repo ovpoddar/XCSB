@@ -46,6 +46,6 @@ public interface IResponseProto
     void SetPointerMapping();
     void GetPointerMapping();
     void GetPointerControl();
-    void GetScreenSaver();
-    void ListHosts();
+    GetScreenSaverReply GetScreenSaver();
+    ListHostsReply ListHosts();
 }
