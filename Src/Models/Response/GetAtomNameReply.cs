@@ -21,7 +21,7 @@ public readonly struct GetAtomNameReply
             Name = string.Empty;
         else
         {
-            using var nameBuffer = new ArrayPoolUsing<byte>((int)response.Length);
+            using var nameBuffer = new ArrayPoolUsing<byte>((int)response.Length * 4);
             socket.ReceiveExact(nameBuffer);
             Name = Encoding.ASCII.GetString(nameBuffer, 0, response.LengthOfName);
         }

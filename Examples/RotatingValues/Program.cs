@@ -57,6 +57,13 @@ for (var i = 0; i < colors.Length; i++)
     x.ChangeProperty<byte>(PropertyMode.Replace, win, atoms[i], 31, Encoding.UTF8.GetBytes(colors[i]));
 }
 
+foreach (var atom in atoms)
+{
+    var details = x.GetAtomName(atom);
+    Console.WriteLine($"{atom}: {details.Name}");
+}
+
+
 for (var i = 0; i < 6; i++)
 {
     var reply = x.GetProperty(false, win, atoms[0], 31, 0, 32);

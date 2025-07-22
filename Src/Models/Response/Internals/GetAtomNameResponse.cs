@@ -13,6 +13,6 @@ internal readonly struct GetAtomNameResponse : IXBaseResponse
     
     public bool Verify()
     {
-        return this.Reply == 1 && this.Length == this.LengthOfName;
+        return this.Reply == 1 && this.Length != this.LengthOfName;
     }
 }

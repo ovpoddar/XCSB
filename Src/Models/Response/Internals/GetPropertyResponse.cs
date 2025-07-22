@@ -15,6 +15,6 @@ internal readonly struct GetPropertyResponse : IXBaseResponse
 
     public bool Verify()
     {
-        return this.Reply == 1 && this.ValueLength == this.Length && this.Length % 4 == 0;
+        return this.Reply == 1 && this.ValueLength != this.Length;
     }
 }
