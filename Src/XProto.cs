@@ -653,10 +653,17 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void GetKeyboardControl()
+    public GetKeyboardControlReply GetKeyboardControl()
     {
-        throw new NotImplementedException();
+        var request = new GetKeyboardControlType();
+        socket.Send(ref request);
+
+        var (result, error) = ReceivedResponse<GetKeyboardControlResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return new GetKeyboardControlReply(result.Value);
     }
 
 
@@ -1645,10 +1652,16 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void TranslateCoordinates()
+    public TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY)
     {
-        throw new NotImplementedException();
+        var request = new TranslateCoordinatesType(srcWindow, destinationWindow, srcX, srcY);
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<TranslateCoordinatesReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return result.Value;
     }
 
 

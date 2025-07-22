@@ -11,7 +11,7 @@ public readonly struct GetPointerMappingReply
     public readonly ushort Sequence;
     public readonly byte[] Map;
 
-    public GetPointerMappingReply(GetPointerMappingResponse response, Socket socket)
+    internal GetPointerMappingReply(GetPointerMappingResponse response, Socket socket)
     {
         this.Reply = response.Reply;
         this.Sequence = response.Sequence;

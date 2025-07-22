@@ -22,7 +22,7 @@ public interface IResponseProto
     GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode);
     void GetMotionEvents();
-    void TranslateCoordinates();
+    TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY);
     void GetInputFocus();
     void QueryKeymap();
     void QueryFont();
@@ -43,7 +43,7 @@ public interface IResponseProto
     void SetModifierMapping();
     void GetModifierMapping();
     void GetKeyboardMapping();
-    void GetKeyboardControl();
+    GetKeyboardControlReply GetKeyboardControl();
     SetPointerMappingReply SetPointerMapping(Span<byte> maps);
     GetPointerMappingReply GetPointerMapping();
     GetPointerControlReply GetPointerControl();

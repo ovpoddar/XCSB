@@ -3,7 +3,7 @@
 namespace Xcsb.Models.Response.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct GetPointerMappingResponse : IXBaseResponse
+internal readonly struct GetPointerMappingResponse : IXBaseResponse
 {
     public readonly byte Reply;
     public readonly byte MapLength;
