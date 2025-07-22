@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Xcsb.Models.Requests;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct GetScreenSaverType()
 {

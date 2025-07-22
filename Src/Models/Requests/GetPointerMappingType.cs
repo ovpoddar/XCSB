@@ -5,9 +5,9 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct ListHostsType()
+internal readonly struct GetPointerMappingType()
 {
-    public readonly Opcode Opcode = Opcode.ListHosts;
+    public readonly Opcode Opcode = Opcode.GetPointerMapping;
     private readonly byte _pad0;
     public readonly ushort Length = 1;
 }

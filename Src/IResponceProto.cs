@@ -19,7 +19,8 @@ public interface IResponseProto
     GetAtomNameReply GetAtomName(uint atom);
     ListPropertiesReply ListProperties(uint window);
     GetSelectionOwnerReply GetSelectionOwner(uint atom);
-    void GrabKeyboard();
+    GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+        GrabMode keyboardMode);
     void GetMotionEvents();
     void TranslateCoordinates();
     void GetInputFocus();
@@ -43,9 +44,9 @@ public interface IResponseProto
     void GetModifierMapping();
     void GetKeyboardMapping();
     void GetKeyboardControl();
-    void SetPointerMapping();
-    void GetPointerMapping();
-    void GetPointerControl();
+    SetPointerMappingReply SetPointerMapping(Span<byte> maps);
+    GetPointerMappingReply GetPointerMapping();
+    GetPointerControlReply GetPointerControl();
     GetScreenSaverReply GetScreenSaver();
     ListHostsReply ListHosts();
 }

@@ -681,17 +681,29 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void GetPointerControl()
+    public GetPointerControlReply GetPointerControl()
     {
-        throw new NotImplementedException();
+        var request = new GetPointerControlType();
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetPointerControlReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+
         sequenceNumber++;
+        return result.Value;
     }
 
 
-    public void GetPointerMapping()
+    public GetPointerMappingReply GetPointerMapping()
     {
-        throw new NotImplementedException();
+        var request = new GetPointerMappingType();
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetPointerMappingResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+
         sequenceNumber++;
+        return new GetPointerMappingReply(result.Value, socket);
     }
 
 
@@ -714,7 +726,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetScreenSaverReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return result.Value;
     }
@@ -763,10 +775,17 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void GrabKeyboard()
+    public GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+        GrabMode keyboardMode)
     {
-        throw new NotImplementedException();
+        var request = new GrabKeyboardType(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
+        socket.Send(ref request);
+
+        var (result, error) = ReceivedResponse<GrabKeyboardReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -898,7 +917,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<ListHostsResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new ListHostsReply(result.Value, socket);
     }
@@ -1521,10 +1540,38 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void SetPointerMapping()
+    public SetPointerMappingReply SetPointerMapping(Span<byte> maps)
     {
-        throw new NotImplementedException();
+        var request = new SetPointerMappingType(maps);
+        var requiredBuffer = maps.Length.AddPadding() + 5;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                4,
+                maps);
+            scratchBuffer[^1] = 0;
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                4,
+                maps);
+            workingBuffer[^1] = 0;
+            socket.SendExact(workingBuffer[..requiredBuffer]);
+        }
+
+        var (result, error) = ReceivedResponse<SetPointerMappingReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+
         sequenceNumber++;
+        return result.Value;
     }
 
 
