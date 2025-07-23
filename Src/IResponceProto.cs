@@ -21,10 +21,10 @@ public interface IResponseProto
     GetSelectionOwnerReply GetSelectionOwner(uint atom);
     GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode);
-    void GetMotionEvents();
+    GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime);
     TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY);
-    void GetInputFocus();
-    void QueryKeymap();
+    GetInputFocusReply GetInputFocus();
+    QueryKeymapReply QueryKeymap();
     void QueryFont();
     void QueryTextExtents();
     void ListFonts();

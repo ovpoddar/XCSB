@@ -646,10 +646,16 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void GetInputFocus()
+    public GetInputFocusReply GetInputFocus()
     {
-        throw new NotImplementedException();
+        var request = new GetInputFocusType();
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetInputFocusReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -681,10 +687,15 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void GetMotionEvents()
+    public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime)
     {
-        throw new NotImplementedException();
+        var request = new GetMotionEventsType(window, startTime, endTime);
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetMotionEventsResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
         sequenceNumber++;
+        return new GetMotionEventsReply(result.Value, socket);
     }
 
 
@@ -1332,10 +1343,16 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void QueryKeymap()
+    public QueryKeymapReply QueryKeymap()
     {
-        throw new NotImplementedException();
+        var request = new QueryKeymapType();
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<QueryKeymapResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return new QueryKeymapReply(result.Value);
     }
 
 
