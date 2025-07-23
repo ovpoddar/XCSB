@@ -123,9 +123,9 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void CirculateWindow(Direction direction, uint window)
+    public void CirculateWindow(Circulate circulate, uint window)
     {
-        var request = new CirculateWindowType(direction, window);
+        var request = new CirculateWindowType(circulate, window);
         _buffer.Add(ref request);
         _requestLength++;
     }

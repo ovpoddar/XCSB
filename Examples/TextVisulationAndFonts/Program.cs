@@ -55,7 +55,7 @@ while (isRunning)
         }
         if (Event.Value.InputEvent.Detail == 46) //c
         {
-            c.CirculateWindow(Direction.LowerHighest, window);
+            c.CirculateWindow(Circulate.LowerHighest, window);
         }
 
         if (Event.Value.EventType == EventType.ButtonPress && Event.Value.InputEvent.Detail == 1) //left

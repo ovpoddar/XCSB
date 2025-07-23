@@ -66,10 +66,15 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void AllocNamedColor()
+    public AllocNamedColorReply AllocNamedColor()
     {
         throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<AllocNamedColorReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -282,9 +287,9 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CirculateWindow(Direction direction, uint window)
+    public void CirculateWindow(Circulate circulate, uint window)
     {
-        var request = new CirculateWindowType(direction, window);
+        var request = new CirculateWindowType(circulate, window);
         socket.Send(ref request);
         sequenceNumber++;
     }
@@ -653,7 +658,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetInputFocusReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return result.Value;
     }
@@ -667,7 +672,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetKeyboardControlResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new GetKeyboardControlReply(result.Value);
     }
@@ -961,10 +966,15 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void LookupColor()
+    public LookupColorReply LookupColor()
     {
         throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<LookupColorReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -1315,10 +1325,15 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void QueryBestSize()
+    public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height)
     {
-        throw new NotImplementedException();
+        var request = new QueryBestSizeType(shape, drawable, width, height);
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<QueryBestSizeReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -1329,10 +1344,14 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void QueryExtension()
+    public QueryExtensionReply QueryExtension()
     {
         throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<QueryExtensionReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -1350,7 +1369,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<QueryKeymapResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new QueryKeymapReply(result.Value);
     }
@@ -1370,10 +1389,15 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public void QueryTextExtents()
+    public QueryTextExtentsReply QueryTextExtents()
     {
         throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<QueryTextExtentsReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -1557,10 +1581,15 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetModifierMapping()
+    public SetModifierMappingReply SetModifierMapping()
     {
         throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<SetModifierMappingReply>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return result.Value;
     }
 
 
@@ -1669,14 +1698,15 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY)
+    public TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
+        ushort srcY)
     {
         var request = new TranslateCoordinatesType(srcWindow, destinationWindow, srcX, srcY);
         socket.Send(ref request);
         var (result, error) = ReceivedResponse<TranslateCoordinatesReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return result.Value;
     }
@@ -1852,9 +1882,9 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void CirculateWindowChecked(Direction direction, uint window)
+    public void CirculateWindowChecked(Circulate circulate, uint window)
     {
-        CirculateWindow(direction, window);
+        CirculateWindow(circulate, window);
         CheckError();
     }
 

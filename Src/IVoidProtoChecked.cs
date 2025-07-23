@@ -28,7 +28,7 @@ public interface IVoidProtoChecked
 
     void ConfigureWindowChecked(uint window, ConfigureValueMask mask, params uint[] args);
 
-    void CirculateWindowChecked(Direction direction, uint window);
+    void CirculateWindowChecked(Circulate circulate, uint window);
 
     void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
         where T : struct

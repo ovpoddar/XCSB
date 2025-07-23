@@ -28,7 +28,7 @@ public interface IVoidProto
 
     void ConfigureWindow(uint window, ConfigureValueMask mask, params uint[] args);
 
-    void CirculateWindow(Direction direction, uint window);
+    void CirculateWindow(Circulate circulate, uint window);
 
     void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
         where T : struct

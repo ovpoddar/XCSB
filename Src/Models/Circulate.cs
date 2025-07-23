@@ -1,6 +1,6 @@
 ﻿namespace Xcsb.Models;
 
-public enum Direction : byte
+public enum Circulate : byte
 {
     RaiseLowest,
     LowerHighest
