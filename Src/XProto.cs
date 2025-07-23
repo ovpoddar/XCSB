@@ -54,12 +54,16 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public void AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
+    public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
     {
         var request = new AllocColorCellsType(contiguous, colorMap, colors, planes);
         socket.Send(ref request);
-        throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<AllocColorCellsResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return new AllocColorCellsReply(result.Value, socket);
     }
 
     public void AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens,

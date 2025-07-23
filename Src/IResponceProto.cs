@@ -35,7 +35,7 @@ public interface IResponseProto
     void GetImage();
     void ListInstalledColormaps(uint window);
     AllocNamedColorReply AllocNamedColor();
-    void AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes);
+    AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes);
     void AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens, ushort blues);
     void QueryColors();
     LookupColorReply LookupColor();
