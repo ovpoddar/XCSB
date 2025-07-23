@@ -5,7 +5,13 @@ namespace Xcsb.Models.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct  AllocColorPlanesType (bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens, ushort blues)
+internal readonly struct  AllocColorPlanesType(
+    bool contiguous,
+    uint colorMap,
+    ushort colors,
+    ushort reds,
+    ushort greens,
+    ushort blues)
 {
     public readonly Opcode Opcode = Opcode.AllocColorPlanes;
     public readonly byte Contiguous = contiguous ? (byte)1 : (byte)0;

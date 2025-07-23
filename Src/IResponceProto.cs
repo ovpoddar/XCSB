@@ -19,22 +19,24 @@ public interface IResponseProto
     GetAtomNameReply GetAtomName(uint atom);
     ListPropertiesReply ListProperties(uint window);
     GetSelectionOwnerReply GetSelectionOwner(uint atom);
+
     GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode);
+
     GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime);
     TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY);
     GetInputFocusReply GetInputFocus();
     QueryKeymapReply QueryKeymap();
-    void QueryFont();
+    void QueryFont(uint fontId);
     QueryTextExtentsReply QueryTextExtents();
     void ListFonts();
     void ListFontsWithInfo();
     void GetFontPath();
     void GetImage();
-    void ListInstalledColormaps();
+    void ListInstalledColormaps(uint window);
     AllocNamedColorReply AllocNamedColor();
-    void AllocColorCells();
-    void AllocColorPlanes();
+    void AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes);
+    void AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens, ushort blues);
     void QueryColors();
     LookupColorReply LookupColor();
     QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height);
