@@ -61,7 +61,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<AllocColorCellsResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new AllocColorCellsReply(result.Value, socket);
     }
@@ -71,8 +71,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new AllocColorPlanesType(contiguous, colorMap, colors, reds, greens, blues);
         socket.Send(ref request);
-        throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<AllocColorPlanesResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        throw new NotImplementedException();
     }
 
     public AllocNamedColorReply AllocNamedColor()
@@ -637,8 +641,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetFontPathType();
         socket.Send(ref request);
-        throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<GetFontPathResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        throw new NotImplementedException();
     }
 
 
@@ -700,8 +708,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetModifierMappingType();
         socket.Send(ref request);
-        throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<GetModifierMappingResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        throw new NotImplementedException();
     }
 
 
@@ -929,8 +941,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new ListExtensionsType();
         socket.Send(ref request);
-        throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<ListExtensionsResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        throw new NotImplementedException();
     }
 
 
@@ -965,8 +981,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new ListInstalledColormapsType(window);
         socket.Send(ref request);
-        throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<ListInstalledColormapsResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        throw new NotImplementedException();
     }
 
 
@@ -1376,9 +1396,12 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new QueryFontType(fontId);
         socket.Send(ref request);
-
-        throw new NotImplementedException();
+        var (result, error) = ReceivedResponse<QueryFontResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        throw new NotImplementedException();
     }
 
 
