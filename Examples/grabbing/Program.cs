@@ -87,6 +87,12 @@ return 0;
 void demo_change_hosts()
 {
     Console.WriteLine("=== ChangeHosts Demo ===\n");
+    var hosts = connection.ListHosts();
+    foreach (var s in hosts.Hosts)
+    {
+        Console.WriteLine("ablaible hosts: " + s);
+    }
+    
     connection.ChangeHosts(HostMode.Insert,
         Family.Internet, [127, 0, 0, 1]);
 

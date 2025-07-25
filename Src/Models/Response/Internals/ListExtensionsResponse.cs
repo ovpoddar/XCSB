@@ -12,6 +12,6 @@ internal readonly struct ListExtensionsResponse : IXBaseResponse
 
     public bool Verify()
     {
-        return this.Reply == 1 && this.Length % 4 == 0;
+        return this.Reply == 1 && this.Length * 4 >= NumberOfExtensions;
     }
 }

@@ -11,6 +11,12 @@ const int HEIGHT = 50;
 var xcsb = XcsbClient.Initialized();
 var window = xcsb.NewId();
 var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
+var extensations = xcsb.ListExtensions();
+Console.Write("available extensions: ");
+foreach (var extensation in extensations.Names)
+    Console.WriteLine($"    {extensation}");
+
+Console.WriteLine();
 xcsb.CreateWindow(screen.RootDepth.DepthValue,
     window,
     screen.Root,
