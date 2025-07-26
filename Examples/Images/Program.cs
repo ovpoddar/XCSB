@@ -16,7 +16,14 @@ Console.Write("available extensions: ");
 foreach (var extensation in extensations.Names)
     Console.WriteLine($"    {extensation}");
 
-Console.WriteLine();
+var rootProprityes = xcsb.ListProperties(screen.Root);
+Console.Write("root properties: ");
+foreach (var atom in rootProprityes.Atoms)
+{
+    var atomName = xcsb.GetAtomName(atom);
+    Console.WriteLine(atomName.Name);
+}
+
 xcsb.CreateWindow(screen.RootDepth.DepthValue,
     window,
     screen.Root,
