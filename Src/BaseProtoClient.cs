@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models.Event;
@@ -17,7 +18,9 @@ internal class BaseProtoClient
         this.socket = socket;
         bufferEvents = new Stack<XEvent>();
     }
-
+#if !NETSTANDARD
+    [SkipLocalsInit]
+#endif 
     internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : unmanaged, IXBaseResponse
     {
         if (socket.Available == 0)
@@ -26,6 +29,7 @@ internal class BaseProtoClient
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<T>()];
         while (socket.Available != 0)
         {
+            buffer.Clear();
             socket.ReceiveExact(buffer);
             ref var content = ref buffer.AsStruct<XEvent>();
             switch (content)
