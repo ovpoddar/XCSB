@@ -16,6 +16,9 @@ Console.Write("available extensions: ");
 foreach (var extensation in extensations.Names)
     Console.WriteLine($"    {extensation}");
 
+var extension = xcsb.QueryExtension( Encoding.UTF8.GetBytes(extensations.Names[5]));
+Console.WriteLine(extension.FirstEvent);
+
 var rootProprityes = xcsb.ListProperties(screen.Root);
 Console.Write("root properties: ");
 foreach (var atom in rootProprityes.Atoms)

@@ -16,7 +16,8 @@ client.CreateWindowChecked(
 );
 client.MapWindowChecked(window);
 
-
+var font = client.NewId();
+client.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
 
 
 
@@ -33,9 +34,12 @@ while (true)
 
     if (Event.Value.EventType == EventType.Expose)
     {
+        var resultQueryTextExtents = client.QueryTextExtents(font, "Hello World");
+        Console.WriteLine("QueryTextExtents");
         var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
         Console.WriteLine(resultGetMotionEvents.Events.Length);
-        
+
+
         var resultQueryKeymap = client.QueryKeymap();
         Console.WriteLine("QueryKeymap");
         var resultGetScreenSaver = client.GetScreenSaver();
@@ -49,19 +53,17 @@ while (true)
         var resultGetPointerMapping = client.GetPointerMapping();
         Console.WriteLine("GetPointerMapping");
         // var resultGetFontPath = client.GetFontPath();
-        
-        
-        // var resultQueryTextExtents = client.QueryTextExtents();
+
+
         // var resultAllocNamedColor = client.AllocNamedColor();
         // var resultAllocColorCells = client.AllocColorCells();
         // var resultSetModifierMapping = client.SetModifierMapping();
         // var resultLookupColor = client.LookupColor();
         // var resultQueryFont = client.QueryFont();
-        // var resultQueryExtension = client.QueryExtension();
         // var resultListInstalledColormaps = client.ListInstalledColormaps();
         // var resultAllocColorPlanes = client.AllocColorPlanes();
         // var resultQueryBestSize = client.QueryBestSize();
         // var resultSetPointerMapping = client.SetPointerMapping();
-        
+
     }
 }

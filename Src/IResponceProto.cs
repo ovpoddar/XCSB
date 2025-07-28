@@ -28,7 +28,7 @@ public interface IResponseProto
     GetInputFocusReply GetInputFocus();
     QueryKeymapReply QueryKeymap();
     QueryFontReply QueryFont(uint fontId);
-    QueryTextExtentsReply QueryTextExtents();
+    QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery);
     void ListFonts();
     void ListFontsWithInfo();
     GetFontPathReply GetFontPath();
@@ -40,7 +40,7 @@ public interface IResponseProto
     void QueryColors();
     LookupColorReply LookupColor();
     QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height);
-    QueryExtensionReply QueryExtension();
+    QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name);
     ListExtensionsReply ListExtensions();
     SetModifierMappingReply SetModifierMapping();
     GetModifierMappingReply GetModifierMapping();

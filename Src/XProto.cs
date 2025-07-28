@@ -66,15 +66,15 @@ internal class XProto : BaseProtoClient, IXProto
         return new AllocColorCellsReply(result.Value, socket);
     }
 
-    public AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens,
-        ushort blues)
+    public AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
+        ushort greens, ushort blues)
     {
         var request = new AllocColorPlanesType(contiguous, colorMap, colors, reds, greens, blues);
         socket.Send(ref request);
         var (result, error) = ReceivedResponse<AllocColorPlanesResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new AllocColorPlanesReply(result.Value, socket);
     }
@@ -644,7 +644,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetFontPathResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new GetFontPathReply(result.Value, socket);
     }
@@ -711,7 +711,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetModifierMappingResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new GetModifierMappingReply(result.Value, socket);
     }
@@ -944,7 +944,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<ListExtensionsResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new ListExtensionsReply(result.Value, socket);
     }
@@ -984,9 +984,10 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<ListInstalledColormapsResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
-        return new ListInstalledColormapsReply(result.Value, socket);;
+        return new ListInstalledColormapsReply(result.Value, socket);
+        ;
     }
 
 
@@ -1381,9 +1382,26 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public QueryExtensionReply QueryExtension()
+    public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name)
     {
-        throw new NotImplementedException();
+        if (name.Length > ushort.MaxValue)
+            throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
+        var request = new QueryExtensionType((ushort)name.Length);
+        var requiredBuffer = 8 + name.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(ref request, 8, name);
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(ref request, 8, name);
+            socket.SendExact(workingBuffer);
+        }
+
         var (result, error) = ReceivedResponse<QueryExtensionReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
@@ -1399,9 +1417,10 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<QueryFontResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
-        return new QueryFontReply(result.Value, socket);;
+        return new QueryFontReply(result.Value, socket);
+        ;
     }
 
 
@@ -1432,9 +1451,37 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public QueryTextExtentsReply QueryTextExtents()
+    public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery)
     {
-        throw new NotImplementedException();
+        var request = new QueryTextExtentsType(font, stringForQuery.Length);
+        var requiredBuffer = 8 + (stringForQuery.Length * 2).AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
+            scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
+            scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
+            socket.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+
         var (result, error) = ReceivedResponse<QueryTextExtentsReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
