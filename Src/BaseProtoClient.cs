@@ -25,7 +25,8 @@ internal class BaseProtoClient
     {
         if (socket.Available == 0)
             socket.Poll(-1, SelectMode.SelectRead);
-
+        // todo: this is not exhausting all the data
+        // so later call might fail
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<T>()];
         while (socket.Available != 0)
         {

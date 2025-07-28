@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Xcsb;
 using Xcsb.Masks;
+using Xcsb.Models;
 using Xcsb.Models.Event;
 
 var x = XcsbClient.Initialized();
@@ -95,11 +96,24 @@ x.CopyColormapAndFreeChecked(cmap, colormap1);
 Console.WriteLine("Copied colormap and freed old one.");
 Thread.Sleep(100);
 
+
+var resultGrabKeyboard = x.GrabKeyboard(
+    false,
+    win,
+    0,
+    GrabMode.Asynchronous,
+    GrabMode.Asynchronous
+);
+        
+Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Status}");
+x.UngrabKeyboard(0);
+
 var xevnt = x.GetEvent();
 Debug.Assert(xevnt!.Value.EventType == EventType.Expose || xevnt!.Value.EventType == EventType.MappingNotify);
 Console.WriteLine("all success {0}", xevnt!.Value.EventType != EventType.Error);
 
 x.DestroyWindowChecked(sub);
+Console.WriteLine("closing");
 x.DestroyWindowChecked(sub1);
 x.DestroySubwindowsChecked(win);
 x.DestroyWindowChecked(win);

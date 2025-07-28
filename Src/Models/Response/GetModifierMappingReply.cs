@@ -17,11 +17,11 @@ public struct GetModifierMappingReply
         this.Reply = result.Reply;
         this.KeycodesPerModifier = result.KeycodesPerModifier;
         this.Sequence = result.Sequence;
-        if (result.Length == 0)
+        if (result.KeycodesPerModifier == 0)
             this.Keycodes = [];
         else
         {
-            var requiredSize = (int)result.Length * 8;
+            var requiredSize = result.KeycodesPerModifier * 8;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
             this.Keycodes = MemoryMarshal.Cast<byte, ulong>(buffer[0..requiredSize]).ToArray();

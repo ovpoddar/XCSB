@@ -33,7 +33,7 @@ var window2 = x.NewId();
 x.CreateWindow(screen.RootDepth.DepthValue,
     window2,
     screen.Root,
-    400, 50, 300, 200,
+    400, 50, 600, 500,
     2,
     Xcsb.Models.ClassType.InputOutput,
     screen.RootVisualId,
@@ -64,8 +64,16 @@ var gc = x.NewId();
 x.CreateGC(gc, window1, GCMask.Foreground | GCMask.Background, [screen.BlackPixel, screen.WhitePixel]);
 
 // Track current focused window
-var current_focus = window1;
 
+var resultGetInputFocus = x.GetInputFocus();
+var current_focus = resultGetInputFocus.Focus;
+
+        
+var resultTranslateCoordinates = x.TranslateCoordinates(
+    window1,
+     window2,
+    100, 100);
+Console.WriteLine($"10, 10 trnsalate to  {resultTranslateCoordinates.DestinationX}, {resultTranslateCoordinates.DestinationY}");;
 // Event loop to demonstrate focus changes
 var isRunning = true;
 while (isRunning)
@@ -104,16 +112,14 @@ while (isRunning)
             }
         case EventType.FocusIn:
             {
-                // Update background color when focus changes
-
                 if (evnt.Value.FocusEvent.Event == window1 || evnt.Value.FocusEvent.Event == window2)
                 {
                     ChangeWindowColor(x, (uint)evnt.Value.FocusEvent.Event, color_focused);
                     current_focus = (uint)evnt.Value.FocusEvent.Event;
 
                     // Set the other window to unfocused color
-                    var other_window = (evnt.Value.FocusEvent.Event == window1) ? window2 : window1;
-                    ChangeWindowColor(x, other_window, color_unfocused);
+                    var otherWindow = (evnt.Value.FocusEvent.Event == window1) ? window2 : window1;
+                    ChangeWindowColor(x, otherWindow, color_unfocused);
                 }
                 break;
             }
