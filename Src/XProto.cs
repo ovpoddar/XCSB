@@ -79,9 +79,30 @@ internal class XProto : BaseProtoClient, IXProto
         return new AllocColorPlanesReply(result.Value, socket);
     }
 
-    public AllocNamedColorReply AllocNamedColor()
+    public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name)
     {
-        throw new NotImplementedException();
+        var request = new AllocNamedColorType(colorMap, name.Length);
+        var requiredBuffer = 12 + name.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            socket.SendExact(workingBuffer);
+        }
+        
         var (result, error) = ReceivedResponse<AllocNamedColorReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
@@ -1004,9 +1025,30 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public LookupColorReply LookupColor()
+    public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name)
     {
-        throw new NotImplementedException();
+        var request = new LookupColorType(colorMap, name.Length);
+        var requiredBuffer = 12 + name.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            socket.SendExact(workingBuffer);
+        }
+        
         var (result, error) = ReceivedResponse<LookupColorReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
@@ -1671,9 +1713,29 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public SetModifierMappingReply SetModifierMapping()
+    public SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes)
     {
-        throw new NotImplementedException();
+        var request = new SetModifierMappingType(keycodes.Length);
+        var requiredBuffer = 4 + keycodes.Length * 8;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                4,
+                MemoryMarshal.Cast<ulong, byte>(keycodes));
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchbuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchbuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                4,
+                MemoryMarshal.Cast<ulong, byte>(keycodes));
+            socket.SendExact(workingBuffer);
+        }
         var (result, error) = ReceivedResponse<SetModifierMappingReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);

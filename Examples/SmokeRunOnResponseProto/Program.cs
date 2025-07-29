@@ -52,13 +52,13 @@ while (true)
         Console.WriteLine("GetKeyboardControl");
         var resultGetPointerMapping = client.GetPointerMapping();
         Console.WriteLine("GetPointerMapping");
+        var resultAllocNamedColor = client.AllocNamedColor();
+        var resultSetModifierMapping = client.SetModifierMapping();
+        var resultLookupColor = client.LookupColor();
         // var resultGetFontPath = client.GetFontPath();
 
 
-        // var resultAllocNamedColor = client.AllocNamedColor();
         // var resultAllocColorCells = client.AllocColorCells();
-        // var resultSetModifierMapping = client.SetModifierMapping();
-        // var resultLookupColor = client.LookupColor();
         // var resultQueryFont = client.QueryFont();
         // var resultListInstalledColormaps = client.ListInstalledColormaps();
         // var resultAllocColorPlanes = client.AllocColorPlanes();

@@ -19,10 +19,8 @@ public interface IResponseProto
     GetAtomNameReply GetAtomName(uint atom);
     ListPropertiesReply ListProperties(uint window);
     GetSelectionOwnerReply GetSelectionOwner(uint atom);
-
     GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode);
-
     GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime);
     TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY);
     GetInputFocusReply GetInputFocus();
@@ -34,15 +32,16 @@ public interface IResponseProto
     GetFontPathReply GetFontPath();
     void GetImage();
     ListInstalledColormapsReply ListInstalledColormaps(uint window);
-    AllocNamedColorReply AllocNamedColor();
+    AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name);
     AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes);
-    AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens, ushort blues);
+    AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens,
+        ushort blues);
     void QueryColors();
-    LookupColorReply LookupColor();
+    LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name);
     QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height);
     QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name);
     ListExtensionsReply ListExtensions();
-    SetModifierMappingReply SetModifierMapping();
+    SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes);
     GetModifierMappingReply GetModifierMapping();
     void GetKeyboardMapping();
     GetKeyboardControlReply GetKeyboardControl();
