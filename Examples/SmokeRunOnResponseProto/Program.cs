@@ -1,4 +1,5 @@
-﻿using Xcsb;
+﻿using System.Diagnostics;
+using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Event;
@@ -21,10 +22,23 @@ client.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
 
 
 
+var namedColor = client.AllocNamedColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Red"u8);
+Console.WriteLine($"{namedColor.ExactBlue} {namedColor.ExactGreen} {namedColor.ExactRed}");
+
+Debug.Assert(namedColor.VisualRed == namedColor.ExactRed && namedColor.ExactRed == ushort.MaxValue);
+Debug.Assert(namedColor.VisualGreen == namedColor.ExactGreen && namedColor.ExactGreen == 0);
+Debug.Assert(namedColor.VisualBlue == namedColor.ExactBlue && namedColor.ExactBlue == 0);
+
+
+var lookUpColor = client.LookupColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Light Yellow"u8);
+
+Debug.Assert(lookUpColor.VisualRed == lookUpColor.ExactRed && lookUpColor.ExactRed == ushort.MaxValue);
+Debug.Assert(lookUpColor.VisualGreen == lookUpColor.ExactGreen && lookUpColor.ExactGreen == ushort.MaxValue);
+
 while (true)
 {
     var Event = client.GetEvent();
-    if (!Event.HasValue) 
+    if (!Event.HasValue)
         break;
     if (Event.Value.EventType == EventType.Error)
     {
@@ -52,9 +66,8 @@ while (true)
         Console.WriteLine("GetKeyboardControl");
         var resultGetPointerMapping = client.GetPointerMapping();
         Console.WriteLine("GetPointerMapping");
-        var resultAllocNamedColor = client.AllocNamedColor();
-        var resultSetModifierMapping = client.SetModifierMapping();
-        var resultLookupColor = client.LookupColor();
+        /*var resultSetModifierMapping = client.SetModifierMapping();
+        */
         // var resultGetFontPath = client.GetFontPath();
 
 
