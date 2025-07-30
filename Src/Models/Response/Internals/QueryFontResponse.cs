@@ -16,7 +16,7 @@ internal readonly struct QueryFontResponse : IXBaseResponse
     public readonly ushort MinChar;
     public readonly ushort MaxChar;
     public readonly ushort DefaultChar;
-    public readonly ushort FontLenght;
+    public readonly ushort PropertieLenght;
     public readonly FontDraw Direction;
     public readonly byte MinByte;
     public readonly byte MaxByte;

@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models.Response.Internals;
 
@@ -18,8 +19,9 @@ public struct QueryFontReply
     public byte MaxByte;
     public ushort FontAscent;
     public ushort FontDescent;
-    public CharInfo[] CharInfo;
     public FontProp[] Properties;
+    public CharInfo[] CharInfo;
+
     internal QueryFontReply(QueryFontResponse result, Socket socket)
     {
         this.Reply = result.Reply;
@@ -33,11 +35,25 @@ public struct QueryFontReply
         this.MinByte = result.MinByte;
         this.MaxByte = result.MaxByte;
         this.FontAscent = result.FontAscent;
-        
-        var requiredSize = (int)(result.InfoLenght * 4) + (result.FontLenght * 12);
-        using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-        var receive = socket.Receive(buffer);
-        Console.WriteLine(receive);
-        throw new NotImplementedException();
+
+        if (result.PropertieLenght == 0)
+            this.Properties = [];
+        else
+        {
+            var requireLength = result.PropertieLenght * 8;
+            using var buffer = new ArrayPoolUsing<byte>(requireLength);
+            socket.ReceiveExact(buffer[0..requireLength]);
+            this.Properties = MemoryMarshal.Cast<byte, FontProp>(buffer[0..requireLength]).ToArray();
+        }
+
+        if (result.InfoLenght == 0)
+            this.CharInfo = [];
+        else
+        {
+            var requireLength = (int)result.InfoLenght * 12;
+            using var buffer = new ArrayPoolUsing<byte>(requireLength);
+            socket.ReceiveExact(buffer[0..requireLength]);
+            this.CharInfo = MemoryMarshal.Cast<byte, CharInfo>(buffer[0..requireLength]).ToArray();
+        }
     }
 }

@@ -461,7 +461,12 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 
     public void OpenFont(string fontName, uint fontId)
     {
-        throw new NotImplementedException();
+        var request = new OpenFontType(fontId, fontName.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(Encoding.ASCII.GetBytes(fontName));
+        _buffer.AddRange(new byte[fontName.Length.Padding()]);
+        _requestLength++;
+        
     }
 
     public void PolyArc(uint drawable, uint gc, Arc[] arcs)
