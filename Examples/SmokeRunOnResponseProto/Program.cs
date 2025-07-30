@@ -43,7 +43,7 @@ while (true)
     if (Event.Value.EventType == EventType.Error)
     {
         Console.WriteLine(Event.Value.ErrorEvent.ErrorCode);
-        // break;
+        break;
     }
 
     if (Event.Value.EventType == EventType.Expose)
@@ -62,12 +62,13 @@ while (true)
         Console.WriteLine("GetPointerControl");
         var resultGetModifierMapping = client.GetModifierMapping();
         Console.WriteLine("GetModifierMapping");
+        var resultSetModifierMapping = client.SetModifierMapping(resultGetModifierMapping.Keycodes);
+        Console.WriteLine("resultSetModifierMapping");
         var resultGetKeyboardControl = client.GetKeyboardControl();
         Console.WriteLine("GetKeyboardControl");
         var resultGetPointerMapping = client.GetPointerMapping();
         Console.WriteLine("GetPointerMapping");
-        /*var resultSetModifierMapping = client.SetModifierMapping();
-        */
+        
         // var resultGetFontPath = client.GetFontPath();
 
 

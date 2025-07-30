@@ -27,7 +27,7 @@ public interface IResponseProto
     QueryKeymapReply QueryKeymap();
     QueryFontReply QueryFont(uint fontId);
     QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery);
-    void ListFonts();
+    ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames);
     void ListFontsWithInfo();
     GetFontPathReply GetFontPath();
     void GetImage();

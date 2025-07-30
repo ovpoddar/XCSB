@@ -971,10 +971,38 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void ListFonts()
+    public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
     {
-        throw new NotImplementedException();
+        var request = new ListFontsType(pattern.Length, maxNames);
+        var requiredBuffer = 8 + (pattern.Length * 2).AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                pattern
+            );
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                pattern
+            );
+            socket.SendExact(workingBuffer);
+        }
+
+        var (result, error) = ReceivedResponse<ListFontsResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return new ListFontsReply(result.Value, socket);
     }
 
 

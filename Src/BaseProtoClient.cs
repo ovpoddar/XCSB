@@ -28,7 +28,7 @@ internal class BaseProtoClient
         // todo: this is not exhausting all the data
         // so later call might fail
         Span<byte> buffer = stackalloc byte[Marshal.SizeOf<T>()];
-        while (socket.Available != 0)
+        while (true)
         {
             buffer.Clear();
             socket.ReceiveExact(buffer);
