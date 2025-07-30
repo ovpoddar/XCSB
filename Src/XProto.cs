@@ -1445,10 +1445,36 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void QueryColors()
+    public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels)
     {
-        throw new NotImplementedException();
+        var request = new QueryColorsType(colorMap, pixels.Length);
+        var requiredBuffer = 8 + pixels.Length * 4;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(pixels));
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(pixels));
+            socket.SendExact(workingBuffer);
+        }
+
+        var (result, error) = ReceivedResponse<QueryColorsResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return new QueryColorsReply(result.Value, socket);
     }
 
 
