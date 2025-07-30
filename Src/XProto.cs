@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -75,6 +76,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
+        //todo move the increment in received
         sequenceNumber++;
         return new AllocColorPlanesReply(result.Value, socket);
     }
@@ -102,7 +104,7 @@ internal class XProto : BaseProtoClient, IXProto
                 name);
             socket.SendExact(workingBuffer);
         }
-        
+
         var (result, error) = ReceivedResponse<AllocNamedColorReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
@@ -683,11 +685,20 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-
-    public void GetImage()
+    //todo format 0  is not valid remove this by using a base class 
+    public GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
+        uint planeMask)
     {
-        throw new NotImplementedException();
+        if (format == ImageFormat.XYBitmap)
+            throw new InvalidEnumArgumentException(nameof(format));
+        var request = new GetImageType(format, drawable, x, y, width, height, planeMask);
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetImageResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+
         sequenceNumber++;
+        return new GetImageReply(result.Value, socket);
     }
 
 
@@ -718,10 +729,16 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void GetKeyboardMapping()
+    public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count)
     {
-        throw new NotImplementedException();
+        var request = new GetKeyboardMappingType(firstKeycode, count);
+        socket.Send(ref request);
+        var (result, error) = ReceivedResponse<GetKeyboardMappingResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return new GetKeyboardMappingReply(result.Value, count, socket);
     }
 
 
@@ -1000,16 +1017,44 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<ListFontsResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new ListFontsReply(result.Value, socket);
     }
 
 
-    public void ListFontsWithInfo()
+    public ListFontsWithInfoReply ListFontsWithInfo(int maxNames, ReadOnlySpan<byte> pattan)
     {
-        throw new NotImplementedException();
+        var request = new ListFontsWithInfoType(maxNames, pattan.Length);
+        var requiredBuffer = 8 + pattan.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                pattan
+            );
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                pattan
+            );
+            socket.SendExact(workingBuffer);
+        }
+
+        var (result, error) = ReceivedResponse<ListFontsWithInfoResponse>();
+        if (error.HasValue || !result.HasValue)
+            throw new XEventException(error!.Value);
+        
         sequenceNumber++;
+        return new ListFontsWithInfoReply(result.Value, socket);
     }
 
 
@@ -1076,7 +1121,7 @@ internal class XProto : BaseProtoClient, IXProto
                 name);
             socket.SendExact(workingBuffer);
         }
-        
+
         var (result, error) = ReceivedResponse<LookupColorReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
@@ -1472,7 +1517,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<QueryColorsResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         sequenceNumber++;
         return new QueryColorsReply(result.Value, socket);
     }
@@ -1790,6 +1835,7 @@ internal class XProto : BaseProtoClient, IXProto
                 MemoryMarshal.Cast<ulong, byte>(keycodes));
             socket.SendExact(workingBuffer);
         }
+
         var (result, error) = ReceivedResponse<SetModifierMappingReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);

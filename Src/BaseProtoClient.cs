@@ -18,6 +18,8 @@ internal class BaseProtoClient
         this.socket = socket;
         bufferEvents = new Stack<XEvent>();
     }
+    
+    //todo add validate for sequence count 
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif 

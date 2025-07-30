@@ -1,0 +1,15 @@
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+namespace Xcsb.Models.Requests;
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+internal readonly struct GetKeyboardMappingType(byte firstKeycode, byte count)
+{
+    public readonly Opcode Opcode = Opcode.GetKeyboardMapping;
+    private readonly byte _pad0;
+    public readonly ushort Length = 2;
+    public readonly byte FirstKeycode = firstKeycode;
+    public readonly byte Count = count;
+}

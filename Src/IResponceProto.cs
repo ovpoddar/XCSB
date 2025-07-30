@@ -28,9 +28,9 @@ public interface IResponseProto
     QueryFontReply QueryFont(uint fontId);
     QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery);
     ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames);
-    void ListFontsWithInfo();
+    ListFontsWithInfoReply ListFontsWithInfo(int maxNames, ReadOnlySpan<byte> pattan);
     GetFontPathReply GetFontPath();
-    void GetImage();
+    GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height, uint planeMask);
     ListInstalledColormapsReply ListInstalledColormaps(uint window);
     AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name);
     AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes);
@@ -44,7 +44,7 @@ public interface IResponseProto
     ListExtensionsReply ListExtensions();
     SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes);
     GetModifierMappingReply GetModifierMapping();
-    void GetKeyboardMapping();
+    GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count);
     GetKeyboardControlReply GetKeyboardControl();
     SetPointerMappingReply SetPointerMapping(Span<byte> maps);
     GetPointerMappingReply GetPointerMapping();
