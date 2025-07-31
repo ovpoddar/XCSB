@@ -814,11 +814,11 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetWindowAttributesType(window);
         socket.Send(ref request);
-        var (result, error) = ReceivedResponse<GetWindowAttributesReply>();
+        var (result, error) = ReceivedResponse<GetWindowAttributesResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        return result.Value;
+        return new GetWindowAttributesReply(result.Value, socket);
     }
 
 

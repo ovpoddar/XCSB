@@ -27,7 +27,7 @@ x.CreateWindowChecked(screen.RootDepth.DepthValue,
     [screen.WhitePixel, (uint)EventMask.ExposureMask, colormap]);
 
 x.InstallColormapChecked(colormap);
-Console.WriteLine("Colormap installed.");
+Console.WriteLine("ColorMap installed.");
 
 x.UngrabServerChecked();
 
@@ -35,10 +35,10 @@ x.MapWindowChecked(win);
 Thread.Sleep(3000);
 
 x.UninstallColormapChecked(colormap);
-Console.WriteLine("Colormap uninstalled.");
+Console.WriteLine("ColorMap uninstalled.");
 
 x.FreeColormapChecked(colormap);
-Console.WriteLine("Colormap freed.");
+Console.WriteLine("ColorMap freed.");
 
 x.ConfigureWindowChecked(win, ConfigureValueMask.X | ConfigureValueMask.Y | ConfigureValueMask.Width | ConfigureValueMask.Height,
     [100, 100, 300, 300]);

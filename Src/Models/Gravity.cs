@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Xcsb.Models;
-public enum Gravity
+public enum Gravity : byte
 {
     BitForget,
     WinUnmap,

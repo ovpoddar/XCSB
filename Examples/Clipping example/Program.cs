@@ -113,7 +113,7 @@ if (windowGeometry is { X: 100, Y: 100 })
         [500, 500]);
 
 var query = xcsb.QueryTree(window);
-if (query.Parent != xcsb.HandshakeSuccessResponseBody.Screens[0].Root)
+if (query.Root != xcsb.HandshakeSuccessResponseBody.Screens[0].Root)
     return;
 
 
