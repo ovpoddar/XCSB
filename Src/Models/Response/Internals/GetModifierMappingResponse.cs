@@ -11,8 +11,8 @@ internal readonly struct GetModifierMappingResponse : IXBaseResponse
     public readonly ushort Sequence;
     public readonly uint Length;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this.Length == this.KeycodesPerModifier * 2;
+        return this.Reply == 1 && this.Length == this.KeycodesPerModifier * 2 && this.Sequence == sequence;
     }
 }

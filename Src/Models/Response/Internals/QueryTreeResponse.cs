@@ -13,8 +13,8 @@ internal readonly struct QueryTreeResponse : IXBaseResponse
     public readonly uint Parent;
     public readonly ushort WindowChildrenLenght;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == this.WindowChildrenLenght;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length == this.WindowChildrenLenght;
     }
 }

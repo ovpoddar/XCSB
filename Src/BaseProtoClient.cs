@@ -42,7 +42,7 @@ internal class BaseProtoClient
                     return (null, content.ErrorEvent);
                 case { EventType: (EventType)1 }:
                     var result = buffer.AsStruct<T>();
-                    return result.Verify()
+                    return result.Verify(++sequenceNumber)
                         ? (result, null)
                         : (null, null); // todo: fix the reporting
                 default:

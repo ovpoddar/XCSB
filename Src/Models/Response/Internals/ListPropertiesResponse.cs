@@ -9,8 +9,8 @@ internal readonly struct ListPropertiesResponse : IXBaseResponse
     public readonly ResponseHeader ResponseHeader;
     public readonly ushort NumberOfProperties;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == this.NumberOfProperties;
+        return this.ResponseHeader.Verify(sequence) && this.ResponseHeader.Length == this.NumberOfProperties;
     }
 }

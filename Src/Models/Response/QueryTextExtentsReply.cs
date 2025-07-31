@@ -17,9 +17,9 @@ public readonly struct QueryTextExtentsReply : IXBaseResponse
     public readonly uint OverallWidth;
     public readonly uint OverallLeft;
     public readonly uint OverallRight;
-    
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this.Length == 0;
+        return this.Reply == 1 && this.Length == 0 && this.Sequence == sequence;
     }
 }

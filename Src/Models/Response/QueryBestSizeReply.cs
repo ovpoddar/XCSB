@@ -10,8 +10,8 @@ public readonly struct QueryBestSizeReply : IXBaseResponse
     public readonly ushort Width;
     public readonly ushort Height;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == 0;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length == 0;
     }
 }

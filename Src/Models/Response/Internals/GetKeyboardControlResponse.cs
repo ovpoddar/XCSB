@@ -17,9 +17,9 @@ internal unsafe struct GetKeyboardControlResponse : IXBaseResponse
     public readonly ushort BellDuration;
     private readonly ushort _pad0;
     public fixed byte Repeats[32];
-    
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this.Length == 5;
+        return this.Reply == 1 && this.Length == 5 && this.Sequence == sequence;
     }
 }

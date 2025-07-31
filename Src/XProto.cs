@@ -51,7 +51,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         Debug.Assert(sequenceNumber == result.Value.ResponseHeader.Sequence);
         return result.Value;
     }
@@ -64,7 +63,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new AllocColorCellsReply(result.Value, socket);
     }
 
@@ -77,8 +75,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        //todo move the increment in received
-        sequenceNumber++;
         return new AllocColorPlanesReply(result.Value, socket);
     }
 
@@ -110,7 +106,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -618,7 +613,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetAtomNameReply(result.Value, socket);
     }
 
@@ -656,7 +650,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         Debug.Assert(sequenceNumber == result.Value.ResponseHeader.Sequence);
         return result.Value;
     }
@@ -669,7 +662,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetFontPathReply(result.Value, socket);
     }
 
@@ -682,7 +674,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -698,7 +689,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetImageReply(result.Value, socket);
     }
 
@@ -711,7 +701,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -725,7 +714,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetKeyboardControlReply(result.Value);
     }
 
@@ -738,7 +726,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
         
-        sequenceNumber++;
         return new GetKeyboardMappingReply(result.Value, count, socket);
     }
 
@@ -751,7 +738,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetModifierMappingReply(result.Value, socket);
     }
 
@@ -763,7 +749,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetMotionEventsResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        sequenceNumber++;
+        
         return new GetMotionEventsReply(result.Value, socket);
     }
 
@@ -776,7 +762,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -789,7 +774,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetPointerMappingReply(result.Value, socket);
     }
 
@@ -802,7 +786,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetPropertyReply(result.Value, socket);
     }
 
@@ -814,7 +797,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -827,7 +809,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -840,7 +821,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -871,7 +851,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GrabKeyboardReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        sequenceNumber++;
+        
         return result.Value;
     }
 
@@ -887,7 +867,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         Debug.Assert(sequenceNumber == result.Value.Sequence);
         return result.Value;
     }
@@ -984,7 +963,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListExtensionsReply(result.Value, socket);
     }
 
@@ -1019,7 +997,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListFontsReply(result.Value, socket);
     }
 
@@ -1054,7 +1031,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
         
-        sequenceNumber++;
         return new ListFontsWithInfoReply(result.Value, socket);
     }
 
@@ -1067,7 +1043,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListHostsReply(result.Value, socket);
     }
 
@@ -1080,7 +1055,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListInstalledColormapsReply(result.Value, socket);
         ;
     }
@@ -1094,7 +1068,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListPropertiesReply(result.Value, socket);
     }
 
@@ -1127,7 +1100,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -1486,7 +1458,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<QueryBestSizeReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        sequenceNumber++;
+        
         return result.Value;
     }
 
@@ -1519,7 +1491,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new QueryColorsReply(result.Value, socket);
     }
 
@@ -1547,7 +1518,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<QueryExtensionReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        sequenceNumber++;
+        
         return result.Value;
     }
 
@@ -1560,7 +1531,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new QueryFontReply(result.Value, socket);
         ;
     }
@@ -1574,7 +1544,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new QueryKeymapReply(result.Value);
     }
 
@@ -1588,7 +1557,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         Debug.Assert(sequenceNumber == result.Value.Sequence);
         return result.Value;
     }
@@ -1628,7 +1596,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -1641,7 +1608,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new QueryTreeReply(result.Value, socket);
     }
 
@@ -1841,7 +1807,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -1876,7 +1841,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -1960,7 +1924,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 

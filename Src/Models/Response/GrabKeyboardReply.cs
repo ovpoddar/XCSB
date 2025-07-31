@@ -8,8 +8,9 @@ public readonly struct GrabKeyboardReply : IXBaseResponse
     public readonly GrabStatus Status;
     public readonly ushort Sequence;
     public readonly uint Length;
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this.Length == 0;
+        return this.Reply == 1 && this.Length == 0 && this.Sequence == sequence;
     }
 }

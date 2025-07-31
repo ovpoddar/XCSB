@@ -10,8 +10,8 @@ internal readonly struct AllocColorCellsResponse : IXBaseResponse
     public readonly ushort NumberOfPixels;
     public readonly ushort NumberOfMasks;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == this.NumberOfPixels + this.NumberOfMasks;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length == this.NumberOfPixels + this.NumberOfMasks;
     }
 }

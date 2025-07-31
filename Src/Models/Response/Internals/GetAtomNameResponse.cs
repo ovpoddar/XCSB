@@ -8,9 +8,9 @@ internal readonly struct GetAtomNameResponse : IXBaseResponse
 {
     public readonly ResponseHeader ResponseHeader;
     public readonly ushort LengthOfName;
-    
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length != this.LengthOfName;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length != this.LengthOfName;
     }
 }

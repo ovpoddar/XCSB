@@ -12,8 +12,8 @@ internal readonly struct ListHostsResponse : IXBaseResponse
     public readonly uint Length;
     public readonly ushort NumberOfHosts;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1;
+        return this.Reply == 1 && this.Sequence == sequence;
     }
 }

@@ -22,8 +22,8 @@ public readonly struct QueryPointerReply : IXBaseResponse
 
     public readonly bool IsSameScreen => _sameScreen == 1;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this.LengthReply == 0;
+        return this.Reply == 1 && this.LengthReply == 0 && this.Sequence == sequence;
     }
 }

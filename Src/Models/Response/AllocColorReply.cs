@@ -13,8 +13,8 @@ public readonly struct AllocColorReply : IXBaseResponse
     private readonly ushort _pad1;
     public readonly uint Pixel;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this._pad1 == 0 && this.ResponseHeader.Length == 0;
+        return this.ResponseHeader.Verify(in sequence) && this._pad1 == 0 && this.ResponseHeader.Length == 0;
     }
 }

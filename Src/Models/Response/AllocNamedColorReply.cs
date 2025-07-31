@@ -14,8 +14,8 @@ public readonly struct AllocNamedColorReply : IXBaseResponse
     public readonly ushort VisualRed;
     public readonly ushort VisualGreen;
     public readonly ushort VisualBlue;
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == 0;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length == 0;
     }
 }

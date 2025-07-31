@@ -8,8 +8,9 @@ internal readonly struct ListInstalledColormapsResponse : IXBaseResponse
 {
     public readonly ResponseHeader ResponseHeader;
     public readonly ushort NumberOfColormaps;
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == this.NumberOfColormaps;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length == this.NumberOfColormaps;
     }
 }

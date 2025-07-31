@@ -12,9 +12,9 @@ public readonly struct GetScreenSaverReply : IXBaseResponse
     private readonly byte _preferBlanking;
     private readonly byte _allowExposures;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify();
+        return this.ResponseHeader.Verify(in sequence);
     }
 
     public readonly bool AllowExposures => this._allowExposures == 1;

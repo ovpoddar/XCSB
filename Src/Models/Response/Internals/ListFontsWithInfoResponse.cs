@@ -25,8 +25,9 @@ internal readonly struct ListFontsWithInfoResponse : IXBaseResponse
     public readonly ushort FontAscent;
     public readonly ushort FontDescent;
     public readonly uint ReplyHint;
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this._pad0 == 0 && this._pad1 == 0;
+        return this.Reply == 1 && this._pad0 == 0 && this._pad1 == 0 && this.Sequence == sequence;
     }
 }

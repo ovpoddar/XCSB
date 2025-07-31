@@ -23,9 +23,9 @@ internal readonly struct QueryFontResponse : IXBaseResponse
     public readonly ushort FontDescent;
     public readonly uint InfoLenght;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this._pad1 == 0 && this._pad2 == 0 && this.ResponseHeader.Length > 7;
+        return this.ResponseHeader.Verify(in sequence) && this._pad1 == 0 && this._pad2 == 0 && this.ResponseHeader.Length > 7;
     }
 
     public readonly bool AllCharsExist => this._allCharsExist == 1;

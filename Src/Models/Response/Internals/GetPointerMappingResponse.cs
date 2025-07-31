@@ -10,9 +10,9 @@ internal readonly struct GetPointerMappingResponse : IXBaseResponse
     public readonly byte MapLength;
     public readonly ushort Sequence;
     public readonly uint Length;
-    
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1;
+        return this.Reply == 1 && this.Sequence == sequence;
     }
 }

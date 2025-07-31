@@ -14,8 +14,8 @@ internal readonly struct GetPropertyResponse : IXBaseResponse
     public readonly uint BytesAfter;
     public readonly uint ValueLength;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this.ValueLength != this.Length;
+        return this.Reply == 1 && this.ValueLength != this.Length && this.Sequence == sequence;
     }
 }

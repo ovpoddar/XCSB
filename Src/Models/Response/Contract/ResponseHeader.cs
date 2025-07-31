@@ -10,8 +10,8 @@ public readonly struct ResponseHeader : IXBaseResponse
     public readonly ushort Sequence;
     public readonly uint Length;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this._pad0 == 0;
+        return this.Reply == 1 && this._pad0 == 0 && this.Sequence == sequence;
     }
 }

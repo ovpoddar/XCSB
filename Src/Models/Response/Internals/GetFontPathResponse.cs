@@ -8,8 +8,9 @@ internal readonly struct GetFontPathResponse : IXBaseResponse
 {
     public readonly ResponseHeader ResponseHeader;
     public readonly ushort StringLength;
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length != this.StringLength;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length != this.StringLength;
     }
 }

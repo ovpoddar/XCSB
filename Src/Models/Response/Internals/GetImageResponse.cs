@@ -11,8 +11,9 @@ internal struct GetImageResponse: IXBaseResponse
     public readonly ushort Sequence;
     public readonly uint Length;
     public readonly uint VisualId;
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1;
+        return this.Reply == 1 && this.Sequence == sequence;
     }
 }

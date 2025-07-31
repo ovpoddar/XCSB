@@ -13,9 +13,10 @@ public readonly struct TranslateCoordinatesReply : IXBaseResponse
     public readonly uint Window;
     public readonly ushort DestinationX;
     public readonly ushort DestinationY;
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this.Length == 0;
+        return this.Reply == 1 && this.Length == 0 && this.Sequence == sequence;
     }
     public bool SameScreen => this._sameScreen == 1;
 }

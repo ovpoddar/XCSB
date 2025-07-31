@@ -34,8 +34,8 @@ public readonly struct GetWindowAttributesReply : IXBaseResponse
     public readonly bool MapIsInstalled => _mapIsInstalled == 1;
     public readonly bool OverrideRedirect => _overrideRedirect == 1;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseType == 1 && this.Length == 3;
+        return this.ResponseType == 1 && this.Length == 3 && this.Sequence == sequence;
     }
 }

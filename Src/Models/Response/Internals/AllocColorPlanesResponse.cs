@@ -12,8 +12,10 @@ internal readonly struct AllocColorPlanesResponse : IXBaseResponse
     public readonly uint RedMask;
     public readonly uint GreenMask;
     public readonly uint BlueMask;
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this._pad1 == 0 && this.ResponseHeader.Length == this.NumberOfPixels;
+        return this.ResponseHeader.Verify(in sequence) && this._pad1 == 0 &&
+               this.ResponseHeader.Length == this.NumberOfPixels;
     }
 }

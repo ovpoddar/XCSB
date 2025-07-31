@@ -8,9 +8,9 @@ internal readonly struct ListFontsResponse : IXBaseResponse
 {
     public readonly ResponseHeader ResponseHeader;
     public readonly ushort NumberOfFonts;
-    
-    public bool Verify()
+
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify();
+        return this.ResponseHeader.Verify(in sequence);
     }
 }

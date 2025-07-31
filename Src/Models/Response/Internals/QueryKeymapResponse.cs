@@ -9,8 +9,8 @@ internal unsafe struct QueryKeymapResponse : IXBaseResponse
     public readonly ResponseHeader ResponseHeader;
     public fixed byte Keys[32];
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == 2;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length == 2;
     }
 }

@@ -2,5 +2,5 @@
 
 internal interface IXBaseResponse
 {
-    bool Verify();
+    bool Verify(in int sequence);
 }

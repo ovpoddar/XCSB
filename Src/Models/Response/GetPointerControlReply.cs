@@ -11,8 +11,8 @@ public readonly struct GetPointerControlReply : IXBaseResponse
     public readonly ushort AccelDenominator;
     public readonly ushort Threshold;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == 0;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length == 0;
     }
 }

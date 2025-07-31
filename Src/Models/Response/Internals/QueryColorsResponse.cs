@@ -9,8 +9,8 @@ internal readonly struct QueryColorsResponse : IXBaseResponse
     public readonly ResponseHeader ResponseHeader;
     public readonly ushort NumberOfColors;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == this.NumberOfColors * 2;
+        return this.ResponseHeader.Verify(in sequence) && this.ResponseHeader.Length == this.NumberOfColors * 2;
     }
 }

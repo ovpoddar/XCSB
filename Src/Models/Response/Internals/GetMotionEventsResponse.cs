@@ -9,8 +9,8 @@ internal readonly struct GetMotionEventsResponse : IXBaseResponse
     public readonly ResponseHeader ResponseHeader;
     public readonly uint NumberOfEvents;
 
-    public bool Verify()
+    public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Verify() && (this.ResponseHeader.Length / 2) == this.NumberOfEvents;
+        return this.ResponseHeader.Verify(in sequence) && (this.ResponseHeader.Length / 2) == this.NumberOfEvents;
     }
 }
