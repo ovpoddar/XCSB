@@ -75,7 +75,7 @@ while (isRunning)
     }
     if (evnt.Value.EventType == EventType.Expose)
     {
-        xcsb.PutImage(ImageFormat.ZPixmap,
+        xcsb.PutImage(ImageFormatBitmap.ZPixmap,
             window,
             gc,
             WIDTH,

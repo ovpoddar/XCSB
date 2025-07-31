@@ -542,7 +542,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
+    public void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
         byte leftPad, byte depth, Span<byte> data)
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);

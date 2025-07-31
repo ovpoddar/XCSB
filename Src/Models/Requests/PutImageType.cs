@@ -7,7 +7,7 @@ namespace Xcsb.Models.Requests;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct PutImageType(
-    ImageFormat format,
+    ImageFormatBitmap format,
     uint drawable,
     uint gc,
     ushort width,
@@ -19,7 +19,7 @@ internal readonly struct PutImageType(
     int dataLength)
 {
     public readonly Opcode OpCode = Opcode.PutImage;
-    public readonly ImageFormat Format = format;
+    public readonly ImageFormatBitmap Format = format;
     public readonly ushort Length = (ushort)(6 + dataLength.AddPadding() / 4);
     public readonly uint Drawable = drawable;
     public readonly uint Gc = gc;

@@ -62,7 +62,7 @@ while (isRunning)
     }
     if (evnt.Value.EventType == EventType.Expose)
     {
-        lazyXcsb.PutImage(ImageFormat.ZPixmap,
+        lazyXcsb.PutImage(ImageFormatBitmap.ZPixmap,
             window,
             gc,
             WIDTH,

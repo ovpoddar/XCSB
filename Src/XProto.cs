@@ -677,12 +677,9 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    //todo format 0  is not valid remove this by using a base class 
     public GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
         uint planeMask)
     {
-        if (format == ImageFormat.XYBitmap)
-            throw new InvalidEnumArgumentException(nameof(format));
         var request = new GetImageType(format, drawable, x, y, width, height, planeMask);
         socket.Send(ref request);
         var (result, error) = ReceivedResponse<GetImageResponse>();
@@ -1423,7 +1420,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
+    public void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
         byte leftPad, byte depth, Span<byte> data)
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
@@ -2355,7 +2352,7 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void PutImageChecked(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x,
+    public void PutImageChecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x,
         short y, byte leftPad, byte depth, Span<byte> data)
     {
         PutImage(format, drawable, gc, width, height, x, y, leftPad, depth, data);

@@ -118,7 +118,7 @@ public interface IVoidProtoChecked
 
     void PolyFillArcChecked(uint drawable, uint gc, Arc[] arcs);
 
-    void PutImageChecked(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
+    void PutImageChecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
         byte leftPad, byte depth, Span<byte> data);
 
     void ImageText8Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text);

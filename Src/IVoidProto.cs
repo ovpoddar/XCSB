@@ -120,7 +120,7 @@ public interface IVoidProto
 
     void PolyFillArc(uint drawable, uint gc, Arc[] arcs);
 
-    void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
+    void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
         byte leftPad, byte depth, Span<byte> data);
 
     void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text);
