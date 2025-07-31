@@ -2,6 +2,6 @@
 
 public enum Status : byte 
 {
-    Disable = 0,
-    Enable = 1
+    Success = 0,
+    Busy = 1
 }

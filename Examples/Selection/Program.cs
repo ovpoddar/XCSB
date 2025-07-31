@@ -7,11 +7,5 @@ x.SetSelectionOwnerChecked(root, primaryAtom, 0);
 var owner = x.GetSelectionOwner(primaryAtom);
 Console.WriteLine($"{owner.Owner} == {root} ");
 
-
-
-var resultSetPointerMapping = x.SetPointerMapping([3, 2, 1]);
-Console.WriteLine("resultSetPointerMapping");
-
-
 var resultListInstalledColormaps = x.ListInstalledColormaps(root);
-Console.WriteLine("resultListInstalledColormaps");
+Console.WriteLine(string.Join(", ", resultListInstalledColormaps.Colormap));

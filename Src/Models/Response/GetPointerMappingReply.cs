@@ -19,7 +19,7 @@ public readonly struct GetPointerMappingReply
             Map = [];
         else
         {
-            using var mapBuffer = new ArrayPoolUsing<byte>((int)response.Length);
+            using var mapBuffer = new ArrayPoolUsing<byte>((int)response.Length * 4);
             socket.ReceiveExact(mapBuffer);
             Map = mapBuffer[0..(int)response.MapLength].ToArray();
         }

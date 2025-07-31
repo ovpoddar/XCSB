@@ -65,7 +65,11 @@ while (true)
         var resultGetKeyboardControl = client.GetKeyboardControl();
         Console.WriteLine("GetKeyboardControl");
         var resultGetPointerMapping = client.GetPointerMapping();
-        Console.WriteLine("GetPointerMapping");
+        var resultSetPointerMapping = client.SetPointerMapping(resultGetPointerMapping.Map);
+        Console.WriteLine(resultSetPointerMapping.Status.ToString());
+        
+        
+        
 
         //var resultGetFontPath = client.GetFontPath();
         //Console.WriteLine("resultGetFontPath");

@@ -12,6 +12,6 @@ public readonly struct ResponseHeader : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        return this.Reply == 1 && this._pad0 == 0 && this.Sequence == sequence;
+        return this.Reply == 1 && this.Sequence == sequence;
     }
 }
