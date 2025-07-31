@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Models.Response.Contract;
 
-namespace Xcsb.Models.Response;
+namespace Xcsb.Models.Response.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 52)]
 internal unsafe struct GetKeyboardControlResponse : IXBaseResponse

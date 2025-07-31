@@ -1,14 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Models.Response.Contract;
 
 namespace Xcsb.Models.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct GetScreenSaverReply : IXBaseResponse
 {
-    public readonly byte Reply;
-    private readonly byte _pad0;
-    public readonly ushort Sequence;
-    public readonly uint Length;
+    public readonly ResponseHeader ResponseHeader;
     public readonly ushort Timeout;
     public readonly ushort Interval;
     private readonly byte _preferBlanking;
@@ -16,7 +14,7 @@ public readonly struct GetScreenSaverReply : IXBaseResponse
 
     public bool Verify()
     {
-        return this.Reply == 1;
+        return this.ResponseHeader.Verify();
     }
 
     public readonly bool AllowExposures => this._allowExposures == 1;

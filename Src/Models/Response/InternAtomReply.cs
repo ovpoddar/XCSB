@@ -1,18 +1,16 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Models.Response.Contract;
 
 namespace Xcsb.Models.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct InternAtomReply : IXBaseResponse
 {
-    public readonly byte Reply; // 1
-    private readonly byte _pad0;
-    public readonly ushort Sequence;
-    public readonly uint ReplyLength;
+    public readonly ResponseHeader ResponseHeader;
     public readonly uint Atom;
-    
+
     public bool Verify()
     {
-        return Reply == 1 && ReplyLength == 0 && _pad0 == 0;
+        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == 0;
     }
 }

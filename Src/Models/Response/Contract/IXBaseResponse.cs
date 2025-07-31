@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Models.Response;
+﻿namespace Xcsb.Models.Response.Contract;
 
 internal interface IXBaseResponse
 {

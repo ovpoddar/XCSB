@@ -1,4 +1,6 @@
-﻿namespace Xcsb.Models.Response;
+﻿using Xcsb.Models.Response.Contract;
+
+namespace Xcsb.Models.Response;
 
 public readonly struct GrabKeyboardReply : IXBaseResponse
 {

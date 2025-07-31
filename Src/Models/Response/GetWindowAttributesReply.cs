@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Models.Handshake;
+using Xcsb.Models.Response.Contract;
 
 namespace Xcsb.Models.Response;
 

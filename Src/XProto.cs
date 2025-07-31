@@ -11,6 +11,7 @@ using Xcsb.Models;
 using Xcsb.Models.Event;
 using Xcsb.Models.Handshake;
 using Xcsb.Models.Infrastructure;
+using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Requests;
 using Xcsb.Models.Response;
 using Xcsb.Models.Response.Internals;
@@ -51,7 +52,7 @@ internal class XProto : BaseProtoClient, IXProto
             throw new XEventException(error!.Value);
 
         sequenceNumber++;
-        Debug.Assert(sequenceNumber == result.Value.Sequence);
+        Debug.Assert(sequenceNumber == result.Value.ResponseHeader.Sequence);
         return result.Value;
     }
 
@@ -656,7 +657,7 @@ internal class XProto : BaseProtoClient, IXProto
             throw new XEventException(error!.Value);
 
         sequenceNumber++;
-        Debug.Assert(sequenceNumber == result.Value.Sequence);
+        Debug.Assert(sequenceNumber == result.Value.ResponseHeader.Sequence);
         return result.Value;
     }
 

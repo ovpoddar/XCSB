@@ -21,7 +21,6 @@ var font = client.NewId();
 client.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
 
 
-
 var namedColor = client.AllocNamedColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Red"u8);
 Console.WriteLine($"{namedColor.ExactBlue} {namedColor.ExactGreen} {namedColor.ExactRed}");
 
@@ -48,11 +47,18 @@ while (true)
 
     if (Event.Value.EventType == EventType.Expose)
     {
+        // todo find if any issue with calls
+        var resultSetPointerMapping = client.SetPointerMapping([0, 0, 50, 50]);
+        Console.WriteLine("resultSetPointerMapping");
+
         var resultQueryTextExtents = client.QueryTextExtents(font, "Hello World");
         Console.WriteLine("QueryTextExtents");
         var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
         Console.WriteLine(resultGetMotionEvents.Events.Length);
 
+
+        var resultListInstalledColormaps = client.ListInstalledColormaps(window: client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap);
+        Console.WriteLine("resultListInstalledColormaps");
 
         var resultQueryKeymap = client.QueryKeymap();
         Console.WriteLine("QueryKeymap");
@@ -68,16 +74,22 @@ while (true)
         Console.WriteLine("GetKeyboardControl");
         var resultGetPointerMapping = client.GetPointerMapping();
         Console.WriteLine("GetPointerMapping");
-        
-        // var resultGetFontPath = client.GetFontPath();
 
+        //var resultGetFontPath = client.GetFontPath();
+        //Console.WriteLine("resultGetFontPath");
+        //var resultAllocColorCells = client.AllocColorCells(false,
+        //    client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
+        //    0xff,
+        //    0);
+        //Console.WriteLine("resultAllocColorCells");
+        //var resultQueryBestSize = client.QueryBestSize(QueryShapeOf.FastestTile, client.HandshakeSuccessResponseBody.Screens[0].Root, 100, 200);
+        //Console.WriteLine("resultQueryBestSize");
+        //var resultAllocColorPlanes = client.AllocColorPlanes();
+        //Console.WriteLine("resultAllocColorPlanes");
 
-        // var resultAllocColorCells = client.AllocColorCells();
-        // var resultQueryFont = client.QueryFont();
-        // var resultListInstalledColormaps = client.ListInstalledColormaps();
-        // var resultAllocColorPlanes = client.AllocColorPlanes();
-        // var resultQueryBestSize = client.QueryBestSize();
-        // var resultSetPointerMapping = client.SetPointerMapping();
+        //var resultQueryFont = client.QueryFont(font);
+        //Console.WriteLine("resultQueryFont");
+
 
     }
 }

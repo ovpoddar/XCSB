@@ -15,8 +15,8 @@ public readonly struct QueryTreeReply
 
     internal QueryTreeReply(QueryTreeResponse response, Socket socket)
     {
-        Reply = response.Reply;
-        Sequence = response.Sequence;
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
         Root = response.Root;
         Parent = response.Parent;
         

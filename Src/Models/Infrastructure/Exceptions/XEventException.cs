@@ -1,6 +1,6 @@
 ﻿using Xcsb.Models.Event;
 
-namespace Xcsb.Models.Infrastructure;
+namespace Xcsb.Models.Infrastructure.Exceptions;
 
 public class XEventException : Exception
 {

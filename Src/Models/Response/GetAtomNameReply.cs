@@ -15,13 +15,13 @@ public readonly struct GetAtomNameReply
 
     internal GetAtomNameReply(GetAtomNameResponse response, Socket socket)
     {
-        Reply = response.Reply;
-        Sequence = response.Sequence;
-        if (response.Length == 0)
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
+        if (response.ResponseHeader.Length == 0)
             Name = string.Empty;
         else
         {
-            using var nameBuffer = new ArrayPoolUsing<byte>((int)response.Length * 4);
+            using var nameBuffer = new ArrayPoolUsing<byte>((int)response.ResponseHeader.Length * 4);
             socket.ReceiveExact(nameBuffer);
             Name = Encoding.ASCII.GetString(nameBuffer, 0, response.LengthOfName);
         }

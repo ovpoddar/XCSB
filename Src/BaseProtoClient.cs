@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models.Event;
 using Xcsb.Models.Response;
+using Xcsb.Models.Response.Contract;
 
 namespace Xcsb;
 

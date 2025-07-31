@@ -13,8 +13,8 @@ public readonly struct ListPropertiesReply
 
     internal ListPropertiesReply(ListPropertiesResponse response, Socket socket)
     {
-        Reply = response.Reply;
-        Sequence = response.Sequence;
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
 
         if (response.NumberOfProperties == 0)
             Atoms = [];

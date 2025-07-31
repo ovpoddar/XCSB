@@ -12,13 +12,13 @@ public struct ListFontsReply
     public readonly string[] Fonts;
     internal ListFontsReply(ListFontsResponse result, Socket socket)
     {
-        this.Reply = result.Reply;
-        this.Sequence = result.Sequence;
+        this.Reply = result.ResponseHeader.Reply;
+        this.Sequence = result.ResponseHeader.Sequence;
         if (result.NumberOfFonts == 0)
             this.Fonts = [];
         else
         {
-            var requiredSize = (int)result.Length * 4;
+            var requiredSize = (int)result.ResponseHeader.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
             this.Fonts = new string[result.NumberOfFonts];

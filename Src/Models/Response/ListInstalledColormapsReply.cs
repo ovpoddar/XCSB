@@ -13,9 +13,9 @@ public struct ListInstalledColormapsReply
 
     internal ListInstalledColormapsReply(ListInstalledColormapsResponse response, Socket socket)
     {
-        this.Reply = response.Reply;
-        this.Sequence = response.Sequence;
-        if (response.Length == 0)
+        this.Reply = response.ResponseHeader.Reply;
+        this.Sequence = response.ResponseHeader.Sequence;
+        if (response.ResponseHeader.Length == 0)
             this.Colormap = [];
         else
         {

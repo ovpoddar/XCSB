@@ -13,13 +13,13 @@ public readonly struct QueryColorsReply
     public readonly Pixel[] Colors;
     internal QueryColorsReply(QueryColorsResponse result, Socket socket)
     {
-        this.Reply = result.Reply;
-        this.Sequence = result.Sequence;
+        this.Reply = result.ResponseHeader.Reply;
+        this.Sequence = result.ResponseHeader.Sequence;
         if (result.NumberOfColors == 0)
             this.Colors = [];
         else
         {
-            var requiredSize = (int)result.Length * 4;
+            var requiredSize = (int)result.ResponseHeader.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer);
             this.Colors = MemoryMarshal.Cast<byte, Pixel>(buffer[0..requiredSize]).ToArray();

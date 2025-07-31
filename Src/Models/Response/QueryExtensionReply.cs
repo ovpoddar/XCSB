@@ -1,14 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Models.Response.Contract;
 
 namespace Xcsb.Models.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct QueryExtensionReply : IXBaseResponse
 {
-    public readonly byte Reply;
-    private readonly byte _pad0;
-    public readonly ushort Sequence;
-    public readonly uint Length;
+    public readonly ResponseHeader ResponseHeader;
     private readonly byte _present;
     public readonly byte MajorOpcode;
     public readonly byte FirstEvent;
@@ -17,6 +15,6 @@ public readonly struct QueryExtensionReply : IXBaseResponse
 
     public bool Verify()
     {
-        return this.Reply == 1 && this.Length == 0 && this._pad0 == 0;
+        return this.ResponseHeader.Verify() && this.ResponseHeader.Length == 0;
     }
 }

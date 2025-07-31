@@ -13,14 +13,14 @@ public struct GetFontPathReply
 
     internal GetFontPathReply(GetFontPathResponse response, Socket socket)
     {
-        this.Reply = response.Reply;
-        this.Sequence = response.Sequence;
+        this.Reply = response.ResponseHeader.Reply;
+        this.Sequence = response.ResponseHeader.Sequence;
         if (response.StringLength == 0)
             this.Path = string.Empty;
         else
         {
-            using var buffer = new ArrayPoolUsing<byte>((int)response.Length);
-            socket.ReceiveExact(buffer[0..(int)response.Length]);
+            using var buffer = new ArrayPoolUsing<byte>((int)response.ResponseHeader.Length);
+            socket.ReceiveExact(buffer[0..(int)response.ResponseHeader.Length]);
             this.Path = Encoding.UTF8.GetString(buffer, 0, response.StringLength);
         }
     }

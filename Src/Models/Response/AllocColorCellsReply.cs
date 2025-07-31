@@ -14,9 +14,9 @@ public struct AllocColorCellsReply
 
     internal AllocColorCellsReply(AllocColorCellsResponse result, Socket socket)
     {
-        this.Reply = result.Reply;
-        this.Sequence = result.Sequence;
-        var requiredSize = (int)result.Length * 4;
+        this.Reply = result.ResponseHeader.Reply;
+        this.Sequence = result.ResponseHeader.Sequence;
+        var requiredSize = (int)result.ResponseHeader.Length * 4;
         using var buffer = new ArrayPoolUsing<byte>(requiredSize);
         socket.ReceiveExact(buffer);
         this.Pixels = result.NumberOfPixels == 0

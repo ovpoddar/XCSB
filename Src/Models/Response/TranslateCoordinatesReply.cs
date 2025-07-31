@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Models.Response.Contract;
 
 namespace Xcsb.Models.Response;
 
@@ -16,4 +17,5 @@ public readonly struct TranslateCoordinatesReply : IXBaseResponse
     {
         return this.Reply == 1 && this.Length == 0;
     }
+    public bool SameScreen => this._sameScreen == 1;
 }

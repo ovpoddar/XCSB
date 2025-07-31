@@ -6,6 +6,7 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Event;
 using Xcsb.Models.Infrastructure;
+using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Requests;
 #if !NETSTANDARD
 using System.Numerics;

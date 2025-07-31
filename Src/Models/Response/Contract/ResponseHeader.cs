@@ -1,0 +1,17 @@
+﻿using System.Runtime.InteropServices;
+
+namespace Xcsb.Models.Response.Contract;
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+public readonly struct ResponseHeader : IXBaseResponse
+{
+    public readonly byte Reply;
+    private readonly byte _pad0;
+    public readonly ushort Sequence;
+    public readonly uint Length;
+
+    public bool Verify()
+    {
+        return this.Reply == 1 && this._pad0 == 0;
+    }
+}

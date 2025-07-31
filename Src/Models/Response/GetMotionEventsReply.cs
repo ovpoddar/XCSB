@@ -13,8 +13,8 @@ public struct GetMotionEventsReply
 
     internal GetMotionEventsReply(GetMotionEventsResponse result, Socket socket)
     {
-        this.Reply = result.Reply;
-        this.Sequence = result.Sequence;
+        this.Reply = result.ResponseHeader.Reply;
+        this.Sequence = result.ResponseHeader.Sequence;
         if (result.NumberOfEvents == 0)
             this.Events = [];
         else

@@ -24,8 +24,8 @@ public struct QueryFontReply
 
     internal QueryFontReply(QueryFontResponse result, Socket socket)
     {
-        this.Reply = result.Reply;
-        this.Sequence = result.Sequence;
+        this.Reply = result.ResponseHeader.Reply;
+        this.Sequence = result.ResponseHeader.Sequence;
         this.MinBounds = result.MinBounds;
         this.MaxBounds = result.MaxBounds;
         this.MinChar = result.MinChar;

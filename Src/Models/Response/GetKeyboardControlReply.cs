@@ -1,4 +1,6 @@
-﻿namespace Xcsb.Models.Response;
+﻿using Xcsb.Models.Response.Internals;
+
+namespace Xcsb.Models.Response;
 
 public struct GetKeyboardControlReply
 {
