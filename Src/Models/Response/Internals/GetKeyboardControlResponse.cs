@@ -3,7 +3,7 @@ using Xcsb.Models.Response.Contract;
 
 namespace Xcsb.Models.Response.Internals;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 52)]
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal unsafe struct GetKeyboardControlResponse : IXBaseResponse
 {
     public readonly byte Reply;
@@ -16,7 +16,7 @@ internal unsafe struct GetKeyboardControlResponse : IXBaseResponse
     public readonly ushort BellPitch;
     public readonly ushort BellDuration;
     private readonly ushort _pad0;
-    public fixed byte Repeats[32];
+    public fixed byte Repeats[12];
 
     public bool Verify(in int sequence)
     {

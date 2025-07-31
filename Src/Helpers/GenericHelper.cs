@@ -108,7 +108,6 @@ internal static class GenericHelper
         requestBody.CopyTo(writeBuffer[size..]);
         var remainder = requestBody.Length.Padding();
         if (remainder == 0) return;
-        var paddingStart = size + requestBody.Length;
-        writeBuffer.Slice(paddingStart, remainder).Clear();
+        writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
 }

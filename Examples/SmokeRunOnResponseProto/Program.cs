@@ -47,18 +47,10 @@ while (true)
 
     if (Event.Value.EventType == EventType.Expose)
     {
-        // todo find if any issue with calls
-        var resultSetPointerMapping = client.SetPointerMapping([0, 0, 50, 50]);
-        Console.WriteLine("resultSetPointerMapping");
-
         var resultQueryTextExtents = client.QueryTextExtents(font, "Hello World");
         Console.WriteLine("QueryTextExtents");
         var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
         Console.WriteLine(resultGetMotionEvents.Events.Length);
-
-
-        var resultListInstalledColormaps = client.ListInstalledColormaps(window: client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap);
-        Console.WriteLine("resultListInstalledColormaps");
 
         var resultQueryKeymap = client.QueryKeymap();
         Console.WriteLine("QueryKeymap");
@@ -89,7 +81,5 @@ while (true)
 
         //var resultQueryFont = client.QueryFont(font);
         //Console.WriteLine("resultQueryFont");
-
-
     }
 }

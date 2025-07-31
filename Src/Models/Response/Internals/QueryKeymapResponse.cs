@@ -7,7 +7,7 @@ namespace Xcsb.Models.Response.Internals;
 internal unsafe struct QueryKeymapResponse : IXBaseResponse
 {
     public readonly ResponseHeader ResponseHeader;
-    public fixed byte Keys[32];
+    public fixed byte Keys[24];
 
     public bool Verify(in int sequence)
     {

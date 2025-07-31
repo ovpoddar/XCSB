@@ -1,4 +1,6 @@
-﻿using Xcsb.Models.Response.Internals;
+﻿using System.Net.Sockets;
+using Xcsb.Helpers;
+using Xcsb.Models.Response.Internals;
 
 namespace Xcsb.Models.Response;
 
@@ -14,7 +16,7 @@ public struct GetKeyboardControlReply
     public readonly ushort BellPitch;
     public readonly ushort BellDuration;
     public byte[] Repeats;
-    internal GetKeyboardControlReply(GetKeyboardControlResponse result)
+    internal GetKeyboardControlReply(GetKeyboardControlResponse result, Socket socket)
     {
         unsafe
         {
@@ -27,7 +29,13 @@ public struct GetKeyboardControlReply
             this.BellPercent = result.BellPercent;
             this.BellPitch = result.BellPitch;
             this.BellDuration = result.BellDuration;
-            this.Repeats = new Span<byte>(result.Repeats, 32).ToArray();
+            this.Repeats = new byte[32];
+
+            Span<byte> buffer = stackalloc byte[20];
+            socket.ReceiveExact(buffer);
+            
+            new Span<byte>(result.Repeats, 12).CopyTo(this.Repeats[0..12]);
+            buffer.CopyTo(this.Repeats[12..32]);
         }
     }
 }

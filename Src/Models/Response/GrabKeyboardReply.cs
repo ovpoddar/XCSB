@@ -1,7 +1,9 @@
-﻿using Xcsb.Models.Response.Contract;
+﻿using System.Runtime.InteropServices;
+using Xcsb.Models.Response.Contract;
 
 namespace Xcsb.Models.Response;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct GrabKeyboardReply : IXBaseResponse
 {
     public readonly byte Reply;

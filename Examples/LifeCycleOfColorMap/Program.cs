@@ -113,7 +113,7 @@ Debug.Assert(xevnt!.Value.EventType == EventType.Expose || xevnt!.Value.EventTyp
 Console.WriteLine("all success {0}", xevnt!.Value.EventType != EventType.Error);
 
 x.DestroyWindowChecked(sub);
-Console.WriteLine("closing");
 x.DestroyWindowChecked(sub1);
 x.DestroySubwindowsChecked(win);
 x.DestroyWindowChecked(win);
+Console.WriteLine("closing");

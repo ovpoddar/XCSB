@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Diagnostics;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
@@ -19,39 +20,42 @@ internal class BaseProtoClient
         this.socket = socket;
         bufferEvents = new Stack<XEvent>();
     }
-    
-    //todo add validate for sequence count 
+
 #if !NETSTANDARD
     [SkipLocalsInit]
-#endif 
+#endif
     internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : unmanaged, IXBaseResponse
     {
-        if (socket.Available == 0)
-            socket.Poll(-1, SelectMode.SelectRead);
-        // todo: this is not exhausting all the data
-        // so later call might fail
-        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<T>()];
+        Debug.Assert(Marshal.SizeOf<T>() == 32);
+        sequenceNumber++;
+        Span<byte> buffer = stackalloc byte[32];
         while (true)
         {
-            buffer.Clear();
+            EnsureReadSize(32);
             socket.ReceiveExact(buffer);
-            ref var content = ref buffer.AsStruct<XEvent>();
-            switch (content)
-            {
-                case { EventType: EventType.Error }:
-                    return (null, content.ErrorEvent);
-                case { EventType: (EventType)1 }:
-                    var result = buffer.AsStruct<T>();
-                    return result.Verify(++sequenceNumber)
-                        ? (result, null)
-                        : (null, null); // todo: fix the reporting
-                default:
-                    bufferEvents.Push(content);
-                    break;
-            }
-        }
+            ref var baseHeader = ref buffer.AsStruct<T>();
+            if (baseHeader.Verify(sequenceNumber))
+                return (buffer.ToStruct<T>(), null);
 
-        throw new Exception();
+            ref var content = ref buffer.AsStruct<XEvent>();
+            if (content.EventType == EventType.Error)
+            {
+                sequenceNumber--;
+                return (null, content.ErrorEvent);
+            }
+            bufferEvents.Push(buffer.ToStruct<XEvent>());
+        }
+    }
+
+
+    void EnsureReadSize(int size)
+    {
+        while (true)
+        {
+            if (socket.Available >= size)
+                break;
+            socket.Poll(-1, SelectMode.SelectRead);
+        }
     }
 
     internal ErrorEvent? Received()

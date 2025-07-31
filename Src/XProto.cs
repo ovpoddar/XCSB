@@ -711,7 +711,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        return new GetKeyboardControlReply(result.Value);
+        return new GetKeyboardControlReply(result.Value, socket);
     }
 
 
@@ -1541,7 +1541,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        return new QueryKeymapReply(result.Value);
+        return new QueryKeymapReply(result.Value, socket);
     }
 
 
@@ -1819,7 +1819,6 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 4,
                 maps);
-            scratchBuffer[^1] = 0;
             socket.SendExact(scratchBuffer);
         }
         else
@@ -1830,7 +1829,6 @@ internal class XProto : BaseProtoClient, IXProto
                 ref request,
                 4,
                 maps);
-            workingBuffer[^1] = 0;
             socket.SendExact(workingBuffer[..requiredBuffer]);
         }
 
