@@ -16,7 +16,7 @@ connection.CreateWindow(0, window, screen.Root,
         (uint)(EventMask.KeyPressMask | EventMask.ExposureMask | EventMask.ButtonPressMask |
                EventMask.ButtonReleaseMask)
     ]);
-connection.ChangeProperty(PropertyMode.Replace, window,
+connection.ChangeProperty<byte>(PropertyMode.Replace, window,
     39, 31, "XCB System Control Demo"u8.ToArray());
 var gc = connection.NewId();
 connection.CreateGC(gc, window, 0, []);
@@ -134,7 +134,7 @@ void demo_store_color()
     Console.WriteLine("=== StoreNamedColor Demo ===\n");
     var cookie = connection.AllocColor(colormap, 65535, 0, 0);
     Console.WriteLine("StoreNamedColor: Red color allocated, Pixel value: %u\n", cookie.Pixel);
-    connection.ChangeGC(gc, GCMask.Foreground, cookie.Pixel);
+    connection.ChangeGC(gc, GCMask.Foreground, [cookie.Pixel]);
     connection.PolyFillRectangle(window, gc, [new Rectangle() { X = 300, Y = 50, Width = 80, Height = 30 }]);
 }
 
@@ -162,11 +162,11 @@ void show_help()
 
 void draw_interface()
 {
-    connection.ChangeGC(gc, GCMask.Foreground, screen.WhitePixel);
+    connection.ChangeGC(gc, GCMask.Foreground, [screen.WhitePixel]);
     connection.PolyFillRectangle(window, gc, [
         new Rectangle() { X = 0, Y = 0, Width = 500, Height = 400 }
     ]);
-    connection.ChangeGC(gc, GCMask.Foreground, screen.BlackPixel);
+    connection.ChangeGC(gc, GCMask.Foreground, [screen.BlackPixel]);
     connection.ImageText8(window, gc, 20, 30, "XCB System Control Demo"u8);
     connection.ImageText8(window, gc, 20, 60, "Press number keys (1-6) for demos"u8);
     connection.ImageText8(window, gc, 20, 90, "Press 'h' for help, 'q' to quit"u8);

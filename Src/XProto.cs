@@ -131,7 +131,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeGC(uint gc, GCMask mask, params uint[] args)
+    public void ChangeGC(uint gc, GCMask mask, Span<uint> args)
     {
         var request = new ChangeGCType(gc, mask, args.Length);
         var requiredBuffer = 12 + args.Length * 4;
@@ -157,7 +157,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeHosts(HostMode mode, Family family, byte[] address)
+    public void ChangeHosts(HostMode mode, Family family, Span<byte> address)
     {
         var request = new ChangeHostsType(mode, family, address.Length);
         var requiredBuffer = 8 + address.Length.AddPadding();
@@ -184,7 +184,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args)
+    public void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args)
     {
         var requiredBuffer = 8 + args.Length * 4;
         var request = new ChangeKeyboardControlType(mask, args.Length);
@@ -211,7 +211,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] keysym)
+    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> keysym)
     {
         var requiredBuffer = 8 + keycodeCount * keysymsPerKeycode * 4;
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
@@ -248,7 +248,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
+    public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -289,7 +289,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeWindowAttributes(uint window, ValueMask mask, params uint[] args)
+    public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args)
     {
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         var requiredBuffer = 12 + args.Length * 4;
@@ -337,7 +337,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ConfigureWindow(uint window, ConfigureValueMask mask, params uint[] args)
+    public void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args)
     {
         var requiredBuffer = 12 + args.Length * 4;
         var request = new ConfigureWindowType(window, mask, args.Length);
@@ -420,7 +420,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args)
+    public void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         var requiredBuffer = 16 + args.Length * 4;
@@ -464,7 +464,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
     {
         var requiredBuffer = 32 + args.Length * 4;
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
@@ -513,7 +513,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points)
+    public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
         var requiredBuffer = 16 + points.Length * 4;
@@ -554,7 +554,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void FreeColors(uint colormapId, uint planeMask, params uint[] pixels)
+    public void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels)
     {
         var requiredBuffer = 12 + pixels.Length * 4;
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
@@ -1112,7 +1112,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void NoOperation(params uint[] args)
+    public void NoOperation(Span<uint> args)
     {
         var request = new NoOperationType(args.Length);
         var requiredBuffer = 4 + args.Length * 4;
@@ -1172,7 +1172,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyArc(uint drawable, uint gc, Arc[] arcs)
+    public void PolyArc(uint drawable, uint gc, Span<Arc> arcs)
     {
         var request = new PolyArcType(drawable, gc, arcs.Length);
         var requiredBuffer = 12 + arcs.Length * 12;
@@ -1199,7 +1199,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyFillArc(uint drawable, uint gc, Arc[] arcs)
+    public void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs)
     {
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
         var requiredBuffer = Marshal.SizeOf<PolyFillArcType>() + arcs.Length * 12;
@@ -1226,7 +1226,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles)
+    public void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = Marshal.SizeOf<PolyFillRectangleType>() + rectangles.Length * 8;
@@ -1253,7 +1253,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
+    public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = 12 + points.Length * 4;
@@ -1280,7 +1280,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
+    public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = 12 + points.Length * 4;
@@ -1307,7 +1307,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyRectangle(uint drawable, uint gc, Rectangle[] rectangles)
+    public void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = 12 + rectangles.Length * 8;
@@ -1334,7 +1334,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolySegment(uint drawable, uint gc, Segment[] segments)
+    public void PolySegment(uint drawable, uint gc, Span<Segment> segments)
     {
         var request = new PolySegmentType(drawable, gc, segments.Length);
         var requiredBuffer = 12 + segments.Length * 8;
@@ -1621,7 +1621,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void RotateProperties(uint window, ushort delta, params uint[] properties)
+    public void RotateProperties(uint window, ushort delta, Span<uint> properties)
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
         var requiredBuffer = 12 + properties.Length * 4;
@@ -1662,7 +1662,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Rectangle[] rectangles)
+    public void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles)
     {
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
         var requiredBuffer = 12 + rectangles.Length * Marshal.SizeOf<Rectangle>();
@@ -1696,7 +1696,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetDashes(uint gc, ushort dashOffset, byte[] dashes)
+    public void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes)
     {
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
         var requiredBuffer = 12 + dashes.Length.AddPadding();
@@ -1851,7 +1851,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void StoreColors(uint colormapId, params ColorItem[] item)
+    public void StoreColors(uint colormapId, Span<ColorItem> item)
     {
         var request = new StoreColorsType(colormapId, item.Length);
         var requiredBuffer = 8 + 12 * item.Length;
@@ -2024,13 +2024,13 @@ internal class XProto : BaseProtoClient, IXProto
         bufferEvents.Any() || socket.Available >= Unsafe.SizeOf<XEvent>();
 
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
     {
         CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args);
         CheckError();
     }
 
-    public void ChangeWindowAttributesChecked(uint window, ValueMask mask, params uint[] args)
+    public void ChangeWindowAttributesChecked(uint window, ValueMask mask, Span<uint> args)
     {
         ChangeWindowAttributes(window, mask, args);
         CheckError();
@@ -2084,7 +2084,7 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void ConfigureWindowChecked(uint window, ConfigureValueMask mask, params uint[] args)
+    public void ConfigureWindowChecked(uint window, ConfigureValueMask mask, Span<uint> args)
     {
         ConfigureWindow(window, mask, args);
         CheckError();
@@ -2096,7 +2096,7 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
+    public void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -2112,7 +2112,7 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void RotatePropertiesChecked(uint window, ushort delta, params uint[] properties)
+    public void RotatePropertiesChecked(uint window, ushort delta, Span<uint> properties)
     {
         RotateProperties(window, delta, properties);
         CheckError();
@@ -2241,13 +2241,13 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void CreateGCChecked(uint gc, uint drawable, GCMask mask, params uint[] args)
+    public void CreateGCChecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
         CreateGC(gc, drawable, mask, args);
         CheckError();
     }
 
-    public void ChangeGCChecked(uint gc, GCMask mask, params uint[] args)
+    public void ChangeGCChecked(uint gc, GCMask mask, Span<uint> args)
     {
         ChangeGC(gc, mask, args);
         CheckError();
@@ -2259,14 +2259,14 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void SetDashesChecked(uint gc, ushort dashOffset, byte[] dashes)
+    public void SetDashesChecked(uint gc, ushort dashOffset, Span<byte> dashes)
     {
         SetDashes(gc, dashOffset, dashes);
         CheckError();
     }
 
     public void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
-        Rectangle[] rectangles)
+        Span<Rectangle> rectangles)
     {
         SetClipRectangles(ordering, gc, clipX, clipY, rectangles);
         CheckError();
@@ -2299,49 +2299,49 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
+    public void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         PolyPoint(coordinate, drawable, gc, points);
         CheckError();
     }
 
-    public void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
+    public void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         PolyLine(coordinate, drawable, gc, points);
         CheckError();
     }
 
-    public void PolySegmentChecked(uint drawable, uint gc, Segment[] segments)
+    public void PolySegmentChecked(uint drawable, uint gc, Span<Segment> segments)
     {
         PolySegment(drawable, gc, segments);
         CheckError();
     }
 
-    public void PolyRectangleChecked(uint drawable, uint gc, Rectangle[] rectangles)
+    public void PolyRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         PolyRectangle(drawable, gc, rectangles);
         CheckError();
     }
 
-    public void PolyArcChecked(uint drawable, uint gc, Arc[] arcs)
+    public void PolyArcChecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         PolyArc(drawable, gc, arcs);
         CheckError();
     }
 
-    public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points)
+    public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
     {
         FillPoly(drawable, gc, shape, coordinate, points);
         CheckError();
     }
 
-    public void PolyFillRectangleChecked(uint drawable, uint gc, Rectangle[] rectangles)
+    public void PolyFillRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         PolyFillRectangle(drawable, gc, rectangles);
         CheckError();
     }
 
-    public void PolyFillArcChecked(uint drawable, uint gc, Arc[] arcs)
+    public void PolyFillArcChecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         PolyFillArc(drawable, gc, arcs);
         CheckError();
@@ -2396,13 +2396,13 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void FreeColorsChecked(uint colormapId, uint planeMask, params uint[] pixels)
+    public void FreeColorsChecked(uint colormapId, uint planeMask, Span<uint> pixels)
     {
         FreeColors(colormapId, planeMask, pixels);
         CheckError();
     }
 
-    public void StoreColorsChecked(uint colormapId, params ColorItem[] item)
+    public void StoreColorsChecked(uint colormapId, Span<ColorItem> item)
     {
         StoreColors(colormapId, item);
         CheckError();
@@ -2444,7 +2444,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
-        uint[] keysym)
+        Span<uint> keysym)
     {
         ChangeKeyboardMapping(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
         CheckError();
@@ -2456,7 +2456,7 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void ChangeKeyboardControlChecked(KeyboardControlMask mask, params uint[] args)
+    public void ChangeKeyboardControlChecked(KeyboardControlMask mask, Span<uint> args)
     {
         ChangeKeyboardControl(mask, args);
         CheckError();
@@ -2480,7 +2480,7 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void ChangeHostsChecked(HostMode mode, Family family, byte[] address)
+    public void ChangeHostsChecked(HostMode mode, Family family, Span<byte> address)
     {
         ChangeHosts(mode, family, address);
         CheckError();
@@ -2504,7 +2504,7 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void NoOperationChecked(params uint[] args)
+    public void NoOperationChecked(Span<uint> args)
     {
         NoOperation(args);
         CheckError();

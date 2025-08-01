@@ -62,7 +62,7 @@ xcsb.RecolorCursor(cursor,
 
 xcsb.ChangeWindowAttributes(window, ValueMask.Cursor, [cursor]);
 
-xcsb.ChangeGC(gc, GCMask.Foreground, screen.WhitePixel);
+xcsb.ChangeGC(gc, GCMask.Foreground, [screen.WhitePixel]);
 xcsb.PolyFillRectangle(pixmap, gc, [new Rectangle { X = 0, Y = 0, Width = width, Height = height }]);
 
 xcsb.SetClipRectangles(ClipOrdering.Unsorted,
@@ -79,15 +79,15 @@ xcsb.SetDashes(
     0,
     [10, 5, 3, 7]);
 
-xcsb.ChangeGC(gc, GCMask.LineStyle, 1);
+xcsb.ChangeGC(gc, GCMask.LineStyle, [1]);
 
-xcsb.ChangeGC(gc, GCMask.Foreground, screen.BlackPixel);
+xcsb.ChangeGC(gc, GCMask.Foreground, [screen.BlackPixel]);
 
 xcsb.PolyFillRectangle(pixmap, gc, [new Rectangle { X = 0, Y = 0, Width = width, Height = height }]);
 
 xcsb.PolyRectangle(pixmap, gc, [new Rectangle { X = 5, Y = 5, Width = width - 10, Height = height - 10 }]);
 
-xcsb.ChangeGC(gc, GCMask.ClipMask, 0);
+xcsb.ChangeGC(gc, GCMask.ClipMask, [0]);
 
 xcsb.PolyRectangle(pixmap, gc, [
     new Rectangle { X = 50, Y = 50, Width = 100, Height = 80 },

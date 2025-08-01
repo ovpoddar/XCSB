@@ -23,7 +23,7 @@ xcsb.CreateWindow(screen.RootDepth.DepthValue,
     [screen.WhitePixel, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask)]
 );
 
-lazyXcsb.ChangeProperty(PropertyMode.Replace, window, 39, 31, Encoding.UTF8.GetBytes("working fixing dodo"));
+lazyXcsb.ChangeProperty<byte>(PropertyMode.Replace, window, 39, 31, Encoding.UTF8.GetBytes("working fixing dodo"));
 
 var gc = xcsb.NewId();
 lazyXcsb.CreateGC(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);

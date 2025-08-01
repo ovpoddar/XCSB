@@ -37,7 +37,7 @@ xcsb.CreateWindow(screen.RootDepth.DepthValue,
     [screen.WhitePixel, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask)]
 );
 
-xcsb.ChangeProperty(PropertyMode.Replace, window, 39, 31, Encoding.UTF8.GetBytes("working fixing dodo"));
+xcsb.ChangeProperty<byte>(PropertyMode.Replace, window, 39, 31, Encoding.UTF8.GetBytes("working fixing dodo"));
 
 var gc = xcsb.NewId();
 xcsb.CreateGC(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
