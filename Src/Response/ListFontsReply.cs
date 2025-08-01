@@ -24,24 +24,8 @@ public readonly struct ListFontsReply
             socket.ReceiveExact(buffer[0..requiredSize]);
             Fonts = new string[result.NumberOfFonts];
             var index = 0;
-            foreach (var range in GetNextStrValue(buffer))
+            foreach (var range in GenericHelper.GetNextStrValue(buffer))
                 Fonts[index++] = Encoding.ASCII.GetString(buffer, range.Position, range.Length);
-        }
-    }
-    // todo move to a shared space
-    private IEnumerable<DataRange> GetNextStrValue(ArraySegment<byte> buffer)
-    {
-        var index = 0;
-        while (index < buffer.Count)
-        {
-            var length = buffer[index++];
-            if (length == 0)
-                break;
-            if (index + length > buffer.Count)
-                yield return new DataRange(index, buffer.Count - index);
-            else
-                yield return new DataRange(index, length);
-            index += length;
         }
     }
 }

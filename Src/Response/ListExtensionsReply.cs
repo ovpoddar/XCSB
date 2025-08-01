@@ -25,24 +25,8 @@ public readonly struct ListExtensionsReply
             socket.ReceiveExact(buffer[0..requiredSize]);
             Names = new string[result.NumberOfExtensions];
             var index = 0;
-            foreach (var range in GetNextStrValue(buffer))
+            foreach (var range in GenericHelper.GetNextStrValue(buffer))
                 Names[index++] = Encoding.ASCII.GetString(buffer, range.Position, range.Length);
-        }
-    }
-
-    private IEnumerable<DataRange> GetNextStrValue(ArraySegment<byte> buffer)
-    {
-        var index = 0;
-        while (index < buffer.Count)
-        {
-            var length = buffer[index++];
-            if (length == 0)
-                break;
-            if (index + length > buffer.Count)
-                yield return new DataRange(index, buffer.Count - index);
-            else
-                yield return new DataRange(index, length);
-            index += length;
         }
     }
 }

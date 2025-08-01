@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Models;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -110,4 +111,21 @@ internal static class GenericHelper
         if (remainder == 0) return;
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
+
+    internal static IEnumerable<DataRange> GetNextStrValue(ArraySegment<byte> buffer)
+    {
+        var index = 0;
+        while (index < buffer.Count)
+        {
+            var length = buffer[index++];
+            if (length == 0)
+                break;
+            if (index + length > buffer.Count)
+                yield return new DataRange(index, buffer.Count - index);
+            else
+                yield return new DataRange(index, length);
+            index += length;
+        }
+    }
+
 }
