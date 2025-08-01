@@ -68,9 +68,6 @@ while (true)
         var resultSetPointerMapping = client.SetPointerMapping(resultGetPointerMapping.Map);
         Console.WriteLine(resultSetPointerMapping.Status.ToString());
         
-        
-        
-
         //var resultGetFontPath = client.GetFontPath();
         //Console.WriteLine("resultGetFontPath");
         //var resultAllocColorCells = client.AllocColorCells(false,
@@ -85,5 +82,12 @@ while (true)
 
         //var resultQueryFont = client.QueryFont(font);
         //Console.WriteLine("resultQueryFont");
+        client.ChangeSaveSet();
+        client.ChangeActivePointerGrab();
+        client.SetFontPath();
+        client.StoreColors();
+        client.StoreNamedColor();
+        client.ChangeKeyboardMapping();
+            
     }
 }
