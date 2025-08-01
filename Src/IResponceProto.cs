@@ -1,5 +1,5 @@
 ﻿using Xcsb.Models;
-using Xcsb.Models.Response;
+using Xcsb.Response;
 
 namespace Xcsb;
 

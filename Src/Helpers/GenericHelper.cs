@@ -9,10 +9,10 @@ namespace Xcsb.Helpers;
 
 internal static class GenericHelper
 {
-    internal static ref T AsStruct<T>(this Span<byte> bytes) where T : struct => 
+    internal static ref T AsStruct<T>(this Span<byte> bytes) where T : struct =>
         ref Unsafe.As<byte, T>(ref bytes[0]);
 
-    internal static T ToStruct<T>(this Span<byte> bytes) where T : struct => 
+    internal static T ToStruct<T>(this Span<byte> bytes) where T : struct =>
         Unsafe.As<byte, T>(ref bytes[0]);
 
     internal static T AddPadding<T>(this T pad) where T :
@@ -83,7 +83,7 @@ internal static class GenericHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged => 
+    internal static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged =>
         socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)

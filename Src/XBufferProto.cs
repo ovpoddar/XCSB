@@ -1,13 +1,12 @@
-﻿using System.Buffers;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Event;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
-using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Infrastructure.Exceptions;
-using Xcsb.Models.Requests;
+using Xcsb.Requests;
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -279,7 +278,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #if NETSTANDARD
         socket.SendExact(_buffer.ToArray());
 #else
-            socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+        socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
 #endif
         using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
         var received = socket.Receive(buffer);
@@ -467,7 +466,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _buffer.AddRange(Encoding.ASCII.GetBytes(fontName));
         _buffer.AddRange(new byte[fontName.Length.Padding()]);
         _requestLength++;
-        
+
     }
 
     public void PolyArc(uint drawable, uint gc, Arc[] arcs)

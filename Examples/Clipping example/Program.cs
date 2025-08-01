@@ -1,4 +1,5 @@
 ﻿using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
@@ -123,7 +124,7 @@ while (isRunning)
     if (!evnt.HasValue) return;
     switch (evnt.Value.EventType)
     {
-        case Xcsb.Models.Event.EventType.Expose:
+        case EventType.Expose:
         {
             xcsb.CopyArea(pixmap,
                 window,
@@ -134,7 +135,7 @@ while (isRunning)
             break;
         }
 
-        case Xcsb.Models.Event.EventType.KeyPress or Xcsb.Models.Event.EventType.Error:
+        case EventType.KeyPress or EventType.Error:
             isRunning = false;
             break;
     }

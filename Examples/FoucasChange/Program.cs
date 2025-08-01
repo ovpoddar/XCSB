@@ -1,6 +1,6 @@
 ﻿using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
-using Xcsb.Models.Event;
 
 
 // Connect to X server

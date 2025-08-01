@@ -1,9 +1,9 @@
 ﻿using System.Buffers;
 using System.Text;
 using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 
 const int WIDTH = 50;
 const int HEIGHT = 50;

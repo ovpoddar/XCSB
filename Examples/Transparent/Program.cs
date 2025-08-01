@@ -1,7 +1,7 @@
 ﻿using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 using Xcsb.Models.Handshake;
 // todo:Reminder. this will work if their is the extension support
 var x11 = XcsbClient.Initialized();

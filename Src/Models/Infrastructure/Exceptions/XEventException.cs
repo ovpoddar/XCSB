@@ -1,4 +1,4 @@
-﻿using Xcsb.Models.Event;
+﻿using Xcsb.Event;
 
 namespace Xcsb.Models.Infrastructure.Exceptions;
 

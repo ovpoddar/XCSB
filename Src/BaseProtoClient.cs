@@ -2,10 +2,9 @@
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Event;
 using Xcsb.Helpers;
-using Xcsb.Models.Event;
-using Xcsb.Models.Response;
-using Xcsb.Models.Response.Contract;
+using Xcsb.Response.Contract;
 
 namespace Xcsb;
 

@@ -1,7 +1,5 @@
-﻿using Xcsb.Models;
-using Xcsb.Models.Event;
+﻿using Xcsb.Event;
 using Xcsb.Models.Handshake;
-using Xcsb.Models.Response;
 
 namespace Xcsb;
 
@@ -32,7 +30,7 @@ public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IDispo
     bool IsEventAvailable();
     void WaitForEvent();
     uint NewId();
-    
-    
-    
+
+
+
 }

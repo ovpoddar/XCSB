@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 
 using var c = XcsbClient.Initialized();
 

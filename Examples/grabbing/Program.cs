@@ -1,7 +1,7 @@
 ﻿using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 
 var connection = XcsbClient.Initialized();
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];

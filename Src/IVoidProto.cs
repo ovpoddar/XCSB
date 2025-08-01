@@ -1,6 +1,7 @@
-﻿using Xcsb.Masks;
+﻿using Xcsb.Event;
+using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif

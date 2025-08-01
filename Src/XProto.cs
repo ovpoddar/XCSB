@@ -1,20 +1,17 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Event;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 using Xcsb.Models.Handshake;
-using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Infrastructure.Exceptions;
-using Xcsb.Models.Requests;
-using Xcsb.Models.Response;
-using Xcsb.Models.Response.Internals;
+using Xcsb.Requests;
+using Xcsb.Response;
+using Xcsb.Response.Internals;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -722,7 +719,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetKeyboardMappingResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         return new GetKeyboardMappingReply(result.Value, count, socket);
     }
 
@@ -746,7 +743,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GetMotionEventsResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         return new GetMotionEventsReply(result.Value, socket);
     }
 
@@ -848,7 +845,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<GrabKeyboardReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         return result.Value;
     }
 
@@ -1027,7 +1024,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<ListFontsWithInfoResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         return new ListFontsWithInfoReply(result.Value, socket);
     }
 
@@ -1455,7 +1452,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<QueryBestSizeReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         return result.Value;
     }
 
@@ -1515,7 +1512,7 @@ internal class XProto : BaseProtoClient, IXProto
         var (result, error) = ReceivedResponse<QueryExtensionReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
-        
+
         return result.Value;
     }
 
