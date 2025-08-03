@@ -62,7 +62,7 @@ while (true)
         var resultGetScreenSaver = client.GetScreenSaver();
         Console.WriteLine($"GetScreenSaver will time out {resultGetScreenSaver.Timeout}");
         var resultGetPointerControl = client.GetPointerControl();
-        Console.WriteLine("GetPointerControl");
+        Console.WriteLine($"{resultGetPointerControl.AccelDenominator} {resultGetPointerControl.AccelNumerator}");
         var resultGetModifierMapping = client.GetModifierMapping();
         Console.WriteLine("GetModifierMapping");
         var resultSetModifierMapping = client.SetModifierMapping(resultGetModifierMapping.Keycodes);
