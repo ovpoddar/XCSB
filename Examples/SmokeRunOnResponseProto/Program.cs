@@ -33,7 +33,6 @@ var lookUpColor = client.LookupColor(client.HandshakeSuccessResponseBody.Screens
 
 Debug.Assert(lookUpColor.VisualRed == lookUpColor.ExactRed && lookUpColor.ExactRed == ushort.MaxValue);
 Debug.Assert(lookUpColor.VisualGreen == lookUpColor.ExactGreen && lookUpColor.ExactGreen == ushort.MaxValue);
-
 while (true)
 {
     var Event = client.GetEvent();
@@ -48,46 +47,30 @@ while (true)
     if (Event.Value.EventType == EventType.Expose)
     {
         var resultQueryTextExtents = client.QueryTextExtents(font, "Hello World");
-        Console.WriteLine("QueryTextExtents");
+        Console.WriteLine(
+            $"text OverallWidth \t\n :{resultQueryTextExtents.OverallWidth} FontAscent \t\n :{resultQueryTextExtents.FontAscent} FontDescent \t\n :{resultQueryTextExtents.FontDescent} ");
+        client.CloseFont(font);
         var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
         Console.WriteLine(resultGetMotionEvents.Events.Length);
 
+        var getBestWindowSize = client.QueryBestSize(QueryShapeOf.LargestCursor,
+            window, 32, 32);
+        Console.WriteLine($"Best size for 32x32: {getBestWindowSize.Width} {getBestWindowSize.Height}");
+        
         var resultQueryKeymap = client.QueryKeymap();
-        Console.WriteLine("QueryKeymap");
+        Console.WriteLine($"{resultQueryKeymap.keys.Length}");
         var resultGetScreenSaver = client.GetScreenSaver();
-        Console.WriteLine("GetScreenSaver");
+        Console.WriteLine($"GetScreenSaver will time out {resultGetScreenSaver.Timeout}");
         var resultGetPointerControl = client.GetPointerControl();
         Console.WriteLine("GetPointerControl");
         var resultGetModifierMapping = client.GetModifierMapping();
         Console.WriteLine("GetModifierMapping");
         var resultSetModifierMapping = client.SetModifierMapping(resultGetModifierMapping.Keycodes);
-        Console.WriteLine("resultSetModifierMapping");
+        Console.WriteLine(resultSetModifierMapping.Status);
         var resultGetKeyboardControl = client.GetKeyboardControl();
-        Console.WriteLine("GetKeyboardControl");
+        Console.WriteLine($"{resultGetKeyboardControl.BellPercent}");
         var resultGetPointerMapping = client.GetPointerMapping();
         var resultSetPointerMapping = client.SetPointerMapping(resultGetPointerMapping.Map);
         Console.WriteLine(resultSetPointerMapping.Status.ToString());
-        
-        //var resultGetFontPath = client.GetFontPath();
-        //Console.WriteLine("resultGetFontPath");
-        //var resultAllocColorCells = client.AllocColorCells(false,
-        //    client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
-        //    0xff,
-        //    0);
-        //Console.WriteLine("resultAllocColorCells");
-        //var resultQueryBestSize = client.QueryBestSize(QueryShapeOf.FastestTile, client.HandshakeSuccessResponseBody.Screens[0].Root, 100, 200);
-        //Console.WriteLine("resultQueryBestSize");
-        //var resultAllocColorPlanes = client.AllocColorPlanes();
-        //Console.WriteLine("resultAllocColorPlanes");
-
-        //var resultQueryFont = client.QueryFont(font);
-        //Console.WriteLine("resultQueryFont");
-        client.ChangeSaveSet();
-        client.ChangeActivePointerGrab();
-        client.SetFontPath();
-        client.StoreColors();
-        client.StoreNamedColor();
-        client.ChangeKeyboardMapping();
-            
     }
 }
