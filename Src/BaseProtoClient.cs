@@ -34,8 +34,18 @@ internal class BaseProtoClient
             socket.ReceiveExact(buffer);
             ref var baseHeader = ref buffer.AsStruct<T>();
             if (baseHeader.Verify(sequenceNumber))
-                return (buffer.ToStruct<T>(), null);
-
+            {
+                var needAnother = (Marshal.SizeOf<T>() - 32);
+                if (needAnother == 0)
+                    return (buffer.ToStruct<T>(), null);
+                
+                EnsureReadSize(needAnother);
+                Span<byte> resultContext = stackalloc byte[Marshal.SizeOf<T>()];
+                buffer.CopyTo(resultContext[0..32]);
+                socket.ReceiveExact(resultContext[32..]);
+                return (resultContext.ToStruct<T>(), null);
+            }
+            
             ref var content = ref buffer.AsStruct<XEvent>();
             if (content.EventType == EventType.Error)
             {
@@ -46,6 +56,10 @@ internal class BaseProtoClient
         }
     }
 
+    private void FillResponseBuffer(Span<byte> buffer)
+    {
+        
+    }
 
     void EnsureReadSize(int size)
     {

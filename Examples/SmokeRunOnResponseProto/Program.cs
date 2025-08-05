@@ -24,6 +24,8 @@ client.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
 var namedColor = client.AllocNamedColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Red"u8);
 Console.WriteLine($"{namedColor.ExactBlue} {namedColor.ExactGreen} {namedColor.ExactRed}");
 
+client.CloseFont(font);
+
 Debug.Assert(namedColor.VisualRed == namedColor.ExactRed && namedColor.ExactRed == ushort.MaxValue);
 Debug.Assert(namedColor.VisualGreen == namedColor.ExactGreen && namedColor.ExactGreen == 0);
 Debug.Assert(namedColor.VisualBlue == namedColor.ExactBlue && namedColor.ExactBlue == 0);
@@ -46,17 +48,13 @@ while (true)
 
     if (Event.Value.EventType == EventType.Expose)
     {
-        var resultQueryTextExtents = client.QueryTextExtents(font, "Hello World");
-        Console.WriteLine(
-            $"text OverallWidth \t\n :{resultQueryTextExtents.OverallWidth} FontAscent \t\n :{resultQueryTextExtents.FontAscent} FontDescent \t\n :{resultQueryTextExtents.FontDescent} ");
-        client.CloseFont(font);
         var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
         Console.WriteLine(resultGetMotionEvents.Events.Length);
 
         var getBestWindowSize = client.QueryBestSize(QueryShapeOf.LargestCursor,
             window, 32, 32);
         Console.WriteLine($"Best size for 32x32: {getBestWindowSize.Width} {getBestWindowSize.Height}");
-        
+
         var resultQueryKeymap = client.QueryKeymap();
         Console.WriteLine($"{resultQueryKeymap.keys.Length}");
         var resultGetScreenSaver = client.GetScreenSaver();

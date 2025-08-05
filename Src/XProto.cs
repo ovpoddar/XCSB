@@ -1526,7 +1526,6 @@ internal class XProto : BaseProtoClient, IXProto
             throw new XEventException(error!.Value);
 
         return new QueryFontReply(result.Value, socket);
-        ;
     }
 
 
@@ -1725,8 +1724,9 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void SetFontPath(string[] strPaths)
     {
-        var request = new SetFontPathType((ushort)strPaths.Length, strPaths.Sum(a => a.Length).AddPadding());
-        var requiredBuffer = 8 + strPaths.Sum(a => a.Length).AddPadding();
+        var strPathsLength = strPaths.Sum(a => a.Length + 2).AddPadding();
+        var request = new SetFontPathType((ushort)strPaths.Length, strPathsLength);
+        var requiredBuffer = 8 + strPathsLength;
         var writIndex = 8;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
@@ -1738,11 +1738,12 @@ internal class XProto : BaseProtoClient, IXProto
 #endif
             foreach (var item in strPaths)
             {
-                Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
-                writIndex += item.Length;
+                scratchBuffer[writIndex++] = (byte)item.Length;
+                writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
+                scratchBuffer[writIndex++] = 0;
             }
 
-            scratchBuffer[^strPaths.Sum(a => a.Length).Padding()..].Clear();
+            scratchBuffer[^strPaths.Sum(a => a.Length + 2).Padding()..].Clear();
             socket.SendExact(scratchBuffer);
         }
         else
@@ -1755,11 +1756,12 @@ internal class XProto : BaseProtoClient, IXProto
 #endif
             foreach (var item in strPaths)
             {
-                Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
-                writIndex += item.Length;
+                scratchBuffer[writIndex++] = (byte)item.Length;
+                writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
+                scratchBuffer[writIndex++] = 0;
             }
 
-            scratchBuffer[^strPaths.Sum(a => a.Length).Padding()..].Clear();
+            scratchBuffer[^strPaths.Sum(a => a.Length + 2).Padding()..].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 

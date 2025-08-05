@@ -2,7 +2,7 @@
 
 public enum ColorFlag : byte
 {
-    Red = 1,
-    Green = 2,
-    Blue = 4
+    Red = 0,
+    Green = 1,
+    Blue = 2
 }
