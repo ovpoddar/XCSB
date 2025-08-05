@@ -20,4 +20,5 @@ internal readonly struct GrabKeyboardType(
     public readonly uint TimeStamp = timeStamp;
     public readonly GrabMode PointerMode = pointerMode;
     public readonly GrabMode KeyboardMode = keyboardMode;
+    private readonly ushort _pad0 = 0;
 }

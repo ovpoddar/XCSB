@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct FreeColormapType(uint colormapId)
 {
     public readonly Opcode Opcode = Opcode.FreeColormap;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly uint ColorMapId = colormapId;
 }

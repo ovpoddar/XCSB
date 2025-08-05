@@ -14,4 +14,5 @@ internal readonly struct UngrabKeyType(byte key, uint grabWindow, ModifierMask m
     public readonly ushort Length = 3;
     public readonly uint GrabWindow = grabWindow;
     public readonly ModifierMask Modifier = modifier;
+    private readonly ushort _pad0 = 0;
 }

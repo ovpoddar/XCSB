@@ -9,6 +9,6 @@ namespace Xcsb.Requests;
 internal readonly struct GetScreenSaverType()
 {
     public readonly Opcode Opcode = Opcode.GetScreenSaver;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 1;
 }

@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct PolyArcType(uint drawable, uint gc, int arcLength)
 {
     public readonly Opcode opcode = Opcode.PolyArc;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(3 + 3 * arcLength);
     public readonly uint Drawable = drawable;
     public readonly uint GC = gc;

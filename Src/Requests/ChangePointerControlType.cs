@@ -15,7 +15,7 @@ internal readonly struct ChangePointerControlType(
 )
 {
     public readonly Opcode opcode = Opcode.ChangePointerControl;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 3;
     public readonly ushort AccelerationNumerator = accelerationNumerator;
     public readonly ushort AccelerationDenominator = accelerationDenominator;

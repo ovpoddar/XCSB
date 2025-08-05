@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct DeletePropertyType(uint window, uint atom)
 {
     public readonly Opcode opcode = Opcode.DeleteProperty;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 3;
     public readonly uint Window = window;
     public readonly uint Atom = atom;

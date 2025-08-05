@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct SetSelectionOwnerType(uint owner, uint atom, uint timestamp)
 {
     public readonly Opcode OpCode = Opcode.SetSelectionOwner;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 4;
     public readonly uint Owner = owner;
     public readonly uint Atom = atom;

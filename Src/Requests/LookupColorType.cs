@@ -10,7 +10,7 @@ namespace Xcsb.Requests;
 internal readonly struct LookupColorType(uint colorMap, int nameLength)
 {
     public readonly Opcode Opcode = Opcode.LookupColor;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(3 + nameLength.AddPadding() / 4);
     public readonly uint Color = colorMap;
     public readonly ushort NameLength = (ushort)nameLength;

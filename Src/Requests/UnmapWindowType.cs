@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct UnmapWindowType(uint window)
 {
     public readonly Opcode OpCode = Opcode.UnmapWindow;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly uint Window = window;
 }

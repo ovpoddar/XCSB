@@ -28,6 +28,6 @@ internal readonly struct GrabButtonType(
     public readonly uint ConfineTo = confineTo;
     public readonly uint Cursor = cursor;
     public readonly Button Button = button;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ModifierMask Modifiers = modifiers;
 }

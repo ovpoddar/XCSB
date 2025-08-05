@@ -10,7 +10,7 @@ namespace Xcsb.Requests;
 internal readonly struct SetDashesType(uint gc, ushort dashOffset, int dashLength)
 {
     public readonly Opcode opcode = Opcode.SetDashes;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(3 + dashLength.AddPadding() / 4);
     public readonly uint GContext = gc;
     public readonly ushort DashOffset = dashOffset;

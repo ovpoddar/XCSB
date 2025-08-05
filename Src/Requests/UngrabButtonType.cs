@@ -14,4 +14,5 @@ internal readonly struct UngrabButtonType(Button button, uint grabWindow, Modifi
     public readonly ushort Length = 3;
     public readonly uint GrabWindow = grabWindow;
     public readonly ModifierMask Modifier = modifier;
+    private readonly byte _pad0 = 0;
 }

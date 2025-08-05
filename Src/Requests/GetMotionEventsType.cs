@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct GetMotionEventsType(uint window, uint startTime, uint endTime)
 {
     public readonly Opcode OpCode = Opcode.GetMotionEvents;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 4;
     public readonly uint Window = window;
     public readonly uint StartTime = startTime;

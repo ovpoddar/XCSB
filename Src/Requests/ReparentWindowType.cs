@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct ReparentWindowType(uint window, uint parent, short x, short y)
 {
     public readonly Opcode OpCode = Opcode.ReparentWindow;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 4;
     public readonly uint Window = window;
     public readonly uint Parent = parent;

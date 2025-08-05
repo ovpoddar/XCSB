@@ -10,7 +10,7 @@ namespace Xcsb.Requests;
 internal readonly struct ChangeGCType(uint gc, GCMask mask, int argsLength)
 {
     public readonly Opcode opcode = Opcode.ChangeGC;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(3 + argsLength);
     public readonly uint Gc = gc;
     public readonly GCMask Mask = mask;

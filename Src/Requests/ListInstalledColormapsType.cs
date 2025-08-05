@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct ListInstalledColormapsType(uint window)
 {
     public readonly Opcode Opcode = Opcode.ListInstalledColormaps;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly uint Window = window;
 }

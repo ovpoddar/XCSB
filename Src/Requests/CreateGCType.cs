@@ -10,7 +10,7 @@ namespace Xcsb.Requests;
 internal readonly struct CreateGCType(uint gc, uint drawable, GCMask mask, int argsLength)
 {
     public readonly Opcode OpCode = Opcode.CreateGC;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(4 + argsLength);
     public readonly uint Gc = gc;
     public readonly uint Drawable = drawable;

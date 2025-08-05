@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct InstallColormapType(uint colormapId)
 {
     public readonly Opcode Opcode = Opcode.InstallColormap;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly uint ColorMapId = colormapId;
 }

@@ -30,4 +30,5 @@ internal readonly struct PutImageType(
     public readonly short Y = y;
     public readonly byte LeftPad = leftPad;
     public readonly byte Depth = depth;
+    private readonly byte _pad0 = 0;
 }

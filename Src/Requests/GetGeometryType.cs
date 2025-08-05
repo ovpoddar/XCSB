@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct GetGeometryType(uint drawable)
 {
     public readonly Opcode Opcode = Opcode.GetGeometry;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly uint Drawable = drawable;
 }

@@ -9,6 +9,6 @@ namespace Xcsb.Requests;
 internal readonly struct GetModifierMappingType()
 {
     public readonly Opcode Opcode = Opcode.GetModifierMapping;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 1;
 }

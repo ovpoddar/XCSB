@@ -20,7 +20,7 @@ internal readonly struct CreateGlyphCursorType(
     ushort backBlue)
 {
     public readonly Opcode OpCode = Opcode.CreateGlyphCursor;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 8;
     public readonly uint CursorId = cursorId;
     public readonly uint SourceFont = sourceFont;

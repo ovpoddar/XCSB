@@ -19,7 +19,7 @@ internal readonly struct CopyPlaneType(
     uint bitPlane)
 {
     public readonly Opcode OpCode = Opcode.CopyPlane;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 8;
     public readonly uint SourceDrawable = srcDrawable;
     public readonly uint DestinationDrawable = destinationDrawable;

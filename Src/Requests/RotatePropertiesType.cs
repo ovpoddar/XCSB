@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct RotatePropertiesType(uint window, int propertiesLength, ushort delta)
 {
     public readonly Opcode opcode = Opcode.RotateProperties;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(3 + propertiesLength);
     public readonly uint Window = window;
     public readonly ushort PropertiesLength = (ushort)propertiesLength;

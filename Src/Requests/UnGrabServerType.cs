@@ -9,6 +9,6 @@ namespace Xcsb.Requests;
 internal readonly struct UnGrabServerType()
 {
     public readonly Opcode Opcode = Opcode.UngrabServer;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 1;
 }

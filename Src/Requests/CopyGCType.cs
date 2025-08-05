@@ -10,7 +10,7 @@ namespace Xcsb.Requests;
 internal readonly struct CopyGCType(uint srcGc, uint dstGc, GCMask mask)
 {
     public readonly Opcode OpCode = Opcode.CopyGC;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 4;
     public readonly uint SourceGC = srcGc;
     public readonly uint DestinationGC = dstGc;

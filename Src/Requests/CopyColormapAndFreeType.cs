@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct CopyColormapAndFreeType(uint colormapId, uint srcColormapId)
 {
     public readonly Opcode opcode = Opcode.CopyColormapAndFree;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 3;
     public readonly uint ColorMapId = colormapId;
     public readonly uint SourceColorMapId = srcColormapId;

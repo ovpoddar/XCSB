@@ -17,7 +17,7 @@ internal readonly struct WarpPointerType(
     short destinationY)
 {
     public readonly Opcode OpCode = Opcode.WarpPointer;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 6;
     public readonly uint SrcWindow = srcWindow;
     public readonly uint DestinationWindow = destinationWindow;

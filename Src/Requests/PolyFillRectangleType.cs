@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct PolyFillRectangleType(uint drawable, uint gc, int rectanglesLength)
 {
     public readonly Opcode opcode = Opcode.PolyFillRectangle;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(3 + 2 * rectanglesLength);
     public readonly uint Drawable = drawable;
     public readonly uint GC = gc;

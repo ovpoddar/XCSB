@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct QueryColorsType(uint colorMap, int pixelsLength)
 {
     public readonly Opcode Opcode = Opcode.QueryColors;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(2 + pixelsLength);
     public readonly uint ColorMap = colorMap;
 }

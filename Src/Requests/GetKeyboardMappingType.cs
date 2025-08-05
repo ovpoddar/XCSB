@@ -9,8 +9,9 @@ namespace Xcsb.Requests;
 internal readonly struct GetKeyboardMappingType(byte firstKeycode, byte count)
 {
     public readonly Opcode Opcode = Opcode.GetKeyboardMapping;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly byte FirstKeycode = firstKeycode;
     public readonly byte Count = count;
+    private readonly byte _pad1 = 0;
 }

@@ -12,10 +12,10 @@ internal readonly struct HandShakeRequestType(
     ushort minorVersion = 0)
 {
     public readonly byte ByteOrder = (byte)(BitConverter.IsLittleEndian ? 'l' : 'B');
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort MajorVersion = majorVersion;
     public readonly ushort MinorVersion = minorVersion;
     public readonly ushort NameLength = nameLength;
     public readonly ushort DataLength = dataLength;
-    private readonly ushort _pad1;
+    private readonly ushort _pad1 = 0;
 }

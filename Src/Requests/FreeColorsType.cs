@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct FreeColorsType(uint colormapId, uint planeMask, int pixelsLength)
 {
     public readonly Opcode opcode = Opcode.FreeColors;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(3 + pixelsLength);
     public readonly uint ColorMapId = colormapId;
     public readonly uint PlaneMask = planeMask;

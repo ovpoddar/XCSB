@@ -13,4 +13,5 @@ internal readonly struct ChangeKeyboardMappingType(byte keycodeCount, byte first
     public readonly ushort Length = (ushort)(2 + keycodeCount * keysymsPerKeycode);
     public readonly byte FirstKeycode = firstKeycode;
     public readonly byte KeysymsPerKeycode = keysymsPerKeycode;
+    private readonly ushort _pad0 = 0;
 }

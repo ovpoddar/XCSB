@@ -16,7 +16,7 @@ internal readonly struct RecolorCursorType(
     ushort backBlue)
 {
     public readonly Opcode OpCode = Opcode.RecolorCursor;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 5;
     public readonly uint CursorId = cursorId;
     public readonly ushort ForegroundRed = foreRed;

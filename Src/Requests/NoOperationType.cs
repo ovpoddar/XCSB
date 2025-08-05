@@ -9,6 +9,6 @@ namespace Xcsb.Requests;
 internal readonly struct NoOperationType(int argsLength)
 {
     public readonly Opcode opcode = Opcode.NoOperation;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(1 + argsLength);
 }

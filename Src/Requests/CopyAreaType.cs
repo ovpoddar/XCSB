@@ -18,7 +18,7 @@ internal readonly struct CopyAreaType(
     ushort height)
 {
     public readonly Opcode OpCode = Opcode.CopyArea;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 7;
     public readonly uint SourceDrawable = srcDrawable;
     public readonly uint DestinationDrawable = destinationDrawable;

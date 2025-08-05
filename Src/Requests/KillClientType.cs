@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct KillClientType(uint resource)
 {
     public readonly Opcode Opcode = Opcode.KillClient;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly uint Resource = resource;
 }

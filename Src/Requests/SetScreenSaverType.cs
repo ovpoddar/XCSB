@@ -13,10 +13,11 @@ internal readonly struct SetScreenSaverType(
     TriState allowExposures)
 {
     public readonly Opcode OpCode = Opcode.SetScreenSaver;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 3;
     public readonly short TimeOut = timeout;
     public readonly short Interval = interval;
     public readonly TriState PreferBlanking = preferBlanking;
     public readonly TriState AllowExposures = allowExposures;
+    private readonly byte _pad1 = 0;
 }

@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct FreeGCType(uint gc)
 {
     public readonly Opcode OpCode = Opcode.FreeGC;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly uint GC = gc;
 }

@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct GetSelectionOwnerType(uint atom)
 {
     public readonly Opcode Opcode = Opcode.GetSelectionOwner;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly uint Atom = atom;
 }

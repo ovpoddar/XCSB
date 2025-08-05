@@ -9,6 +9,6 @@ namespace Xcsb.Requests;
 internal readonly struct GetFontPathType()
 {
     public readonly Opcode OpCode = Opcode.GetFontPath;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 1;
 }

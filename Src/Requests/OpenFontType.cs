@@ -10,9 +10,9 @@ namespace Xcsb.Requests;
 internal readonly struct OpenFontType(uint fontId, int fontLength)
 {
     public readonly Opcode opcode = Opcode.OpenFont;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(3 + fontLength.AddPadding() / 4);
     public readonly uint FontId = fontId;
     public readonly ushort FontLength = (ushort)fontLength;
-    private readonly ushort _pad1;
+    private readonly ushort _pad1 = 0;
 }

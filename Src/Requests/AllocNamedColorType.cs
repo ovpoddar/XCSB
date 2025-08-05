@@ -10,9 +10,9 @@ namespace Xcsb.Requests;
 internal readonly struct AllocNamedColorType(uint colorMap, int nameLength)
 {
     public readonly Opcode Opcode = Opcode.AllocNamedColor;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = (ushort)(3 + nameLength.AddPadding() / 4);
     public readonly uint ColorMap = colorMap;
     public readonly ushort NameLength = (ushort)nameLength;
-    private readonly ushort _pad1;
+    private readonly ushort _pad1 = 0;
 }

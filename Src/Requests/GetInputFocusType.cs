@@ -9,6 +9,6 @@ namespace Xcsb.Requests;
 internal readonly struct GetInputFocusType()
 {
     public readonly Opcode Opcode = Opcode.GetInputFocus;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 1;
 }

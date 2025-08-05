@@ -22,8 +22,8 @@ internal readonly struct ChangePropertyType(
     public readonly uint Property = property;
     public readonly uint Type = type;
     public readonly byte Size = size;
-    private readonly byte _pad0;
-    private readonly byte _pad1;
-    private readonly byte _pad2;
+    private readonly byte _pad0 = 0;
+    private readonly byte _pad1 = 0;
+    private readonly byte _pad2 = 0;
     public readonly int ArgsLength = argsLength;
 }

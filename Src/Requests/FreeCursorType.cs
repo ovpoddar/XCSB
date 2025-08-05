@@ -9,7 +9,7 @@ namespace Xcsb.Requests;
 internal readonly struct FreeCursorType(uint cursorId)
 {
     public readonly Opcode OpCode = Opcode.FreeCursor;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
     public readonly uint CursorId = cursorId;
 }

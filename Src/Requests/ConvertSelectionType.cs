@@ -14,7 +14,7 @@ internal readonly struct ConvertSelectionType(
     uint timestamp)
 {
     public readonly Opcode OpCode = Opcode.ConvertSelection;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 6;
     public readonly uint Requestor = requestor;
     public readonly uint Selection = selection;

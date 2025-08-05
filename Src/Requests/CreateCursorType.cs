@@ -20,7 +20,7 @@ internal readonly struct CreateCursorType(
     ushort y)
 {
     public readonly Opcode OpCode = Opcode.CreateCursor;
-    private readonly byte _pad0;
+    private readonly byte _pad0 = 0;
     public readonly ushort Length = 8;
     public readonly uint CursorId = cursorId;
     public readonly uint Source = source;
