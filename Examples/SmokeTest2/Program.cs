@@ -1,4 +1,5 @@
 ﻿using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
@@ -67,11 +68,12 @@ var text = "Hello, XCB!";
 var text_extents = conn.QueryTextExtents(font, text);
 Console.WriteLine($"QueryTextExtents: Width of '{text}': {text_extents.OverallWidth}\n");
 
-/*
-// 6. ChangeSaveSet
-xcb_change_save_set(conn, XCB_SET_MODE_INSERT, window);
-printf("ChangeSaveSet: Added window to save set\n");
 
+// 6. ChangeSaveSet
+// conn.ChangeSaveSetChecked(ChangeSaveSetMode.Insert, window);
+
+/*
+ todo depends on old todo
 // 7. ChangeActivePointerGrab with allocated pixel
 if (pixels && color_cells && color_cells->pixels_len > 0)
 {
@@ -79,103 +81,31 @@ if (pixels && color_cells && color_cells->pixels_len > 0)
         XCB_EVENT_MASK_BUTTON_PRESS);
     printf("ChangeActivePointerGrab: Grab set with allocated pixel\n");
 }
+*/
 
 // 8. GetMotionEvents
-xcb_get_motion_events_reply_t* motion = xcb_get_motion_events_reply(conn,
-    xcb_get_motion_events(conn, window, XCB_TIME_CURRENT_TIME, XCB_TIME_CURRENT_TIME), NULL);
-if (motion)
-{
-    printf("GetMotionEvents: %d events\n", motion->events_len);
-    free(motion);
-}
-
-// 9. QueryKeymap
-xcb_query_keymap_reply_t* keymap = xcb_query_keymap_reply(conn,
-    xcb_query_keymap(conn), NULL);
-if (keymap)
-{
-    printf("QueryKeymap: Keymap retrieved\n");
-    free(keymap);
-}
-
-printf("\t %hhd", keymap->keys);
+var motion = conn.GetMotionEvents(window, 0, 0);
+Console.WriteLine($"GetMotionEvents: {motion.Events.Length} events");
 
 // 10. GetScreenSaver
-xcb_get_screen_saver_reply_t* screensaver = xcb_get_screen_saver_reply(conn,
-    xcb_get_screen_saver(conn), NULL);
-if (screensaver)
-{
-    printf("GetScreenSaver: Timeout: %d\n", screensaver->timeout);
-    free(screensaver);
-}
-
-// 11. GetPointerControl
-xcb_get_pointer_control_reply_t* pointer = xcb_get_pointer_control_reply(conn,
-    xcb_get_pointer_control(conn), NULL);
-if (pointer)
-{
-    printf("GetPointerControl: Acceleration: %d/%d\n",
-        pointer->acceleration_numerator, pointer->acceleration_denominator);
-    free(pointer);
-}
-
-// 12. GetModifierMapping and use for SetModifierMapping
-xcb_get_modifier_mapping_reply_t* modmap = xcb_get_modifier_mapping_reply(conn,
-    xcb_get_modifier_mapping(conn), NULL);
-if (modmap)
-{
-    printf("GetModifierMapping: Keycodes per modifier: %d\n", modmap->keycodes_per_modifier);
-    // Use the retrieved mapping to reset it
-    xcb_keycode_t* mod_keycodes = xcb_get_modifier_mapping_keycodes(modmap);
-    xcb_set_modifier_mapping_reply_t* set_modmap = xcb_set_modifier_mapping_reply(conn,
-        xcb_set_modifier_mapping(conn, modmap->keycodes_per_modifier * 8, mod_keycodes), NULL);
-    if (set_modmap)
-    {
-        printf("SetModifierMapping: Status: %d\n", set_modmap->status);
-        free(set_modmap);
-    }
-
-    free(modmap);
-}
-
-// 13. GetKeyboardControl
-xcb_get_keyboard_control_reply_t* kb_control = xcb_get_keyboard_control_reply(conn,
-    xcb_get_keyboard_control(conn), NULL);
-if (kb_control)
-{
-    printf("GetKeyboardControl: Bell percent: %d\n", kb_control->bell_percent);
-    free(kb_control);
-}
+var screensaver = conn.GetScreenSaver();
+Console.WriteLine($"GetScreenSaver: Timeout: {screensaver.Timeout}");
 
 // 14. ChangeKeyboardMapping (using minimal example to avoid breaking keyboard)
-xcb_keycode_t keycodes[] =  {
-    0
-}
-; // Dummy keycode
-xcb_keysym_t keysyms[] =  {
-    0
-}
-; // Dummy keysym
-xcb_change_keyboard_mapping(conn, 1, keycodes[0], 1, keysyms);
-printf("ChangeKeyboardMapping: Modified one key (dummy)\n");
+conn.ChangeKeyboardMapping(
+    1,
+    0,
+    1,
+    [0]
+    );
+Console.WriteLine("ChangeKeyboardMapping: Modified one key (dummy)\n");
 
-// Free allocated color cells
-if (color_cells)
+while (true)
 {
-    free(color_cells);
-}
-
-// Event loop
-xcb_generic_event_t *event;
-while ((event = xcb_wait_for_event(conn))) {
-    if ((event->response_type & ~0x80) == XCB_KEY_PRESS) {
+    var Event = conn.GetEvent();
+    if (!Event.HasValue)
         break;
-    }
-    free(event);
+    if (Event.Value.EventType == EventType.KeyPress)
+        break;
 }
-
-// Cleanup
-xcb_close_font(conn, font);
-xcb_disconnect(conn);
-
-*/
+conn.DestroyWindow(window);
