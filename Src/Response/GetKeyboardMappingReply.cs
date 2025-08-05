@@ -13,16 +13,16 @@ public readonly struct GetKeyboardMappingReply
 
     internal GetKeyboardMappingReply(GetKeyboardMappingResponse result, byte count, Socket socket)
     {
-        if (result.KeyPerKeyCode * count != result.Length)
+        if (result.ResponseHeader.Value * count != result.ResponseHeader.Length)
             throw new InvalidOperationException("Invalid reply");
 
-        Reply = result.Reply;
-        Sequence = result.Sequence;
-        if (result.KeyPerKeyCode == 0)
+        Reply = result.ResponseHeader.Reply;
+        Sequence = result.ResponseHeader.Sequence;
+        if (result.ResponseHeader.Value == 0)
             Keysyms = [];
         else
         {
-            var requiredSize = (int)result.Length * 4;
+            var requiredSize = (int)result.ResponseHeader.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
             Keysyms = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();

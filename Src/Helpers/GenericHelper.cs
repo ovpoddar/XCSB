@@ -89,6 +89,9 @@ internal static class GenericHelper
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
+        if (buffer.Length == 0)
+            return;
+        
         var total = 0;
         while (socket.Connected)
         {

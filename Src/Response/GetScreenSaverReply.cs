@@ -6,7 +6,7 @@ namespace Xcsb.Response;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct GetScreenSaverReply : IXBaseResponse
 {
-    public readonly ResponseHeader ResponseHeader;
+    public readonly ResponseHeader<byte>ResponseHeader;
     public readonly ushort Timeout;
     public readonly ushort Interval;
     private readonly byte _preferBlanking;

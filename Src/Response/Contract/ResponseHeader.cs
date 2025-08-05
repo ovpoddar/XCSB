@@ -1,17 +1,18 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Xcsb.Response.Contract;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
-public readonly struct ResponseHeader : IXBaseResponse
+public readonly struct ResponseHeader<T> : IXBaseResponse where T : struct
 {
     public readonly byte Reply;
-    private readonly byte _pad0;
+    public readonly T Value;
     public readonly ushort Sequence;
     public readonly uint Length;
 
     public bool Verify(in int sequence)
     {
-        return Reply == 1 && Sequence == sequence;
+        return Reply == 1 && Sequence == sequence && Unsafe.SizeOf<T>() == 1;
     }
 }

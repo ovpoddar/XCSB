@@ -1,17 +1,14 @@
-﻿using System.Diagnostics;
-using System.Net.Sockets;
-using Xcsb.Helpers;
+﻿using System.Runtime.InteropServices;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Contract;
 
 namespace Xcsb.Response;
 
-public readonly struct GetWindowAttributesReply
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
+public readonly struct GetWindowAttributesReply : IXBaseResponse
 {
-    public readonly byte ResponseType;
-    public readonly BackingStores Stores;
-    public readonly ushort Sequence;
+    public readonly ResponseHeader<BackingStores> ResponseHeader;
     public readonly uint Length;
     public readonly uint VisualId;
     public readonly ClassResponseType Class;
@@ -19,39 +16,19 @@ public readonly struct GetWindowAttributesReply
     public readonly Gravity WinGravity;
     public readonly uint BackingPlane;
     public readonly uint BackingPixel;
+    public readonly byte SaveUnder;
+    public readonly byte MapIsInstalled;
     public readonly MapState MapState;
+    public readonly byte OverrideRedirect;
     public readonly uint ColorMap;
     public readonly uint AllEventMasks; // EventMask
     public readonly uint YourEventMask; // EventMask
     public readonly ushort DoNotPropagateMask; // EventMask
-    public readonly bool SaveUnder;
-    public readonly bool MapIsInstalled;
-    public readonly bool OverrideRedirect;
+    private readonly ushort _pad0;
 
-    internal GetWindowAttributesReply(GetWindowAttributesResponse response, Socket socket)
+    public bool Verify(in int sequence)
     {
-        ResponseType = response.Type;
-        Stores = response.Stores;
-        Sequence = response.Sequence;
-        Length = response.Length;
-        VisualId = response.VisualId;
-        Class = response.Class;
-        BitGravity = response.BitGravity;
-        WinGravity = response.WinGravity;
-        BackingPixel = response.BackingPixel;
-        BackingPlane = response.BackingPlane;
-        MapState = response.MapState;
-        ColorMap = response.ColorMap;
-        SaveUnder = response.SaveUnder == 1;
-        MapIsInstalled = response.MapIsInstalled == 1;
-        OverrideRedirect = response.OverrideRedirect == 1;
-
-        Span<byte> buffer = stackalloc byte[(int)(response.Length * 4)];
-        Debug.Assert(response.Length * 4 == 12);
-        socket.ReceiveExact(buffer);
-
-        AllEventMasks = buffer[0..4].ToStruct<uint>();
-        YourEventMask = buffer[4..8].ToStruct<uint>();
-        DoNotPropagateMask = buffer[8..10].ToStruct<ushort>();
+        // Stores
+        return Length == 3 && this._pad0 == 0;
     }
 }

@@ -25,41 +25,33 @@ internal class BaseProtoClient
 #endif
     internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : unmanaged, IXBaseResponse
     {
-        Debug.Assert(Marshal.SizeOf<T>() == 32);
         sequenceNumber++;
-        Span<byte> buffer = stackalloc byte[32];
+        var resultLength = Marshal.SizeOf<T>();
+        Span<byte> buffer = stackalloc byte[resultLength];
         while (true)
         {
-            EnsureReadSize(32);
-            socket.ReceiveExact(buffer);
-            ref var baseHeader = ref buffer.AsStruct<T>();
+            EnsureReadSize(resultLength);
+            socket.ReceiveExact(buffer[0..32]);
+            ref var baseHeader = ref buffer[0..32].AsStruct<ResponseHeader<byte>>();
             if (baseHeader.Verify(sequenceNumber))
             {
-                var needAnother = (Marshal.SizeOf<T>() - 32);
-                if (needAnother == 0)
+                socket.ReceiveExact(buffer[32..]);
+                ref var responce = ref buffer.AsStruct<T>();
+                if (responce.Verify(sequenceNumber))
                     return (buffer.ToStruct<T>(), null);
-                
-                EnsureReadSize(needAnother);
-                Span<byte> resultContext = stackalloc byte[Marshal.SizeOf<T>()];
-                buffer.CopyTo(resultContext[0..32]);
-                socket.ReceiveExact(resultContext[32..]);
-                return (resultContext.ToStruct<T>(), null);
             }
-            
-            ref var content = ref buffer.AsStruct<XEvent>();
+
+            ref var content = ref buffer[0..32].AsStruct<XEvent>();
             if (content.EventType == EventType.Error)
             {
                 sequenceNumber--;
                 return (null, content.ErrorEvent);
             }
-            bufferEvents.Push(buffer.ToStruct<XEvent>());
+
+            bufferEvents.Push(buffer[0..32].ToStruct<XEvent>());
         }
     }
 
-    private void FillResponseBuffer(Span<byte> buffer)
-    {
-        
-    }
 
     void EnsureReadSize(int size)
     {

@@ -7,10 +7,7 @@ namespace Xcsb.Response;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct QueryPointerReply : IXBaseResponse
 {
-    public readonly byte Reply; // 1
-    private readonly byte _sameScreen;
-    public readonly short Sequence;
-    public readonly int LengthReply;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public readonly uint Root;
     public readonly uint child;
     public readonly short RootX;
@@ -19,10 +16,11 @@ public readonly struct QueryPointerReply : IXBaseResponse
     public readonly short WinY;
     public readonly KeyButMask Mask;
 
-    public readonly bool IsSameScreen => _sameScreen == 1;
+    public readonly bool IsSameScreen => ResponseHeader.Value == 1;
 
     public bool Verify(in int sequence)
     {
-        return Reply == 1 && LengthReply == 0 && Sequence == sequence;
+        // _sameScreen
+        return ResponseHeader.Length == 0;
     }
 }

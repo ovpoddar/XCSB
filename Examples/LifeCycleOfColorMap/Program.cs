@@ -18,7 +18,7 @@ x.CreateColormapChecked(Xcsb.Models.ColormapAlloc.None,
     screen.RootVisualId);
 
 var win = x.NewId();
-x.CreateWindowChecked(screen.RootDepth.DepthValue,
+x.CreateWindowChecked(screen.RootDepth!.DepthValue,
     win,
     root,
     0, 0, 500, 500,
@@ -105,7 +105,7 @@ var resultGrabKeyboard = x.GrabKeyboard(
     GrabMode.Asynchronous
 );
         
-Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Status}");
+Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.ResponseHeader.Value}");
 x.UngrabKeyboard(0);
 
 var xevnt = x.GetEvent();

@@ -16,27 +16,23 @@ public struct GetKeyboardControlReply
     public readonly byte BellPercent;
     public readonly ushort BellPitch;
     public readonly ushort BellDuration;
-    public byte[] Repeats;
-    internal GetKeyboardControlReply(GetKeyboardControlResponse result, Socket socket)
+    public readonly byte[] Repeats = new byte[32];
+
+    internal GetKeyboardControlReply(GetKeyboardControlResponse result)
     {
         unsafe
         {
-            Reply = result.Reply;
-            AutoRepeatMode = result.AutoRepeatMode;
-            Sequence = result.Sequence;
-            Length = result.Length;
+            Reply = result.ResponseHeader.Reply;
+            AutoRepeatMode = result.ResponseHeader.Value;
+            Sequence = result.ResponseHeader.Sequence;
+            Length = result.ResponseHeader.Length;
             LedMask = result.LedMask;
             KeyClickPercent = result.KeyClickPercent;
             BellPercent = result.BellPercent;
             BellPitch = result.BellPitch;
             BellDuration = result.BellDuration;
-            Repeats = new byte[32];
-
-            Span<byte> buffer = stackalloc byte[20];
-            socket.ReceiveExact(buffer);
-
-            new Span<byte>(result.Repeats, 12).CopyTo(Repeats[0..12]);
-            buffer.CopyTo(Repeats[12..32]);
+            new Span<byte>(result.Repeats, 32)
+                .CopyTo(Repeats);
         }
     }
 }

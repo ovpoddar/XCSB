@@ -6,7 +6,6 @@ using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct QueryColorsReply
 {
     public readonly byte Reply;

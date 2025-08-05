@@ -16,16 +16,16 @@ public readonly struct ListHostsReply
 
     internal ListHostsReply(ListHostsResponse response, Socket socket)
     {
-        Reply = response.Reply;
-        Mode = response.Mode;
-        Sequence = response.Sequence;
+        Reply = response.ResponseHeader.Reply;
+        Mode = response.ResponseHeader.Value;
+        Sequence = response.ResponseHeader.Sequence;
         NumberOfHosts = response.NumberOfHosts;
 
-        if (response.Length == 0)
+        if (response.ResponseHeader.Length == 0)
             Hosts = [];
         else
         {
-            var requiredSize = (int)response.Length * 4;
+            var requiredSize = (int)response.ResponseHeader.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
             Hosts = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();

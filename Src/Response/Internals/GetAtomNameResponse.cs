@@ -6,11 +6,11 @@ namespace Xcsb.Response.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct GetAtomNameResponse : IXBaseResponse
 {
-    public readonly ResponseHeader ResponseHeader;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public readonly ushort LengthOfName;
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Verify(in sequence) && ResponseHeader.Length != LengthOfName;
+        return ResponseHeader.Length != LengthOfName;
     }
 }

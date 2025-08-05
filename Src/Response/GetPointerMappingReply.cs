@@ -12,15 +12,15 @@ public readonly struct GetPointerMappingReply
 
     internal GetPointerMappingReply(GetPointerMappingResponse response, Socket socket)
     {
-        Reply = response.Reply;
-        Sequence = response.Sequence;
-        if (response.MapLength == 0)
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
+        if (response.ResponseHeader.Value == 0)
             Map = [];
         else
         {
-            using var mapBuffer = new ArrayPoolUsing<byte>((int)response.Length * 4);
+            using var mapBuffer = new ArrayPoolUsing<byte>((int)response.ResponseHeader.Length * 4);
             socket.ReceiveExact(mapBuffer);
-            Map = mapBuffer[0..response.MapLength].ToArray();
+            Map = mapBuffer[0..response.ResponseHeader.Value].ToArray();
         }
     }
 }

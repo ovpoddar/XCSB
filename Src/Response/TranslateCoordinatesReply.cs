@@ -6,17 +6,15 @@ namespace Xcsb.Response;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct TranslateCoordinatesReply : IXBaseResponse
 {
-    public readonly byte Reply;
-    private readonly byte _sameScreen;
-    public readonly ushort Sequence;
-    public readonly uint Length;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public readonly uint Window;
     public readonly ushort DestinationX;
     public readonly ushort DestinationY;
 
     public bool Verify(in int sequence)
     {
-        return Reply == 1 && Length == 0 && Sequence == sequence;
+        // _sameScreen
+        return ResponseHeader.Length == 0;
     }
-    public bool SameScreen => _sameScreen == 1;
+    public bool SameScreen => ResponseHeader.Value == 1;
 }

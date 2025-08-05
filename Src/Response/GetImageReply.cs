@@ -14,16 +14,16 @@ public readonly struct GetImageReply
     public readonly byte[] Data;
     internal GetImageReply(GetImageResponse result, Socket socket)
     {
-        Reply = result.Reply;
-        Depth = result.Depth;
-        Sequence = result.Sequence;
-        Length = result.Length;
+        Reply = result.ResponseHeader.Reply;
+        Depth = result.ResponseHeader.Value;
+        Sequence = result.ResponseHeader.Sequence;
+        Length = result.ResponseHeader.Length;
         VisualId = result.VisualId;
-        if (result.Reply == 0)
+        if (result.ResponseHeader.Reply == 0)
             Data = [];
         else
         {
-            Data = new byte[result.Length];
+            Data = new byte[result.ResponseHeader.Length];
             socket.ReceiveExact(Data);
         }
     }

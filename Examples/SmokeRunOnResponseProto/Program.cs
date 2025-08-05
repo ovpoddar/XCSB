@@ -64,11 +64,11 @@ while (true)
         var resultGetModifierMapping = client.GetModifierMapping();
         Console.WriteLine("GetModifierMapping");
         var resultSetModifierMapping = client.SetModifierMapping(resultGetModifierMapping.Keycodes);
-        Console.WriteLine(resultSetModifierMapping.Status);
+        Console.WriteLine(resultSetModifierMapping.ResponseHeader.Value);
         var resultGetKeyboardControl = client.GetKeyboardControl();
         Console.WriteLine($"{resultGetKeyboardControl.BellPercent}");
         var resultGetPointerMapping = client.GetPointerMapping();
         var resultSetPointerMapping = client.SetPointerMapping(resultGetPointerMapping.Map);
-        Console.WriteLine(resultSetPointerMapping.Status.ToString());
+        Console.WriteLine(resultSetPointerMapping.ResponseHeader.Value.ToString());
     }
 }

@@ -7,13 +7,11 @@ namespace Xcsb.Response;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct SetModifierMappingReply : IXBaseResponse
 {
-    public readonly byte Reply;
-    public readonly MappingStatus Status;
-    public readonly ushort Sequence;
-    public readonly uint Length;
+    public readonly ResponseHeader<MappingStatus> ResponseHeader;
 
     public bool Verify(in int sequence)
     {
-        return Reply == 1 && Length == 0 && Sequence == sequence;
+        // Status
+        return ResponseHeader.Length == 0;
     }
 }

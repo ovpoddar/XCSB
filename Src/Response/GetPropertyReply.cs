@@ -14,16 +14,16 @@ public readonly struct GetPropertyReply
 
     internal GetPropertyReply(GetPropertyResponse response, Socket socket)
     {
-        Reply = response.Reply;
-        Format = response.Format;
-        Sequence = response.Sequence;
+        Reply = response.ResponseHeader.Reply;
+        Format = response.ResponseHeader.Value;
+        Sequence = response.ResponseHeader.Sequence;
         Type = response.Type;
 
-        if (response.Length == 0)
+        if (response.ResponseHeader.Length == 0)
             Data = [];
         else
         {
-            var data = new byte[response.Length * 4];
+            var data = new byte[response.ResponseHeader.Length * 4];
             socket.ReceiveExact(data);
             Data = data;
         }

@@ -7,10 +7,7 @@ namespace Xcsb.Response.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 60)]
 internal readonly struct ListFontsWithInfoResponse : IXBaseResponse
 {
-    public readonly byte Reply;
-    public readonly byte NameLength;
-    public readonly ushort Sequence;
-    public readonly uint Length;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public readonly CharInfo MinBounds;
     private readonly int _pad0;
     public readonly CharInfo MaxBounds;
@@ -29,6 +26,7 @@ internal readonly struct ListFontsWithInfoResponse : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        return Reply == 1 && _pad0 == 0 && _pad1 == 0 && Sequence == sequence;
+        //NameLength
+        return _pad0 == 0 && _pad1 == 0;
     }
 }

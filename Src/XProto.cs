@@ -708,7 +708,7 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        return new GetKeyboardControlReply(result.Value, socket);
+        return new GetKeyboardControlReply(result.Value);
     }
 
 
@@ -811,11 +811,11 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetWindowAttributesType(window);
         socket.Send(ref request);
-        var (result, error) = ReceivedResponse<GetWindowAttributesResponse>();
+        var (result, error) = ReceivedResponse<GetWindowAttributesReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        return new GetWindowAttributesReply(result.Value, socket);
+        return result.Value;
     }
 
 
@@ -861,7 +861,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        Debug.Assert(sequenceNumber == result.Value.Sequence);
         return result.Value;
     }
 
@@ -1550,7 +1549,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        Debug.Assert(sequenceNumber == result.Value.Sequence);
         return result.Value;
     }
 

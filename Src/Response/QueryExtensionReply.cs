@@ -6,7 +6,7 @@ namespace Xcsb.Response;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct QueryExtensionReply : IXBaseResponse
 {
-    public readonly ResponseHeader ResponseHeader;
+    public readonly ResponseHeader<byte> ResponseHeader;
     private readonly byte _present;
     public readonly byte MajorOpcode;
     public readonly byte FirstEvent;
@@ -15,6 +15,6 @@ public readonly struct QueryExtensionReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Verify(in sequence) && ResponseHeader.Length == 0;
+        return ResponseHeader.Length == 0;
     }
 }

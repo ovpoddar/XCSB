@@ -4,14 +4,14 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
 
-int screen_num;
+int screen_num = 0;
 var x = XcsbClient.Initialized();
 
 var screen = x.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
 
 var win = x.NewId();
-x.CreateWindow(screen.RootDepth.DepthValue,
+x.CreateWindow(screen.RootDepth!.DepthValue,
     win,
     root,
     0, 0, 300, 200,
@@ -32,7 +32,7 @@ var grabResult = x.GrabPointer(false,
     GrabMode.Asynchronous, GrabMode.Asynchronous,
     0, 0, 0);
 
-Console.WriteLine($"Grab status {grabResult.Status}");
+Console.WriteLine($"Grab status {grabResult.ResponseHeader.Value}");
 
 x.UngrabPointer(0);
 Console.WriteLine("Ungrab pointer completed.");

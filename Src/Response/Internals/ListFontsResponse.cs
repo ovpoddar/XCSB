@@ -6,7 +6,7 @@ namespace Xcsb.Response.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct ListFontsResponse : IXBaseResponse
 {
-    public readonly ResponseHeader ResponseHeader;
+    public readonly ResponseHeader<byte>ResponseHeader;
     public readonly ushort NumberOfFonts;
 
     public bool Verify(in int sequence)

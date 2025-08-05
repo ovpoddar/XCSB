@@ -4,10 +4,10 @@ using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Internals;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 60)]
 internal readonly struct QueryFontResponse : IXBaseResponse
 {
-    public readonly ResponseHeader ResponseHeader;
+    public readonly ResponseHeader<byte>ResponseHeader;
     public readonly CharInfo MinBounds;
     private readonly uint _pad1;
     public readonly CharInfo MaxBounds;
@@ -26,7 +26,7 @@ internal readonly struct QueryFontResponse : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Verify(in sequence) && _pad1 == 0 && _pad2 == 0 && ResponseHeader.Length > 7;
+        return _pad1 == 0 && _pad2 == 0 && ResponseHeader.Length > 7;
     }
 
     public readonly bool AllCharsExist => _allCharsExist == 1;

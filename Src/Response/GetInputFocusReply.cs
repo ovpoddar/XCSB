@@ -7,14 +7,12 @@ namespace Xcsb.Response;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct GetInputFocusReply : IXBaseResponse
 {
-    public readonly byte Reply;
-    public readonly InputFocusMode Mode;
-    public readonly ushort Sequence;
-    public readonly uint Length;
+    public readonly ResponseHeader<InputFocusMode> ResponseHeader;
     public readonly uint Focus;
 
     public bool Verify(in int sequence)
     {
-        return Reply == 1 && Length == 0 && Sequence == sequence;
+        // Mode
+        return ResponseHeader.Length == 0;
     }
 }
