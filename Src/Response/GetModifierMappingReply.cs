@@ -15,13 +15,13 @@ public struct GetModifierMappingReply
     internal GetModifierMappingReply(GetModifierMappingResponse result, Socket socket)
     {
         Reply = result.ResponseHeader.Reply;
-        KeycodesPerModifier = result.ResponseHeader.Value;
+        KeycodesPerModifier = result.ResponseHeader.GetValue();
         Sequence = result.ResponseHeader.Sequence;
-        if (result.ResponseHeader.Value == 0)
+        if (result.ResponseHeader.GetValue() == 0)
             Keycodes = [];
         else
         {
-            var requiredSize = result.ResponseHeader.Value * 8;
+            var requiredSize = result.ResponseHeader.GetValue() * 8;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
             Keycodes = MemoryMarshal.Cast<byte, ulong>(buffer[0..requiredSize]).ToArray();

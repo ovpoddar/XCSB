@@ -23,7 +23,7 @@ public struct GetKeyboardControlReply
         unsafe
         {
             Reply = result.ResponseHeader.Reply;
-            AutoRepeatMode = result.ResponseHeader.Value;
+            AutoRepeatMode = result.ResponseHeader.GetValue();
             Sequence = result.ResponseHeader.Sequence;
             Length = result.ResponseHeader.Length;
             LedMask = result.LedMask;

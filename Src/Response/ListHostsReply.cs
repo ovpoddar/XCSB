@@ -17,7 +17,7 @@ public readonly struct ListHostsReply
     internal ListHostsReply(ListHostsResponse response, Socket socket)
     {
         Reply = response.ResponseHeader.Reply;
-        Mode = response.ResponseHeader.Value;
+        Mode = response.ResponseHeader.GetValue();
         Sequence = response.ResponseHeader.Sequence;
         NumberOfHosts = response.NumberOfHosts;
 

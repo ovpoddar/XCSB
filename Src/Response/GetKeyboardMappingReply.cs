@@ -13,12 +13,12 @@ public readonly struct GetKeyboardMappingReply
 
     internal GetKeyboardMappingReply(GetKeyboardMappingResponse result, byte count, Socket socket)
     {
-        if (result.ResponseHeader.Value * count != result.ResponseHeader.Length)
+        if (result.ResponseHeader.GetValue() * count != result.ResponseHeader.Length)
             throw new InvalidOperationException("Invalid reply");
 
         Reply = result.ResponseHeader.Reply;
         Sequence = result.ResponseHeader.Sequence;
-        if (result.ResponseHeader.Value == 0)
+        if (result.ResponseHeader.GetValue() == 0)
             Keysyms = [];
         else
         {

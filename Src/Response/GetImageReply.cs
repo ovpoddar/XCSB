@@ -15,7 +15,7 @@ public readonly struct GetImageReply
     internal GetImageReply(GetImageResponse result, Socket socket)
     {
         Reply = result.ResponseHeader.Reply;
-        Depth = result.ResponseHeader.Value;
+        Depth = result.ResponseHeader.GetValue();
         Sequence = result.ResponseHeader.Sequence;
         Length = result.ResponseHeader.Length;
         VisualId = result.VisualId;

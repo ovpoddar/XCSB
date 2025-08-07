@@ -11,7 +11,8 @@ public readonly struct SetPointerMappingReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // Status
         return ResponseHeader.Length == 0;
     }
+    
+    public Status Status() => ResponseHeader.GetValue();
 }

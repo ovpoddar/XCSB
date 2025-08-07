@@ -28,7 +28,7 @@ public readonly struct GetWindowAttributesReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // Stores
         return Length == 3 && this._pad0 == 0;
     }
+    public BackingStores Stores() => ResponseHeader.GetValue();
 }

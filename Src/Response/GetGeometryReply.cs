@@ -16,7 +16,8 @@ public readonly struct GetGeometryReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // Depth
         return ResponseHeader.Length == 0;
     }
+    
+    public byte Depth() => ResponseHeader.GetValue();
 }

@@ -11,7 +11,8 @@ public readonly struct SetModifierMappingReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // Status
         return ResponseHeader.Length == 0;
     }
+    
+    public MappingStatus Status() => ResponseHeader.GetValue();
 }

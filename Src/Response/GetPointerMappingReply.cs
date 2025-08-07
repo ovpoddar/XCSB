@@ -14,13 +14,13 @@ public readonly struct GetPointerMappingReply
     {
         Reply = response.ResponseHeader.Reply;
         Sequence = response.ResponseHeader.Sequence;
-        if (response.ResponseHeader.Value == 0)
+        if (response.ResponseHeader.GetValue() == 0)
             Map = [];
         else
         {
             using var mapBuffer = new ArrayPoolUsing<byte>((int)response.ResponseHeader.Length * 4);
             socket.ReceiveExact(mapBuffer);
-            Map = mapBuffer[0..response.ResponseHeader.Value].ToArray();
+            Map = mapBuffer[0..response.ResponseHeader.GetValue()].ToArray();
         }
     }
 }

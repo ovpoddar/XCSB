@@ -15,7 +15,7 @@ public readonly struct GetPropertyReply
     internal GetPropertyReply(GetPropertyResponse response, Socket socket)
     {
         Reply = response.ResponseHeader.Reply;
-        Format = response.ResponseHeader.Value;
+        Format = response.ResponseHeader.GetValue();
         Sequence = response.ResponseHeader.Sequence;
         Type = response.Type;
 

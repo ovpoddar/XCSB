@@ -12,7 +12,7 @@ public readonly struct GetInputFocusReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // Mode
         return ResponseHeader.Length == 0;
     }
+    public InputFocusMode Mode() => ResponseHeader.GetValue();
 }

@@ -18,7 +18,7 @@ public readonly struct QueryTextExtentsReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // FontDraw
         return ResponseHeader.Length == 0;
     }
+    public readonly FontDraw FontDraw() => ResponseHeader.GetValue();
 }

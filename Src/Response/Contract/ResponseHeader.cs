@@ -7,7 +7,7 @@ namespace Xcsb.Response.Contract;
 public readonly struct ResponseHeader<T> : IXBaseResponse where T : struct
 {
     public readonly byte Reply;
-    public readonly T Value;
+    private readonly T Value;
     public readonly ushort Sequence;
     public readonly uint Length;
 
@@ -15,4 +15,6 @@ public readonly struct ResponseHeader<T> : IXBaseResponse where T : struct
     {
         return Reply == 1 && Sequence == sequence && Unsafe.SizeOf<T>() == 1;
     }
+    
+    internal T GetValue() => Value;
 }

@@ -13,8 +13,7 @@ public readonly struct TranslateCoordinatesReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // _sameScreen
         return ResponseHeader.Length == 0;
     }
-    public bool SameScreen => ResponseHeader.Value == 1;
+    public bool SameScreen => ResponseHeader.GetValue() == 1;
 }

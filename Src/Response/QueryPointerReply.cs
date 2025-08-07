@@ -16,11 +16,10 @@ public readonly struct QueryPointerReply : IXBaseResponse
     public readonly short WinY;
     public readonly KeyButMask Mask;
 
-    public readonly bool IsSameScreen => ResponseHeader.Value == 1;
+    public readonly bool IsSameScreen => ResponseHeader.GetValue() == 1;
 
     public bool Verify(in int sequence)
     {
-        // _sameScreen
         return ResponseHeader.Length == 0;
     }
 }

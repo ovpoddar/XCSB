@@ -12,7 +12,7 @@ internal readonly struct ListHostsResponse : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // Mode
         return true;
     }
+    public AccessControlMode Mode() => ResponseHeader.GetValue();
 }

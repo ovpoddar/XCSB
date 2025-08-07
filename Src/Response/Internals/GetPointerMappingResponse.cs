@@ -10,7 +10,8 @@ internal readonly struct GetPointerMappingResponse : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // MapLength
         return true;
     }
+    
+    public byte MapLength() => ResponseHeader.GetValue();
 }

@@ -13,7 +13,8 @@ internal readonly struct GetPropertyResponse : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // Format
         return ValueLength != ResponseHeader.Length;
     }
+    
+    public byte Format() => ResponseHeader.GetValue();
 }

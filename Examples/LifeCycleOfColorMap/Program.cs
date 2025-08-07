@@ -105,7 +105,7 @@ var resultGrabKeyboard = x.GrabKeyboard(
     GrabMode.Asynchronous
 );
         
-Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.ResponseHeader.Value}");
+Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Status()}");
 x.UngrabKeyboard(0);
 
 var xevnt = x.GetEvent();

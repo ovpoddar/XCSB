@@ -10,7 +10,7 @@ internal readonly struct GetKeyboardMappingResponse : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        // KeyPerKeyCode
         return true;
     }
+    public byte KeyPerKeyCode() => ResponseHeader.GetValue();
 }
