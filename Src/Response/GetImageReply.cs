@@ -1,5 +1,7 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Models;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
@@ -19,11 +21,11 @@ public readonly struct GetImageReply
         Sequence = result.ResponseHeader.Sequence;
         Length = result.ResponseHeader.Length;
         VisualId = result.VisualId;
-        if (result.ResponseHeader.Reply == 0)
+        if (Length == 0)
             Data = [];
         else
         {
-            Data = new byte[result.ResponseHeader.Length];
+            Data = new byte[result.ResponseHeader.Length * 4];
             socket.ReceiveExact(Data);
         }
     }

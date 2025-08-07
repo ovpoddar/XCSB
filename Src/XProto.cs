@@ -994,7 +994,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public ListFontsWithInfoReply ListFontsWithInfo(int maxNames, ReadOnlySpan<byte> pattan)
+    public ListFontsWithInfoReply ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
     {
         var request = new ListFontsWithInfoType(maxNames, pattan.Length);
         var requiredBuffer = 8 + pattan.Length.AddPadding();

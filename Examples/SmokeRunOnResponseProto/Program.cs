@@ -35,6 +35,33 @@ var lookUpColor = client.LookupColor(client.HandshakeSuccessResponseBody.Screens
 
 Debug.Assert(lookUpColor.VisualRed == lookUpColor.ExactRed && lookUpColor.ExactRed == ushort.MaxValue);
 Debug.Assert(lookUpColor.VisualGreen == lookUpColor.ExactGreen && lookUpColor.ExactGreen == ushort.MaxValue);
+
+var keyboardMapping = client.GetKeyboardMapping(client.HandshakeSuccessResponseBody.MinKeyCode,
+    (byte)(client.HandshakeSuccessResponseBody.MaxKeyCode - client.HandshakeSuccessResponseBody.MinKeyCode + 1));
+Console.WriteLine(keyboardMapping.Keysyms.Length);
+
+var queryColor = client.QueryColors(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
+    [0x0000, 0x00FF, 0xFF00, 0xFFFF]);
+foreach (var color in queryColor.Colors)
+    Console.WriteLine($"Blue: {color.Blue} Green: {color.Green} Red: {color.Red} Reserved: {color.Reserved}");
+/*
+client.StoreColorsChecked(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, [
+    new ColorItem()
+    {
+        Pixel = 0x123456,
+        Red = 65535,
+        Green = 0,
+        Blue = 0,
+        ColorFlag = ColorFlag.Red | ColorFlag.Green | ColorFlag.Blue
+    }
+]);
+
+client.StoreNamedColorChecked(ColorFlag.Blue | ColorFlag.Green | ColorFlag.Red,
+    client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, 0x654321,
+    "red"u8);
+*/
+
+
 while (true)
 {
     var Event = client.GetEvent();

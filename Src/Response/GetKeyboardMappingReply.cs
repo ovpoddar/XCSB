@@ -10,7 +10,7 @@ public readonly struct GetKeyboardMappingReply
     public readonly byte Reply;
     public readonly ushort Sequence;
     public readonly uint[] Keysyms;
-
+    public readonly byte KeyPerKeyCode;
     internal GetKeyboardMappingReply(GetKeyboardMappingResponse result, byte count, Socket socket)
     {
         if (result.ResponseHeader.GetValue() * count != result.ResponseHeader.Length)
@@ -18,6 +18,8 @@ public readonly struct GetKeyboardMappingReply
 
         Reply = result.ResponseHeader.Reply;
         Sequence = result.ResponseHeader.Sequence;
+        KeyPerKeyCode = result.ResponseHeader.GetValue();
+        
         if (result.ResponseHeader.GetValue() == 0)
             Keysyms = [];
         else
@@ -27,5 +29,14 @@ public readonly struct GetKeyboardMappingReply
             socket.ReceiveExact(buffer[0..requiredSize]);
             Keysyms = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();
         }
+        /* todo update the calling
+        for (int i = 0; i < (count); ++i) {
+            printf("Keycode %d: ", min + i);
+            for (int j = 0; j < keysyms_per_keycode; ++j) {
+                printf("0x%X ", keysyms[i * keysyms_per_keycode + j]);
+            }
+            printf("\n");
+        }   
+        */
     }
 }

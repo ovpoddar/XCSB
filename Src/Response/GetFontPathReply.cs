@@ -27,6 +27,7 @@ public struct GetFontPathReply
             int i = 0;
             foreach (var range in GenericHelper.GetNextStrValue(buffer))
                 Paths[i++] = Encoding.UTF8.GetString(buffer, range.Position, range.Length);
+            Debug.Assert(i == response.StringLength);
         }
     }
 }

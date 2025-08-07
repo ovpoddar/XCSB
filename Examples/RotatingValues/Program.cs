@@ -51,7 +51,6 @@ var atoms = new uint[3];
 
 for (var i = 0; i < colors.Length; i++)
 {
-    //todo: handle return in a better way
     var reply = x.InternAtom(false, propNames[i]);
     atoms[i] = reply.Atom;
     x.ChangeProperty<byte>(PropertyMode.Replace, win, atoms[i], 31, Encoding.UTF8.GetBytes(colors[i]));

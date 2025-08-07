@@ -19,7 +19,7 @@ public readonly struct QueryColorsReply
             Colors = [];
         else
         {
-            var requiredSize = (int)result.ResponseHeader.Length * 4;
+            var requiredSize = (int)result.NumberOfColors * Marshal.SizeOf<Pixel>();
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer);
             Colors = MemoryMarshal.Cast<byte, Pixel>(buffer[0..requiredSize]).ToArray();

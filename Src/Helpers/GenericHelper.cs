@@ -98,6 +98,9 @@ internal static class GenericHelper
             total += socket.Receive(buffer[total..]);
             if (total == buffer.Length)
                 break;
+
+            if (socket.Available == 0 && total < buffer.Length)
+                socket.Poll(-1, SelectMode.SelectRead);
         }
     }
 

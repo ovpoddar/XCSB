@@ -7,7 +7,7 @@ namespace Xcsb.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct ListFontsWithInfoType(int maxNames, int pattanLength)
+internal readonly struct ListFontsWithInfoType(int pattanLength, int maxNames)
 {
     public readonly Opcode OpCode = Opcode.ListFontsWithInfo;
     private readonly byte _pad0 = 0;
