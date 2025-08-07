@@ -14,5 +14,5 @@ public readonly struct SetPointerMappingReply : IXBaseResponse
         return ResponseHeader.Length == 0;
     }
     
-    public Status Status() => ResponseHeader.GetValue();
+    public Status Status => ResponseHeader.GetValue();
 }

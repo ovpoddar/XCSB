@@ -32,7 +32,7 @@ var grabResult = x.GrabPointer(false,
     GrabMode.Asynchronous, GrabMode.Asynchronous,
     0, 0, 0);
 
-Console.WriteLine($"Grab status {grabResult.Status()}");
+Console.WriteLine($"Grab status {grabResult.Status}");
 
 x.UngrabPointer(0);
 Console.WriteLine("Ungrab pointer completed.");

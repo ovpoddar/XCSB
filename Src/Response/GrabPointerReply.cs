@@ -14,5 +14,5 @@ public readonly struct GrabPointerReply : IXBaseResponse
         return ResponseHeader.Length == 0;
     }
     
-    public GrabStatus Status() => ResponseHeader.GetValue();
+    public GrabStatus Status => ResponseHeader.GetValue();
 }

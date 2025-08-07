@@ -16,5 +16,5 @@ internal readonly struct GetPropertyResponse : IXBaseResponse
         return ValueLength != ResponseHeader.Length;
     }
     
-    public byte Format() => ResponseHeader.GetValue();
+    public byte Format => ResponseHeader.GetValue();
 }

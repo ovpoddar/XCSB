@@ -20,5 +20,5 @@ public readonly struct QueryTextExtentsReply : IXBaseResponse
     {
         return ResponseHeader.Length == 0;
     }
-    public readonly FontDraw FontDraw() => ResponseHeader.GetValue();
+    public readonly FontDraw FontDraw => ResponseHeader.GetValue();
 }

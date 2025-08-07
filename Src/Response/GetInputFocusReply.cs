@@ -14,5 +14,5 @@ public readonly struct GetInputFocusReply : IXBaseResponse
     {
         return ResponseHeader.Length == 0;
     }
-    public InputFocusMode Mode() => ResponseHeader.GetValue();
+    public InputFocusMode Mode => ResponseHeader.GetValue();
 }

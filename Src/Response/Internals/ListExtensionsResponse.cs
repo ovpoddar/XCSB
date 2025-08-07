@@ -10,8 +10,8 @@ internal readonly struct ListExtensionsResponse : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Length * 4 >= NumberOfExtensions();
+        return ResponseHeader.Length * 4 >= NumberOfExtensions;
     }
     
-    public byte NumberOfExtensions() => ResponseHeader.GetValue();
+    public byte NumberOfExtensions => ResponseHeader.GetValue();
 }

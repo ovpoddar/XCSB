@@ -14,5 +14,5 @@ public readonly struct GrabKeyboardReply : IXBaseResponse
         return ResponseHeader.Length == 0;
     }
     
-    public GrabStatus Status() => ResponseHeader.GetValue();
+    public GrabStatus Status => ResponseHeader.GetValue();
 }

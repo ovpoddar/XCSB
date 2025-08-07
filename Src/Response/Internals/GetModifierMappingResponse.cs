@@ -10,9 +10,8 @@ internal readonly struct GetModifierMappingResponse : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Length == KeycodesPerModifier() * 2 && ResponseHeader.Sequence == sequence;
+        return ResponseHeader.Length == KeycodesPerModifier * 2 && ResponseHeader.Sequence == sequence;
     }
     
-    //like to be a proprity
-    public byte KeycodesPerModifier() => ResponseHeader.GetValue();
+    public byte KeycodesPerModifier => ResponseHeader.GetValue();
 }

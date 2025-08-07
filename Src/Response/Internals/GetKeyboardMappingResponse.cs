@@ -12,5 +12,5 @@ internal readonly struct GetKeyboardMappingResponse : IXBaseResponse
     {
         return true;
     }
-    public byte KeyPerKeyCode() => ResponseHeader.GetValue();
+    public byte KeyPerKeyCode => ResponseHeader.GetValue();
 }

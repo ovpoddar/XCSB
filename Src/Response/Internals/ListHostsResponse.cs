@@ -14,5 +14,5 @@ internal readonly struct ListHostsResponse : IXBaseResponse
     {
         return true;
     }
-    public AccessControlMode Mode() => ResponseHeader.GetValue();
+    public AccessControlMode Mode => ResponseHeader.GetValue();
 }

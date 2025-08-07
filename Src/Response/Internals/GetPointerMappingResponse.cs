@@ -13,5 +13,5 @@ internal readonly struct GetPointerMappingResponse : IXBaseResponse
         return true;
     }
     
-    public byte MapLength() => ResponseHeader.GetValue();
+    public byte MapLength => ResponseHeader.GetValue();
 }

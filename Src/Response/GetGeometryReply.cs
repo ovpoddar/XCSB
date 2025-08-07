@@ -18,6 +18,6 @@ public readonly struct GetGeometryReply : IXBaseResponse
     {
         return ResponseHeader.Length == 0;
     }
-    
-    public byte Depth() => ResponseHeader.GetValue();
+
+    public byte Depth => ResponseHeader.GetValue();
 }

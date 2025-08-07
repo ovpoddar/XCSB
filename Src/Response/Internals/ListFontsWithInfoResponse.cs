@@ -28,5 +28,5 @@ internal readonly struct ListFontsWithInfoResponse : IXBaseResponse
     {
         return _pad0 == 0 && _pad1 == 0;
     }
-    public byte NameLength() => ResponseHeader.GetValue();
+    public byte NameLength => ResponseHeader.GetValue();
 }

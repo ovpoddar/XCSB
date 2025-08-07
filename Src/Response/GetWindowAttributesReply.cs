@@ -30,5 +30,5 @@ public readonly struct GetWindowAttributesReply : IXBaseResponse
     {
         return Length == 3 && this._pad0 == 0;
     }
-    public BackingStores Stores() => ResponseHeader.GetValue();
+    public BackingStores Stores => ResponseHeader.GetValue();
 }
