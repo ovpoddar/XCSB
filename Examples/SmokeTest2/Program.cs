@@ -5,7 +5,6 @@ using Xcsb.Models;
 
 var conn = XcsbClient.Initialized();
 var screen = conn.HandshakeSuccessResponseBody.Screens[0];
-// Create a window
 var window = conn.NewId();
 conn.CreateWindow(
     0,
@@ -46,17 +45,17 @@ Console.WriteLine($"GetMotionEvents: {motion.Events.Length} events");
 var screensaver = conn.GetScreenSaver();
 Console.WriteLine($"GetScreenSaver: Timeout: {screensaver.Timeout}");
 
-conn.ChangeKeyboardMappingChecked(
-    1,
-    0,
-    1,
-    [0]
-);
-Console.WriteLine("ChangeKeyboardMapping: Modified one key (dummy)\n");
-// var queryColor = conn.QueryColors(conn.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
-//     [0x0000, 0x00FF, 0xFF00, 0xFFFF]);
-// foreach (var color in queryColor.Colors)
-//     Console.WriteLine($"Blue: {color.Blue} Green: {color.Green} Red: {color.Red} Reserved: {color.Reserved}");
+//conn.ChangeKeyboardMappingChecked(
+//    1,
+//    0,
+//    1,
+//    [0]
+//);
+//Console.WriteLine("ChangeKeyboardMapping: Modified one key (dummy)\n");
+ var queryColor = conn.QueryColors(conn.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
+     [0x0000, 0x00FF, 0xFF00, 0xFFFF]);
+foreach (var color in queryColor.Colors)
+    Console.WriteLine($"Blue: {color.Blue} Green: {color.Green} Red: {color.Red} Reserved: {color.Reserved}");
 while (true)
 {
     var Event = conn.GetEvent();
