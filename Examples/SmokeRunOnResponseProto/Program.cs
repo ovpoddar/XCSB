@@ -17,6 +17,8 @@ client.CreateWindowChecked(
 );
 client.MapWindowChecked(window);
 
+client.ChangeActivePointerGrabChecked(0, 0, (ushort)EventMask.ButtonPressMask);
+
 var font = client.NewId();
 client.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
 
@@ -38,7 +40,21 @@ Debug.Assert(lookUpColor.VisualGreen == lookUpColor.ExactGreen && lookUpColor.Ex
 
 var keyboardMapping = client.GetKeyboardMapping(client.HandshakeSuccessResponseBody.MinKeyCode,
     (byte)(client.HandshakeSuccessResponseBody.MaxKeyCode - client.HandshakeSuccessResponseBody.MinKeyCode + 1));
-Console.WriteLine(keyboardMapping.Keysyms.Length);
+
+var originalKeySym = keyboardMapping.Keysyms;
+Console.WriteLine(string.Join(", ", originalKeySym));
+var keysyms_per_keycode = new uint[keyboardMapping.KeyPerKeyCode];
+Array.Copy(originalKeySym[0..keyboardMapping.KeyPerKeyCode], keysyms_per_keycode, keyboardMapping.KeyPerKeyCode);
+keysyms_per_keycode[0] = 0x0061;
+keysyms_per_keycode[1] = 0x0062;
+
+client.ChangeKeyboardMappingChecked(
+    1,
+    8,
+    keyboardMapping.KeyPerKeyCode,
+    keysyms_per_keycode
+);
+Console.WriteLine("ChangeKeyboardMapping: Modified one key (dummy)\n");
 
 var queryColor = client.QueryColors(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
     [0x0000, 0x00FF, 0xFF00, 0xFFFF]);
