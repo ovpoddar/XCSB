@@ -1722,7 +1722,7 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void SetFontPath(string[] strPaths)
     {
-        var strPathsLength = strPaths.Sum(a => a.Length + 2).AddPadding();
+        var strPathsLength = strPaths.Sum(a => a.Length + 1).AddPadding();
         var request = new SetFontPathType((ushort)strPaths.Length, strPathsLength);
         var requiredBuffer = 8 + strPathsLength;
         var writIndex = 8;
@@ -1738,10 +1738,9 @@ internal class XProto : BaseProtoClient, IXProto
             {
                 scratchBuffer[writIndex++] = (byte)item.Length;
                 writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
-                scratchBuffer[writIndex++] = 0;
             }
 
-            scratchBuffer[^strPaths.Sum(a => a.Length + 2).Padding()..].Clear();
+            scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
             socket.SendExact(scratchBuffer);
         }
         else
@@ -1756,10 +1755,9 @@ internal class XProto : BaseProtoClient, IXProto
             {
                 scratchBuffer[writIndex++] = (byte)item.Length;
                 writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
-                scratchBuffer[writIndex++] = 0;
             }
 
-            scratchBuffer[^strPaths.Sum(a => a.Length + 2).Padding()..].Clear();
+            scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 

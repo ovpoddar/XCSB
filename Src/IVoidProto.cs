@@ -98,12 +98,10 @@ public interface IVoidProto
     void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height);
 
     void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX,
-        ushort destinationY,
-        ushort width, ushort height);
+        ushort destinationY, ushort width, ushort height);
 
     void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX,
-        ushort destinationY,
-        ushort width, ushort height, uint bitPlane);
+        ushort destinationY, ushort width, ushort height, uint bitPlane);
 
     void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points);
 

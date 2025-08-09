@@ -15,4 +15,5 @@ internal readonly struct StoreNamedColorType(ColorFlag mode, uint colormapId, ui
     public readonly uint ColorMapId = colormapId;
     public readonly uint Pixels = pixels;
     public readonly ushort NameLength = (ushort)nameLength;
+    private readonly ushort _pad0 = 0;
 }
