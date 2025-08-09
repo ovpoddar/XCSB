@@ -994,9 +994,9 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public ListFontsWithInfoReply ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
+    public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
     {
-        var request = new ListFontsWithInfoType(maxNames, pattan.Length);
+        var request = new ListFontsWithInfoType(pattan.Length, maxNames);
         var requiredBuffer = 8 + pattan.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
@@ -1020,11 +1020,17 @@ internal class XProto : BaseProtoClient, IXProto
             socket.SendExact(workingBuffer);
         }
 
-        var (result, error) = ReceivedResponse<ListFontsWithInfoResponse>();
-        if (error.HasValue || !result.HasValue)
-            throw new XEventException(error!.Value);
+        throw new NotSupportedException();
+        var result = new ListFontsWithInfoReply[maxNames];
+        for (int i = 0; i < maxNames; i++)
+        {
+            var (response, error) = ReceivedResponse<ListFontsWithInfoResponse>();
+            if (error.HasValue || !response.HasValue)
+                throw new XEventException(error!.Value);
 
-        return new ListFontsWithInfoReply(result.Value, socket);
+            result[i] = new ListFontsWithInfoReply(response.Value, socket);
+        }
+        return result;
     }
 
 

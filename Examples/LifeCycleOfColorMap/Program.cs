@@ -76,7 +76,7 @@ x.CreateWindowChecked(0,
     sub1, win,
     30, 30, 500, 250, 2,
     Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [screen.WhitePixel]);
-x.MapSubwindowsChecked(win);
+x.MapSubwindowsChecked(sub);
 Console.WriteLine("Subwindow mapped.");
 
 Thread.Sleep(5000);
@@ -112,7 +112,7 @@ var xevnt = x.GetEvent();
 Debug.Assert(xevnt!.Value.EventType == EventType.Expose || xevnt!.Value.EventType == EventType.MappingNotify);
 Console.WriteLine("all success {0}", xevnt!.Value.EventType != EventType.Error);
 
-x.DestroyWindowChecked(sub);
+x.UnmapSubwindowsChecked(sub);
 x.DestroyWindowChecked(sub1);
 x.DestroySubwindowsChecked(win);
 x.DestroyWindowChecked(win);

@@ -19,17 +19,16 @@ conn.CreateWindow(
 conn.MapWindow(window);
 
 var font_path_reply = conn.GetFontPath();
-// todo sending list fail
-conn.SetFontPathChecked([font_path_reply.Paths[0]]);
+conn.SetFontPathChecked(font_path_reply.Paths);
 
 var pattan = "*"u8;
 var listFonts = conn.ListFonts(pattan, 10);
 foreach (var fontName in listFonts.Fonts)
     Console.WriteLine(fontName);
 
-// todo: error request did not received 
-// var fontWithInfo = conn.ListFontsWithInfo(pattan, 5);
-// Console.WriteLine(fontWithInfo.Name);
+
+var detailsFont = conn.ListFontsWithInfo("*"u8, 5);
+Console.WriteLine(detailsFont.Length);
 
 var font = conn.NewId();
 conn.OpenFont("fixed", font);
@@ -45,14 +44,7 @@ Console.WriteLine($"GetMotionEvents: {motion.Events.Length} events");
 var screensaver = conn.GetScreenSaver();
 Console.WriteLine($"GetScreenSaver: Timeout: {screensaver.Timeout}");
 
-//conn.ChangeKeyboardMappingChecked(
-//    1,
-//    0,
-//    1,
-//    [0]
-//);
-//Console.WriteLine("ChangeKeyboardMapping: Modified one key (dummy)\n");
- var queryColor = conn.QueryColors(conn.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
+var queryColor = conn.QueryColors(conn.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
      [0x0000, 0x00FF, 0xFF00, 0xFFFF]);
 foreach (var color in queryColor.Colors)
     Console.WriteLine($"Blue: {color.Blue} Green: {color.Green} Red: {color.Red} Reserved: {color.Reserved}");

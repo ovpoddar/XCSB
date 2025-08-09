@@ -28,7 +28,9 @@ public interface IResponseProto
     QueryFontReply QueryFont(uint fontId);
     QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery);
     ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames);
-    ListFontsWithInfoReply ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames);
+    // todo this looks like a list. it need to process incrementally.
+    // i can just process the whole request and return in a concatenate form.
+    ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames);
     GetFontPathReply GetFontPath();
     GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height, uint planeMask);
     ListInstalledColormapsReply ListInstalledColormaps(uint window);

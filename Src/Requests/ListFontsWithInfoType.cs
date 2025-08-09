@@ -11,7 +11,7 @@ internal readonly struct ListFontsWithInfoType(int pattanLength, int maxNames)
 {
     public readonly Opcode OpCode = Opcode.ListFontsWithInfo;
     private readonly byte _pad0 = 0;
-    public readonly ushort Length = (ushort)(2 + pattanLength.AddPadding() / 4);
+    public readonly ushort Length = (ushort)(2 + (pattanLength.AddPadding() / 4));
     public readonly ushort MaxNames = (ushort)maxNames;
     public readonly ushort PatternLength = (ushort)pattanLength;
 }
