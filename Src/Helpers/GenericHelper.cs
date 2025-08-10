@@ -2,6 +2,8 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Models;
+using Xcsb.Response;
+using Xcsb.Response.Internals;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -134,4 +136,36 @@ internal static class GenericHelper
         }
     }
 
+    internal static IEnumerable<ListFontsWithInfoReply> GetNextStrValue(this Socket socket, ListFontsWithInfoResponse firstInfo)
+    {
+        while (firstInfo.HasMore)
+        {
+            yield return new ListFontsWithInfoReply(firstInfo, socket);
+            firstInfo = socket.ReceivedResponse<ListFontsWithInfoResponse>();
+        }
+    }
+
+
+#if !NETSTANDARD
+    [SkipLocalsInit]
+#endif
+    private static T ReceivedResponse<T>(this Socket socket) where T : unmanaged
+    {
+        var resultLength = Unsafe.SizeOf<T>();
+        Span<byte> buffer = stackalloc byte[resultLength];
+        socket.EnsureReadSize(resultLength);
+        socket.ReceiveExact(buffer);
+        return buffer.ToStruct<T>();
+    }
+
+
+    internal static void EnsureReadSize(this Socket socket, int size)
+    {
+        while (true)
+        {
+            if (socket.Available >= size)
+                break;
+            socket.Poll(-1, SelectMode.SelectRead);
+        }
+    }
 }

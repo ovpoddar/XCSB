@@ -32,9 +32,11 @@ Debug.Assert(namedColor.VisualRed == namedColor.ExactRed && namedColor.ExactRed 
 Debug.Assert(namedColor.VisualGreen == namedColor.ExactGreen && namedColor.ExactGreen == 0);
 Debug.Assert(namedColor.VisualBlue == namedColor.ExactBlue && namedColor.ExactBlue == 0);
 
+var detailsFont = client.ListFontsWithInfo("*"u8, 5);
+foreach (var item in detailsFont)
+    Console.WriteLine(item.Name);
 
 var lookUpColor = client.LookupColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Light Yellow"u8);
-
 Debug.Assert(lookUpColor.VisualRed == lookUpColor.ExactRed && lookUpColor.ExactRed == ushort.MaxValue);
 Debug.Assert(lookUpColor.VisualGreen == lookUpColor.ExactGreen && lookUpColor.ExactGreen == ushort.MaxValue);
 

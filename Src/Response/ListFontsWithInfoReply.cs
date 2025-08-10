@@ -52,14 +52,14 @@ public readonly struct ListFontsWithInfoReply
             Properties = MemoryMarshal.Cast<byte, ulong>(buffer).ToArray();
         }
 
-        if (result.ResponseHeader.GetValue() == 0)
+        if (result.NameLength == 0)
             Name = string.Empty;
         else
         {
-            var requiredSize = result.ResponseHeader.GetValue().AddPadding() * 4;
+            var requiredSize = result.NameLength.AddPadding();
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
-            Name = Encoding.UTF8.GetString(buffer, 0, result.ResponseHeader.GetValue());
+            Name = Encoding.UTF8.GetString(buffer, 0, result.NameLength);
         }
     }
 }

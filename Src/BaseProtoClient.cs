@@ -23,14 +23,14 @@ internal class BaseProtoClient
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
-    internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : unmanaged, IXBaseResponse
+    internal (T? result, ErrorEvent? error) ReceivedResponseAndVerify<T>() where T : unmanaged, IXBaseResponse
     {
         sequenceNumber++;
         var resultLength = Marshal.SizeOf<T>();
         Span<byte> buffer = stackalloc byte[resultLength];
         while (true)
         {
-            EnsureReadSize(resultLength);
+            socket.EnsureReadSize(resultLength);
             socket.ReceiveExact(buffer[0..32]);
             ref var baseHeader = ref buffer[0..32].AsStruct<ResponseHeader<byte>>();
             if (baseHeader.Verify(sequenceNumber))
@@ -49,17 +49,6 @@ internal class BaseProtoClient
             }
 
             bufferEvents.Push(buffer[0..32].ToStruct<XEvent>());
-        }
-    }
-
-
-    void EnsureReadSize(int size)
-    {
-        while (true)
-        {
-            if (socket.Available >= size)
-                break;
-            socket.Poll(-1, SelectMode.SelectRead);
         }
     }
 

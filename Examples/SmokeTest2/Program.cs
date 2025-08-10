@@ -26,10 +26,6 @@ var listFonts = conn.ListFonts(pattan, 10);
 foreach (var fontName in listFonts.Fonts)
     Console.WriteLine(fontName);
 
-
-var detailsFont = conn.ListFontsWithInfo("*"u8, 5);
-Console.WriteLine(detailsFont.Length);
-
 var font = conn.NewId();
 conn.OpenFont("fixed", font);
 var font_info = conn.QueryFont(font);
