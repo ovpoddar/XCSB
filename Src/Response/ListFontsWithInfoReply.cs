@@ -23,7 +23,7 @@ public readonly struct ListFontsWithInfoReply
     public readonly ushort FontAscent;
     public readonly ushort FontDescent;
     public readonly uint ReplyHint;
-    public readonly ulong[] Properties;
+    public readonly FontProp[] Properties;
     public readonly string Name;
 
     internal ListFontsWithInfoReply(ListFontsWithInfoResponse result, Socket socket)
@@ -49,7 +49,7 @@ public readonly struct ListFontsWithInfoReply
             var requiredSize = result.PropertiLenght * 8;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
-            Properties = MemoryMarshal.Cast<byte, ulong>(buffer).ToArray();
+            Properties = MemoryMarshal.Cast<byte, FontProp>(buffer).ToArray();
         }
 
         if (result.NameLength == 0)

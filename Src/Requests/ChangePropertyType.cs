@@ -10,8 +10,8 @@ namespace Xcsb.Requests;
 internal readonly struct ChangePropertyType(
     PropertyMode mode,
     uint window,
-    uint property,
-    uint type,
+    ATOM property,
+    ATOM type,
     int argsLength,
     byte size)
 {
@@ -19,8 +19,8 @@ internal readonly struct ChangePropertyType(
     public readonly PropertyMode Mode = mode;
     public readonly ushort Length = (ushort)(6 + argsLength.AddPadding() / 4);
     public readonly uint Window = window;
-    public readonly uint Property = property;
-    public readonly uint Type = type;
+    public readonly ATOM Property = property;
+    public readonly ATOM Type = type;
     public readonly byte Size = size;
     private readonly byte _pad0 = 0;
     private readonly byte _pad1 = 0;

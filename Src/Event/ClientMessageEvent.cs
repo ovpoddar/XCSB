@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Models;
 
 namespace Xcsb.Event;
 
@@ -8,6 +9,6 @@ public struct ClientMessageEvent
     public byte Format;
     public ushort Sequence;
     public uint Window;
-    public uint Type;
+    public ATOM Type;
     public ClientMessageData Data;
 }

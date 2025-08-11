@@ -31,20 +31,20 @@ public interface IVoidProtoChecked
 
     void CirculateWindowChecked(Circulate circulate, uint window);
 
-    void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, Span<T> args)
+    void ChangePropertyChecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
     ;
 
-    void DeletePropertyChecked(uint window, uint atom);
+    void DeletePropertyChecked(uint window, ATOM atom);
 
-    void RotatePropertiesChecked(uint window, ushort delta, Span<uint> properties);
+    void RotatePropertiesChecked(uint window, ushort delta, Span<ATOM> properties);
 
-    void SetSelectionOwnerChecked(uint owner, uint atom, uint timestamp);
+    void SetSelectionOwnerChecked(uint owner, ATOM atom, uint timestamp);
 
-    void ConvertSelectionChecked(uint requestor, uint selection, uint target, uint property, uint timestamp);
+    void ConvertSelectionChecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp);
 
     void SendEventChecked(bool propagate, uint destination, uint eventMask, XEvent evnt);
 

@@ -6,10 +6,10 @@ namespace Xcsb.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct GetAtomNameType(uint atom)
+internal readonly struct GetAtomNameType(ATOM atom)
 {
     public readonly Opcode Opcode = Opcode.GetAtomName;
     private readonly byte _pad0 = 0;
     public readonly ushort Length = 2;
-    public readonly uint Atom = atom;
+    public readonly ATOM Atom = atom;
 }

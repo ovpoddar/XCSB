@@ -12,13 +12,13 @@ public interface IResponseProto
         GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp);
 
     InternAtomReply InternAtom(bool onlyIfExist, string atomName);
-    GetPropertyReply GetProperty(bool delete, uint window, uint property, uint type, uint offset, uint length);
+    GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length);
     GetWindowAttributesReply GetWindowAttributes(uint window);
     GetGeometryReply GetGeometry(uint drawable);
     QueryTreeReply QueryTree(uint window);
-    GetAtomNameReply GetAtomName(uint atom);
+    GetAtomNameReply GetAtomName(ATOM atom);
     ListPropertiesReply ListProperties(uint window);
-    GetSelectionOwnerReply GetSelectionOwner(uint atom);
+    GetSelectionOwnerReply GetSelectionOwner(ATOM atom);
     GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode);
     GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime);
@@ -28,8 +28,6 @@ public interface IResponseProto
     QueryFontReply QueryFont(uint fontId);
     QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery);
     ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames);
-    // todo this looks like a list. it need to process incrementally.
-    // i can just process the whole request and return in a concatenate form.
     ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames);
     GetFontPathReply GetFontPath();
     GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height, uint planeMask);

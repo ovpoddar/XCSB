@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Models;
 
 namespace Xcsb.Event;
 
@@ -9,5 +10,5 @@ public struct SelectionClearEvent
     public ushort Sequence;
     public uint Time;
     public uint Owner;
-    public uint Selection;
+    public ATOM Selection;
 }

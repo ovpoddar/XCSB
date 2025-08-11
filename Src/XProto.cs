@@ -249,7 +249,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, Span<T> args)
+    public void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -365,7 +365,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp)
+    public void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
         var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
         socket.Send(ref request);
@@ -493,7 +493,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void DeleteProperty(uint window, uint atom)
+    public void DeleteProperty(uint window, ATOM atom)
     {
         var request = new DeletePropertyType(window, atom);
         socket.Send(ref request);
@@ -603,7 +603,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public GetAtomNameReply GetAtomName(uint atom)
+    public GetAtomNameReply GetAtomName(ATOM atom)
     {
         var request = new GetAtomNameType(atom);
         socket.Send(ref request);
@@ -773,7 +773,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public GetPropertyReply GetProperty(bool delete, uint window, uint property, uint type, uint offset, uint length)
+    public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
     {
         var request = new GetPropertyType(delete, window, property, type, offset, length);
         socket.Send(ref request);
@@ -796,7 +796,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public GetSelectionOwnerReply GetSelectionOwner(uint atom)
+    public GetSelectionOwnerReply GetSelectionOwner(ATOM atom)
     {
         var request = new GetSelectionOwnerType(atom);
         socket.Send(ref request);
@@ -1620,7 +1620,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void RotateProperties(uint window, ushort delta, Span<uint> properties)
+    public void RotateProperties(uint window, ushort delta, Span<ATOM> properties)
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
         var requiredBuffer = 12 + properties.Length * 4;
@@ -1630,7 +1630,7 @@ internal class XProto : BaseProtoClient, IXProto
             scratchBuffer.WriteRequest(
                 ref request,
                 12,
-                MemoryMarshal.Cast<uint, byte>(properties));
+                MemoryMarshal.Cast<ATOM, byte>(properties));
             socket.SendExact(scratchBuffer);
         }
         else
@@ -1640,7 +1640,7 @@ internal class XProto : BaseProtoClient, IXProto
             workingBuffer.WriteRequest(
                 ref request,
                 12,
-                MemoryMarshal.Cast<uint, byte>(properties));
+                MemoryMarshal.Cast<ATOM, byte>(properties));
             socket.SendExact(workingBuffer);
         }
 
@@ -1844,7 +1844,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetSelectionOwner(uint owner, uint atom, uint timestamp)
+    public void SetSelectionOwner(uint owner, ATOM atom, uint timestamp)
     {
         var request = new SetSelectionOwnerType(owner, atom, timestamp);
         socket.Send(ref request);
@@ -2096,7 +2096,7 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, Span<T> args)
+    public void ChangePropertyChecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -2106,25 +2106,25 @@ internal class XProto : BaseProtoClient, IXProto
         CheckError();
     }
 
-    public void DeletePropertyChecked(uint window, uint atom)
+    public void DeletePropertyChecked(uint window, ATOM atom)
     {
         DeleteProperty(window, atom);
         CheckError();
     }
 
-    public void RotatePropertiesChecked(uint window, ushort delta, Span<uint> properties)
+    public void RotatePropertiesChecked(uint window, ushort delta, Span<ATOM> properties)
     {
         RotateProperties(window, delta, properties);
         CheckError();
     }
 
-    public void SetSelectionOwnerChecked(uint owner, uint atom, uint timestamp)
+    public void SetSelectionOwnerChecked(uint owner, ATOM atom, uint timestamp)
     {
         SetSelectionOwner(owner, atom, timestamp);
         CheckError();
     }
 
-    public void ConvertSelectionChecked(uint requestor, uint selection, uint target, uint property, uint timestamp)
+    public void ConvertSelectionChecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
         ConvertSelection(requestor, selection, target, property, timestamp);
         CheckError();

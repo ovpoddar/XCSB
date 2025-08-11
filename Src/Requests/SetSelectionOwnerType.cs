@@ -6,12 +6,12 @@ namespace Xcsb.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct SetSelectionOwnerType(uint owner, uint atom, uint timestamp)
+internal readonly struct SetSelectionOwnerType(uint owner, ATOM atom, uint timestamp)
 {
     public readonly Opcode OpCode = Opcode.SetSelectionOwner;
     private readonly byte _pad0 = 0;
     public readonly ushort Length = 4;
     public readonly uint Owner = owner;
-    public readonly uint Atom = atom;
-    public readonly uint Timestamp = timestamp;
+    public readonly ATOM ATOM = atom;
+    public readonly uint TimeStamp = timestamp;
 }

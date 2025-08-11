@@ -1,10 +1,10 @@
 ﻿using Xcsb;
+using Xcsb.Models;
 
-const int primaryAtom = 1;
 var x = XcsbClient.Initialized();
 var root = x.HandshakeSuccessResponseBody.Screens[0].Root;
-x.SetSelectionOwnerChecked(root, primaryAtom, 0);
-var owner = x.GetSelectionOwner(primaryAtom);
+x.SetSelectionOwnerChecked(root, ATOM.Primary, 0);
+var owner = x.GetSelectionOwner(ATOM.Primary);
 Console.WriteLine($"{owner.Owner} == {root} ");
 
 var resultListInstalledColormaps = x.ListInstalledColormaps(root);

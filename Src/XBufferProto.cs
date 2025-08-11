@@ -92,7 +92,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, Span<T> args)
+    public void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -152,7 +152,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp)
+    public void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
         var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
         _buffer.Add(ref request);
@@ -244,7 +244,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void DeleteProperty(uint window, uint atom)
+    public void DeleteProperty(uint window, ATOM atom)
     {
         var request = new DeletePropertyType(window, atom);
         _buffer.Add(ref request);
@@ -566,11 +566,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void RotateProperties(uint window, ushort delta, Span<uint> properties)
+    public void RotateProperties(uint window, ushort delta, Span<ATOM> properties)
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
         _buffer.Add(ref request);
-        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(properties));
+        _buffer.AddRange(MemoryMarshal.Cast<ATOM, byte>(properties));
         _requestLength++;
     }
 
@@ -636,7 +636,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void SetSelectionOwner(uint owner, uint atom, uint timestamp)
+    public void SetSelectionOwner(uint owner, ATOM atom, uint timestamp)
     {
         var request = new SetSelectionOwnerType(owner, atom, timestamp);
         _buffer.Add(ref request);

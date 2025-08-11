@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Models;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
@@ -9,7 +10,7 @@ public readonly struct ListPropertiesReply
 {
     public readonly byte Reply;
     public readonly ushort Sequence;
-    public readonly uint[] Atoms;
+    public readonly ATOM[] Atoms;
 
     internal ListPropertiesReply(ListPropertiesResponse response, Socket socket)
     {
@@ -22,7 +23,7 @@ public readonly struct ListPropertiesReply
         {
             var atoms = new ArrayPoolUsing<byte>(response.NumberOfProperties * 4);
             socket.ReceiveExact(atoms);
-            Atoms = MemoryMarshal.Cast<byte, uint>(atoms).ToArray();
+            Atoms = MemoryMarshal.Cast<byte, ATOM>(atoms).ToArray();
         }
     }
 }

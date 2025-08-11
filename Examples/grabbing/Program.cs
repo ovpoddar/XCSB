@@ -17,7 +17,7 @@ connection.CreateWindow(0, window, screen.Root,
                EventMask.ButtonReleaseMask)
     ]);
 connection.ChangeProperty<byte>(PropertyMode.Replace, window,
-    39, 31, "XCB System Control Demo"u8.ToArray());
+    (ATOM)39, ATOM.String, "XCB System Control Demo"u8.ToArray());
 var gc = connection.NewId();
 connection.CreateGC(gc, window, 0, []);
 connection.MapWindow(window);

@@ -47,13 +47,13 @@ x.ImageText8(win, _gc, 10, 40, "the background will change"u8);
 Thread.Sleep(5000);
 string[] colors = ["Red", "Green", "Blue"];
 string[] propNames = ["COLOR_A", "COLOR_B", "COLOR_C"];
-var atoms = new uint[3];
+var atoms = new ATOM[3];
 
 for (var i = 0; i < colors.Length; i++)
 {
     var reply = x.InternAtom(false, propNames[i]);
-    atoms[i] = reply.Atom;
-    x.ChangeProperty<byte>(PropertyMode.Replace, win, atoms[i], 31, Encoding.UTF8.GetBytes(colors[i]));
+     atoms[i] = reply.Atom;
+    x.ChangeProperty<byte>(PropertyMode.Replace, win, atoms[i], ATOM.String, Encoding.UTF8.GetBytes(colors[i]));
 }
 
 foreach (var atom in atoms)
@@ -65,7 +65,7 @@ foreach (var atom in atoms)
 
 for (var i = 0; i < 6; i++)
 {
-    var reply = x.GetProperty(false, win, atoms[0], 31, 0, 32);
+    var reply = x.GetProperty(false, win, atoms[0], ATOM.String, 0, 32);
     if (reply.Data.Length > 0)
     {
         x.ChangeWindowAttributes(win, ValueMask.BackgroundPixel, [(GetNameColor(reply.Data, screen))]);
@@ -129,7 +129,7 @@ Console.WriteLine("Pointer control changed: acceleration 2:1, threshold 4 pixels
 Thread.Sleep(3000);
 
 
-x.ConvertSelection(win, 1, 31, 9, 0);
+x.ConvertSelection(win, ATOM.Primary, ATOM.String, ATOM.CutBuffer0, 0);
 Console.WriteLine("Selection conversion requested");
 Thread.Sleep(3000);
 
@@ -175,12 +175,12 @@ Console.WriteLine("freed cursor");
 
 x.CloseFont(font);
 
-x.SetSelectionOwner(win, 1, 0);
+x.SetSelectionOwner(win, ATOM.Primary, 0);
 
 Console.WriteLine("Selection owner set for PRIMARY selection");
 Thread.Sleep(1500);
 
-x.SetSelectionOwner(0, 1, 0);
+x.SetSelectionOwner(0, ATOM.Primary, 0);
 Console.WriteLine("Selection owner cleared");
 
 x.SetCloseDownMode(CloseDownMode.Destroy);

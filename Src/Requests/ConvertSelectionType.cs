@@ -8,17 +8,17 @@ namespace Xcsb.Requests;
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 internal readonly struct ConvertSelectionType(
     uint requestor,
-    uint selection,
-    uint target,
-    uint property,
+    ATOM selection,
+    ATOM target,
+    ATOM property,
     uint timestamp)
 {
     public readonly Opcode OpCode = Opcode.ConvertSelection;
     private readonly byte _pad0 = 0;
     public readonly ushort Length = 6;
     public readonly uint Requestor = requestor;
-    public readonly uint Selection = selection;
-    public readonly uint Target = target;
-    public readonly uint Property = property;
+    public readonly ATOM Selection = selection;
+    public readonly ATOM Target = target;
+    public readonly ATOM Property = property;
     public readonly uint TimeStamp = timestamp;
 }
