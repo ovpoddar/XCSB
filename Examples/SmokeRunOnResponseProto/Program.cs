@@ -71,7 +71,7 @@ while (true)
         break;
     if (Event.Value.EventType == EventType.Error)
     {
-        Console.WriteLine(Event.Value.ErrorEvent.ErrorCode);
+        Console.WriteLine(Event.Value.GenericError.ErrorCode);
         break;
     }
 

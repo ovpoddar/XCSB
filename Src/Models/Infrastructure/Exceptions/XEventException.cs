@@ -4,8 +4,8 @@ namespace Xcsb.Models.Infrastructure.Exceptions;
 
 public class XEventException : Exception
 {
-    public XEventException(ErrorEvent errorEvent, string methodName = "")
-        : base(GetErrorMessage(errorEvent.ErrorCode)) =>
+    public XEventException(GenericError genericError, string methodName = "")
+        : base(GetErrorMessage(genericError.ErrorCode)) =>
         base.Source = methodName;
 
     private static string GetErrorMessage(ErrorCode errorCode)

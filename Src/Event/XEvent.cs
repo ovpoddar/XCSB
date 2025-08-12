@@ -7,7 +7,7 @@ public struct XEvent
 {
     [FieldOffset(0)] public EventType EventType;
 
-    [FieldOffset(1)] public ErrorEvent ErrorEvent;
+    [FieldOffset(1)] public GenericError GenericError;
 
     [FieldOffset(1)] public InputEvent InputEvent;
 

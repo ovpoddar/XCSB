@@ -23,7 +23,7 @@ internal class BaseProtoClient
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
-    internal (T? result, ErrorEvent? error) ReceivedResponseAndVerify<T>() where T : unmanaged, IXBaseResponse
+    internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>() where T : unmanaged, IXBaseResponse
     {
         sequenceNumber++;
         var resultLength = Marshal.SizeOf<T>();
@@ -45,14 +45,14 @@ internal class BaseProtoClient
             if (content.EventType == EventType.Error)
             {
                 sequenceNumber--;
-                return (null, content.ErrorEvent);
+                return (null, content.GenericError);
             }
 
             bufferEvents.Push(buffer[0..32].ToStruct<XEvent>());
         }
     }
 
-    internal ErrorEvent? Received()
+    internal GenericError? Received()
     {
         if (socket.Available == 0)
             return null;
@@ -65,7 +65,7 @@ internal class BaseProtoClient
             switch (content.EventType)
             {
                 case EventType.Error:
-                    return content.ErrorEvent;
+                    return content.GenericError;
                 case (EventType)1:
                     break;
                 case EventType.KeyPress:

@@ -284,7 +284,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         var received = socket.Receive(buffer);
         foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
             if (evnt.EventType == EventType.Error)
-                throw new XEventException(evnt.ErrorEvent);
+                throw new XEventException(evnt.GenericError);
             else if ((int)evnt.EventType == 1)
                 throw new Exception("internal issue");
             else

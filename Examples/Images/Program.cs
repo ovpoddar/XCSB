@@ -70,7 +70,7 @@ while (isRunning)
     if (!evnt.HasValue) return;
     if (evnt.Value.EventType == EventType.Error)
     {
-        Console.WriteLine(evnt.Value.ErrorEvent.ErrorCode.ToString());
+        Console.WriteLine(evnt.Value.GenericError.ErrorCode.ToString());
         isRunning = false;
     }
 

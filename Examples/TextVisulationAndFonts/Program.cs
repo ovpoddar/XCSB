@@ -35,7 +35,7 @@ while (isRunning)
     if (!Event.HasValue) return;
     if (Event.Value.EventType == EventType.Error)
     {
-        Console.WriteLine(Event.Value.ErrorEvent.ErrorCode.ToString());
+        Console.WriteLine(Event.Value.GenericError.ErrorCode.ToString());
         isRunning = false;
         break;
     }
