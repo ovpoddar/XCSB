@@ -3,7 +3,7 @@
 namespace Xcsb.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct InputEvent
+public struct KeyPressEvent
 {
     public byte Detail;
     public ushort SequenceNumber;
@@ -16,5 +16,6 @@ public struct InputEvent
     public short EventX;
     public short EventY;
     public KeyButMask State;
-    public sbyte IsSameScreen; // 1 true, 0 false
+    private sbyte _isSameScreen;
+    public bool IsSameScreen => _isSameScreen == 1;
 }

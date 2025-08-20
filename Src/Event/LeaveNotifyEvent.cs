@@ -3,7 +3,7 @@
 namespace Xcsb.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct EnterEvent
+public struct LeaveNotifyEvent
 {
     public NotifyDetail Detail;
     public ushort Sequence;

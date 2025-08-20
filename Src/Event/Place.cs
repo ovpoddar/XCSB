@@ -2,6 +2,6 @@
 
 public enum Place : byte
 {
-    OnTop,
-    OnBottom
+    Top,
+    Bottom
 }

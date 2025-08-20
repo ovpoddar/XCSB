@@ -3,7 +3,7 @@
 namespace Xcsb.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct FocusEvent
+public struct FocusOutEvent
 {
     public NotifyDetail Detail;
     public ushort Sequence;
