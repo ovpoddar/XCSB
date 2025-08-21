@@ -2,6 +2,7 @@
 
 namespace Xcsb.Event;
 
+// TODO: need a way to access similar event in a single type
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct KeyPressEvent
 {

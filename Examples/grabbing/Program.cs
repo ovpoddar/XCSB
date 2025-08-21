@@ -36,14 +36,14 @@ while (isRunning)
 
         case EventType.KeyPress:
             {
-                if (evnt.Value.InputEvent.Detail == 45 && evnt.Value.InputEvent.State == KeyButMask.Control)
+                if (evnt.Value.KeyPressEvent is { Detail: 45, State: KeyButMask.Control })
                 {
                     Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
-                    connection.AllowEvents(EventsMode.SyncKeyboard, evnt.Value.InputEvent.TimeStamp);
+                    connection.AllowEvents(EventsMode.SyncKeyboard, evnt.Value.KeyPressEvent.TimeStamp);
                     break;
                 }
 
-                switch (evnt.Value.InputEvent.Detail)
+                switch (evnt.Value.KeyPressEvent.Detail)
                 {
                     case 10: demo_change_hosts(); break; // 1
                     case 11: demo_keyboard_control(); break; // 2
@@ -66,8 +66,8 @@ while (isRunning)
 
         case EventType.ButtonPress:
             {
-                var bp = evnt.Value.InputEvent;
-                if (bp.Detail == 3 && (bp.State == KeyButMask.Control))
+                var bp = evnt.Value.ButtonPressEvent;
+                if (bp is { Detail: 3, State: KeyButMask.Control })
                 {
                     Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
                     connection.AllowEvents(EventsMode.SyncPointer, bp.TimeStamp);

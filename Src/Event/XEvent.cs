@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Response.Contract;
 
 namespace Xcsb.Event;
 
@@ -6,7 +7,6 @@ namespace Xcsb.Event;
 public struct XEvent
 {
     [FieldOffset(0)] public EventType EventType;
-
     [FieldOffset(1)] public GenericError GenericError; 
     [FieldOffset(1)] public KeyPressEvent KeyPressEvent;
     [FieldOffset(1)] public KeyReleaseEvent KeyReleaseEvent;
