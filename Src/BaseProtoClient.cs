@@ -41,14 +41,18 @@ internal class BaseProtoClient
                     return (buffer.ToStruct<T>(), null);
             }
 
-            ref var content = ref buffer[0..32].AsStruct<XEvent>();
-            if (content.EventType == EventType.Error)
+            ref var content = ref buffer[0..32].AsStruct<XGenericEvent>();
+
+            // to ensure the sequence number.
+            Debug.Assert(content.Verify(sequenceNumber));
+
+            var xEvent = buffer[0..32].ToStruct<XEvent>();
+            if (xEvent.EventType == EventType.Error)
             {
-                sequenceNumber--;
-                return (null, content.GenericError);
+                return (null, xEvent.GenericError);
             }
 
-            bufferEvents.Push(buffer[0..32].ToStruct<XEvent>());
+            bufferEvents.Push(xEvent);
         }
     }
 
