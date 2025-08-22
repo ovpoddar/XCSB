@@ -2,8 +2,9 @@
 
 namespace Xcsb.Event;
 
+// todo marker
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public unsafe struct GenericEvent
+public unsafe struct KeymapNotifyEvent
 {
-    public fixed byte Pad[22];
+    public fixed byte Keys[31];
 }

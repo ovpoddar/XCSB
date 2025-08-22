@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 
 namespace Xcsb.Event;
-
+// todo marker
 [StructLayout(LayoutKind.Explicit, Pack = 1)]
 public unsafe struct ClientMessageData
 {
