@@ -2,5 +2,5 @@
 
 public interface IXError
 {
-    T? GetError<T>() where T : struct;
+    bool Verify(in int sequence);
 }

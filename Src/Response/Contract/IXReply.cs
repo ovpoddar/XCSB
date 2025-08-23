@@ -2,5 +2,5 @@
 
 public interface IXReply
 {
-    T? GetReply<T>() where T : struct;
+    bool Verify(in int sequence);
 }

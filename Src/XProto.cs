@@ -1026,7 +1026,7 @@ internal class XProto : BaseProtoClient, IXProto
         var result = new List<ListFontsWithInfoReply>(maxNames);
         foreach (var item in socket.GetNextStrValue(response.Value))
             result.Add(item);
-       return result.ToArray();
+        return result.ToArray();
     }
 
 

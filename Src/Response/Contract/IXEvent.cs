@@ -2,5 +2,5 @@
 
 public interface IXEvent
 {
-    T? GetEvent<T>() where T : struct;
+    bool Verify(in int sequence);
 }

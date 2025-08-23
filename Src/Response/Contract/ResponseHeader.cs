@@ -3,18 +3,17 @@ using System.Runtime.InteropServices;
 
 namespace Xcsb.Response.Contract;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
-public readonly struct ResponseHeader<T> : IXBaseResponse where T : struct
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+public readonly struct ResponseHeader<T> where T : struct
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     private readonly T Value;
     public readonly ushort Sequence;
-    public readonly uint Length;
 
     public bool Verify(in int sequence)
     {
-        return Reply == 1 && Sequence == sequence && Unsafe.SizeOf<T>() == 1;
+        return Sequence == sequence && Unsafe.SizeOf<T>() == 1;
     }
-    
+
     internal T GetValue() => Value;
 }
