@@ -5,9 +5,10 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 60)]
-internal readonly struct ListFontsWithInfoResponse : IXBaseResponse
+internal readonly struct ListFontsWithInfoResponse : IXReply
 {
     public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly uint Length;
     public readonly CharInfo MinBounds;
     private readonly int _pad0;
     public readonly CharInfo MaxBounds;

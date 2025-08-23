@@ -5,9 +5,10 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 52)]
-internal unsafe struct GetKeyboardControlResponse : IXBaseResponse
+internal unsafe struct GetKeyboardControlResponse : IXReply
 {
     public readonly ResponseHeader<AutoRepeatMode> ResponseHeader;
+    public readonly uint Length;
     public readonly uint LedMask;
     public readonly byte KeyClickPercent;
     public readonly byte BellPercent;
@@ -18,6 +19,6 @@ internal unsafe struct GetKeyboardControlResponse : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Length == 5;
+        return this.Length == 5;
     }
 }

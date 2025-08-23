@@ -4,9 +4,10 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct QueryExtensionReply : IXBaseResponse
+public readonly struct QueryExtensionReply : IXReply
 {
     public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly uint Length;
     private readonly byte _present;
     public readonly byte MajorOpcode;
     public readonly byte FirstEvent;
@@ -15,6 +16,6 @@ public readonly struct QueryExtensionReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Length == 0;
+        return this.Length == 0;
     }
 }

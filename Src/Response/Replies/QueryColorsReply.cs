@@ -2,13 +2,14 @@
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public readonly struct QueryColorsReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public readonly Pixel[] Colors;
     internal QueryColorsReply(QueryColorsResponse result, Socket socket)

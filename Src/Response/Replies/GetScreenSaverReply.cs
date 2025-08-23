@@ -4,9 +4,10 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct GetScreenSaverReply : IXBaseResponse
+public readonly struct GetScreenSaverReply : IXReply
 {
     public readonly ResponseHeader<byte>ResponseHeader;
+    public readonly uint Length;
     public readonly ushort Timeout;
     public readonly ushort Interval;
     private readonly byte _preferBlanking;

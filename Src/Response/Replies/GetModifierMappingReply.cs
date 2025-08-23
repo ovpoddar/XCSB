@@ -1,13 +1,14 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public struct GetModifierMappingReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public byte KeycodesPerModifier;
     public readonly ushort Sequence;
     public ulong[] Keycodes;

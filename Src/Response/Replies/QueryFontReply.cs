@@ -2,13 +2,14 @@
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public struct QueryFontReply
 {
-    public byte Reply;
+    public ResponseType Reply;
     public ushort Sequence;
     public CharInfo MinBounds;
     public CharInfo MaxBounds;

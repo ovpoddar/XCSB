@@ -1,13 +1,14 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public struct AllocColorCellsReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public uint[] Pixels;
     public ushort[] Masks;
@@ -16,7 +17,7 @@ public struct AllocColorCellsReply
     {
         Reply = result.ResponseHeader.Reply;
         Sequence = result.ResponseHeader.Sequence;
-        var requiredSize = (int)result.ResponseHeader.Length * 4;
+        var requiredSize = (int)result.Length * 4;
         using var buffer = new ArrayPoolUsing<byte>(requiredSize);
         socket.ReceiveExact(buffer);
         Pixels = result.NumberOfPixels == 0

@@ -5,9 +5,10 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct QueryPointerReply : IXBaseResponse
+public readonly struct QueryPointerReply : IXReply
 {
     public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly uint Length;
     public readonly uint Root;
     public readonly uint child;
     public readonly short RootX;
@@ -20,6 +21,6 @@ public readonly struct QueryPointerReply : IXBaseResponse
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Length == 0;
+        return this.Length == 0;
     }
 }

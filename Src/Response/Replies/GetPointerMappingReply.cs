@@ -1,12 +1,13 @@
 ﻿using System.Net.Sockets;
 using Xcsb.Helpers;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public readonly struct GetPointerMappingReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public readonly byte[] Map;
 
@@ -18,7 +19,7 @@ public readonly struct GetPointerMappingReply
             Map = [];
         else
         {
-            using var mapBuffer = new ArrayPoolUsing<byte>((int)response.ResponseHeader.Length * 4);
+            using var mapBuffer = new ArrayPoolUsing<byte>((int)response.Length * 4);
             socket.ReceiveExact(mapBuffer);
             Map = mapBuffer[0..response.ResponseHeader.GetValue()].ToArray();
         }

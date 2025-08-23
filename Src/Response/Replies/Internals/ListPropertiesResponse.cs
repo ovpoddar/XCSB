@@ -4,13 +4,14 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-internal readonly struct ListPropertiesResponse : IXBaseResponse
+internal readonly struct ListPropertiesResponse : IXReply
 {
     public readonly ResponseHeader<byte>ResponseHeader;
+    public readonly uint Length;
     public readonly ushort NumberOfProperties;
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Verify(sequence) && ResponseHeader.Length == NumberOfProperties;
+        return ResponseHeader.Verify(sequence) && this.Length == NumberOfProperties;
     }
 }

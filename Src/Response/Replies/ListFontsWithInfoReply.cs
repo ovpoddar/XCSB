@@ -3,13 +3,14 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Helpers;
 using Xcsb.Models;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public readonly struct ListFontsWithInfoReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public readonly CharInfo MinBounds;
     public readonly CharInfo MaxBounds;

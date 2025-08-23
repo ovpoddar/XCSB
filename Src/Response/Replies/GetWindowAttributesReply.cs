@@ -6,7 +6,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
-public readonly struct GetWindowAttributesReply : IXBaseResponse
+public readonly struct GetWindowAttributesReply : IXReply
 {
     public readonly ResponseHeader<BackingStores> ResponseHeader;
     public readonly uint Length;

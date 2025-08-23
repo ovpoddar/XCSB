@@ -2,13 +2,14 @@
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public readonly struct ListHostsReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly AccessControlMode Mode;
     public readonly ushort Sequence;
     public readonly ushort NumberOfHosts;
@@ -21,11 +22,11 @@ public readonly struct ListHostsReply
         Sequence = response.ResponseHeader.Sequence;
         NumberOfHosts = response.NumberOfHosts;
 
-        if (response.ResponseHeader.Length == 0)
+        if (response.Length == 0)
             Hosts = [];
         else
         {
-            var requiredSize = (int)response.ResponseHeader.Length * 4;
+            var requiredSize = (int)response.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
             Hosts = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();

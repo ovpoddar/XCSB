@@ -2,13 +2,14 @@
 using System.Net.Sockets;
 using System.Text;
 using Xcsb.Helpers;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public struct GetFontPathReply
 {
-    public byte Reply;
+    public ResponseType Reply;
     public ushort Sequence;
     public string[] Paths;
 
@@ -20,7 +21,7 @@ public struct GetFontPathReply
             Paths = [];
         else
         {
-            var requiredSize = (int)response.ResponseHeader.Length * 4;
+            var requiredSize = (int)response.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
             this.Paths = new string[response.StringLength];

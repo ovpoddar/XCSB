@@ -1,13 +1,14 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public struct ListInstalledColormapsReply
 {
-    public byte Reply;
+    public ResponseType Reply;
     public ushort Sequence;
     public uint[] Colormap;
 
@@ -15,7 +16,7 @@ public struct ListInstalledColormapsReply
     {
         Reply = response.ResponseHeader.Reply;
         Sequence = response.ResponseHeader.Sequence;
-        if (response.ResponseHeader.Length == 0)
+        if (response.Length == 0)
             Colormap = [];
         else
         {

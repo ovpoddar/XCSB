@@ -2,13 +2,14 @@
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public readonly struct GetImageReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly byte Depth;
     public readonly ushort Sequence;
     public readonly uint Length;
@@ -19,13 +20,13 @@ public readonly struct GetImageReply
         Reply = result.ResponseHeader.Reply;
         Depth = result.ResponseHeader.GetValue();
         Sequence = result.ResponseHeader.Sequence;
-        Length = result.ResponseHeader.Length;
+        Length = result.Length;
         VisualId = result.VisualId;
         if (Length == 0)
             Data = [];
         else
         {
-            Data = new byte[result.ResponseHeader.Length * 4];
+            Data = new byte[result.Length * 4];
             socket.ReceiveExact(Data);
         }
     }

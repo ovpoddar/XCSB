@@ -1,19 +1,20 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public readonly struct GetKeyboardMappingReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public readonly uint[] Keysyms;
     public readonly byte KeyPerKeyCode;
     internal GetKeyboardMappingReply(GetKeyboardMappingResponse result, byte count, Socket socket)
     {
-        if (result.ResponseHeader.GetValue() * count != result.ResponseHeader.Length)
+        if (result.ResponseHeader.GetValue() * count != result.Length)
             throw new InvalidOperationException("Invalid reply");
 
         Reply = result.ResponseHeader.Reply;
@@ -24,7 +25,7 @@ public readonly struct GetKeyboardMappingReply
             Keysyms = [];
         else
         {
-            var requiredSize = (int)result.ResponseHeader.Length * 4;
+            var requiredSize = (int)result.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
             Keysyms = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();

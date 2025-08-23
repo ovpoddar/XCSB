@@ -4,9 +4,10 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct AllocNamedColorReply : IXBaseResponse
+public readonly struct AllocNamedColorReply : IXReply
 {
     public readonly ResponseHeader<byte>ResponseHeader;
+    public readonly uint Length;
     public readonly uint Pixel;
     public readonly ushort ExactRed;
     public readonly ushort ExactGreen;
@@ -16,6 +17,6 @@ public readonly struct AllocNamedColorReply : IXBaseResponse
     public readonly ushort VisualBlue;
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Length == 0;
+        return this.Length == 0;
     }
 }

@@ -2,13 +2,14 @@
 using System.Text;
 using Xcsb.Helpers;
 using Xcsb.Models;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public readonly struct ListExtensionsReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public readonly string[] Names;
 
@@ -20,7 +21,7 @@ public readonly struct ListExtensionsReply
             Names = [];
         else
         {
-            var requiredSize = (int)result.ResponseHeader.Length * 4;
+            var requiredSize = (int)result.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
             Names = new string[result.ResponseHeader.GetValue()];

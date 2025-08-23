@@ -1,13 +1,14 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public struct AllocColorPlanesReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public readonly uint RedMask;
     public readonly uint GreenMask;
@@ -25,7 +26,7 @@ public struct AllocColorPlanesReply
             Pixels = [];
         else
         {
-            var requiredSize = (int)response.ResponseHeader.Length * 4;
+            var requiredSize = (int)response.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             stream.ReceiveExact(buffer[0..requiredSize]);
             Pixels = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();

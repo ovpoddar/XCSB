@@ -1,13 +1,14 @@
 ﻿using System.Net.Sockets;
 using Xcsb.Helpers;
 using Xcsb.Models;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Internals;
 
 namespace Xcsb.Response;
 
 public struct GetKeyboardControlReply
 {
-    public readonly byte Reply;
+    public readonly ResponseType Reply;
     public readonly AutoRepeatMode AutoRepeatMode;
     public readonly ushort Sequence;
     public readonly uint Length;
@@ -25,7 +26,7 @@ public struct GetKeyboardControlReply
             Reply = result.ResponseHeader.Reply;
             AutoRepeatMode = result.ResponseHeader.GetValue();
             Sequence = result.ResponseHeader.Sequence;
-            Length = result.ResponseHeader.Length;
+            Length = result.Length;
             LedMask = result.LedMask;
             KeyClickPercent = result.KeyClickPercent;
             BellPercent = result.BellPercent;
