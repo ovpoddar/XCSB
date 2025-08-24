@@ -14,7 +14,9 @@ public readonly struct TranslateCoordinatesReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.Length == 0;
+        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence &&
+               this.Length == 0;
     }
+
     public bool SameScreen => ResponseHeader.GetValue() == 1;
 }

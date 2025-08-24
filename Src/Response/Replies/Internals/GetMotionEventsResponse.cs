@@ -6,12 +6,13 @@ namespace Xcsb.Response.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct GetMotionEventsResponse : IXReply
 {
-    public readonly ResponseHeader<byte>ResponseHeader;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public readonly uint Length;
     public readonly uint NumberOfEvents;
 
     public bool Verify(in int sequence)
     {
-        return this.Length / 2 == NumberOfEvents;
+        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence &&
+               this.Length / 2 == NumberOfEvents;
     }
 }

@@ -30,7 +30,8 @@ public readonly struct GetKeyboardMappingReply
             socket.ReceiveExact(buffer[0..requiredSize]);
             Keysyms = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();
         }
-        /* todo update the calling
+        // TODO: update the calling
+        /*
         for (int i = 0; i < (count); ++i) {
             printf("Keycode %d: ", min + i);
             for (int j = 0; j < keysyms_per_keycode; ++j) {

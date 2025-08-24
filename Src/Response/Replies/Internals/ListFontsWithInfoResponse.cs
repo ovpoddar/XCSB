@@ -27,12 +27,13 @@ internal readonly struct ListFontsWithInfoResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return _pad0 == 0 && _pad1 == 0;
+        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence &&
+               _pad0 == 0 && _pad1 == 0;
     }
 
     public byte NameLength =>
         ResponseHeader.GetValue();
 
-    internal bool HasMore => 
+    internal bool HasMore =>
         NameLength != 0;
 }

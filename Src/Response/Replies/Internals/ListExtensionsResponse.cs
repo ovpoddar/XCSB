@@ -11,8 +11,9 @@ internal readonly struct ListExtensionsResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.Length * 4 >= NumberOfExtensions;
+        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence &&
+               this.Length * 4 >= NumberOfExtensions;
     }
-    
+
     public byte NumberOfExtensions => ResponseHeader.GetValue();
 }

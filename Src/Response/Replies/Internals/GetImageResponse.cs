@@ -12,6 +12,6 @@ internal readonly struct GetImageResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return true;
+        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence;
     }
 }

@@ -7,7 +7,7 @@ namespace Xcsb.Response.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 60)]
 internal readonly struct QueryFontResponse : IXReply
 {
-    public readonly ResponseHeader<byte>ResponseHeader;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public readonly uint Length;
     public readonly CharInfo MinBounds;
     private readonly uint _pad1;
@@ -27,7 +27,8 @@ internal readonly struct QueryFontResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return _pad1 == 0 && _pad2 == 0 && this.Length > 7;
+        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence &&
+               _pad1 == 0 && _pad2 == 0 && this.Length > 7;
     }
 
     public readonly bool AllCharsExist => _allCharsExist == 1;

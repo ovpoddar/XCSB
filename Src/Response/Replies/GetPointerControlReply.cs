@@ -6,7 +6,7 @@ namespace Xcsb.Response;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct GetPointerControlReply : IXReply
 {
-    public readonly ResponseHeader<byte>ResponseHeader;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public readonly uint Length;
     public readonly ushort AccelNumerator;
     public readonly ushort AccelDenominator;
@@ -14,6 +14,7 @@ public readonly struct GetPointerControlReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.Length == 0;
+        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence &&
+               this.Length == 0;
     }
 }

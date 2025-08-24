@@ -13,6 +13,7 @@ internal readonly struct AllocColorCellsResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.Length == NumberOfPixels + NumberOfMasks;
+        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence &&
+               this.Length == NumberOfPixels + NumberOfMasks;
     }
 }
