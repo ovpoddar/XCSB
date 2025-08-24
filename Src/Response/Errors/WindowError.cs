@@ -18,6 +18,6 @@ public readonly struct WindowError : IXError
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence;
     }
 }
