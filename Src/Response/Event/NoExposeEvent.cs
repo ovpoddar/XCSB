@@ -13,6 +13,6 @@ public struct NoExposeEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+        return this.ResponseHeader.Reply == ResponseType.NoExpose && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
     }
 }

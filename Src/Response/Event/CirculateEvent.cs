@@ -14,6 +14,6 @@ public struct CirculateNotifyEvent : IXEvent
     
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0 && this._pad1 == 0;
+        return this.ResponseHeader.Reply == ResponseType.CirculateNotify && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0 && this._pad1 == 0;
     }
 }

@@ -23,6 +23,6 @@ public struct KeyPressEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.KeyPress && this.ResponseHeader.Sequence == sequence;
     }
 }

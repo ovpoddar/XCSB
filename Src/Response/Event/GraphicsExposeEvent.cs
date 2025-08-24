@@ -18,6 +18,6 @@ public struct GraphicsExposeEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+        return this.ResponseHeader.Reply == ResponseType.GraphicsExpose && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
     }
 }

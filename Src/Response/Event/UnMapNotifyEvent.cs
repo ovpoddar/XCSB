@@ -9,10 +9,12 @@ public struct UnMapNotifyEvent : IXEvent
     public readonly ResponseHeader<byte> ResponseHeader;
     public uint Event;
     public uint Window;
-    public byte FromConfigure; // TODO 1 true 0 false
-    
+    private byte _fromConfigure;
+
+
+    public readonly bool FromConfigure => _fromConfigure == 1;
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+        return this.ResponseHeader.Reply == ResponseType.UnMapNotify && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
     }
 }

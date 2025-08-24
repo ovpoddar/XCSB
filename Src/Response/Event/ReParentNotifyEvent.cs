@@ -16,6 +16,6 @@ public struct ReParentNotifyEvent : IXEvent
     
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+        return this.ResponseHeader.Reply == ResponseType.ReParentNotify && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
     }
 }

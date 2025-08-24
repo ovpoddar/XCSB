@@ -17,11 +17,12 @@ public struct EnterNotifyEvent : IXEvent
     public short EventY;
     public ushort State;
     public NotifyMode Mode;
-    public byte SameScreenFocus; // TODO 1 true, 0 false
+    private byte _sameScreenFocus;
 
+    public bool IsSameScreenFocus => _sameScreenFocus == 1;
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.EnterNotify && this.ResponseHeader.Sequence == sequence;
     }
 }

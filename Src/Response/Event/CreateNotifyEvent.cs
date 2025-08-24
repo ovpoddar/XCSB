@@ -14,11 +14,13 @@ public struct CreateNotifyEvent
     public ushort Width;
     public ushort Height;
     public ushort BorderWidth;
-    public byte OverrideRedirect; // TODO 1 true 0 false
+    private byte _overrideRedirect;
 
+    public bool OverrideRedirect => this._overrideRedirect == 1;
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+        return this.ResponseHeader.Reply == ResponseType.CreateNotify && this.ResponseHeader.Sequence == sequence &&
+               this.ResponseHeader.GetValue() == 0;
     }
 }

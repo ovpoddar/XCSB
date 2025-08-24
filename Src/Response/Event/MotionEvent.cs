@@ -16,10 +16,11 @@ public struct MotionNotifyEvent : IXEvent
     public short EventX;
     public short EventY;
     public ushort State;
-    public sbyte SameScreen; // TODO 1 true 0 false
+    private sbyte _sameScreen;
 
+    public bool IsSameScreen => _sameScreen == 1;
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.MotionNotify && this.ResponseHeader.Sequence == sequence;
     }
 }

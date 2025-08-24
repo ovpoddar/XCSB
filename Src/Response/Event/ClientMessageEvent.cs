@@ -15,6 +15,6 @@ public struct ClientMessageEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.ClientMessage && this.ResponseHeader.Sequence == sequence;
     }
 }

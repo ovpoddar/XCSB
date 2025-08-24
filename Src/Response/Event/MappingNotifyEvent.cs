@@ -13,6 +13,6 @@ public struct MappingNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+        return this.ResponseHeader.Reply == ResponseType.MappingNotify && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
     }
 }
