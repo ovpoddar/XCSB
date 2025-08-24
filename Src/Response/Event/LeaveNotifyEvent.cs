@@ -1,12 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Response.Contract;
 
 namespace Xcsb.Event;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct LeaveNotifyEvent
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+public struct LeaveNotifyEvent : IXEvent
 {
-    public NotifyDetail Detail;
-    public ushort Sequence;
+    public readonly ResponseHeader<NotifyDetail> ResponseHeader;
     public uint Time;
     public uint Root;
     public uint Event;
@@ -18,4 +18,9 @@ public struct LeaveNotifyEvent
     public ushort State;
     public NotifyMode Mode;
     public byte SameScreenFocus; // 1 true, 0 false
+
+    public bool Verify(in int sequence)
+    {
+        return this.ResponseHeader.Sequence == sequence;
+    }
 }

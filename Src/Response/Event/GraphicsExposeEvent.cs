@@ -1,12 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Response.Contract;
 
 namespace Xcsb.Event;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct GraphicsExposeEvent
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+public struct GraphicsExposeEvent : IXEvent
 {
-    private readonly byte Pad0;
-    public ushort Sequence;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public uint Drawable;
     public ushort X;
     public ushort Y;
@@ -15,4 +15,9 @@ public struct GraphicsExposeEvent
     public ushort MinorOpcode;
     public ushort Count;
     public byte MajorOpcode;
+
+    public bool Verify(in int sequence)
+    {
+        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+    }
 }

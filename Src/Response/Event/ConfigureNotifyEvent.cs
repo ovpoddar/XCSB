@@ -1,12 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Response.Contract;
 
 namespace Xcsb.Event;
 
-[StructLayout(LayoutKind.Sequential)]
-public struct ConfigureNotifyEvent
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+public struct ConfigureNotifyEvent : IXEvent
 {
-    private readonly byte Pad0;
-    public ushort Sequence;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public uint Event;
     public uint Window;
     public uint AboveSibling;
@@ -16,4 +16,10 @@ public struct ConfigureNotifyEvent
     public ushort Height;
     public ushort BorderWidth;
     public byte OverrideRedirect;
+
+
+    public bool Verify(in int sequence)
+    {
+        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+    }
 }

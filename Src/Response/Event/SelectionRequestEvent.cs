@@ -1,17 +1,22 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Models;
+using Xcsb.Response.Contract;
 
 namespace Xcsb.Event;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct SelectionRequestEvent
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+public struct SelectionRequestEvent : IXEvent
 {
-    private readonly byte Pad0;
-    public ushort Sequence;
+    public readonly ResponseHeader<byte> ResponseHeader;
     public uint Time; // 0 -> current time
     public uint Owner;
     public uint Requestor;
     public ATOM Selection;
     public ATOM Target;
     public ATOM Property;
+    
+    public bool Verify(in int sequence)
+    {
+        return this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+    }
 }
