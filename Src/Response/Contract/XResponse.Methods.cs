@@ -33,20 +33,19 @@ internal partial struct XResponse<T> : IXBaseResponse
     public bool Verify(in int sequence)
     {
 #if NETSTANDARD
-        // todo could be optimized with simple if check and int cast
-        return Enum.IsDefined(typeof(ResponseType), this.Type) && Sequence == sequence;
+        return (int)this.ResponseHeader.Reply <= 36 && (int)this.ResponseHeader.Reply >= 0;
 #else
-        return Enum.IsDefined<ResponseType>(Type) && Sequence == sequence;
+        return Enum.IsDefined<ResponseType>(this.ResponseHeader.Reply);
 #endif
     }
 
     public bool IsEvent() =>
-        (int)this.Type <= 2 && (int)this.Type >= 36;
+        (int)this.ResponseHeader.Reply <= 2 && (int)this.ResponseHeader.Reply >= 36;
 
     public bool IsError() =>
-        this.Type == ResponseType.Error;
+        this.ResponseHeader.Reply == ResponseType.Error;
 
     public bool IsReply() =>
-        this.Type == ResponseType.Reply;
+        this.ResponseHeader.Reply == ResponseType.Reply;
 
 }

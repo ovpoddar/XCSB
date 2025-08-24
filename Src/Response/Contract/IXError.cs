@@ -1,6 +1,5 @@
 ﻿namespace Xcsb.Response.Contract;
 
-public interface IXError
+public interface IXError : IXBaseResponse
 {
-    bool Verify(in int sequence);
 }
