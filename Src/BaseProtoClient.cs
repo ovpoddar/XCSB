@@ -23,7 +23,7 @@ internal class BaseProtoClient
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
-    internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>() where T : unmanaged, IXReply
+    internal (T? result, XGenericError? error) ReceivedResponseAndVerify<T>() where T : unmanaged, IXReply
     {
         sequenceNumber++;
         var resultLength = Marshal.SizeOf<T>();
@@ -56,7 +56,7 @@ internal class BaseProtoClient
         }
     }
 
-    internal GenericError? Received()
+    internal XGenericError? Received()
     {
         if (socket.Available == 0)
             return null;

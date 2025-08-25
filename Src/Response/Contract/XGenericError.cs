@@ -4,9 +4,11 @@ using Xcsb.Errors;
 
 namespace Xcsb.Event;
 
-[StructLayout(LayoutKind.Explicit, Pack = 1, Size = 31)]
-public unsafe struct GenericError
+// todo: marker
+[StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
+public unsafe struct XGenericError
 {
+    [FieldOffset(0)] public EventType EventType;
     [FieldOffset(0)] public ErrorCode ErrorCode;
     [FieldOffset(1)] public RequestError RequestError;
     [FieldOffset(1)] public ValueError ValueError;
