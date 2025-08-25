@@ -1,11 +1,12 @@
 ﻿using Xcsb.Event;
+using Xcsb.Response.Errors;
 
 namespace Xcsb.Models.Infrastructure.Exceptions;
 
 public class XEventException : Exception
 {
-    public XEventException(XGenericError genericError, string methodName = "")
-        : base(GetErrorMessage(genericError.ErrorCode)) =>
+    internal XEventException(XGenericError genericError, string methodName = "")
+        : base(GetErrorMessage(genericError.ResponseHeader.GetValue())) =>
         base.Source = methodName;
 
     private static string GetErrorMessage(ErrorCode errorCode)

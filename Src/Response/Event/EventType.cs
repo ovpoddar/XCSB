@@ -2,7 +2,6 @@
 
 public enum EventType : byte
 {
-    Error = 0,
     KeyPress = 2,
     KeyRelease = 3,
     ButtonPress = 4,

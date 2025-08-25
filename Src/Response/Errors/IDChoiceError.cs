@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using Xcsb.Event;
 using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
 
 namespace Xcsb.Errors;
 

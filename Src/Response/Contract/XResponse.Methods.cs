@@ -1,9 +1,9 @@
 ﻿using Xcsb.Helpers;
 namespace Xcsb.Response.Contract;
 
-internal partial struct XResponse<T> : IXBaseResponse
+internal partial struct XResponse<T> : IXBaseResponse, IGenericResponse
 {
-    public unsafe T1? GetEvent<T1>() where T1 : struct
+    public unsafe T1? ToEvent<T1>() where T1 : struct, IXEvent
     {
         if (!this.IsEvent())
             return null;
@@ -12,7 +12,7 @@ internal partial struct XResponse<T> : IXBaseResponse
             return new Span<byte>(ptr, 32).ToStruct<T1>();
     }
 
-    public unsafe T1? GetError<T1>() where T1 : struct
+    public unsafe T1? ToError<T1>() where T1 : struct, IXError
     {
         if (!this.IsError())
             return null;
@@ -21,7 +21,7 @@ internal partial struct XResponse<T> : IXBaseResponse
             return new Span<byte>(ptr, 32).ToStruct<T1>();
     }
 
-    public unsafe T1? GetReply<T1>() where T1 : struct
+    public unsafe T1? ToReply<T1>() where T1 : struct, IXReply
     {
         if (!this.IsReply())
             return null;
