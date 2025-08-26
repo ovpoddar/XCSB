@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Xcsb.Response.Contract;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
-public readonly struct ResponseHeader<T> where T : struct
+public readonly struct ResponseHeader<T> where T : unmanaged
 {
     public readonly ResponseType Reply;
     private readonly T Value;

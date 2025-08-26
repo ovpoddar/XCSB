@@ -5,19 +5,20 @@ using System.Runtime.InteropServices;
 using Xcsb.Event;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
 
 namespace Xcsb;
 
 internal class BaseProtoClient
 {
-    internal readonly Stack<XEvent> bufferEvents;
+    internal readonly Stack<XGenericEvent> bufferEvents;
     internal readonly Socket socket;
     internal ushort sequenceNumber;
 
     public BaseProtoClient(Socket socket)
     {
         this.socket = socket;
-        bufferEvents = new Stack<XEvent>();
+        bufferEvents = new Stack<XGenericEvent>();
     }
 
 #if !NETSTANDARD
@@ -32,27 +33,42 @@ internal class BaseProtoClient
         {
             socket.EnsureReadSize(resultLength);
             socket.ReceiveExact(buffer[0..32]);
-            ref var baseHeader = ref buffer[0..32].AsStruct<ResponseHeader<byte>>();
-            if (baseHeader.Verify(sequenceNumber))
-            {
-                socket.ReceiveExact(buffer[32..]);
-                ref var responce = ref buffer.AsStruct<T>();
-                if (responce.Verify(sequenceNumber))
-                    return (buffer.ToStruct<T>(), null);
-            }
-
-            ref var content = ref buffer[0..32].AsStruct<XGenericEvent>();
-
-            // to ensure the sequence number.
+            ref var content = ref buffer[0..32].AsStruct<XResponse<byte>>();
+            var responseType = content.GetResponseType();
+            // this is the response verification. which ensures the reply type.
             Debug.Assert(content.Verify(sequenceNumber));
 
-            var xEvent = buffer[0..32].ToStruct<XEvent>();
-            if (xEvent.EventType == EventType.Error)
+            switch (responseType)
             {
-                return (null, xEvent.GenericError);
+                case XResponseType.Invalid:
+                    throw new Exception("Should not come here");
+                case XResponseType.Reply:
+                {
+                    socket.ReceiveExact(buffer[32..]);
+                    ref var responce = ref buffer.AsStruct<T>();
+                    // this is the reply verification. which ensures the structure of the reply.
+                    if (responce.Verify(sequenceNumber))
+                        return (buffer.ToStruct<T>(), null);
+                    break;
+                }
+                case XResponseType.Error:
+                {
+                    var error = content.GenericError;
+                    if(error.Verify(sequenceNumber))
+                        return (null, error);
+                    break;
+                }
+                case XResponseType.Event:
+                case XResponseType.Notify:
+                {
+                    var eventContent = content.XGenericEvent;
+                    if (eventContent.Verify(sequenceNumber))
+                        bufferEvents.Push(content.XGenericEvent);
+                    break;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-
-            bufferEvents.Push(xEvent);
         }
     }
 
@@ -61,55 +77,25 @@ internal class BaseProtoClient
         if (socket.Available == 0)
             return null;
 
-        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
+        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XResponse<byte>>()];
         while (socket.Available != 0)
         {
             socket.ReceiveExact(buffer);
-            ref var content = ref buffer.AsStruct<XEvent>();
-            switch (content.EventType)
+            ref var content = ref buffer.AsStruct<XResponse<byte>>();
+            var responseType = content.GetResponseType();
+            switch (responseType)
             {
-                case EventType.Error:
+                case XResponseType.Error:
                     return content.GenericError;
-                case (EventType)1:
+                case XResponseType.Event:
+                case XResponseType.Notify:
+                    bufferEvents.Push(content.XGenericEvent);
                     break;
-                case EventType.KeyPress:
-                case EventType.KeyRelease:
-                case EventType.ButtonPress:
-                case EventType.ButtonRelease:
-                case EventType.MotionNotify:
-                case EventType.EnterNotify:
-                case EventType.LeaveNotify:
-                case EventType.FocusIn:
-                case EventType.FocusOut:
-                case EventType.KeymapNotify:
-                case EventType.Expose:
-                case EventType.GraphicsExpose:
-                case EventType.NoExpose:
-                case EventType.VisibilityNotify:
-                case EventType.CreateNotify:
-                case EventType.DestroyNotify:
-                case EventType.UnMapNotify:
-                case EventType.MapNotify:
-                case EventType.MapRequest:
-                case EventType.ReParentNotify:
-                case EventType.ConfigureNotify:
-                case EventType.ConfigureRequest:
-                case EventType.GravityNotify:
-                case EventType.ResizeRequest:
-                case EventType.CirculateNotify:
-                case EventType.CirculateRequest:
-                case EventType.PropertyNotify:
-                case EventType.SelectionClear:
-                case EventType.SelectionRequest:
-                case EventType.SelectionNotify:
-                case EventType.ColormapNotify:
-                case EventType.ClientMessage:
-                case EventType.MappingNotify:
-                case EventType.GenericEvent:
-                case EventType.LastEvent:
+                case XResponseType.Invalid:
+                    throw new ArgumentOutOfRangeException();
+                case XResponseType.Reply:
                 default:
-                    bufferEvents.Push(content);
-                    break;
+                    continue;
             }
         }
 

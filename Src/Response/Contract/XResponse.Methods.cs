@@ -1,11 +1,12 @@
 ﻿using Xcsb.Helpers;
+
 namespace Xcsb.Response.Contract;
 
 internal partial struct XResponse<T> : IXBaseResponse, IGenericResponse
 {
     public unsafe T1? ToEvent<T1>() where T1 : struct, IXEvent
     {
-        if (!this.IsEvent())
+        if (GetResponseType() != XResponseType.Event)
             return null;
 
         fixed (byte* ptr = this._data)
@@ -14,7 +15,7 @@ internal partial struct XResponse<T> : IXBaseResponse, IGenericResponse
 
     public unsafe T1? ToError<T1>() where T1 : struct, IXError
     {
-        if (!this.IsError())
+        if (GetResponseType() != XResponseType.Error)
             return null;
 
         fixed (byte* ptr = this._data)
@@ -23,7 +24,7 @@ internal partial struct XResponse<T> : IXBaseResponse, IGenericResponse
 
     public unsafe T1? ToReply<T1>() where T1 : struct, IXReply
     {
-        if (!this.IsReply())
+        if (GetResponseType() != XResponseType.Reply)
             return null;
 
         fixed (byte* ptr = this._data)
@@ -39,13 +40,12 @@ internal partial struct XResponse<T> : IXBaseResponse, IGenericResponse
 #endif
     }
 
-    public bool IsEvent() =>
-        (int)this.ResponseHeader.Reply <= 2 && (int)this.ResponseHeader.Reply >= 36;
-
-    public bool IsError() =>
-        this.ResponseHeader.Reply == ResponseType.Error;
-
-    public bool IsReply() =>
-        this.ResponseHeader.Reply == ResponseType.Reply;
-
+    public XResponseType GetResponseType() => this.ResponseHeader.Reply switch
+    {
+        ResponseType.Reply => XResponseType.Reply,
+        ResponseType.Error => XResponseType.Error,
+        ResponseType.KeymapNotify => XResponseType.Notify,
+        >= ResponseType.KeyPress and <= ResponseType.LastEvent => XResponseType.Event,
+        _ => XResponseType.Invalid
+    };
 }
