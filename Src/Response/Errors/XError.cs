@@ -11,15 +11,13 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
-internal unsafe struct XGenericError : IXError
+internal unsafe struct XError : IXError
 {
     [FieldOffset(0)] public readonly ResponseHeader<ErrorCode> ResponseHeader;
     [FieldOffset(4)] public fixed byte Data[28];
-
-
+    
     [FieldOffset(0)] private fixed byte _data[32];
-
-
+    
     public readonly bool Verify(in int sequence)
     {
         if (this.ResponseHeader.Sequence != sequence ||
@@ -59,5 +57,11 @@ internal unsafe struct XGenericError : IXError
                 _ => false
             };
         }
+    }
+    
+    public readonly ref T As<T>() where T : struct, IXError
+    {
+        fixed (byte* ptr = this._data)
+            return ref new Span<byte>(ptr, 32).AsStruct<T>();
     }
 }
