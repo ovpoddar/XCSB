@@ -8,9 +8,10 @@ namespace Xcsb.Event;
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
 public unsafe struct XEvent : IXEvent
 {
-    [FieldOffset(0)] public readonly ResponseHeader<byte> ResponseHeader;
-    [FieldOffset(4)] public fixed byte Data[28];
-
+    [FieldOffset(0)] public readonly EventType Reply;
+    [FieldOffset(1)] private readonly byte Value;
+    [FieldOffset(2)] public readonly ushort Sequence;
+    
     [FieldOffset(0)] private fixed byte _data[32];
 
     public readonly ref T As<T>() where T : struct, IXEvent
@@ -19,21 +20,21 @@ public unsafe struct XEvent : IXEvent
             return ref new Span<byte>(ptr, 32).AsStruct<T>();
     }
 
+
     public bool Verify(in int sequence)
     {
-        if (this.ResponseHeader.Sequence != sequence
-            && this.ResponseHeader.Reply is > ResponseType.KeyPress and < ResponseType.LastEvent)
+        if (this.Sequence != sequence
+            && this.Reply is > EventType.KeyPress and < EventType.LastEvent)
             return false;
 
-        var errorType = (EventType)this.ResponseHeader.GetValue();
 #if NETSTANDARD
-        if (!Enum.IsDefined(typeof(EventType), errorType)) return false;
+        if (!Enum.IsDefined(typeof(EventType), Reply)) return false;
 #else
-        if (!Enum.IsDefined(errorType)) return false;
+        if (!Enum.IsDefined(Reply)) return false;
 #endif
         fixed (byte* ptr = this._data)
         {
-            return errorType switch
+            return Reply switch
             {
                 EventType.KeyPress => new Span<byte>(ptr, 32).AsStruct<KeyPressEvent>().Verify(in sequence),
                 EventType.KeyRelease => new Span<byte>(ptr, 32).AsStruct<KeyReleaseEvent>().Verify(in sequence),
