@@ -33,7 +33,7 @@ internal class BaseProtoClient
         {
             socket.EnsureReadSize(resultLength);
             socket.ReceiveExact(buffer[0..32]);
-            ref var content = ref buffer[0..32].AsStruct<XResponse<byte>>();
+            ref var content = ref buffer[0..32].AsStruct<XResponse>();
             var responseType = content.GetResponseType();
             // this is the response verification. which ensures the reply type.
             Debug.Assert(content.Verify(sequenceNumber));
@@ -53,7 +53,7 @@ internal class BaseProtoClient
                 }
                 case XResponseType.Error:
                 {
-                    var error = content.Error;
+                    var error = content.As<XError>();
                     if(error.Verify(sequenceNumber))
                         return (null, error);
                     break;
@@ -61,9 +61,9 @@ internal class BaseProtoClient
                 case XResponseType.Event:
                 case XResponseType.Notify:
                 {
-                    var eventContent = content.Event;
+                    var eventContent = content.As<XEvent>();
                     if (eventContent.Verify(sequenceNumber))
-                        bufferEvents.Push(content.Event);
+                        bufferEvents.Push(content.As<XEvent>());
                     break;
                 }
                 default:
@@ -77,19 +77,19 @@ internal class BaseProtoClient
         if (socket.Available == 0)
             return null;
 
-        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XResponse<byte>>()];
+        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XResponse>()];
         while (socket.Available != 0)
         {
             socket.ReceiveExact(buffer);
-            ref var content = ref buffer.AsStruct<XResponse<byte>>();
+            ref var content = ref buffer.AsStruct<XResponse>();
             var responseType = content.GetResponseType();
             switch (responseType)
             {
                 case XResponseType.Error:
-                    return content.Error;
+                    return content.As<XError>();
                 case XResponseType.Event:
                 case XResponseType.Notify:
-                    bufferEvents.Push(content.Event);
+                    bufferEvents.Push(content.As<XEvent>());
                     break;
                 case XResponseType.Invalid:
                     throw new ArgumentOutOfRangeException();

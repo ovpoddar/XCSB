@@ -18,6 +18,7 @@ public struct ButtonPressEvent : IXEvent
     public KeyButMask State;
     private sbyte _isSameScreen;
     public bool IsSameScreen => _isSameScreen == 1;
+    public byte Detail => ResponseHeader.GetValue();
 
     public bool Verify(in int sequence)
     {

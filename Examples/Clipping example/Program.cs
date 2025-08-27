@@ -122,7 +122,7 @@ while (isRunning)
 {
     var evnt = xcsb.GetEvent();
     if (!evnt.HasValue) return;
-    switch (evnt.Value.EventType)
+    switch (evnt.Value.Reply)
     {
         case EventType.Expose:
         {
@@ -135,7 +135,7 @@ while (isRunning)
             break;
         }
 
-        case EventType.KeyPress or EventType.Error:
+        case EventType.KeyPress:
             isRunning = false;
             break;
     }

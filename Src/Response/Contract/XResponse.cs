@@ -6,13 +6,8 @@ using Xcsb.Response.Errors;
 namespace Xcsb.Response.Contract;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
-internal unsafe partial struct XResponse<T> where T : unmanaged
+internal unsafe partial struct XResponse
 {
-    [FieldOffset(0)] public ResponseHeader<T> ResponseHeader;
-    [FieldOffset(4)] public fixed byte Padding[28];
-
+    [FieldOffset(0)] private ResponseType Reply;
     [FieldOffset(0)] private fixed byte _data[32];
-
-    [FieldOffset(0)] internal XEvent Event;
-    [FieldOffset(0)] internal XError Error;
 }

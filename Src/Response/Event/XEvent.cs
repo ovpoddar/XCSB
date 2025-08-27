@@ -11,11 +11,53 @@ public unsafe struct XEvent : IXEvent
     [FieldOffset(0)] public readonly EventType Reply;
     [FieldOffset(1)] private readonly byte Value;
     [FieldOffset(2)] public readonly ushort Sequence;
-    
+
     [FieldOffset(0)] private fixed byte _data[32];
 
     public readonly ref T As<T>() where T : struct, IXEvent
     {
+        var isNotValid = this.Reply switch
+        {
+            EventType.KeyPress when typeof(T) == typeof(KeyPressEvent) => false,
+            EventType.KeyRelease when typeof(T) == typeof(KeyReleaseEvent) => false,
+            EventType.ButtonPress when typeof(T) == typeof(ButtonPressEvent) => false,
+            EventType.ButtonRelease when typeof(T) == typeof(ButtonReleaseEvent) => false,
+            EventType.MotionNotify when typeof(T) == typeof(MotionNotifyEvent) => false,
+            EventType.EnterNotify when typeof(T) == typeof(EnterNotifyEvent) => false,
+            EventType.LeaveNotify when typeof(T) == typeof(LeaveNotifyEvent) => false,
+            EventType.FocusIn when typeof(T) == typeof(FocusInEvent) => false,
+            EventType.FocusOut when typeof(T) == typeof(FocusOutEvent) => false,
+            EventType.KeymapNotify when typeof(T) == typeof(KeymapNotifyEvent) => false,
+            EventType.Expose when typeof(T) == typeof(ExposeEvent) => false,
+            EventType.GraphicsExpose when typeof(T) == typeof(GraphicsExposeEvent) => false,
+            EventType.NoExpose when typeof(T) == typeof(NoExposeEvent) => false,
+            EventType.VisibilityNotify when typeof(T) == typeof(VisibilityNotifyEvent) => false,
+            EventType.CreateNotify when typeof(T) == typeof(CreateNotifyEvent) => false,
+            EventType.DestroyNotify when typeof(T) == typeof(DestroyNotifyEvent) => false,
+            EventType.UnMapNotify when typeof(T) == typeof(UnMapNotifyEvent) => false,
+            EventType.MapNotify when typeof(T) == typeof(MapNotifyEvent) => false,
+            EventType.MapRequest when typeof(T) == typeof(MapRequestEvent) => false,
+            EventType.ReParentNotify when typeof(T) == typeof(ReParentNotifyEvent) => false,
+            EventType.ConfigureNotify when typeof(T) == typeof(ConfigureNotifyEvent) => false,
+            EventType.ConfigureRequest when typeof(T) == typeof(ConfigureRequestEvent) => false,
+            EventType.GravityNotify when typeof(T) == typeof(GravityNotifyEvent) => false,
+            EventType.ResizeRequest when typeof(T) == typeof(ResizeRequestEvent) => false,
+            EventType.CirculateNotify when typeof(T) == typeof(CirculateNotifyEvent) => false,
+            EventType.CirculateRequest when typeof(T) == typeof(CirculateRequestEvent) => false,
+            EventType.PropertyNotify when typeof(T) == typeof(PropertyNotifyEvent) => false,
+            EventType.SelectionClear when typeof(T) == typeof(SelectionClearEvent) => false,
+            EventType.SelectionRequest when typeof(T) == typeof(SelectionRequestEvent) => false,
+            EventType.SelectionNotify when typeof(T) == typeof(SelectionNotifyEvent) => false,
+            EventType.ColormapNotify when typeof(T) == typeof(ColorMapNotifyEvent) => false,
+            EventType.ClientMessage when typeof(T) == typeof(ClientMessageEvent) => false,
+            EventType.MappingNotify when typeof(T) == typeof(MappingNotifyEvent) => false,
+            EventType.GenericEvent when typeof(T) == typeof(XGenericEvent) => false,
+            _ => true
+        };
+
+        if (isNotValid)
+            throw new InvalidOperationException();
+
         fixed (byte* ptr = this._data)
             return ref new Span<byte>(ptr, 32).AsStruct<T>();
     }

@@ -7,6 +7,8 @@ using Xcsb.Models;
 using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Requests;
 using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
+
 
 #if !NETSTANDARD
 using System.Numerics;
@@ -283,18 +285,18 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #endif
         using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
         var received = socket.Receive(buffer);
-        foreach (var evnt in MemoryMarshal.Cast<byte, XResponse<byte>>(buffer[..received]))
+        foreach (var evnt in MemoryMarshal.Cast<byte, XResponse>(buffer[..received]))
         {
             switch (evnt.GetResponseType())
             {
                 case XResponseType.Invalid:
                 case XResponseType.Error:
-                    throw new XEventException(evnt.Error);
+                    throw new XEventException(evnt.As<XError>());
                 case XResponseType.Reply:
                     throw new Exception("internal issue");
                 case XResponseType.Event:
                 case XResponseType.Notify:
-                    bufferEvents.Push(evnt.Event);
+                    bufferEvents.Push(evnt.As<XEvent>());
 
                     sequenceNumber += (ushort)_requestLength;
                     _requestLength = 0;
@@ -317,7 +319,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #endif
             using var buffer = new ArrayPoolUsing<byte>(socket.Available);
             var received = socket.Receive(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XResponse<byte>>(buffer[..received]))
+            foreach (var evnt in MemoryMarshal.Cast<byte, XResponse>(buffer[..received]))
             {
                 switch (evnt.GetResponseType())
                 {
@@ -328,7 +330,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
                         throw new Exception("internal issue");
                     case XResponseType.Event:
                     case XResponseType.Notify:
-                        bufferEvents.Push(evnt.Event);
+                        bufferEvents.Push(evnt.As<XEvent>());
 
                         sequenceNumber += (ushort)_requestLength;
                         _requestLength = 0;
