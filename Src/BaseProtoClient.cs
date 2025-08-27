@@ -11,14 +11,14 @@ namespace Xcsb;
 
 internal class BaseProtoClient
 {
-    internal readonly Stack<XGenericEvent> bufferEvents;
+    internal readonly Stack<XEvent> bufferEvents;
     internal readonly Socket socket;
     internal ushort sequenceNumber;
 
     public BaseProtoClient(Socket socket)
     {
         this.socket = socket;
-        bufferEvents = new Stack<XGenericEvent>();
+        bufferEvents = new Stack<XEvent>();
     }
 
 #if !NETSTANDARD
@@ -61,9 +61,9 @@ internal class BaseProtoClient
                 case XResponseType.Event:
                 case XResponseType.Notify:
                 {
-                    var eventContent = content.XGenericEvent;
+                    var eventContent = content.Event;
                     if (eventContent.Verify(sequenceNumber))
-                        bufferEvents.Push(content.XGenericEvent);
+                        bufferEvents.Push(content.Event);
                     break;
                 }
                 default:
@@ -89,7 +89,7 @@ internal class BaseProtoClient
                     return content.Error;
                 case XResponseType.Event:
                 case XResponseType.Notify:
-                    bufferEvents.Push(content.XGenericEvent);
+                    bufferEvents.Push(content.Event);
                     break;
                 case XResponseType.Invalid:
                     throw new ArgumentOutOfRangeException();

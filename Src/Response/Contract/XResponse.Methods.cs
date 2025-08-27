@@ -48,4 +48,11 @@ internal partial struct XResponse<T> : IXBaseResponse, IGenericResponse
         >= ResponseType.KeyPress and <= ResponseType.LastEvent => XResponseType.Event,
         _ => XResponseType.Invalid
     };
+
+
+    public readonly unsafe ref T1 As<T1>() where T1 : struct, IXReply
+    {
+        fixed (byte* ptr = this._data)
+            return ref new Span<byte>(ptr, 32).AsStruct<T1>();
+    }
 }

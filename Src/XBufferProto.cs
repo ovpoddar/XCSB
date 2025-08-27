@@ -6,6 +6,7 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Requests;
+using Xcsb.Response.Contract;
 
 #if !NETSTANDARD
 using System.Numerics;
@@ -282,19 +283,27 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #endif
         using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
         var received = socket.Receive(buffer);
-        foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
-            if (evnt.EventType == EventType.Error)
-                throw new XEventException(evnt.GenericError);
-            else if ((int)evnt.EventType == 1)
-                throw new Exception("internal issue");
-            else
+        foreach (var evnt in MemoryMarshal.Cast<byte, XResponse<byte>>(buffer[..received]))
+        {
+            switch (evnt.GetResponseType())
             {
-                bufferEvents.Push(evnt);
+                case XResponseType.Invalid:
+                case XResponseType.Error:
+                    throw new XEventException(evnt.Error);
+                case XResponseType.Reply:
+                    throw new Exception("internal issue");
+                case XResponseType.Event:
+                case XResponseType.Notify:
+                    bufferEvents.Push(evnt.Event);
 
-                sequenceNumber += (ushort)_requestLength;
-                _requestLength = 0;
-                _buffer.Clear();
+                    sequenceNumber += (ushort)_requestLength;
+                    _requestLength = 0;
+                    _buffer.Clear();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
+        }
     }
 
     public void Flush()
@@ -308,13 +317,27 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #endif
             using var buffer = new ArrayPoolUsing<byte>(socket.Available);
             var received = socket.Receive(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
-                if (evnt.EventType == EventType.Error)
-                    _requestLength--;
-                else if ((int)evnt.EventType == 1)
-                    continue;
-                else
-                    bufferEvents.Push(evnt);
+            foreach (var evnt in MemoryMarshal.Cast<byte, XResponse<byte>>(buffer[..received]))
+            {
+                switch (evnt.GetResponseType())
+                {
+                    case XResponseType.Invalid:
+                    case XResponseType.Error:
+                        break;
+                    case XResponseType.Reply:
+                        throw new Exception("internal issue");
+                    case XResponseType.Event:
+                    case XResponseType.Notify:
+                        bufferEvents.Push(evnt.Event);
+
+                        sequenceNumber += (ushort)_requestLength;
+                        _requestLength = 0;
+                        _buffer.Clear();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
         }
         finally
         {
