@@ -1,5 +1,5 @@
 ﻿namespace Xcsb.Response.Contract;
 
-public interface IXEvent : IXBaseResponse
+internal interface IXEvent : IXBaseResponse
 {
 }

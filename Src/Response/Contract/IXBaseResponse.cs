@@ -1,6 +1,6 @@
 ﻿namespace Xcsb.Response.Contract;
 
-public interface IXBaseResponse
+internal interface IXBaseResponse
 {
     bool Verify(in int sequence);
 }

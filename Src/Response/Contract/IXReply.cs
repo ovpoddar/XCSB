@@ -1,5 +1,5 @@
 ﻿namespace Xcsb.Response.Contract;
 
-public interface IXReply : IXBaseResponse
+internal interface IXReply : IXBaseResponse
 {
 }

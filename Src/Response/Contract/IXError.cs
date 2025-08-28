@@ -1,5 +1,5 @@
 ﻿namespace Xcsb.Response.Contract;
 
-public interface IXError : IXBaseResponse
+internal interface IXError : IXBaseResponse
 {
 }

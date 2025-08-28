@@ -14,7 +14,7 @@ public unsafe struct XEvent : IXEvent
 
     [FieldOffset(0)] private fixed byte _data[32];
 
-    public readonly ref T As<T>() where T : struct, IXEvent
+    public readonly ref T As<T>() where T : struct
     {
         var isNotValid = this.Reply switch
         {
