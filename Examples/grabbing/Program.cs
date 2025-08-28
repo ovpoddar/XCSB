@@ -28,7 +28,7 @@ while (isRunning)
 {
     var evnt = connection.GetEvent();
     if (!evnt.HasValue) return 0;
-    switch (evnt.Value.EventType)
+    switch (evnt.Value.Reply)
     {
         case EventType.Expose:
             draw_interface();
@@ -36,14 +36,15 @@ while (isRunning)
 
         case EventType.KeyPress:
             {
-                if (evnt.Value.KeyPressEvent is { Detail: 45, State: KeyButMask.Control })
+                var keyPressEvent = evnt.Value.As<KeyPressEvent>();
+                if (keyPressEvent is { Detail: 45, State: KeyButMask.Control })
                 {
                     Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
-                    connection.AllowEvents(EventsMode.SyncKeyboard, evnt.Value.KeyPressEvent.TimeStamp);
+                    connection.AllowEvents(EventsMode.SyncKeyboard, keyPressEvent.TimeStamp);
                     break;
                 }
 
-                switch (evnt.Value.KeyPressEvent.Detail)
+                switch (keyPressEvent.Detail)
                 {
                     case 10: demo_change_hosts(); break; // 1
                     case 11: demo_keyboard_control(); break; // 2
@@ -66,7 +67,7 @@ while (isRunning)
 
         case EventType.ButtonPress:
             {
-                var bp = evnt.Value.ButtonPressEvent;
+                var bp = evnt.Value.As<ButtonPressEvent>();
                 if (bp is { Detail: 3, State: KeyButMask.Control })
                 {
                     Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
@@ -75,10 +76,11 @@ while (isRunning)
 
                 break;
             }
-        case EventType.Error:
-            isRunning = false;
-            Console.WriteLine(evnt.Value.GenericError.ErrorCode);
-            break;
+        // todo: impl
+        //case EventType.Error:
+        //    isRunning = false;
+        //    Console.WriteLine(evnt.Value.GenericError.ErrorCode);
+        //    break;
     }
 }
 
@@ -92,7 +94,7 @@ void demo_change_hosts()
     {
         Console.WriteLine("ablaible hosts: " + s);
     }
-    
+
     connection.ChangeHosts(HostMode.Insert,
         Family.Internet, [127, 0, 0, 1]);
 

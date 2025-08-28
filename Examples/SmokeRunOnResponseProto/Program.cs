@@ -69,13 +69,14 @@ while (true)
     var Event = client.GetEvent();
     if (!Event.HasValue)
         break;
-    if (Event.Value.EventType == EventType.Error)
-    {
-        Console.WriteLine(Event.Value.GenericError.ErrorCode);
-        break;
-    }
+    // todo: fix error handling
+    // if (Event.Value.Reply == EventType.Error)
+    // {
+    //     Console.WriteLine(Event.Value.GenericError.ErrorCode);
+    //     break;
+    // }
 
-    if (Event.Value.EventType == EventType.Expose)
+    if (Event.Value.Reply == EventType.Expose)
     {
         var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
         Console.WriteLine(resultGetMotionEvents.Events.Length);

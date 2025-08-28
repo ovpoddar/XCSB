@@ -33,13 +33,13 @@ while (isRunning)
     var Event = c.GetEvent();
 
     if (!Event.HasValue) return;
-    if (Event.Value.EventType == EventType.Error)
-    {
-        Console.WriteLine(Event.Value.GenericError.ErrorCode.ToString());
-        isRunning = false;
-        break;
-    }
-    else if (Event.Value.EventType is EventType.KeyPress or EventType.ButtonPress)
+    // if (Event.Value.Reply == EventType.Error)
+    // {
+    //     Console.WriteLine(Event.Value.GenericError.ErrorCode.ToString());
+    //     isRunning = false;
+    //     break;
+    // }
+    else if (Event.Value.Reply is EventType.KeyPress or EventType.ButtonPress)
     {
         if (!isExecuted)
         {
@@ -48,17 +48,19 @@ while (isRunning)
                 [0x00ffffff, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask | EventMask.ButtonPressMask)]);
             isExecuted = true;
         }
-        if (Event.Value.KeyPressEvent.Detail == 24)//d
+
+        var keyPressEvent = Event.Value.As<KeyPressEvent>();  
+        if (keyPressEvent.Detail == 24)//d
         {
             c.DestroyWindow(window);
             isRunning = false;
         }
-        if (Event.Value.KeyPressEvent.Detail == 46) //c
+        if (keyPressEvent.Detail == 46) //c
         {
             c.CirculateWindow(Circulate.LowerHighest, window);
         }
 
-        if (Event.Value.EventType == EventType.ButtonPress && Event.Value.ButtonPressEvent.Detail == 1) //left
+        if (Event.Value.Reply == EventType.ButtonPress && Event.Value.As<ButtonPressEvent>().Detail == 1) //left
         {
             var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
             Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
@@ -66,14 +68,14 @@ while (isRunning)
             currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
             Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
         }
-        if (Event.Value.KeyPressEvent.Detail == 58) //m
+        if (keyPressEvent.Detail == 58) //m
         {
             c.UnmapWindow(window);
             Thread.Sleep(1000);
             c.MapWindow(window);
         }
 
-        if (Event.Value.KeyPressEvent.Detail == 25)// w
+        if (keyPressEvent.Detail == 25)// w
         {
 
             c.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", fontId);
@@ -107,7 +109,7 @@ while (isRunning)
             c.CloseFont(fontId);
         }
 
-        if (Event.Value.KeyPressEvent.Detail == 54) //c
+        if (keyPressEvent.Detail == 54) //c
         {
             var gc = c.NewId();
             c.CreateGC(gc, window, GCMask.Foreground, [0x00ffffff]);
@@ -120,9 +122,9 @@ while (isRunning)
         }
 
         c.Bell(100);
-        Console.WriteLine($"event {Event.Value.EventType} {Event.Value.KeyPressEvent.Detail}");
+        Console.WriteLine($"event {Event.Value.Reply} {keyPressEvent.Detail}");
     }
-    else if (Event.Value.EventType == EventType.Expose)
+    else if (Event.Value.Reply == EventType.Expose)
     {
         var gc = c.NewId();
         c.CreateGC(gc, window, GCMask.Foreground, [0x00ff0000]);
@@ -135,6 +137,6 @@ while (isRunning)
     }
     else
     {
-        Console.WriteLine(Event.Value.EventType);
+        Console.WriteLine(Event.Value.Reply);
     }
 }

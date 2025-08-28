@@ -47,9 +47,10 @@ foreach (var color in queryColor.Colors)
 while (true)
 {
     var Event = conn.GetEvent();
-    if (!Event.HasValue || Event.Value.EventType == EventType.Error)
-        break;
-    if (Event.Value.EventType == EventType.KeyPress)
+    // todo: fix this
+    // if (!Event.HasValue || Event.Value.EventType == EventType.Error)
+    //     break;
+    if (Event.Value.Reply == EventType.KeyPress)
         break;
 }
 

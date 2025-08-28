@@ -35,10 +35,11 @@ while (isRunning)
         return;
     }
 
-    if (evnt.Value.EventType == EventType.Error)
-        isRunning = false;
+    // todo fix this
+    // if (evnt.Value.EventType == EventType.Error)
+    //     isRunning = false;
 
-    Console.WriteLine(evnt.Value.EventType);
+    Console.WriteLine(evnt.Value.Reply);
     x11.PolyLine(0, window, gc, [
         new(10, 10),
         new(1430, 10),
