@@ -13,6 +13,8 @@ using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Requests;
 using Xcsb.Response;
 using Xcsb.Response.Internals;
+using Xcsb.Response.Event;
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -2004,7 +2006,7 @@ internal class XProto : BaseProtoClient, IXProto
                       HandshakeSuccessResponseBody.ResourceIDBase);
     }
 
-    public XEvent? GetEvent()
+    public XEvent GetEvent()
     {
         if (bufferEvents.TryPop(out var result))
             return result;
@@ -2014,7 +2016,7 @@ internal class XProto : BaseProtoClient, IXProto
         {
             var totalRead = socket.Receive(scratchBuffer);
             if (totalRead == 0)
-                return null;
+                return scratchBuffer.Make<XEvent, LastEvent>(new (base.sequenceNumber));
         }
 
         return scratchBuffer.ToStruct<XEvent>();

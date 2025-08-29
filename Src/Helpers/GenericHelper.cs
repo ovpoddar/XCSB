@@ -1,8 +1,11 @@
-﻿using System.Net.Sockets;
+﻿using System.Diagnostics;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Event;
 using Xcsb.Models;
 using Xcsb.Response;
+using Xcsb.Response.Event;
 using Xcsb.Response.Internals;
 #if !NETSTANDARD
 using System.Numerics;
@@ -17,6 +20,14 @@ internal static class GenericHelper
 
     internal static T ToStruct<T>(this Span<byte> bytes) where T : struct =>
         Unsafe.As<byte, T>(ref bytes[0]);
+
+    internal static T Make<T, I>(this Span<byte> bytes, I value) where T : struct
+        where I : struct
+    {
+        Debug.Assert(Unsafe.SizeOf<I>() == bytes.Length);
+        Unsafe.As<byte, I>(ref bytes[0]) = value;
+        return bytes.ToStruct<T>();
+    }
 
     internal static T AddPadding<T>(this T pad) where T :
 #if NETSTANDARD

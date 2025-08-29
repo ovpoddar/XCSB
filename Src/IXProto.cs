@@ -26,7 +26,7 @@ public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IDispo
     /// <exception cref="XProtocolError">
     ///     Thrown when a protocol-level error occurs while attempting to retrieve the event from the X server.
     /// </exception>
-    XEvent? GetEvent();
+    XEvent GetEvent();
     bool IsEventAvailable();
     void WaitForEvent();
     uint NewId();

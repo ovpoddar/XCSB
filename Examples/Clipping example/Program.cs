@@ -121,8 +121,8 @@ if (query.Root != xcsb.HandshakeSuccessResponseBody.Screens[0].Root)
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (!evnt.HasValue) return;
-    switch (evnt.Value.Reply)
+    if (evnt.Reply == EventType.LastEvent) return;
+    switch (evnt.Reply)
     {
         case EventType.Expose:
         {
