@@ -67,7 +67,7 @@ foreach (var color in queryColor.Colors)
 while (true)
 {
     var Event = client.GetEvent();
-    if (!Event.HasValue)
+    if (Event.Reply == EventType.LastEvent)
         break;
     // todo: fix error handling
     // if (Event.Value.Reply == EventType.Error)
@@ -76,7 +76,7 @@ while (true)
     //     break;
     // }
 
-    if (Event.Value.Reply == EventType.Expose)
+    if (Event.Reply == EventType.Expose)
     {
         var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
         Console.WriteLine(resultGetMotionEvents.Events.Length);

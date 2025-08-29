@@ -27,8 +27,8 @@ bool isRunning = true;
 while (isRunning)
 {
     var evnt = connection.GetEvent();
-    if (!evnt.HasValue) return 0;
-    switch (evnt.Value.Reply)
+    if (evnt.Reply == EventType.LastEvent) return 0;
+    switch (evnt.Reply)
     {
         case EventType.Expose:
             draw_interface();
@@ -36,7 +36,7 @@ while (isRunning)
 
         case EventType.KeyPress:
             {
-                var keyPressEvent = evnt.Value.As<KeyPressEvent>();
+                var keyPressEvent = evnt.As<KeyPressEvent>();
                 if (keyPressEvent is { Detail: 45, State: KeyButMask.Control })
                 {
                     Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
@@ -67,7 +67,7 @@ while (isRunning)
 
         case EventType.ButtonPress:
             {
-                var bp = evnt.Value.As<ButtonPressEvent>();
+                var bp = evnt.As<ButtonPressEvent>();
                 if (bp is { Detail: 3, State: KeyButMask.Control })
                 {
                     Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");

@@ -50,7 +50,7 @@ while (true)
     // todo: fix this
     // if (!Event.HasValue || Event.Value.EventType == EventType.Error)
     //     break;
-    if (Event.Value.Reply == EventType.KeyPress)
+    if (Event.Reply == EventType.KeyPress)
         break;
 }
 

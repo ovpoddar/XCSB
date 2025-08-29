@@ -29,7 +29,7 @@ x11.CreateGC(gc, window, GCMask.Foreground | GCMask.Background, [white, black]);
 while (isRunning)
 {
     var evnt = x11.GetEvent();
-    if (!evnt.HasValue)
+    if (evnt.Reply == EventType.LastEvent)
     {
         isRunning = false;
         return;
@@ -39,7 +39,7 @@ while (isRunning)
     // if (evnt.Value.EventType == EventType.Error)
     //     isRunning = false;
 
-    Console.WriteLine(evnt.Value.Reply);
+    Console.WriteLine(evnt.Reply);
     x11.PolyLine(0, window, gc, [
         new(10, 10),
         new(1430, 10),

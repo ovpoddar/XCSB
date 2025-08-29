@@ -109,7 +109,7 @@ Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Status
 x.UngrabKeyboard(0);
 
 var xevnt = x.GetEvent();
-Debug.Assert(xevnt!.Value.Reply == EventType.Expose || xevnt!.Value.Reply == EventType.MappingNotify);
+Debug.Assert(xevnt.Reply == EventType.Expose || xevnt.Reply == EventType.MappingNotify);
 // todo: fix this
 // Console.WriteLine("all success {0}", xevnt!.Value.Reply != EventType.Error);
 

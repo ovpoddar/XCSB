@@ -32,14 +32,14 @@ while (isRunning)
 {
     var Event = c.GetEvent();
 
-    if (!Event.HasValue) return;
+    if (Event.Reply == EventType.LastEvent) return;
     // if (Event.Value.Reply == EventType.Error)
     // {
     //     Console.WriteLine(Event.Value.GenericError.ErrorCode.ToString());
     //     isRunning = false;
     //     break;
     // }
-    else if (Event.Value.Reply is EventType.KeyPress or EventType.ButtonPress)
+    else if (Event.Reply is EventType.KeyPress or EventType.ButtonPress)
     {
         if (!isExecuted)
         {
@@ -49,7 +49,7 @@ while (isRunning)
             isExecuted = true;
         }
 
-        var keyPressEvent = Event.Value.As<KeyPressEvent>();  
+        var keyPressEvent = Event.As<KeyPressEvent>();  
         if (keyPressEvent.Detail == 24)//d
         {
             c.DestroyWindow(window);
@@ -60,7 +60,7 @@ while (isRunning)
             c.CirculateWindow(Circulate.LowerHighest, window);
         }
 
-        if (Event.Value.Reply == EventType.ButtonPress && Event.Value.As<ButtonPressEvent>().Detail == 1) //left
+        if (Event.Reply == EventType.ButtonPress && Event.As<ButtonPressEvent>().Detail == 1) //left
         {
             var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
             Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
@@ -122,9 +122,9 @@ while (isRunning)
         }
 
         c.Bell(100);
-        Console.WriteLine($"event {Event.Value.Reply} {keyPressEvent.Detail}");
+        Console.WriteLine($"event {Event.Reply} {keyPressEvent.Detail}");
     }
-    else if (Event.Value.Reply == EventType.Expose)
+    else if (Event.Reply == EventType.Expose)
     {
         var gc = c.NewId();
         c.CreateGC(gc, window, GCMask.Foreground, [0x00ff0000]);
@@ -137,6 +137,6 @@ while (isRunning)
     }
     else
     {
-        Console.WriteLine(Event.Value.Reply);
+        Console.WriteLine(Event.Reply);
     }
 }

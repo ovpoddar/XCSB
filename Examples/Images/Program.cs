@@ -67,7 +67,7 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (!evnt.HasValue) return;
+    if (evnt.Reply == EventType.LastEvent) return;
     // todo: fix error handling
     // if (evnt.Value.EventType == EventType.Error)
     // {
@@ -75,7 +75,7 @@ while (isRunning)
     //     isRunning = false;
     // }
 
-    if (evnt.Value.Reply == EventType.Expose)
+    if (evnt.Reply == EventType.Expose)
     {
         xcsb.PutImage(ImageFormatBitmap.ZPixmap,
             window,
