@@ -8,7 +8,7 @@ internal partial struct XResponse : IXBaseResponse
     public bool Verify(in int sequence)
     {
 #if NETSTANDARD
-        return (int)this.Reply <= 36 && (int)this.Reply >= 0;
+        return (int)this.Reply <= 34 && (int)this.Reply >= 0;
 #else
         return Enum.IsDefined(this.Reply);
 #endif
@@ -19,7 +19,7 @@ internal partial struct XResponse : IXBaseResponse
         ResponseType.Reply => XResponseType.Reply,
         ResponseType.Error => XResponseType.Error,
         ResponseType.KeymapNotify => XResponseType.Notify,
-        >= ResponseType.KeyPress and <= ResponseType.LastEvent => XResponseType.Event,
+        >= ResponseType.KeyPress and <= ResponseType.MappingNotify => XResponseType.Event,
         _ => XResponseType.Invalid
     };
 

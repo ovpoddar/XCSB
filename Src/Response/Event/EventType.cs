@@ -35,6 +35,5 @@ public enum EventType : byte
     ColormapNotify = 32,
     ClientMessage = 33,
     MappingNotify = 34,
-    GenericEvent = 35,
     LastEvent = 36
 }

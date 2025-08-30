@@ -51,7 +51,6 @@ public unsafe struct XEvent : IXEvent
             EventType.ColormapNotify when typeof(T) == typeof(ColorMapNotifyEvent) => false,
             EventType.ClientMessage when typeof(T) == typeof(ClientMessageEvent) => false,
             EventType.MappingNotify when typeof(T) == typeof(MappingNotifyEvent) => false,
-            EventType.GenericEvent when typeof(T) == typeof(XGenericEvent) => false,
             _ => true
         };
 
@@ -118,7 +117,6 @@ public unsafe struct XEvent : IXEvent
                 EventType.ColormapNotify => new Span<byte>(ptr, 32).AsStruct<ColorMapNotifyEvent>().Verify(in sequence),
                 EventType.ClientMessage => new Span<byte>(ptr, 32).AsStruct<ClientMessageEvent>().Verify(in sequence),
                 EventType.MappingNotify => new Span<byte>(ptr, 32).AsStruct<MappingNotifyEvent>().Verify(in sequence),
-                EventType.GenericEvent => new Span<byte>(ptr, 32).AsStruct<XGenericEvent>().Verify(in sequence),
                 _ => false
             };
         }
