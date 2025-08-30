@@ -11,20 +11,20 @@ namespace Xcsb;
 
 internal class BaseProtoClient
 {
-    internal readonly Stack<XEvent> bufferEvents;
+    internal readonly Stack<GenericEvent> bufferEvents;
     internal readonly Socket socket;
     internal ushort sequenceNumber;
 
     public BaseProtoClient(Socket socket)
     {
         this.socket = socket;
-        bufferEvents = new Stack<XEvent>();
+        bufferEvents = new Stack<GenericEvent>();
     }
 
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
-    internal (T? result, XError? error) ReceivedResponseAndVerify<T>() where T : unmanaged, IXReply
+    internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>() where T : unmanaged, IXReply
     {
         sequenceNumber++;
         var resultLength = Marshal.SizeOf<T>();
@@ -53,7 +53,7 @@ internal class BaseProtoClient
                 }
                 case XResponseType.Error:
                 {
-                    var error = content.As<XError>();
+                    var error = content.As<GenericError>();
                     if(error.Verify(sequenceNumber))
                         return (null, error);
                     break;
@@ -61,9 +61,9 @@ internal class BaseProtoClient
                 case XResponseType.Event:
                 case XResponseType.Notify:
                 {
-                    var eventContent = content.As<XEvent>();
+                    var eventContent = content.As<GenericEvent>();
                     if (eventContent.Verify(sequenceNumber))
-                        bufferEvents.Push(content.As<XEvent>());
+                        bufferEvents.Push(content.As<GenericEvent>());
                     break;
                 }
                 default:
@@ -72,7 +72,7 @@ internal class BaseProtoClient
         }
     }
 
-    internal XError? Received()
+    internal GenericError? Received()
     {
         if (socket.Available == 0)
             return null;
@@ -86,10 +86,10 @@ internal class BaseProtoClient
             switch (responseType)
             {
                 case XResponseType.Error:
-                    return content.As<XError>();
+                    return content.As<GenericError>();
                 case XResponseType.Event:
                 case XResponseType.Notify:
-                    bufferEvents.Push(content.As<XEvent>());
+                    bufferEvents.Push(content.As<GenericEvent>());
                     break;
                 case XResponseType.Invalid:
                     throw new ArgumentOutOfRangeException();

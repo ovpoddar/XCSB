@@ -5,7 +5,7 @@ namespace Xcsb.Models.Infrastructure.Exceptions;
 
 public class XEventException : Exception
 {
-    internal XEventException(XError error, string methodName = "")
+    internal XEventException(GenericError error, string methodName = "")
         : base(GetErrorMessage(error.ResponseHeader.GetValue())) =>
         base.Source = methodName;
 

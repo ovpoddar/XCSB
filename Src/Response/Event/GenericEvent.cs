@@ -6,7 +6,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Event;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
-public unsafe struct XEvent : IXEvent
+public unsafe struct GenericEvent : IXEvent
 {
     [FieldOffset(0)] public readonly EventType Reply;
     [FieldOffset(1)] private readonly byte Value;
@@ -14,7 +14,10 @@ public unsafe struct XEvent : IXEvent
 
     [FieldOffset(0)] private fixed byte _data[32];
 
-    public readonly ref T As<T>() where T : struct
+
+    //todo: try [FieldOffset(0), MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]private readonly byte[] _data;
+
+    internal readonly ref T As<T>() where T : struct
     {
         var isNotValid = this.Reply switch
         {

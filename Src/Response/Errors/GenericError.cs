@@ -11,7 +11,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
-internal unsafe struct XError : IXError
+public unsafe struct GenericError : IXError
 {
     [FieldOffset(0)] public readonly ResponseHeader<ErrorCode> ResponseHeader;
     [FieldOffset(4)] public fixed byte Data[28];
@@ -59,8 +59,33 @@ internal unsafe struct XError : IXError
         }
     }
     
-    public readonly ref T As<T>() where T : struct, IXError
+    public readonly ref T As<T>() where T : struct
     {
+        var isNotValid = this.ResponseHeader.GetValue() switch
+        {
+            ErrorCode.Request when typeof(T) == typeof(RequestError) => false,
+            ErrorCode.Value when typeof(T) == typeof(ValueError) => false,
+            ErrorCode.Window when typeof(T) == typeof(WindowError) => false,
+            ErrorCode.Pixmap when typeof(T) == typeof(PixmapError) => false,
+            ErrorCode.Atom when typeof(T) == typeof(AtomError) => false,
+            ErrorCode.Cursor when typeof(T) == typeof(CursorError) => false,
+            ErrorCode.Font when typeof(T) == typeof(FontError) => false,
+            ErrorCode.Match when typeof(T) == typeof(MatchError) => false,
+            ErrorCode.Drawable when typeof(T) == typeof(DrawableError) => false,
+            ErrorCode.Access when typeof(T) == typeof(AccessError) => false,
+            ErrorCode.Alloc when typeof(T) == typeof(AllocError) => false,
+            ErrorCode.Colormap when typeof(T) == typeof(ColormapError) => false,
+            ErrorCode.GContext when typeof(T) == typeof(GContextError) => false,
+            ErrorCode.IDChoice when typeof(T) == typeof(IDChoiceError) => false,
+            ErrorCode.Name when typeof(T) == typeof(NameError) => false,
+            ErrorCode.Length when typeof(T) == typeof(LengthError) => false,
+            ErrorCode.Implementation when typeof(T) == typeof(ImplementationError) => false,
+            _ => true
+        };
+
+        if (isNotValid)
+            throw new InvalidOperationException();
+
         fixed (byte* ptr = this._data)
             return ref new Span<byte>(ptr, 32).AsStruct<T>();
     }

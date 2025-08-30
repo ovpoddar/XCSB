@@ -2009,7 +2009,7 @@ internal class XProto : BaseProtoClient, IXProto
     public XEvent GetEvent()
     {
         if (bufferEvents.TryPop(out var result))
-            return result;
+            return result.As<XEvent>();
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
 
         if (socket.Poll(-1, SelectMode.SelectRead))
@@ -2023,7 +2023,7 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public bool IsEventAvailable() =>
-        bufferEvents.Any() || socket.Available >= Unsafe.SizeOf<XEvent>();
+        bufferEvents.Any() || socket.Available >= Unsafe.SizeOf<GenericEvent>();
 
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
         ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)

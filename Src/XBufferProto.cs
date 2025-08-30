@@ -283,7 +283,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #else
         socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
 #endif
-        using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
+        using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<GenericEvent>() * _requestLength);
         var received = socket.Receive(buffer);
         foreach (var evnt in MemoryMarshal.Cast<byte, XResponse>(buffer[..received]))
         {
@@ -291,12 +291,12 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
             {
                 case XResponseType.Invalid:
                 case XResponseType.Error:
-                    throw new XEventException(evnt.As<XError>());
+                    throw new XEventException(evnt.As<GenericError>());
                 case XResponseType.Reply:
                     throw new Exception("internal issue");
                 case XResponseType.Event:
                 case XResponseType.Notify:
-                    bufferEvents.Push(evnt.As<XEvent>());
+                    bufferEvents.Push(evnt.As<GenericEvent>());
 
                     sequenceNumber += (ushort)_requestLength;
                     _requestLength = 0;
@@ -330,7 +330,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
                         throw new Exception("internal issue");
                     case XResponseType.Event:
                     case XResponseType.Notify:
-                        bufferEvents.Push(evnt.As<XEvent>());
+                        bufferEvents.Push(evnt.As<GenericEvent>());
 
                         sequenceNumber += (ushort)_requestLength;
                         _requestLength = 0;
