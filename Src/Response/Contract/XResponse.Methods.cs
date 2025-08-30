@@ -30,9 +30,14 @@ internal partial struct XResponse : IXBaseResponse
         if ((responseType != XResponseType.Event && typeof(IXEvent).IsAssignableFrom(typeof(T)))
             || (responseType != XResponseType.Error && typeof(IXError).IsAssignableFrom(typeof(T))) 
             || (responseType != XResponseType.Reply && typeof(IXReply).IsAssignableFrom(typeof(T))))
-            throw new InvalidOperationException();
+            throw new InvalidCastException();
 
-        fixed (byte* ptr = this._data)
-            return ref new Span<byte>(ptr, 32).AsStruct<T>();
+        if (responseType == XResponseType.Error)
+            return ref _error.As<T>();
+
+        if (responseType is XResponseType.Event or XResponseType.Notify)
+            return ref _event.As<T>();
+
+        throw new InvalidCastException();
     }
 }

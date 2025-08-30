@@ -1,4 +1,5 @@
 ﻿using Xcsb.Event;
+using Xcsb.Models;
 using Xcsb.Models.Handshake;
 
 namespace Xcsb;

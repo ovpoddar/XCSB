@@ -84,7 +84,7 @@ public unsafe struct GenericError : IXError
         };
 
         if (isNotValid)
-            throw new InvalidOperationException();
+            throw new InvalidCastException();
 
         fixed (byte* ptr = this._data)
             return ref new Span<byte>(ptr, 32).AsStruct<T>();
