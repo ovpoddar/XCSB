@@ -1,6 +1,7 @@
 ﻿using Xcsb;
 using Xcsb.Event;
 using Xcsb.Masks;
+using Xcsb.Models;
 
 
 // Connect to X server
@@ -79,10 +80,10 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = x.GetEvent();
-    if (evnt.Reply == EventType.LastEvent) return;
-    switch (evnt.Reply)
+    if (evnt.ReplyType == XEventType.LastEvent) return;
+    switch (evnt.ReplyType)
     {
-        case EventType.KeyPress:
+        case XEventType.KeyPress:
             {
                 // Tab key (keycode 23) - switch focus between windows
                 var keyPressEvent = evnt.As<KeyPressEvent>();
@@ -111,7 +112,7 @@ while (isRunning)
                 }
                 break;
             }
-        case EventType.FocusIn:
+        case XEventType.FocusIn:
             {
                 var focusInEvent = evnt.As<FocusInEvent>();
                 if (focusInEvent.Event == window1 || focusInEvent.Event == window2)
@@ -125,7 +126,7 @@ while (isRunning)
                 }
                 break;
             }
-        case EventType.FocusOut:
+        case XEventType.FocusOut:
             {
                 // Change to unfocused color when losing focus
                 var focusOutEvent = evnt.As<FocusOutEvent>();
@@ -135,7 +136,7 @@ while (isRunning)
                 }
                 break;
             }
-        case EventType.ButtonPress:
+        case XEventType.ButtonPress:
             {
                 // Set focus to the clicked window and update colors
                 var buttonPressEvent = evnt.As<ButtonPressEvent>();
@@ -156,7 +157,7 @@ while (isRunning)
                 }
                 break;
             }
-        case EventType.Expose:
+        case XEventType.Expose:
             {
                 // Redraw window contents when exposed
                 var exposeEvent = evnt.As<ExposeEvent>();
@@ -170,7 +171,7 @@ while (isRunning)
                 }
                 break;
             }
-        case EventType.MotionNotify:
+        case XEventType.MotionNotify:
             var motionEvent = evnt.As<MotionNotifyEvent>();
             var poient = new Xcsb.Models.Point(
                 (ushort)motionEvent.EventX,

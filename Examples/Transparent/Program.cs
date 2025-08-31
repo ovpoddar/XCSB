@@ -29,17 +29,16 @@ x11.CreateGC(gc, window, GCMask.Foreground | GCMask.Background, [white, black]);
 while (isRunning)
 {
     var evnt = x11.GetEvent();
-    if (evnt.Reply == EventType.LastEvent)
+    if (evnt.ReplyType == XEventType.LastEvent)
     {
         isRunning = false;
         return;
     }
 
-    // todo fix this
-    // if (evnt.Value.EventType == EventType.Error)
-    //     isRunning = false;
+    if (evnt.Error.HasValue)
+        isRunning = false;
 
-    Console.WriteLine(evnt.Reply);
+    Console.WriteLine(evnt.ReplyType);
     x11.PolyLine(0, window, gc, [
         new(10, 10),
         new(1430, 10),

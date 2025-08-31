@@ -121,10 +121,10 @@ if (query.Root != xcsb.HandshakeSuccessResponseBody.Screens[0].Root)
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.Reply == EventType.LastEvent) return;
-    switch (evnt.Reply)
+    if (evnt.ReplyType == XEventType.LastEvent) return;
+    switch (evnt.ReplyType)
     {
-        case EventType.Expose:
+        case XEventType.Expose:
         {
             xcsb.CopyArea(pixmap,
                 window,
@@ -135,7 +135,7 @@ while (isRunning)
             break;
         }
 
-        case EventType.KeyPress:
+        case XEventType.KeyPress:
             isRunning = false;
             break;
     }

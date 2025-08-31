@@ -27,14 +27,20 @@ bool isRunning = true;
 while (isRunning)
 {
     var evnt = connection.GetEvent();
-    if (evnt.Reply == EventType.LastEvent) return 0;
-    switch (evnt.Reply)
+    if (evnt.ReplyType == XEventType.LastEvent) return 0;
+    if (evnt.Error.HasValue)
     {
-        case EventType.Expose:
+        isRunning = false;
+        Console.WriteLine(evnt.Error.Value.ResponseHeader);
+    }
+    
+    switch (evnt.ReplyType)
+    {
+        case XEventType.Expose:
             draw_interface();
             break;
 
-        case EventType.KeyPress:
+        case XEventType.KeyPress:
             {
                 var keyPressEvent = evnt.As<KeyPressEvent>();
                 if (keyPressEvent is { Detail: 45, State: KeyButMask.Control })
@@ -65,7 +71,7 @@ while (isRunning)
                 break;
             }
 
-        case EventType.ButtonPress:
+        case XEventType.ButtonPress:
             {
                 var bp = evnt.As<ButtonPressEvent>();
                 if (bp is { Detail: 3, State: KeyButMask.Control })
@@ -76,11 +82,6 @@ while (isRunning)
 
                 break;
             }
-        // todo: impl
-        //case EventType.Error:
-        //    isRunning = false;
-        //    Console.WriteLine(evnt.Value.GenericError.ErrorCode);
-        //    break;
     }
 }
 

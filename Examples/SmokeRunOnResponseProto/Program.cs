@@ -67,16 +67,15 @@ foreach (var color in queryColor.Colors)
 while (true)
 {
     var Event = client.GetEvent();
-    if (Event.Reply == EventType.LastEvent)
+    if (Event.ReplyType == XEventType.LastEvent)
         break;
-    // todo: fix error handling
-    // if (Event.Value.Reply == EventType.Error)
-    // {
-    //     Console.WriteLine(Event.Value.GenericError.ErrorCode);
-    //     break;
-    // }
+    if (Event.Error.HasValue)
+    {
+        Console.WriteLine(Event.Error.Value.ResponseHeader.Reply);
+        break;
+    }
 
-    if (Event.Reply == EventType.Expose)
+    if (Event.ReplyType == XEventType.Expose)
     {
         var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
         Console.WriteLine(resultGetMotionEvents.Events.Length);

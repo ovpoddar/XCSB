@@ -109,9 +109,9 @@ Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Status
 x.UngrabKeyboard(0);
 
 var xevnt = x.GetEvent();
-Debug.Assert(xevnt.Reply == EventType.Expose || xevnt.Reply == EventType.MappingNotify);
+Debug.Assert(xevnt.ReplyType == XEventType.Expose || xevnt.ReplyType == XEventType.MappingNotify);
 // todo: fix this
-// Console.WriteLine("all success {0}", xevnt!.Value.Reply != EventType.Error);
+Console.WriteLine("all success {0}", !xevnt.Error.HasValue);
 
 x.UnmapSubwindowsChecked(sub);
 x.DestroyWindowChecked(sub1);

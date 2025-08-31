@@ -67,15 +67,15 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.Reply == EventType.LastEvent) return;
-    // todo: fix error handling
-    // if (evnt.Value.EventType == EventType.Error)
-    // {
-    //     Console.WriteLine(evnt.Value.GenericError.ErrorCode.ToString());
-    //     isRunning = false;
-    // }
+    if (evnt.ReplyType == XEventType.LastEvent) return;
+    
+     if (evnt.Error.HasValue)
+     {
+         Console.WriteLine(evnt.Error.Value.ResponseHeader.Reply);
+         isRunning = false;
+     }
 
-    if (evnt.Reply == EventType.Expose)
+    if (evnt.ReplyType == XEventType.Expose)
     {
         xcsb.PutImage(ImageFormatBitmap.ZPixmap,
             window,
