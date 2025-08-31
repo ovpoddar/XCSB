@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Xcsb.Models;
+
 public enum XEventType
 {
-    Error = 0,
-    Reply = 1,
     KeyPress = 2,
     KeyRelease = 3,
     ButtonPress = 4,
@@ -40,4 +39,22 @@ public enum XEventType
     ColormapNotify = 32,
     ClientMessage = 33,
     MappingNotify = 34,
+    LastEvent = 36,
+    RequestError = 37,
+    ValueError = 38,
+    WindowError = 39,
+    PixmapError = 40,
+    AtomError = 41,
+    CursorError = 42,
+    FontError = 43,
+    MatchError = 44,
+    DrawableError = 45,
+    AccessError = 46,
+    AllocError = 47,
+    ColormapError = 48,
+    GContextError = 49,
+    IDChoiceError = 50,
+    NameError = 51,
+    LengthError = 52,
+    ImplementationError = 53,
 }
