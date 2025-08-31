@@ -54,4 +54,5 @@ public unsafe struct XEvent
         _response.GetResponseType() is XResponseType.Event or XResponseType.Notify 
             ? null 
             : _response.As<GenericEvent>();
+
 }

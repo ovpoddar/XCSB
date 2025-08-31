@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Xcsb.Models;
 
-public enum XEventType
+public enum XEventType : byte
 {
     KeyPress = 2,
     KeyRelease = 3,

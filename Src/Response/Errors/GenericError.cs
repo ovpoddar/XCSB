@@ -80,6 +80,7 @@ public unsafe struct GenericError : IXError
             ErrorCode.Name when typeof(T) == typeof(NameError) => false,
             ErrorCode.Length when typeof(T) == typeof(LengthError) => false,
             ErrorCode.Implementation when typeof(T) == typeof(ImplementationError) => false,
+            _ when typeof(T) == typeof(GenericError) => false,
             _ => true
         };
 

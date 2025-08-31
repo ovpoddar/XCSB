@@ -80,6 +80,8 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = x.GetEvent();
+
+    Console.WriteLine(evnt.ReplyType);
     if (evnt.ReplyType == XEventType.LastEvent) return;
     switch (evnt.ReplyType)
     {

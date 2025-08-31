@@ -54,6 +54,7 @@ public unsafe struct GenericEvent : IXEvent
             EventType.ColormapNotify when typeof(T) == typeof(ColorMapNotifyEvent) => false,
             EventType.ClientMessage when typeof(T) == typeof(ClientMessageEvent) => false,
             EventType.MappingNotify when typeof(T) == typeof(MappingNotifyEvent) => false,
+            _ when typeof(T) == typeof(GenericEvent) => false,
             _ => true
         };
 
