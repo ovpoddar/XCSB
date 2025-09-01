@@ -24,6 +24,7 @@ internal class BaseProtoClient
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
+    // todo :fix the sequence issue
     internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>() where T : unmanaged, IXReply
     {
         sequenceNumber++;
