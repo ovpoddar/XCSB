@@ -20,6 +20,6 @@ public struct KeyReleaseEvent : IXEvent
     public bool IsSameScreen => _isSameScreen == 1;
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.KeyRelease && this.ResponseHeader.Sequence  == sequence;
+        return this.ResponseHeader.Reply == ResponseType.KeyRelease;
     }
 }

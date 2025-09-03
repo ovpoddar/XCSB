@@ -15,6 +15,6 @@ public struct CirculateRequestEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.CirculateRequest && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0 && this._pad1 == 0;
+        return this.ResponseHeader.Reply == ResponseType.CirculateRequest && this.ResponseHeader.GetValue() == 0 && this._pad1 == 0;
     }
 }

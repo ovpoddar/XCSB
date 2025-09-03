@@ -19,6 +19,6 @@ public struct ConfigureRequestEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.ConfigureRequest && this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.ConfigureRequest;
     }
 }

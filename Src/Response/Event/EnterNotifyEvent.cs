@@ -23,6 +23,6 @@ public struct EnterNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.EnterNotify && this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.EnterNotify;
     }
 }

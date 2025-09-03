@@ -21,6 +21,6 @@ public struct LeaveNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.LeaveNotify && this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.LeaveNotify;
     }
 }

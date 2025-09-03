@@ -68,8 +68,7 @@ public unsafe struct GenericEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        if (this.Sequence != sequence
-            && this.Reply is > EventType.KeyPress and < EventType.LastEvent)
+        if (this.Reply is not > EventType.KeyPress and < EventType.LastEvent)
             return false;
 
 #if NETSTANDARD

@@ -17,6 +17,6 @@ public struct SelectionRequestEvent : IXEvent
     
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.SelectionRequest && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+        return this.ResponseHeader.Reply == ResponseType.SelectionRequest && this.ResponseHeader.GetValue() == 0;
     }
 }

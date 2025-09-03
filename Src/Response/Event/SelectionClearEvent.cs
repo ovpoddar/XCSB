@@ -14,6 +14,6 @@ public struct SelectionClearEvent : IXEvent
     
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.SelectionClear && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+        return this.ResponseHeader.Reply == ResponseType.SelectionClear && this.ResponseHeader.GetValue() == 0;
     }
 }

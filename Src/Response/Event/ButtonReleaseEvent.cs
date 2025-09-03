@@ -21,6 +21,6 @@ public struct ButtonReleaseEvent : IXEvent
     
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.ButtonRelease && this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.ButtonRelease;
     }
 }

@@ -12,6 +12,6 @@ public struct VisibilityNotifyEvent : IXEvent
     
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.VisibilityNotify && this.ResponseHeader.Sequence == sequence && this.ResponseHeader.GetValue() == 0;
+        return this.ResponseHeader.Reply == ResponseType.VisibilityNotify && this.ResponseHeader.GetValue() == 0;
     }
 }

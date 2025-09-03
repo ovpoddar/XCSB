@@ -13,6 +13,6 @@ public struct FocusOutEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.FocusOut && this.ResponseHeader.Sequence == sequence;
+        return this.ResponseHeader.Reply == ResponseType.FocusOut;// && this.ResponseHeader.Sequence == sequence;
     }
 }

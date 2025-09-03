@@ -20,7 +20,7 @@ public struct CreateNotifyEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.CreateNotify && this.ResponseHeader.Sequence == sequence &&
+        return this.ResponseHeader.Reply == ResponseType.CreateNotify && //this.ResponseHeader.Sequence == sequence &&
                this.ResponseHeader.GetValue() == 0;
     }
 }
