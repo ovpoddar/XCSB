@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
+using Xcsb.Models;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Event;
@@ -55,6 +56,7 @@ public unsafe struct GenericEvent : IXEvent
             EventType.ClientMessage when typeof(T) == typeof(ClientMessageEvent) => false,
             EventType.MappingNotify when typeof(T) == typeof(MappingNotifyEvent) => false,
             _ when typeof(T) == typeof(GenericEvent) => false,
+            _ when typeof(T) == typeof(XEvent) => false,
             _ => true
         };
 

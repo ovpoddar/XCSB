@@ -19,7 +19,7 @@ internal partial struct XResponse : IXBaseResponse
         ResponseType.Reply => XResponseType.Reply,
         ResponseType.Error => XResponseType.Error,
         ResponseType.KeymapNotify => XResponseType.Notify,
-        >= ResponseType.KeyPress and <= ResponseType.MappingNotify => XResponseType.Event,
+        >= ResponseType.KeyPress and <= ResponseType.MappingNotify or (ResponseType)36 => XResponseType.Event,
         _ => XResponseType.Invalid
     };
 
