@@ -25,7 +25,7 @@ internal class BaseProtoClient
     [SkipLocalsInit]
 #endif
     // todo :fix the sequence issue
-    internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>() where T : unmanaged, IXReply
+    internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>(bool exhaustSocket = false) where T : unmanaged, IXReply
     {
         sequenceNumber++;
         var resultLength = Marshal.SizeOf<T>();

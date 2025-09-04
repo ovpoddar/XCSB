@@ -47,7 +47,7 @@ internal class XProto : BaseProtoClient, IXProto
         var request = new AllocColorType(colorMap, red, green, blue);
         socket.Send(ref request);
 
-        var (result, error) = ReceivedResponseAndVerify<AllocColorReply>();
+        var (result, error) = ReceivedResponseAndVerify<AllocColorReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -102,7 +102,7 @@ internal class XProto : BaseProtoClient, IXProto
             socket.SendExact(workingBuffer);
         }
 
-        var (result, error) = ReceivedResponseAndVerify<AllocNamedColorReply>();
+        var (result, error) = ReceivedResponseAndVerify<AllocNamedColorReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -646,7 +646,7 @@ internal class XProto : BaseProtoClient, IXProto
             socket.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
-        var (result, error) = ReceivedResponseAndVerify<InternAtomReply>();
+        var (result, error) = ReceivedResponseAndVerify<InternAtomReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -670,7 +670,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetGeometryType(drawable);
         socket.Send(ref request);
-        var (result, error) = ReceivedResponseAndVerify<GetGeometryReply>();
+        var (result, error) = ReceivedResponseAndVerify<GetGeometryReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -694,7 +694,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetInputFocusType();
         socket.Send(ref request);
-        var (result, error) = ReceivedResponseAndVerify<GetInputFocusReply>();
+        var (result, error) = ReceivedResponseAndVerify<GetInputFocusReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -755,7 +755,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetPointerControlType();
         socket.Send(ref request);
-        var (result, error) = ReceivedResponseAndVerify<GetPointerControlReply>();
+        var (result, error) = ReceivedResponseAndVerify<GetPointerControlReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -802,7 +802,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetSelectionOwnerType(atom);
         socket.Send(ref request);
-        var (result, error) = ReceivedResponseAndVerify<GetSelectionOwnerReply>();
+        var (result, error) = ReceivedResponseAndVerify<GetSelectionOwnerReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -814,7 +814,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new GetWindowAttributesType(window);
         socket.Send(ref request);
-        var (result, error) = ReceivedResponseAndVerify<GetWindowAttributesReply>();
+        var (result, error) = ReceivedResponseAndVerify<GetWindowAttributesReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -845,7 +845,7 @@ internal class XProto : BaseProtoClient, IXProto
         var request = new GrabKeyboardType(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
         socket.Send(ref request);
 
-        var (result, error) = ReceivedResponseAndVerify<GrabKeyboardReply>();
+        var (result, error) = ReceivedResponseAndVerify<GrabKeyboardReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -860,7 +860,7 @@ internal class XProto : BaseProtoClient, IXProto
             timeStamp);
         socket.Send(ref request);
 
-        var (result, error) = ReceivedResponseAndVerify<GrabPointerReply>();
+        var (result, error) = ReceivedResponseAndVerify<GrabPointerReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1093,7 +1093,7 @@ internal class XProto : BaseProtoClient, IXProto
             socket.SendExact(workingBuffer);
         }
 
-        var (result, error) = ReceivedResponseAndVerify<LookupColorReply>();
+        var (result, error) = ReceivedResponseAndVerify<LookupColorReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1452,7 +1452,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new QueryBestSizeType(shape, drawable, width, height);
         socket.Send(ref request);
-        var (result, error) = ReceivedResponseAndVerify<QueryBestSizeReply>();
+        var (result, error) = ReceivedResponseAndVerify<QueryBestSizeReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1549,7 +1549,7 @@ internal class XProto : BaseProtoClient, IXProto
         var request = new QueryPointerType(window);
         socket.Send(ref request);
 
-        var (result, error) = ReceivedResponseAndVerify<QueryPointerReply>();
+        var (result, error) = ReceivedResponseAndVerify<QueryPointerReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1799,7 +1799,7 @@ internal class XProto : BaseProtoClient, IXProto
             socket.SendExact(workingBuffer);
         }
 
-        var (result, error) = ReceivedResponseAndVerify<SetModifierMappingReply>();
+        var (result, error) = ReceivedResponseAndVerify<SetModifierMappingReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1831,7 +1831,7 @@ internal class XProto : BaseProtoClient, IXProto
             socket.SendExact(workingBuffer[..requiredBuffer]);
         }
 
-        var (result, error) = ReceivedResponseAndVerify<SetPointerMappingReply>();
+        var (result, error) = ReceivedResponseAndVerify<SetPointerMappingReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1914,7 +1914,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new TranslateCoordinatesType(srcWindow, destinationWindow, srcX, srcY);
         socket.Send(ref request);
-        var (result, error) = ReceivedResponseAndVerify<TranslateCoordinatesReply>();
+        var (result, error) = ReceivedResponseAndVerify<TranslateCoordinatesReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
