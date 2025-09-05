@@ -30,46 +30,97 @@ internal class BaseProtoClient
         sequenceNumber++;
         var resultLength = Marshal.SizeOf<T>();
         Span<byte> buffer = stackalloc byte[resultLength];
-        while (true)
+        if (!exhaustSocket)
         {
-            socket.EnsureReadSize(resultLength);
-            socket.ReceiveExact(buffer[0..32]);
-            ref var content = ref buffer[0..32].AsStruct<XResponse>();
-            var responseType = content.GetResponseType();
-            // this is the response verification. which ensures the reply type.
-            Debug.Assert(content.Verify(sequenceNumber));
-
-            switch (responseType)
+            while (true)
             {
-                case XResponseType.Invalid:
-                    throw new Exception("Should not come here");
-                case XResponseType.Reply:
+                socket.EnsureReadSize(32);
+                socket.ReceiveExact(buffer[0..32]);
+                ref var content = ref buffer[0..32].AsStruct<XResponse>();
+                var responseType = content.GetResponseType();
+                // this is the response verification. which ensures the reply type.
+                Debug.Assert(content.Verify(sequenceNumber));
+
+                switch (responseType)
                 {
-                    socket.ReceiveExact(buffer[32..]);
-                    ref var responce = ref buffer.AsStruct<T>();
-                    // this is the reply verification. which ensures the structure of the reply.
-                    if (responce.Verify(sequenceNumber))
-                        return (buffer.ToStruct<T>(), null);
-                    break;
+                    case XResponseType.Invalid:
+                        throw new Exception("Should not come here");
+                    case XResponseType.Reply:
+                        {
+                            socket.ReceiveExact(buffer[32..]);
+                            ref var responce = ref buffer.AsStruct<T>();
+                            // this is the reply verification. which ensures the structure of the reply.
+                            if (responce.Verify(sequenceNumber))
+                                return (buffer.ToStruct<T>(), null);
+                            break;
+                        }
+                    case XResponseType.Error:
+                        {
+                            var error = content.As<GenericError>();
+                            if (error.Verify(sequenceNumber))
+                                return (null, error);
+                            break;
+                        }
+                    case XResponseType.Event:
+                    case XResponseType.Notify:
+                        {
+                            var eventContent = content.As<GenericEvent>();
+                            Console.WriteLine($"{eventContent.Sequence} {sequenceNumber}");
+                            if (eventContent.Verify(sequenceNumber))
+                                bufferEvents.Push(content.As<GenericEvent>());
+                            break;
+                        }
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
-                case XResponseType.Error:
-                {
-                    var error = content.As<GenericError>();
-                    if(error.Verify(sequenceNumber))
-                        return (null, error);
-                    break;
-                }
-                case XResponseType.Event:
-                case XResponseType.Notify:
-                {
-                    var eventContent = content.As<GenericEvent>();
-                    if (eventContent.Verify(sequenceNumber))
-                        bufferEvents.Push(content.As<GenericEvent>());
-                    break;
-                }
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
+        }
+        else
+        {
+            socket.EnsureReadSize(32);
+            (T?, GenericError?) result = default;
+            while(socket.Available != 0)
+            {
+                socket.EnsureReadSize(32);
+                socket.ReceiveExact(buffer[0..32]);
+                ref var content = ref buffer[0..32].AsStruct<XResponse>();
+                Debug.Assert(content.Verify(sequenceNumber));
+
+                var responseType = content.GetResponseType();
+                switch (responseType)
+                {
+                    case XResponseType.Invalid:
+                        throw new Exception("Should not come here");
+                    case XResponseType.Reply:
+                        {
+                            socket.ReceiveExact(buffer[32..]);
+                            ref var responce = ref buffer.AsStruct<T>();
+                            // this is the reply verification. which ensures the structure of the reply.
+                            if (responce.Verify(sequenceNumber))
+                                result = (buffer.ToStruct<T>(), null);
+                            break;
+                        }
+                    case XResponseType.Error:
+                        {
+                            var error = content.As<GenericError>();
+                            if (error.Verify(sequenceNumber))
+                                result = (null, error);
+                            break;
+                        }
+                    case XResponseType.Event:
+                    case XResponseType.Notify:
+                        {
+                            var eventContent = content.As<GenericEvent>();
+                            Console.WriteLine($"{eventContent.Sequence} {sequenceNumber}");
+                            if (eventContent.Verify(sequenceNumber))
+                                bufferEvents.Push(content.As<GenericEvent>());
+                            break;
+                        }
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            return result;
         }
     }
 
