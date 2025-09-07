@@ -24,7 +24,6 @@ internal class BaseProtoClient
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
-    // todo :fix the sequence issue
     internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>(bool exhaustSocket = false) where T : unmanaged, IXReply
     {
         sequenceNumber++;
@@ -65,7 +64,6 @@ internal class BaseProtoClient
                     case XResponseType.Notify:
                         {
                             var eventContent = content.As<GenericEvent>();
-                            Console.WriteLine($"{eventContent.Sequence} {sequenceNumber}");
                             if (eventContent.Verify(sequenceNumber))
                                 bufferEvents.Push(content.As<GenericEvent>());
                             break;
@@ -111,7 +109,6 @@ internal class BaseProtoClient
                     case XResponseType.Notify:
                         {
                             var eventContent = content.As<GenericEvent>();
-                            Console.WriteLine($"{eventContent.Sequence} {sequenceNumber}");
                             if (eventContent.Verify(sequenceNumber))
                                 bufferEvents.Push(content.As<GenericEvent>());
                             break;

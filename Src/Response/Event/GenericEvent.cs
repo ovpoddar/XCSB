@@ -15,9 +15,6 @@ public unsafe struct GenericEvent : IXEvent
 
     [FieldOffset(0)] private fixed byte _data[32];
 
-
-    //todo: try [FieldOffset(0), MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]private readonly byte[] _data;
-
     internal readonly ref T As<T>() where T : struct
     {
         var isNotValid = this.Reply switch
