@@ -6,7 +6,6 @@ namespace Xcsb.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct FocusInEvent : IXEvent
 {
-    public NotifyDetail Detail;
     public readonly ResponseHeader<NotifyDetail> ResponseHeader;
     public int Event;
     public NotifyMode Mode;
