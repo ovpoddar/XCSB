@@ -177,6 +177,9 @@ while (isRunning)
                 x.SendEvent(true, window2, (uint)EventMask.PointerMotionMask, evn);
             }
             break;
+        default:
+            Console.WriteLine(evnt.Value.EventType);
+            break;
     }
 }
 
