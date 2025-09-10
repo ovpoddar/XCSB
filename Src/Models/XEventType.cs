@@ -57,4 +57,5 @@ public enum XEventType : byte
     NameError = 51,
     LengthError = 52,
     ImplementationError = 53,
+    Unknown
 }

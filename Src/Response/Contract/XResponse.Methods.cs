@@ -28,7 +28,7 @@ internal partial struct XResponse : IXBaseResponse
     {
         var responseType = GetResponseType();
         if ((responseType != XResponseType.Event && typeof(IXEvent).IsAssignableFrom(typeof(T)))
-            || (responseType != XResponseType.Error && typeof(IXError).IsAssignableFrom(typeof(T))) 
+            || (responseType != XResponseType.Error && typeof(IXError).IsAssignableFrom(typeof(T)))
             || (responseType != XResponseType.Reply && typeof(IXReply).IsAssignableFrom(typeof(T))))
             throw new InvalidCastException();
 
@@ -39,5 +39,14 @@ internal partial struct XResponse : IXBaseResponse
             return ref _event.As<T>();
 
         throw new InvalidCastException();
+    }
+
+    internal readonly unsafe Span<byte> bytes
+    {
+        get
+        {
+            fixed (byte* ptr = this._data)
+                return new Span<byte>(ptr, 32);
+        }
     }
 }

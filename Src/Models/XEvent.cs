@@ -39,7 +39,7 @@ public unsafe struct XEvent
             (XResponseType.Error, var unknown) => throw new ArgumentOutOfRangeException(nameof(_errorType), unknown,
                 null),
             (XResponseType.Event or XResponseType.Notify, _) => _eventType,
-            _ => throw new InvalidOperationException(),
+            _ => XEventType.Unknown,
         };
 
     public readonly unsafe ref T As<T>() where T : struct =>
@@ -54,5 +54,10 @@ public unsafe struct XEvent
         _response.GetResponseType() is XResponseType.Event or XResponseType.Notify 
             ? null 
             : _response.As<GenericEvent>();
+
+    public Span<byte> GetRawResponse()
+    {
+        return this.ReplyType != XEventType.Unknown ? [] : _response.bytes;
+    }
 
 }
