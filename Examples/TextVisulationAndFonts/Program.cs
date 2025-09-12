@@ -8,7 +8,7 @@ using var c = XcsbClient.Initialized();
 
 var window = c.NewId();
 c.CreateWindow(0,
-    window,
+    window, 
     c.HandshakeSuccessResponseBody.Screens[0].Root,
  0,
  0,
@@ -39,7 +39,7 @@ while (isRunning)
         isRunning = false;
         break;
     }
-    else if (Event.ReplyType is XEventType.KeyPress or XEventType.ButtonPress)
+    else if (Event.ReplyType is XEventType.KeyPress)
     {
         if (!isExecuted)
         {
@@ -60,14 +60,6 @@ while (isRunning)
             c.CirculateWindow(Circulate.LowerHighest, window);
         }
 
-        if (Event.ReplyType == XEventType.ButtonPress && Event.As<ButtonPressEvent>().Detail == 1) //left
-        {
-            var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
-            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
-            c.WarpPointer(0, window, 0, 0, 0, 0, 200, 150);
-            currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
-            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
-        }
         if (keyPressEvent.Detail == 58) //m
         {
             c.UnmapWindow(window);
@@ -134,6 +126,18 @@ while (isRunning)
             }]);
 
         c.FreeGC(gc);
+    }
+    else if (Event.ReplyType is XEventType.ButtonPress)
+    {
+        if (Event.As<ButtonPressEvent>().Detail == Button.LeftButton)
+        {
+            var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
+            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
+            c.WarpPointer(0, window, 0, 0, 0, 0, 200, 150);
+            currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
+            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
+        }
+
     }
     else
     {

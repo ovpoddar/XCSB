@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Models;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Event;
@@ -6,7 +7,7 @@ namespace Xcsb.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ButtonPressEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<Button> ResponseHeader;
     public uint TimeStamp;
     public uint RootWindow;
     public uint EventWindow;
@@ -18,7 +19,7 @@ public struct ButtonPressEvent : IXEvent
     public KeyButMask State;
     private sbyte _isSameScreen;
     public bool IsSameScreen => _isSameScreen == 1;
-    public byte Detail => ResponseHeader.GetValue();
+    public Button Detail => ResponseHeader.GetValue();
 
     public bool Verify(in int sequence)
     {
