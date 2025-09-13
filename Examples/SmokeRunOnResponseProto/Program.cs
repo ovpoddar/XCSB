@@ -44,7 +44,7 @@ var keyboardMapping = client.GetKeyboardMapping(client.HandshakeSuccessResponseB
     (byte)(client.HandshakeSuccessResponseBody.MaxKeyCode - client.HandshakeSuccessResponseBody.MinKeyCode + 1));
 
 var originalKeySym = keyboardMapping.Keysyms;
-Console.WriteLine(string.Join(", ", originalKeySym));
+Console.WriteLine(string.Join(", ", originalKeySym.SelectMany(a => a)));
 var keysyms_per_keycode = new uint[keyboardMapping.KeyPerKeyCode];
 Array.Copy(originalKeySym[0..keyboardMapping.KeyPerKeyCode], keysyms_per_keycode, keyboardMapping.KeyPerKeyCode);
 keysyms_per_keycode[0] = 0x0061;
