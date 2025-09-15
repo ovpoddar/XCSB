@@ -55,12 +55,6 @@ while (isRunning)
 {
     var evnt = xcsb.GetEvent();
     if (evnt.ReplyType == XEventType.LastEvent) return;
-    // todo: fix error handling
-    // if (evnt.Value.EventType == EventType.Error)
-    // {
-    //     Console.WriteLine(evnt.Value.GenericError.ErrorCode.ToString());
-    //     isRunning = false;
-    // }
     if (evnt.ReplyType == XEventType.Expose)
     {
         lazyXcsb.PutImage(ImageFormatBitmap.ZPixmap,
