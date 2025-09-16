@@ -74,7 +74,7 @@ while (isRunning)
         case XEventType.ButtonPress:
             {
                 var bp = evnt.As<ButtonPressEvent>();
-                if (bp is { Detail: 3, State: KeyButMask.Control })
+                if (bp is { Detail: Button.RightButton, State: KeyButMask.Control })
                 {
                     Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
                     connection.AllowEvents(EventsMode.SyncPointer, bp.TimeStamp);

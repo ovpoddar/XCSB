@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Event;
 using Xcsb.Helpers;
+using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
 
@@ -24,9 +25,9 @@ internal class BaseProtoClient
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
-    internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>(bool exhaustSocket = false) where T : unmanaged, IXReply
+    internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>(bool exhaustSocket = false)
+        where T : unmanaged, IXReply
     {
-        sequenceNumber++;
         var resultLength = Marshal.SizeOf<T>();
         Span<byte> buffer = stackalloc byte[resultLength];
         if (!exhaustSocket)
@@ -45,29 +46,29 @@ internal class BaseProtoClient
                     case XResponseType.Invalid:
                         throw new Exception("Should not come here");
                     case XResponseType.Reply:
-                        {
-                            socket.ReceiveExact(buffer[32..]);
-                            ref var responce = ref buffer.AsStruct<T>();
-                            // this is the reply verification. which ensures the structure of the reply.
-                            if (responce.Verify(sequenceNumber))
-                                return (buffer.ToStruct<T>(), null);
-                            break;
-                        }
+                    {
+                        socket.ReceiveExact(buffer[32..]);
+                        ref var responce = ref buffer.AsStruct<T>();
+                        // this is the reply verification. which ensures the structure of the reply.
+                        if (responce.Verify(sequenceNumber))
+                            return (buffer.ToStruct<T>(), null);
+                        break;
+                    }
                     case XResponseType.Error:
-                        {
-                            var error = content.As<GenericError>();
-                            if (error.Verify(sequenceNumber))
-                                return (null, error);
-                            break;
-                        }
+                    {
+                        var error = content.As<GenericError>();
+                        if (error.Verify(sequenceNumber))
+                            return (null, error);
+                        break;
+                    }
                     case XResponseType.Event:
                     case XResponseType.Notify:
-                        {
-                            var eventContent = content.As<GenericEvent>();
-                            if (eventContent.Verify(sequenceNumber))
-                                bufferEvents.Push(content.As<GenericEvent>());
-                            break;
-                        }
+                    {
+                        var eventContent = content.As<GenericEvent>();
+                        if (eventContent.Verify(sequenceNumber))
+                            bufferEvents.Push(content.As<GenericEvent>());
+                        break;
+                    }
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -77,7 +78,7 @@ internal class BaseProtoClient
         {
             socket.EnsureReadSize(32);
             (T?, GenericError?) result = default;
-            while(socket.Available != 0)
+            while (socket.Available != 0)
             {
                 socket.EnsureReadSize(32);
                 socket.ReceiveExact(buffer[0..32]);
@@ -90,33 +91,34 @@ internal class BaseProtoClient
                     case XResponseType.Invalid:
                         throw new Exception("Should not come here");
                     case XResponseType.Reply:
-                        {
-                            socket.ReceiveExact(buffer[32..]);
-                            ref var responce = ref buffer.AsStruct<T>();
-                            // this is the reply verification. which ensures the structure of the reply.
-                            if (responce.Verify(sequenceNumber))
-                                result = (buffer.ToStruct<T>(), null);
-                            break;
-                        }
+                    {
+                        socket.ReceiveExact(buffer[32..]);
+                        ref var responce = ref buffer.AsStruct<T>();
+                        // this is the reply verification. which ensures the structure of the reply.
+                        if (responce.Verify(sequenceNumber))
+                            result = (buffer.ToStruct<T>(), null);
+                        break;
+                    }
                     case XResponseType.Error:
-                        {
-                            var error = content.As<GenericError>();
-                            if (error.Verify(sequenceNumber))
-                                result = (null, error);
-                            break;
-                        }
+                    {
+                        var error = content.As<GenericError>();
+                        if (error.Verify(sequenceNumber))
+                            result = (null, error);
+                        break;
+                    }
                     case XResponseType.Event:
                     case XResponseType.Notify:
-                        {
-                            var eventContent = content.As<GenericEvent>();
-                            if (eventContent.Verify(sequenceNumber))
-                                bufferEvents.Push(content.As<GenericEvent>());
-                            break;
-                        }
+                    {
+                        var eventContent = content.As<GenericEvent>();
+                        if (eventContent.Verify(sequenceNumber))
+                            bufferEvents.Push(content.As<GenericEvent>());
+                        break;
+                    }
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
             return result;
         }
     }
@@ -149,5 +151,17 @@ internal class BaseProtoClient
         }
 
         return null;
+    }
+
+    internal void ProcessEvents(bool throwOnError = true)
+    {
+        while (true)
+        {
+            var error = Received();
+            if (error.HasValue && throwOnError)
+                    throw new XEventException(error.Value);
+            if (socket.Available == 0)
+                break;
+        }
     }
 }
