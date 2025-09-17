@@ -296,8 +296,9 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args)
+    private void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         var requiredBuffer = 12 + args.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -321,6 +322,11 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         sequenceNumber++;
+    }
+    
+    public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args)
+    {
+        this.ChangeWindowAttributes(window, mask, args, false);
     }
 
     public void CirculateWindow(Circulate circulate, uint window)
@@ -2074,7 +2080,7 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void ChangeWindowAttributesChecked(uint window, ValueMask mask, Span<uint> args)
     {
-        ChangeWindowAttributes(window, mask, args);
+        this.ChangeWindowAttributes(window, mask, args, true);
         CheckError();
     }
 
