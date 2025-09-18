@@ -153,7 +153,7 @@ internal class BaseProtoClient
         return null;
     }
 
-    internal void ProcessEvents(bool throwOnError = true)
+    internal void ProcessEvents(bool throwOnError)
     {
         while (true)
         {

@@ -41,9 +41,46 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber = 0;
     }
 
-
-    public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
+    private void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args, bool isThrow)
     {
+        ProcessEvents(isThrow);
+        var request = new ChangeWindowAttributesType(window, mask, args.Length);
+        var requiredBuffer = 12 + args.Length * 4;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(args));
+            socket.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(args));
+            socket.SendExact(workingBuffer);
+        }
+
+        sequenceNumber++;
+    }
+    
+    private void DestroyWindow(uint window, bool isThrow)
+    {
+        ProcessEvents(isThrow);
+        var request = new DestroyWindowType(window);
+        socket.Send(ref request);
+        sequenceNumber++;
+    }
+
+
+    private AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue, bool isThrow)
+    {
+        ProcessEvents(isThrow);
         var request = new AllocColorType(colorMap, red, green, blue);
         socket.Send(ref request);
 
@@ -55,6 +92,9 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
         return result.Value;
     }
+    
+    public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue) =>
+        this.AllocColor(colorMap, red, green, blue, false);
 
     public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
     {
@@ -113,33 +153,44 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-
-    public void AllowEvents(EventsMode mode, uint time)
+    private void AllowEvents(EventsMode mode, uint time, bool isThrow)
     {
         var request = new AllowEventsType(mode, time);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void Bell(sbyte percent)
+    public void AllowEvents(EventsMode mode, uint time) =>
+        this.AllowEvents(mode, time, false);
+
+    private void Bell(sbyte percent, bool isThrow)
     {
         if (percent is > 100 or < -100)
             throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
 
+        ProcessEvents(isThrow);
         var request = new BellType(percent);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void ChangeActivePointerGrab(uint cursor, uint time, ushort mask)
+    public void Bell(sbyte percent) =>
+        this.Bell(percent, false);
+
+    private void ChangeActivePointerGrab(uint cursor, uint time, ushort mask, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ChangeActivePointerGrabType(cursor, time, mask);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void ChangeGC(uint gc, GCMask mask, Span<uint> args)
+    public void ChangeActivePointerGrab(uint cursor, uint time, ushort mask) =>
+        this.ChangeActivePointerGrab(cursor, time, mask, false);
+
+    private void ChangeGC(uint gc, GCMask mask, Span<uint> args, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ChangeGCType(gc, mask, args.Length);
         var requiredBuffer = 12 + args.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -164,8 +215,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeHosts(HostMode mode, Family family, Span<byte> address)
+    public void ChangeGC(uint gc, GCMask mask, Span<uint> args) =>
+        this.ChangeGC(gc, mask, args, false);
+
+    private void ChangeHosts(HostMode mode, Family family, Span<byte> address, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ChangeHostsType(mode, family, address.Length);
         var requiredBuffer = 8 + address.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -191,8 +246,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args)
+    public void ChangeHosts(HostMode mode, Family family, Span<byte> address) =>
+        this.ChangeHosts(mode, family, address, false);
+
+    private void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var requiredBuffer = 8 + args.Length * 4;
         var request = new ChangeKeyboardControlType(mask, args.Length);
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -218,8 +277,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> keysym)
+    public void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args) =>
+        this.ChangeKeyboardControl(mask, args, false);
+
+    private void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> keysym, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var requiredBuffer = 8 + keycodeCount * keysymsPerKeycode * 4;
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -245,8 +308,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangePointerControl(Acceleration? acceleration, ushort? threshold)
+    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> keysym) =>
+        this.ChangeKeyboardMapping(keycodeCount, firstKeycode, keysymsPerKeycode, keysym, false);
+
+    private void ChangePointerControl(Acceleration? acceleration, ushort? threshold, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
             threshold ?? 0, (byte)(acceleration is null ? 0 : 1),
             (byte)(threshold.HasValue ? 1 : 0));
@@ -254,8 +321,10 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
+    public void ChangePointerControl(Acceleration? acceleration, ushort? threshold) =>
+        this.ChangePointerControl(acceleration, threshold, false);
 
-    public void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+    private void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args, bool isThrow)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -264,6 +333,7 @@ internal class XProto : BaseProtoClient, IXProto
         var size = Marshal.SizeOf<T>();
         if (size is not 1 or 2 or 4)
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
+        ProcessEvents(isThrow);
         var request = new ChangePropertyType(mode, window, property, type, args.Length, (byte)(size * 8));
         var requiredBuffer = 24 + size * args.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -289,43 +359,25 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
+    public void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args) 
+    where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
+    => this.ChangeProperty<T>(mode, window, property, type, args, false);
+
+    private void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ChangeSaveSetType(changeSaveSetMode, window);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    private void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args, bool isThrow)
-    {
-        ProcessEvents(isThrow);
-        var request = new ChangeWindowAttributesType(window, mask, args.Length);
-        var requiredBuffer = 12 + args.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(args));
-            socket.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(args));
-            socket.SendExact(workingBuffer);
-        }
+    public void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window) =>
+        this.ChangeSaveSet(changeSaveSetMode, window, false);
 
-        sequenceNumber++;
-    }
-    
-    public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args)
-    {
+    public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args) =>
         this.ChangeWindowAttributes(window, mask, args, false);
     }
 
@@ -476,10 +528,11 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+    private void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args, bool isThrow)
     {
         var requiredBuffer = 32 + args.Length * 4;
+        ProcessEvents(isThrow);
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -505,6 +558,11 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
+    public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
+        this.CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
+        args, false)
+
     public void DeleteProperty(uint window, ATOM atom)
     {
         var request = new DeletePropertyType(window, atom);
@@ -519,13 +577,9 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void DestroyWindow(uint window)
-    {
-        var request = new DestroyWindowType(window);
-        socket.Send(ref request);
-        sequenceNumber++;
-    }
-
+    public void DestroyWindow(uint window) =>
+        this.DestroyWindow(window, false);
+    
     public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
@@ -972,12 +1026,16 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void KillClient(uint resource)
+    private void KillClient(uint resource, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new KillClientType(resource);
         socket.Send(ref request);
         sequenceNumber++;
     }
+
+    public void KillClient(uint resource) =>
+        this.KillClient(resource, false);
 
     public ListExtensionsReply ListExtensions()
     {
@@ -1150,8 +1208,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void NoOperation(Span<uint> args)
+    public void NoOperation(Span<uint> args) =>
+        this.NoOperation(args, false);
+
+    private void NoOperation(Span<uint> args, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new NoOperationType(args.Length);
         var requiredBuffer = 4 + args.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1399,8 +1461,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    public void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
+        this.PolyText16(drawable, gc, x, y, data, false);
+
+    private void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PolyText16Type(drawable, gc, x, y, data.Length);
         var requiredBuffer = 16 + data.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1426,9 +1492,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
+    public void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
+        this.PolyText8(drawable, gc, x, y, data, false);
 
-    public void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    private void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PolyText8Type(drawable, gc, x, y, data.Length);
         var requiredBuffer = 16 + data.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -2074,7 +2143,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
         ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
     {
-        CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args);
+        this.CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args, true);
         CheckError();
     }
 
@@ -2086,61 +2155,61 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void DestroyWindowChecked(uint window)
     {
-        DestroyWindow(window);
+        this.DestroyWindow(window, true);
         CheckError();
     }
 
     public void DestroySubwindowsChecked(uint window)
     {
-        DestroySubwindows(window);
+        this.DestroySubwindows(window, true);
         CheckError();
     }
 
     public void ChangeSaveSetChecked(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
-        ChangeSaveSet(changeSaveSetMode, window);
+        this.ChangeSaveSet(changeSaveSetMode, window, true);
         CheckError();
     }
 
     public void ReparentWindowChecked(uint window, uint parent, short x, short y)
     {
-        ReparentWindow(window, parent, x, y);
+        this.ReparentWindow(window, parent, x, y, true);
         CheckError();
     }
 
     public void MapWindowChecked(uint window)
     {
-        MapWindow(window);
+        this.MapWindow(window, true);
         CheckError();
     }
 
     public void MapSubwindowsChecked(uint window)
     {
-        MapSubwindows(window);
+        this.MapSubwindows(window, true);
         CheckError();
     }
 
     public void UnmapWindowChecked(uint window)
     {
-        UnmapWindow(window);
+        this.UnmapWindow(window, true);
         CheckError();
     }
 
     public void UnmapSubwindowsChecked(uint window)
     {
-        UnmapSubwindows(window);
+        this.UnmapSubwindows(window, true);
         CheckError();
     }
 
     public void ConfigureWindowChecked(uint window, ConfigureValueMask mask, Span<uint> args)
     {
-        ConfigureWindow(window, mask, args);
+        this.ConfigureWindow(window, mask, args, true);
         CheckError();
     }
 
     public void CirculateWindowChecked(Circulate circulate, uint window)
     {
-        CirculateWindow(circulate, window);
+        this.CirculateWindow(circulate, window, true);
         CheckError();
     }
 
@@ -2150,322 +2219,322 @@ internal class XProto : BaseProtoClient, IXProto
         , INumber<T>
 #endif
     {
-        ChangeProperty(mode, window, property, type, args);
+        this.ChangeProperty(mode, window, property, type, args, true);
         CheckError();
     }
 
     public void DeletePropertyChecked(uint window, ATOM atom)
     {
-        DeleteProperty(window, atom);
+        this.DeleteProperty(window, atom, true);
         CheckError();
     }
 
     public void RotatePropertiesChecked(uint window, ushort delta, Span<ATOM> properties)
     {
-        RotateProperties(window, delta, properties);
+        this.RotateProperties(window, delta, properties, true);
         CheckError();
     }
 
     public void SetSelectionOwnerChecked(uint owner, ATOM atom, uint timestamp)
     {
-        SetSelectionOwner(owner, atom, timestamp);
+        this.SetSelectionOwner(owner, atom, timestamp, true);
         CheckError();
     }
 
     public void ConvertSelectionChecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
-        ConvertSelection(requestor, selection, target, property, timestamp);
+        this.ConvertSelection(requestor, selection, target, property, timestamp, true);
         CheckError();
     }
 
     public void SendEventChecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
-        SendEvent(propagate, destination, eventMask, evnt);
+        this.SendEvent(propagate, destination, eventMask, evnt, true);
         CheckError();
     }
 
     public void UngrabPointerChecked(uint time)
     {
-        UngrabPointer(time);
+        this.UngrabPointer(time, true);
         CheckError();
     }
 
     public void GrabButtonChecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
     {
-        GrabButton(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers);
+        this.GrabButton(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers, true);
         CheckError();
     }
 
     public void UngrabButtonChecked(Button button, uint grabWindow, ModifierMask mask)
     {
-        UngrabButton(button, grabWindow, mask);
+        this.UngrabButton(button, grabWindow, mask, true);
         CheckError();
     }
 
     public void ChangeActivePointerGrabChecked(uint cursor, uint time, ushort mask)
     {
-        ChangeActivePointerGrab(cursor, time, mask);
+        this.ChangeActivePointerGrab(cursor, time, mask, true);
         CheckError();
     }
 
     public void UngrabKeyboardChecked(uint time)
     {
-        UngrabKeyboard(time);
+        this.UngrabKeyboard(time, true);
         CheckError();
     }
 
     public void GrabKeyChecked(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
-        GrabKey(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
+        this.GrabKey(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode, true);
         CheckError();
     }
 
     public void UngrabKeyChecked(byte key, uint grabWindow, ModifierMask modifier)
     {
-        UngrabKey(key, grabWindow, modifier);
+        this.UngrabKey(key, grabWindow, modifier, true);
         CheckError();
     }
 
     public void AllowEventsChecked(EventsMode mode, uint time)
     {
-        AllowEvents(mode, time);
+        this.AllowEvents(mode, time, true);
         CheckError();
     }
 
     public void GrabServerChecked()
     {
-        GrabServer();
+        this.GrabServer(, true);
         CheckError();
     }
 
     public void UngrabServerChecked()
     {
-        UngrabServer();
+        this.UngrabServer(, true);
         CheckError();
     }
 
     public void WarpPointerChecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
         ushort srcHeight, short destinationX, short destinationY)
     {
-        WarpPointer(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX, destinationY);
+        this.WarpPointer(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX, destinationY, true);
         CheckError();
     }
 
     public void SetInputFocusChecked(InputFocusMode mode, uint focus, uint time)
     {
-        SetInputFocus(mode, focus, time);
+        this.SetInputFocus(mode, focus, time, true);
         CheckError();
     }
 
     public void OpenFontChecked(string fontName, uint fontId)
     {
-        OpenFont(fontName, fontId);
+        this.OpenFont(fontName, fontId, true);
         CheckError();
     }
 
     public void CloseFontChecked(uint fontId)
     {
-        CloseFont(fontId);
+        this.CloseFont(fontId, true);
         CheckError();
     }
 
     public void SetFontPathChecked(string[] strPaths)
     {
-        SetFontPath(strPaths);
+        this.SetFontPath(strPaths, true);
         CheckError();
     }
 
     public void CreatePixmapChecked(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
-        CreatePixmap(depth, pixmapId, drawable, width, height);
+        this.CreatePixmap(depth, pixmapId, drawable, width, height, true);
         CheckError();
     }
 
     public void FreePixmapChecked(uint pixmapId)
     {
-        FreePixmap(pixmapId);
+        this.FreePixmap(pixmapId, true);
         CheckError();
     }
 
     public void CreateGCChecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
-        CreateGC(gc, drawable, mask, args);
+        this.CreateGC(gc, drawable, mask, args, true);
         CheckError();
     }
 
     public void ChangeGCChecked(uint gc, GCMask mask, Span<uint> args)
     {
-        ChangeGC(gc, mask, args);
+        this.ChangeGC(gc, mask, args, true);
         CheckError();
     }
 
     public void CopyGCChecked(uint srcGc, uint dstGc, GCMask mask)
     {
-        CopyGC(srcGc, dstGc, mask);
+        this.CopyGC(srcGc, dstGc, mask, true);
         CheckError();
     }
 
     public void SetDashesChecked(uint gc, ushort dashOffset, Span<byte> dashes)
     {
-        SetDashes(gc, dashOffset, dashes);
+        this.SetDashes(gc, dashOffset, dashes, true);
         CheckError();
     }
 
     public void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
         Span<Rectangle> rectangles)
     {
-        SetClipRectangles(ordering, gc, clipX, clipY, rectangles);
+        this.SetClipRectangles(ordering, gc, clipX, clipY, rectangles, true);
         CheckError();
     }
 
     public void FreeGCChecked(uint gc)
     {
-        FreeGC(gc);
+        this.FreeGC(gc, true);
         CheckError();
     }
 
     public void ClearAreaChecked(bool exposures, uint window, short x, short y, ushort width, ushort height)
     {
-        ClearArea(exposures, window, x, y, width, height);
+        this.ClearArea(exposures, window, x, y, width, height, true);
         CheckError();
     }
 
     public void CopyAreaChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height)
     {
-        CopyArea(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height);
+        this.CopyArea(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height, true);
         CheckError();
     }
 
     public void CopyPlaneChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
     {
-        CopyPlane(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height,
-            bitPlane);
+        this.CopyPlane(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height,
+            bitPlane, true);
         CheckError();
     }
 
     public void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
-        PolyPoint(coordinate, drawable, gc, points);
+        this.PolyPoint(coordinate, drawable, gc, points, true);
         CheckError();
     }
 
     public void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
-        PolyLine(coordinate, drawable, gc, points);
+        this.PolyLine(coordinate, drawable, gc, points, true);
         CheckError();
     }
 
     public void PolySegmentChecked(uint drawable, uint gc, Span<Segment> segments)
     {
-        PolySegment(drawable, gc, segments);
+        this.PolySegment(drawable, gc, segments, true);
         CheckError();
     }
 
     public void PolyRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
-        PolyRectangle(drawable, gc, rectangles);
+        this.PolyRectangle(drawable, gc, rectangles, true);
         CheckError();
     }
 
     public void PolyArcChecked(uint drawable, uint gc, Span<Arc> arcs)
     {
-        PolyArc(drawable, gc, arcs);
+        this.PolyArc(drawable, gc, arcs, true);
         CheckError();
     }
 
     public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
     {
-        FillPoly(drawable, gc, shape, coordinate, points);
+        this.FillPoly(drawable, gc, shape, coordinate, points, true);
         CheckError();
     }
 
     public void PolyFillRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
-        PolyFillRectangle(drawable, gc, rectangles);
+        this.PolyFillRectangle(drawable, gc, rectangles, true);
         CheckError();
     }
 
     public void PolyFillArcChecked(uint drawable, uint gc, Span<Arc> arcs)
     {
-        PolyFillArc(drawable, gc, arcs);
+        this.PolyFillArc(drawable, gc, arcs, true);
         CheckError();
     }
 
     public void PutImageChecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x,
         short y, byte leftPad, byte depth, Span<byte> data)
     {
-        PutImage(format, drawable, gc, width, height, x, y, leftPad, depth, data);
+        this.PutImage(format, drawable, gc, width, height, x, y, leftPad, depth, data, true);
         CheckError();
     }
 
     public void ImageText8Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
     {
-        ImageText8(drawable, gc, x, y, text);
+        this.ImageText8(drawable, gc, x, y, text, true);
         CheckError();
     }
 
     public void ImageText16Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
     {
-        ImageText16(drawable, gc, x, y, text);
+        this.ImageText16(drawable, gc, x, y, text, true);
         CheckError();
     }
 
     public void CreateColormapChecked(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
-        CreateColormap(alloc, colormapId, window, visual);
+        this.CreateColormap(alloc, colormapId, window, visual, true);
         CheckError();
     }
 
     public void FreeColormapChecked(uint colormapId)
     {
-        FreeColormap(colormapId);
+        this.FreeColormap(colormapId, true);
         CheckError();
     }
 
     public void CopyColormapAndFreeChecked(uint colormapId, uint srcColormapId)
     {
-        CopyColormapAndFree(colormapId, srcColormapId);
+        this.CopyColormapAndFree(colormapId, srcColormapId, true);
         CheckError();
     }
 
     public void InstallColormapChecked(uint colormapId)
     {
-        InstallColormap(colormapId);
+        this.InstallColormap(colormapId, true);
         CheckError();
     }
 
     public void UninstallColormapChecked(uint colormapId)
     {
-        UninstallColormap(colormapId);
+        this.UninstallColormap(colormapId, true);
         CheckError();
     }
 
     public void FreeColorsChecked(uint colormapId, uint planeMask, Span<uint> pixels)
     {
-        FreeColors(colormapId, planeMask, pixels);
+        this.FreeColors(colormapId, planeMask, pixels, true);
         CheckError();
     }
 
     public void StoreColorsChecked(uint colormapId, Span<ColorItem> item)
     {
-        StoreColors(colormapId, item);
+        this.StoreColors(colormapId, item, true);
         CheckError();
     }
 
     public void StoreNamedColorChecked(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
     {
-        StoreNamedColor(mode, colormapId, pixels, name);
+        this.StoreNamedColor(mode, colormapId, pixels, name, true);
         CheckError();
     }
 
     public void CreateCursorChecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
         ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
-        CreateCursor(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y);
+        this.CreateCursor(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y, true);
         CheckError();
     }
 
@@ -2473,100 +2542,100 @@ internal class XProto : BaseProtoClient, IXProto
         ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen,
         ushort backBlue)
     {
-        CreateGlyphCursor(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
-            backRed, backGreen, backBlue);
+        this.CreateGlyphCursor(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
+            backRed, backGreen, backBlue, true);
         CheckError();
     }
 
     public void FreeCursorChecked(uint cursorId)
     {
-        FreeCursor(cursorId);
+        this.FreeCursor(cursorId, true);
         CheckError();
     }
 
     public void RecolorCursorChecked(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
         ushort backGreen, ushort backBlue)
     {
-        RecolorCursor(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
+        this.RecolorCursor(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, true);
         CheckError();
     }
 
     public void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
         Span<uint> keysym)
     {
-        ChangeKeyboardMapping(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
+        this.ChangeKeyboardMapping(keycodeCount, firstKeycode, keysymsPerKeycode, keysym, true);
         CheckError();
     }
 
     public void BellChecked(sbyte percent)
     {
-        Bell(percent);
+        this.Bell(percent, true);
         CheckError();
     }
 
     public void ChangeKeyboardControlChecked(KeyboardControlMask mask, Span<uint> args)
     {
-        ChangeKeyboardControl(mask, args);
+        this.ChangeKeyboardControl(mask, args, true);
         CheckError();
     }
 
     public void ChangePointerControlChecked(Acceleration acceleration, ushort? threshold)
     {
-        ChangePointerControl(acceleration, threshold);
+        this.ChangePointerControl(acceleration, threshold, true);
         CheckError();
     }
 
     public void SetScreenSaverChecked(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
     {
-        SetScreenSaver(timeout, interval, preferBlanking, allowExposures);
+        this.SetScreenSaver(timeout, interval, preferBlanking, allowExposures, true);
         CheckError();
     }
 
     public void ForceScreenSaverChecked(ForceScreenSaverMode mode)
     {
-        ForceScreenSaver(mode);
+        this.ForceScreenSaver(mode, true);
         CheckError();
     }
 
     public void ChangeHostsChecked(HostMode mode, Family family, Span<byte> address)
     {
-        ChangeHosts(mode, family, address);
+        this.ChangeHosts(mode, family, address, true);
         CheckError();
     }
 
     public void SetAccessControlChecked(AccessControlMode mode)
     {
-        SetAccessControl(mode);
+        this.SetAccessControl(mode, true);
         CheckError();
     }
 
     public void SetCloseDownModeChecked(CloseDownMode mode)
     {
-        SetCloseDownMode(mode);
+        this.SetCloseDownMode(mode, true);
         CheckError();
     }
 
     public void KillClientChecked(uint resource)
     {
-        KillClient(resource);
+        this.KillClient(resource, true);
         CheckError();
     }
 
     public void NoOperationChecked(Span<uint> args)
     {
-        NoOperation(args);
+        this.NoOperation(args, true);
         CheckError();
     }
 
     public void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
-        PolyText8(drawable, gc, x, y, data);
+        this.PolyText8(drawable, gc, x, y, data, true);
         CheckError();
     }
 
     public void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
     {
-        PolyText16(drawable, gc, x, y, data);
+        this.PolyText16(drawable, gc, x, y, data, true);
         CheckError();
     }
 
