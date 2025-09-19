@@ -92,7 +92,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
         return result.Value;
     }
-    
+
     public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue) =>
         this.AllocColor(colorMap, red, green, blue, false);
 
@@ -113,8 +113,13 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
-        ushort greens, ushort blues)
+        ushort greens, ushort blues) =>
+        this.AllocColorPlanes(contiguous, colorMap, colors, reds, greens, blues, false);
+
+    private AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
+        ushort greens, ushort blues, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new AllocColorPlanesType(contiguous, colorMap, colors, reds, greens, blues);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<AllocColorPlanesResponse>();
@@ -387,7 +392,6 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args) =>
         this.ChangeWindowAttributes(window, mask, args, false);
-    }
 
     public void CirculateWindow(Circulate circulate, uint window) =>
         this.CirculateWindow(circulate, window, false);
@@ -465,8 +469,14 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX, ushort destinationY, ushort width, ushort height)
+        ushort destinationX, ushort destinationY, ushort width, ushort height) =>
+        this.CopyArea(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width,
+        height, false);
+
+    private void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX, ushort destinationY, ushort width, ushort height, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CopyAreaType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height);
         socket.Send(ref request);
@@ -1026,8 +1036,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
+    public void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text) =>
+        this.ImageText8(drawable, gc, x, y, text, false);
+    
+    private void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ImageText8Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = 16 + text.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1055,8 +1069,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void InstallColormap(uint colormapId)
+    public void InstallColormap(uint colormapId) =>
+        this.InstallColormap(colormapId, false);
+    
+    private void InstallColormap(uint colormapId, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new InstallColormapType(colormapId);
         socket.Send(ref request);
         sequenceNumber++;
@@ -1072,9 +1090,13 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void KillClient(uint resource) =>
         this.KillClient(resource, false);
-
-    public ListExtensionsReply ListExtensions()
+    
+    public ListExtensionsReply ListExtensions() =>
+        this.ListExtensions();
+    
+    private ListExtensionsReply ListExtensions(, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ListExtensionsType();
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<ListExtensionsResponse>();
@@ -1086,8 +1108,12 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
+    public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames) =>
+        this.ListFonts();
+    
+    private ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ListFontsType(pattern.Length, maxNames);
         var requiredBuffer = 8 + (pattern.Length * 2).AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1121,8 +1147,12 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
+    public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames) =>
+        this.[] ();
+    
+    private ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ListFontsWithInfoType(pattan.Length, maxNames);
         var requiredBuffer = 8 + pattan.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1157,8 +1187,12 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public ListHostsReply ListHosts()
+    public ListHostsReply ListHosts() =>
+        this.ListHosts();
+    
+    private ListHostsReply ListHosts(, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ListHostsType();
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<ListHostsResponse>();
@@ -1170,8 +1204,12 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public ListInstalledColormapsReply ListInstalledColormaps(uint window)
+    public ListInstalledColormapsReply ListInstalledColormaps(uint window) =>
+        this.ListInstalledColormaps();
+    
+    private ListInstalledColormapsReply ListInstalledColormaps(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ListInstalledColormapsType(window);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<ListInstalledColormapsResponse>();
@@ -1184,8 +1222,12 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public ListPropertiesReply ListProperties(uint window)
+    public ListPropertiesReply ListProperties(uint window) =>
+        this.ListProperties();
+    
+    private ListPropertiesReply ListProperties(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ListPropertiesType(window);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<ListPropertiesResponse>();
@@ -1197,8 +1239,12 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name)
+    public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name) =>
+        this.LookupColor();
+    
+    private LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new LookupColorType(colorMap, name.Length);
         var requiredBuffer = 12 + name.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1230,15 +1276,23 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public void MapSubwindows(uint window)
+    public void MapSubwindows(uint window) =>
+        this.MapSubwindows();
+    
+    private void MapSubwindows(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new MapSubWindowsType(window);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void MapWindow(uint window)
+    public void MapWindow(uint window) =>
+        this.MapWindow();
+    
+    private void MapWindow(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new MapWindowType(window);
         socket.Send(ref request);
         sequenceNumber++;
