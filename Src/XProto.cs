@@ -68,7 +68,7 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-    
+
     private void DestroyWindow(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -96,8 +96,12 @@ internal class XProto : BaseProtoClient, IXProto
     public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue) =>
         this.AllocColor(colorMap, red, green, blue, false);
 
-    public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
+    public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes) =>
+        this.AllocColorCells(contiguous, colorMap, colors, planes, false);
+
+    private AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new AllocColorCellsType(contiguous, colorMap, colors, planes);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<AllocColorCellsResponse>();
@@ -121,8 +125,12 @@ internal class XProto : BaseProtoClient, IXProto
         return new AllocColorPlanesReply(result.Value, socket);
     }
 
-    public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name)
+    public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name) =>
+        this.AllocNamedColor(colorMap, name, false);
+
+    private AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new AllocNamedColorType(colorMap, name.Length);
         var requiredBuffer = 12 + name.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -381,30 +389,46 @@ internal class XProto : BaseProtoClient, IXProto
         this.ChangeWindowAttributes(window, mask, args, false);
     }
 
-    public void CirculateWindow(Circulate circulate, uint window)
+    public void CirculateWindow(Circulate circulate, uint window) =>
+        this.CirculateWindow(circulate, window, false);
+
+    private void CirculateWindow(Circulate circulate, uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CirculateWindowType(circulate, window);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height)
+    public void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height) =>
+        this.ClearArea(exposures, window, x, y, width, height, false);
+
+    private void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ClearAreaType(exposures, window, x, y, width, height);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void CloseFont(uint fontId)
+    public void CloseFont(uint fontId) =>
+        this.CloseFont(fontId, false);
+
+    private void CloseFont(uint fontId, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CloseFontType(fontId);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args)
+    public void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args) =>
+        this.ConfigureWindow(window, mask, args, false);
+
+    private void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args, bool isThrow)
     {
         var requiredBuffer = 12 + args.Length * 4;
+        ProcessEvents(isThrow);
         var request = new ConfigureWindowType(window, mask, args.Length);
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
@@ -429,8 +453,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
+    public void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp) =>
+        this.ConvertSelection(requestor, selection, target, property, timestamp, false);
+
+    private void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
         socket.Send(ref request);
         sequenceNumber++;
@@ -445,15 +473,23 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CopyColormapAndFree(uint colormapId, uint srcColormapId)
+    public void CopyColormapAndFree(uint colormapId, uint srcColormapId) =>
+        this.CopyColormapAndFree(colormapId, srcColormapId, false);
+
+    private void CopyColormapAndFree(uint colormapId, uint srcColormapId, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CopyColormapAndFreeType(colormapId, srcColormapId);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void CopyGC(uint srcGc, uint dstGc, GCMask mask)
+    public void CopyGC(uint srcGc, uint dstGc, GCMask mask) =>
+        this.CopyGC(srcGc, dstGc, mask, false);
+
+    private void CopyGC(uint srcGc, uint dstGc, GCMask mask, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CopyGCType(srcGc, dstGc, mask);
         socket.Send(ref request);
         sequenceNumber++;
@@ -561,7 +597,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
         ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
         this.CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
-        args, false)
+        args, false);
 
     public void DeleteProperty(uint window, ATOM atom)
     {
