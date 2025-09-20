@@ -89,7 +89,6 @@ internal class XProto : BaseProtoClient, IXProto
             throw new XEventException(error!.Value);
 
         Debug.Assert(sequenceNumber == result.Value.ResponseHeader.Sequence);
-        sequenceNumber++;
         return result.Value;
     }
 
@@ -108,7 +107,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new AllocColorCellsReply(result.Value, socket);
     }
 
@@ -126,7 +124,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new AllocColorPlanesReply(result.Value, socket);
     }
 
@@ -162,12 +159,12 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
     private void AllowEvents(EventsMode mode, uint time, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new AllowEventsType(mode, time);
         socket.Send(ref request);
         sequenceNumber++;
@@ -372,7 +369,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args) 
+    public void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
     where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -506,8 +503,14 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane) =>
+        this.CopyPlane(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width,
+        height, bitPlane, false);
+
+    private void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CopyPlaneType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height,
             bitPlane);
@@ -515,24 +518,38 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
+    public void CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual) =>
+        this.CreateColormap(alloc, colormapId, window, visual, false);
+
+
+    private void CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CreateColormapType(alloc, colormapId, window, visual);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
     public void CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue,
-        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
+        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y) =>
+        this.CreateCursor(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y, false);
+
+    private void CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue,
+        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args)
+    public void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args) =>
+        this.CreateGC(gc, drawable, mask, args, false);
+
+    private void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         var requiredBuffer = 16 + args.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -559,16 +576,27 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
-        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue) =>
+        this.CreateGlyphCursor(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue, backRed,
+        backGreen, backBlue, false);
+
+    private void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
+        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
+    public void CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height) =>
+        this.CreatePixmap(depth, pixmapId, drawable, width, height, false);
+
+
+    private void CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new CreatePixmapType(depth, pixmapId, drawable, width, height);
         socket.Send(ref request);
         sequenceNumber++;
@@ -609,15 +637,23 @@ internal class XProto : BaseProtoClient, IXProto
         this.CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
         args, false);
 
-    public void DeleteProperty(uint window, ATOM atom)
+    public void DeleteProperty(uint window, ATOM atom) =>
+        this.DeleteProperty(window, atom, false);
+
+    private void DeleteProperty(uint window, ATOM atom, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new DeletePropertyType(window, atom);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void DestroySubwindows(uint window)
+    public void DestroySubwindows(uint window) =>
+        this.DestroySubwindows(window, false);
+
+    private void DestroySubwindows(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new DestroySubWindowsType(window);
         socket.Send(ref request);
         sequenceNumber++;
@@ -625,9 +661,13 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void DestroyWindow(uint window) =>
         this.DestroyWindow(window, false);
-    
-    public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
+
+    public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points) =>
+        this.FillPoly(drawable, gc, shape, coordinate, points, false);
+
+    private void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
         var requiredBuffer = 16 + points.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -653,23 +693,35 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ForceScreenSaver(ForceScreenSaverMode mode)
+    public void ForceScreenSaver(ForceScreenSaverMode mode) =>
+        this.ForceScreenSaver(mode, false);
+
+    private void ForceScreenSaver(ForceScreenSaverMode mode, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ForceScreenSaverType(mode);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void FreeColormap(uint colormapId)
+    public void FreeColormap(uint colormapId) =>
+        this.FreeColormap(colormapId, false);
+
+    private void FreeColormap(uint colormapId, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new FreeColormapType(colormapId);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels)
+    public void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels) =>
+        this.FreeColors(colormapId, planeMask, pixels, false);
+
+    private void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels, bool isThrow)
     {
         var requiredBuffer = 12 + pixels.Length * 4;
+        ProcessEvents(isThrow);
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
@@ -694,42 +746,61 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void FreeCursor(uint cursorId)
+    public void FreeCursor(uint cursorId) =>
+        this.FreeCursor(cursorId, false);
+
+    private void FreeCursor(uint cursorId, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new FreeCursorType(cursorId);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void FreeGC(uint gc)
+    public void FreeGC(uint gc) =>
+        this.FreeGC(gc, false);
+
+    private void FreeGC(uint gc, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new FreeGCType(gc);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void FreePixmap(uint pixmapId)
+    public void FreePixmap(uint pixmapId) =>
+        this.FreePixmap(pixmapId, false);
+
+    private void FreePixmap(uint pixmapId, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new FreePixmapType(pixmapId);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public GetAtomNameReply GetAtomName(ATOM atom)
+    public GetAtomNameReply GetAtomName(ATOM atom) =>
+        this.GetAtomName(atom, false);
+
+    private GetAtomNameReply GetAtomName(ATOM atom, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetAtomNameType(atom);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetAtomNameResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetAtomNameReply(result.Value, socket);
     }
 
 
-    public InternAtomReply InternAtom(bool onlyIfExist, string atomName)
+    public InternAtomReply InternAtom(bool onlyIfExist, string atomName) =>
+        this.InternAtom(onlyIfExist, atomName, false);
+
+    private InternAtomReply InternAtom(bool onlyIfExist, string atomName, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new InternAtomType(onlyIfExist, atomName.Length);
         var requiredBuffer = 8 + atomName.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -762,64 +833,80 @@ internal class XProto : BaseProtoClient, IXProto
             throw new XEventException(error!.Value);
 
         Debug.Assert(sequenceNumber == result.Value.ResponseHeader.Sequence);
-        sequenceNumber++;
         return result.Value;
     }
 
-    public GetFontPathReply GetFontPath()
+    public GetFontPathReply GetFontPath() =>
+        this.GetFontPath(false);
+
+    private GetFontPathReply GetFontPath(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetFontPathType();
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetFontPathResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetFontPathReply(result.Value, socket);
     }
 
 
-    public GetGeometryReply GetGeometry(uint drawable)
+    public GetGeometryReply GetGeometry(uint drawable) =>
+        this.GetGeometry(drawable, false);
+
+    private GetGeometryReply GetGeometry(uint drawable, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetGeometryType(drawable);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetGeometryReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
     public GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
-        uint planeMask)
+        uint planeMask) =>
+        this.GetImage(format, drawable, x, y, width, height, planeMask, false);
+
+    private GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
+        uint planeMask, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetImageType(format, drawable, x, y, width, height, planeMask);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetImageResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetImageReply(result.Value, socket);
     }
 
 
-    public GetInputFocusReply GetInputFocus()
+    public GetInputFocusReply GetInputFocus() =>
+        this.GetInputFocus(false);
+
+    private GetInputFocusReply GetInputFocus(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetInputFocusType();
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetInputFocusReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
 
-    public GetKeyboardControlReply GetKeyboardControl()
+    public GetKeyboardControlReply GetKeyboardControl() =>
+        this.GetKeyboardControl(false);
+
+    private GetKeyboardControlReply GetKeyboardControl(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetKeyboardControlType();
         socket.Send(ref request);
 
@@ -827,130 +914,162 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetKeyboardControlReply(result.Value);
     }
 
 
-    public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count)
+    public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count) =>
+        this.GetKeyboardMapping(firstKeycode, count, false);
+
+    private GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetKeyboardMappingType(firstKeycode, count);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetKeyboardMappingResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetKeyboardMappingReply(result.Value, count, socket);
     }
 
 
-    public GetModifierMappingReply GetModifierMapping()
+    public GetModifierMappingReply GetModifierMapping() =>
+        this.GetModifierMapping(false);
+
+    private GetModifierMappingReply GetModifierMapping(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetModifierMappingType();
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetModifierMappingResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetModifierMappingReply(result.Value, socket);
     }
 
 
-    public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime)
+    public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime) =>
+        this.GetMotionEvents(window, startTime, endTime, false);
+
+    private GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetMotionEventsType(window, startTime, endTime);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetMotionEventsResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetMotionEventsReply(result.Value, socket);
     }
 
 
-    public GetPointerControlReply GetPointerControl()
+    public GetPointerControlReply GetPointerControl() =>
+        this.GetPointerControl(false);
+
+    private GetPointerControlReply GetPointerControl(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetPointerControlType();
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetPointerControlReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
 
-    public GetPointerMappingReply GetPointerMapping()
+    public GetPointerMappingReply GetPointerMapping() =>
+        this.GetPointerMapping(false);
+
+    private GetPointerMappingReply GetPointerMapping(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetPointerMappingType();
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetPointerMappingResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetPointerMappingReply(result.Value, socket);
     }
 
 
-    public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
+    public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length) =>
+        this.GetProperty(delete, window, property, type, offset, length, false);
+
+    private GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetPropertyType(delete, window, property, type, offset, length);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetPropertyResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new GetPropertyReply(result.Value, socket);
     }
 
-    public GetScreenSaverReply GetScreenSaver()
+    public GetScreenSaverReply GetScreenSaver() =>
+        this.GetScreenSaver(false);
+
+    private GetScreenSaverReply GetScreenSaver(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetScreenSaverType();
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetScreenSaverReply>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
 
-    public GetSelectionOwnerReply GetSelectionOwner(ATOM atom)
+    public GetSelectionOwnerReply GetSelectionOwner(ATOM atom) =>
+        this.GetSelectionOwner(atom, false);
+
+    private GetSelectionOwnerReply GetSelectionOwner(ATOM atom, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetSelectionOwnerType(atom);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetSelectionOwnerReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
 
-    public GetWindowAttributesReply GetWindowAttributes(uint window)
+    public GetWindowAttributesReply GetWindowAttributes(uint window) =>
+        this.GetWindowAttributes(window, false);
+
+    private GetWindowAttributesReply GetWindowAttributes(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GetWindowAttributesType(window);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetWindowAttributesReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
-
     public void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
-        uint confineTo, uint cursor, Button button, ModifierMask modifiers)
+            uint confineTo, uint cursor, Button button, ModifierMask modifiers) =>
+            this.GrabButton(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers,
+            false);
+
+
+    private void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
+        uint confineTo, uint cursor, Button button, ModifierMask modifiers, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
         socket.Send(ref request);
@@ -958,16 +1077,28 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
-        GrabMode keyboardMode)
+            GrabMode keyboardMode) =>
+            this.GrabKey(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode, false);
+
+
+    private void GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
+        GrabMode keyboardMode, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
     public GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
-        GrabMode keyboardMode)
+            GrabMode keyboardMode) =>
+            this.GrabKeyboard(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode, false);
+
+
+    private GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+        GrabMode keyboardMode, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GrabKeyboardType(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
         socket.Send(ref request);
 
@@ -975,14 +1106,19 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
-
     public GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
-        GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp)
+            GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp) =>
+            this.GrabPointer(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, timeStamp,
+            false);
+
+
+    private GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+        GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
         socket.Send(ref request);
@@ -991,19 +1127,26 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
-    public void GrabServer()
+    public void GrabServer() =>
+        this.GrabServer(false);
+
+    private void GrabServer(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new GrabServerType();
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
+    public void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text) =>
+        this.ImageText16(drawable, gc, x, y, text, false);
+
+    private void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ImageText16Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = 16 + (text.Length * 2).AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1038,7 +1181,7 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text) =>
         this.ImageText8(drawable, gc, x, y, text, false);
-    
+
     private void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1071,7 +1214,7 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void InstallColormap(uint colormapId) =>
         this.InstallColormap(colormapId, false);
-    
+
     private void InstallColormap(uint colormapId, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1090,11 +1233,11 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void KillClient(uint resource) =>
         this.KillClient(resource, false);
-    
+
     public ListExtensionsReply ListExtensions() =>
         this.ListExtensions();
-    
-    private ListExtensionsReply ListExtensions(, bool isThrow)
+
+    private ListExtensionsReply ListExtensions(bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new ListExtensionsType();
@@ -1103,14 +1246,13 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListExtensionsReply(result.Value, socket);
     }
 
 
     public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames) =>
-        this.ListFonts();
-    
+        this.ListFonts(pattern, maxNames, false);
+
     private ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1142,14 +1284,13 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListFontsReply(result.Value, socket);
     }
 
 
     public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames) =>
-        this.[] ();
-    
+        this.ListFontsWithInfo(pattan, maxNames, false);
+
     private ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1182,15 +1323,14 @@ internal class XProto : BaseProtoClient, IXProto
         var result = new List<ListFontsWithInfoReply>(maxNames);
         foreach (var item in socket.GetNextStrValue(response.Value))
             result.Add(item);
-        sequenceNumber++;
         return result.ToArray();
     }
 
 
     public ListHostsReply ListHosts() =>
-        this.ListHosts();
-    
-    private ListHostsReply ListHosts(, bool isThrow)
+        this.ListHosts(false);
+
+    private ListHostsReply ListHosts(bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new ListHostsType();
@@ -1199,14 +1339,13 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListHostsReply(result.Value, socket);
     }
 
 
     public ListInstalledColormapsReply ListInstalledColormaps(uint window) =>
-        this.ListInstalledColormaps();
-    
+        this.ListInstalledColormaps(window, false);
+
     private ListInstalledColormapsReply ListInstalledColormaps(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1216,15 +1355,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListInstalledColormapsReply(result.Value, socket);
         ;
     }
 
 
     public ListPropertiesReply ListProperties(uint window) =>
-        this.ListProperties();
-    
+        this.ListProperties(window, false);
+
     private ListPropertiesReply ListProperties(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1234,14 +1372,13 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new ListPropertiesReply(result.Value, socket);
     }
 
 
     public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name) =>
-        this.LookupColor();
-    
+        this.LookupColor(colorMap, name, false);
+
     private LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1271,14 +1408,13 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
 
     public void MapSubwindows(uint window) =>
-        this.MapSubwindows();
-    
+        this.MapSubwindows(window, false);
+
     private void MapSubwindows(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1288,8 +1424,8 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public void MapWindow(uint window) =>
-        this.MapWindow();
-    
+        this.MapWindow(window, false);
+
     private void MapWindow(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1329,8 +1465,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void OpenFont(string fontName, uint fontId)
+    public void OpenFont(string fontName, uint fontId) =>
+        this.OpenFont(fontName, fontId, false);
+
+    private void OpenFont(string fontName, uint fontId, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new OpenFontType(fontId, (ushort)fontName.Length);
         var requiredBuffer = 12 + fontName.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1362,8 +1502,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyArc(uint drawable, uint gc, Span<Arc> arcs)
+    public void PolyArc(uint drawable, uint gc, Span<Arc> arcs) =>
+        this.PolyArc(drawable, gc, arcs, false);
+
+    private void PolyArc(uint drawable, uint gc, Span<Arc> arcs, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PolyArcType(drawable, gc, arcs.Length);
         var requiredBuffer = 12 + arcs.Length * 12;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1389,8 +1533,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs)
+    public void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs) =>
+        this.PolyFillArc(drawable, gc, arcs, false);
+
+    private void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
         var requiredBuffer = Marshal.SizeOf<PolyFillArcType>() + arcs.Length * 12;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1416,8 +1564,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
+    public void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
+        this.PolyFillRectangle(drawable, gc, rectangles, false);
+
+    private void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = Marshal.SizeOf<PolyFillRectangleType>() + rectangles.Length * 8;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1443,8 +1595,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
+        this.PolyLine(coordinate, drawable, gc, points, false);
+
+    private void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = 12 + points.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1470,8 +1626,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
+        this.PolyPoint(coordinate, drawable, gc, points, false);
+
+    private void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = 12 + points.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1497,8 +1657,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
+    public void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
+        this.PolyRectangle(drawable, gc, rectangles, false);
+
+    private void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = 12 + rectangles.Length * 8;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1524,8 +1688,12 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolySegment(uint drawable, uint gc, Span<Segment> segments)
+    public void PolySegment(uint drawable, uint gc, Span<Segment> segments) =>
+        this.PolySegment(drawable, gc, segments, false);
+
+    private void PolySegment(uint drawable, uint gc, Span<Segment> segments, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PolySegmentType(drawable, gc, segments.Length);
         var requiredBuffer = 12 + segments.Length * 8;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1613,10 +1781,14 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-
     public void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
-        byte leftPad, byte depth, Span<byte> data)
+        byte leftPad, byte depth, Span<byte> data) =>
+        this.PutImage(format, drawable, gc, width, height, x, y, leftPad, depth, data, false);
+
+    private void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
+        byte leftPad, byte depth, Span<byte> data, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         var requiredBuffer = data.Length.AddPadding() + 24;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1641,22 +1813,27 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
+    public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height) =>
+        this.QueryBestSize(shape, drawable, width, height, false);
 
-    public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height)
+    private QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new QueryBestSizeType(shape, drawable, width, height);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<QueryBestSizeReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
+    public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels) =>
+        this.QueryColors(colorMap, pixels, false);
 
-    public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels)
+    private QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new QueryColorsType(colorMap, pixels.Length);
         var requiredBuffer = 8 + pixels.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1683,15 +1860,17 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new QueryColorsReply(result.Value, socket);
     }
 
+    public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name) =>
+        this.QueryExtension(name, false);
 
-    public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name)
+    private QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name, bool isThrow)
     {
         if (name.Length > ushort.MaxValue)
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
+        ProcessEvents(isThrow);
         var request = new QueryExtensionType((ushort)name.Length);
         var requiredBuffer = 8 + name.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1712,39 +1891,45 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
+    public QueryFontReply QueryFont(uint fontId) =>
+        this.QueryFont(fontId, false);
 
-    public QueryFontReply QueryFont(uint fontId)
+    private QueryFontReply QueryFont(uint fontId, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new QueryFontType(fontId);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<QueryFontResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new QueryFontReply(result.Value, socket);
     }
 
+    public QueryKeymapReply QueryKeymap() =>
+        this.QueryKeymap(false);
 
-    public QueryKeymapReply QueryKeymap()
+    private QueryKeymapReply QueryKeymap(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new QueryKeymapType();
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<QueryKeymapResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new QueryKeymapReply(result.Value, socket);
     }
 
+    public QueryPointerReply QueryPointer(uint window) =>
+        this.QueryPointer(window, false);
 
-    public QueryPointerReply QueryPointer(uint window)
+    private QueryPointerReply QueryPointer(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new QueryPointerType(window);
         socket.Send(ref request);
 
@@ -1752,12 +1937,14 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
+    public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery) =>
+        this.QueryTextExtents(font, stringForQuery, false);
 
-    public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery)
+    private QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new QueryTextExtentsType(font, stringForQuery.Length);
         var requiredBuffer = 8 + (stringForQuery.Length * 2).AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1791,41 +1978,54 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
+    public QueryTreeReply QueryTree(uint window) =>
+        this.QueryTree(window, false);
 
-    public QueryTreeReply QueryTree(uint window)
+    private QueryTreeReply QueryTree(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new QueryTreeType(window);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<QueryTreeResponse>();
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return new QueryTreeReply(result.Value, socket);
     }
 
-
     public void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
-        ushort backGreen, ushort backBlue)
+        ushort backGreen, ushort backBlue) =>
+        this.RecolorCursor(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, false);
+
+    private void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
+        ushort backGreen, ushort backBlue, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void ReparentWindow(uint window, uint parent, short x, short y)
+    public void ReparentWindow(uint window, uint parent, short x, short y) =>
+        this.ReparentWindow(window, parent, x, y, false);
+
+    private void ReparentWindow(uint window, uint parent, short x, short y, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new ReparentWindowType(window, parent, x, y);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void RotateProperties(uint window, ushort delta, Span<ATOM> properties)
+    public void RotateProperties(uint window, ushort delta, Span<ATOM> properties) =>
+        this.RotateProperties(window, delta, properties, false);
+
+    private void RotateProperties(uint window, ushort delta, Span<ATOM> properties, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new RotatePropertiesType(window, properties.Length, delta);
         var requiredBuffer = 12 + properties.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1851,22 +2051,34 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt)
+    public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt) =>
+        this.SendEvent(propagate, destination, eventMask, evnt, false);
+
+    private void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SendEventType(propagate, destination, eventMask, evnt);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void SetAccessControl(AccessControlMode mode)
+    public void SetAccessControl(AccessControlMode mode) =>
+        this.SetAccessControl(mode, false);
+
+    private void SetAccessControl(AccessControlMode mode, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SetAccessControlType(mode);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles)
+    public void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles) =>
+        this.SetClipRectangles(ordering, gc, clipX, clipY, rectangles, false);
+
+    private void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
         var requiredBuffer = 12 + rectangles.Length * Marshal.SizeOf<Rectangle>();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1892,15 +2104,23 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetCloseDownMode(CloseDownMode mode)
+    public void SetCloseDownMode(CloseDownMode mode) =>
+        this.SetCloseDownMode(mode, false);
+
+    private void SetCloseDownMode(CloseDownMode mode, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SetCloseDownModeType(mode);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
-    public void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes)
+    public void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes) =>
+        this.SetDashes(gc, dashOffset, dashes, false);
+
+    private void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
         var requiredBuffer = 12 + dashes.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -1926,9 +2146,13 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetFontPath(string[] strPaths)
+    public void SetFontPath(string[] strPaths) =>
+        this.SetFontPath(strPaths, false);
+
+    private void SetFontPath(string[] strPaths, bool isThrow)
     {
         var strPathsLength = strPaths.Sum(a => a.Length + 1).AddPadding();
+        ProcessEvents(isThrow);
         var request = new SetFontPathType((ushort)strPaths.Length, strPathsLength);
         var requiredBuffer = 8 + strPathsLength;
         var writIndex = 8;
@@ -1970,15 +2194,22 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetInputFocus(InputFocusMode mode, uint focus, uint time)
+    public void SetInputFocus(InputFocusMode mode, uint focus, uint time) =>
+        this.SetInputFocus(mode, focus, time, false);
+
+    private void SetInputFocus(InputFocusMode mode, uint focus, uint time, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SetInputFocusType(mode, focus, time);
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes) =>
+        this.SetModifierMapping(keycodes, false);
 
-    public SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes)
+    private SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SetModifierMappingType(keycodes.Length);
         var requiredBuffer = 4 + keycodes.Length * 8;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -2005,13 +2236,15 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
+    public SetPointerMappingReply SetPointerMapping(Span<byte> maps) =>
+        this.SetPointerMapping(maps, false);
 
-    public SetPointerMappingReply SetPointerMapping(Span<byte> maps)
+    private SetPointerMappingReply SetPointerMapping(Span<byte> maps, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SetPointerMappingType(maps);
         var requiredBuffer = maps.Length.AddPadding() + 5;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -2038,27 +2271,38 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
+    public void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures) =>
+        this.SetScreenSaver(timeout, interval, preferBlanking, allowExposures, false);
 
-    public void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
+
+    private void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SetScreenSaverType(timeout, interval, preferBlanking, allowExposures);
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public void SetSelectionOwner(uint owner, ATOM atom, uint timestamp) =>
+        this.SetSelectionOwner(owner, atom, timestamp, false);
 
-    public void SetSelectionOwner(uint owner, ATOM atom, uint timestamp)
+
+    private void SetSelectionOwner(uint owner, ATOM atom, uint timestamp, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new SetSelectionOwnerType(owner, atom, timestamp);
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public void StoreColors(uint colormapId, Span<ColorItem> item) =>
+        this.StoreColors(colormapId, item, false);
 
-    public void StoreColors(uint colormapId, Span<ColorItem> item)
+
+    private void StoreColors(uint colormapId, Span<ColorItem> item, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new StoreColorsType(colormapId, item.Length);
         var requiredBuffer = 8 + 12 * item.Length;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -2085,9 +2329,13 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
+    public void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name) =>
+        this.StoreNamedColor(mode, colormapId, pixels, name, false);
 
-    public void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
+
+    private void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new StoreNamedColorType(mode, colormapId, pixels, name.Length);
         var requiredBuffer = 16 + name.Length.AddPadding();
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -2112,80 +2360,122 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-
     public TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
-        ushort srcY)
+    ushort srcY) =>
+        this.TranslateCoordinates(srcWindow, destinationWindow, srcX, srcY, false);
+
+
+    private TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
+        ushort srcY, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new TranslateCoordinatesType(srcWindow, destinationWindow, srcX, srcY);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<TranslateCoordinatesReply>(true);
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        sequenceNumber++;
         return result.Value;
     }
 
+    public void UngrabButton(Button button, uint grabWindow, ModifierMask mask) =>
+        this.UngrabButton(button, grabWindow, mask, false);
 
-    public void UngrabButton(Button button, uint grabWindow, ModifierMask mask)
+
+    private void UngrabButton(Button button, uint grabWindow, ModifierMask mask, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new UngrabButtonType(button, grabWindow, mask);
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public void UngrabKey(byte key, uint grabWindow, ModifierMask modifier) =>
+        this.UngrabKey(key, grabWindow, modifier, false);
 
-    public void UngrabKey(byte key, uint grabWindow, ModifierMask modifier)
+
+    private void UngrabKey(byte key, uint grabWindow, ModifierMask modifier, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new UngrabKeyType(key, grabWindow, modifier);
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public void UngrabKeyboard(uint time) =>
+        this.UngrabKeyboard(time, false);
 
-    public void UngrabKeyboard(uint time)
+
+    private void UngrabKeyboard(uint time, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new UngrabKeyboardType(time);
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public void UngrabPointer(uint time) =>
+        this.UngrabPointer(time, false);
 
-    public void UngrabPointer(uint time)
+
+    private void UngrabPointer(uint time, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new UngrabPointerType(time);
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public void UngrabServer() =>
+        this.UngrabServer(false);
 
-    public void UngrabServer()
+
+    private void UngrabServer(bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new UnGrabServerType();
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public void UninstallColormap(uint colormapId) =>
+        this.UninstallColormap(colormapId, false);
 
-    public void UninstallColormap(uint colormapId)
+
+    private void UninstallColormap(uint colormapId, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new UninstallColormapType(colormapId);
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public void UnmapSubwindows(uint window) =>
+        this.UnmapSubwindows(window, false);
 
-    public void UnmapSubwindows(uint window)
+
+    private void UnmapSubwindows(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new UnMapSubwindowsType(window);
         socket.Send(ref request);
         sequenceNumber++;
     }
+    public void UnmapWindow(uint window) =>
+        this.UnmapWindow(window, false);
 
-    public void UnmapWindow(uint window)
+
+    private void UnmapWindow(uint window, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new UnmapWindowType(window);
         socket.Send(ref request);
         sequenceNumber++;
     }
 
     public void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
-        ushort srcHeight, short destinationX, short destinationY)
+            ushort srcHeight, short destinationX, short destinationY) =>
+            this.WarpPointer(srcWindow, destinationWindow, srcX, srcY, srcWidth,
+            srcHeight, destinationX, destinationY, false);
+
+    private void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
+        ushort srcHeight, short destinationX, short destinationY, bool isThrow)
     {
+        ProcessEvents(isThrow);
         var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
         socket.Send(ref request);
@@ -2221,7 +2511,7 @@ internal class XProto : BaseProtoClient, IXProto
         {
             var totalRead = socket.Receive(scratchBuffer);
             if (totalRead == 0)
-                return scratchBuffer.Make<XEvent, LastEvent>(new (base.sequenceNumber));
+                return scratchBuffer.Make<XEvent, LastEvent>(new(base.sequenceNumber));
         }
 
         return scratchBuffer.ToStruct<XEvent>();
@@ -2395,13 +2685,13 @@ internal class XProto : BaseProtoClient, IXProto
 
     public void GrabServerChecked()
     {
-        this.GrabServer(, true);
+        this.GrabServer(true);
         CheckError();
     }
 
     public void UngrabServerChecked()
     {
-        this.UngrabServer(, true);
+        this.UngrabServer(true);
         CheckError();
     }
 
