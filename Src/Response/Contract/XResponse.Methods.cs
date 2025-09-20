@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Xcsb.Event;
 using Xcsb.Helpers;
 
 namespace Xcsb.Response.Contract;
@@ -20,14 +21,14 @@ internal partial struct XResponse : IXBaseResponse
         ResponseType.Error => XResponseType.Error,
         ResponseType.KeymapNotify => XResponseType.Notify,
         >= ResponseType.KeyPress and <= ResponseType.MappingNotify or (ResponseType)36 => XResponseType.Event,
-        _ => XResponseType.Invalid
+        _ => XResponseType.Unknown
     };
 
 
     internal readonly unsafe ref T As<T>() where T : struct
     {
         var responseType = GetResponseType();
-        if ((responseType != XResponseType.Event && typeof(IXEvent).IsAssignableFrom(typeof(T)))
+        if ((responseType != XResponseType.Event && (typeof(IXEvent).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(GenericEvent)))
             || (responseType != XResponseType.Error && typeof(IXError).IsAssignableFrom(typeof(T)))
             || (responseType != XResponseType.Reply && typeof(IXReply).IsAssignableFrom(typeof(T))))
             throw new InvalidCastException();
@@ -35,7 +36,7 @@ internal partial struct XResponse : IXBaseResponse
         if (responseType == XResponseType.Error)
             return ref _error.As<T>();
 
-        if (responseType is XResponseType.Event or XResponseType.Notify)
+        if (responseType is XResponseType.Event or XResponseType.Notify or XResponseType.Unknown)
             return ref _event.As<T>();
 
         throw new InvalidCastException();

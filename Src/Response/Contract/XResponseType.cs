@@ -2,7 +2,7 @@
 
 internal enum XResponseType
 {
-    Invalid,
+    Unknown,
     Error,
     Reply,
     Event,

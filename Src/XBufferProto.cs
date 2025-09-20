@@ -289,7 +289,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         {
             switch (evnt.GetResponseType())
             {
-                case XResponseType.Invalid:
+                case XResponseType.Unknown:
                 case XResponseType.Error:
                     throw new XEventException(evnt.As<GenericError>());
                 case XResponseType.Reply:
@@ -323,7 +323,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
             {
                 switch (evnt.GetResponseType())
                 {
-                    case XResponseType.Invalid:
+                    case XResponseType.Unknown:
                     case XResponseType.Error:
                         break;
                     case XResponseType.Reply:

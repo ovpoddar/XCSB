@@ -17,7 +17,7 @@ public readonly struct GetKeyboardMappingReply
     internal GetKeyboardMappingReply(GetKeyboardMappingResponse result, byte count, Socket socket)
     {
         if (result.ResponseHeader.GetValue() * count != result.Length)
-            throw new InvalidOperationException("Invalid reply");
+            throw new InvalidOperationException("Unknown reply");
 
         Reply = result.ResponseHeader.Reply;
         Sequence = result.ResponseHeader.Sequence;

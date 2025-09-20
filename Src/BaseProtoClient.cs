@@ -44,7 +44,7 @@ internal class BaseProtoClient
 
                 switch (responseType)
                 {
-                    case XResponseType.Invalid:
+                    case XResponseType.Unknown:
                         throw new Exception("Should not come here");
                     case XResponseType.Reply:
                         {
@@ -90,8 +90,6 @@ internal class BaseProtoClient
                 var responseType = content.GetResponseType();
                 switch (responseType)
                 {
-                    case XResponseType.Invalid:
-                        throw new Exception("Should not come here");
                     case XResponseType.Reply:
                         {
                             socket.ReceiveExact(buffer[32..]);
@@ -116,6 +114,7 @@ internal class BaseProtoClient
                         }
                     case XResponseType.Event:
                     case XResponseType.Notify:
+                    case XResponseType.Unknown:
                         {
                             var eventContent = content.As<GenericEvent>();
                             if (eventContent.Verify(sequenceNumber))
@@ -150,10 +149,9 @@ internal class BaseProtoClient
                     return content.As<GenericError>();
                 case XResponseType.Event:
                 case XResponseType.Notify:
+                case XResponseType.Unknown:
                     bufferEvents.Push(content.As<GenericEvent>());
                     break;
-                case XResponseType.Invalid:
-                    throw new ArgumentOutOfRangeException();
                 case XResponseType.Reply:
                 default:
                     continue;

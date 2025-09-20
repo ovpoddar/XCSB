@@ -57,7 +57,7 @@ public unsafe struct GenericEvent : IXEvent
             _ => true
         };
 
-        if (isNotValid)
+        if (this.Reply is > EventType.KeyPress or not < EventType.LastEvent && isNotValid)
             throw new InvalidCastException();
 
         fixed (byte* ptr = this._data)
@@ -67,14 +67,6 @@ public unsafe struct GenericEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        if (this.Reply is not > EventType.KeyPress and < EventType.LastEvent)
-            return false;
-
-#if NETSTANDARD
-        if (!Enum.IsDefined(typeof(EventType), Reply)) return false;
-#else
-        if (!Enum.IsDefined(Reply)) return false;
-#endif
         fixed (byte* ptr = this._data)
         {
             return Reply switch
