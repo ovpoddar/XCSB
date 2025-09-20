@@ -11,7 +11,7 @@ public readonly struct GetKeyboardMappingReply
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
-    public readonly uint[][] Keysyms;
+    public readonly uint[] Keysyms;
     public readonly byte KeyPerKeyCode;
 
     internal GetKeyboardMappingReply(GetKeyboardMappingResponse result, byte count, Socket socket)
@@ -30,9 +30,12 @@ public readonly struct GetKeyboardMappingReply
             var requiredSize = (int)result.Length * 4;
             using var buffer = new ArrayPoolUsing<byte>(requiredSize);
             socket.ReceiveExact(buffer[0..requiredSize]);
-            Keysyms = new uint[count][];
-            for (var i = 0; i < count; i++)
-                Keysyms[i] = MemoryMarshal.Cast<byte, uint>(buffer.Slice(i * (KeyPerKeyCode * 4), KeyPerKeyCode * 4)).ToArray();
+            Keysyms = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();
+            // todo: implement try a custom reader of span and span or similar structure dimantion should be extra to
+            // store but it's not a big deal' because it does not map to any native types
+            // Keysyms = new uint[count][];
+            // for (var i = 0; i < count; i++)
+            //     Keysyms[i] = MemoryMarshal.Cast<byte, uint>(buffer.Slice(i * (KeyPerKeyCode * 4), KeyPerKeyCode * 4)).ToArray();
         }
     }
 }
