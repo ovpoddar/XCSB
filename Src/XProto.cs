@@ -30,16 +30,7 @@ internal class XProto : BaseProtoClient, IXProto
     private int _globalId;
     private XBufferProto? _xBufferProto;
 
-    public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
-
-    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
-
-    public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult) : base(socket)
-    {
-        HandshakeSuccessResponseBody = connectionResult;
-        _globalId = 0;
-        sequenceNumber = 0;
-    }
+    #region private implementation
 
     private void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args, bool isThrow)
     {
@@ -77,7 +68,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-
     private AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -92,13 +82,8 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue) =>
-        this.AllocColor(colorMap, red, green, blue, false);
-
-    public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes) =>
-        this.AllocColorCells(contiguous, colorMap, colors, planes, false);
-
-    private AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes, bool isThrow)
+    private AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes,
+        bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new AllocColorCellsType(contiguous, colorMap, colors, planes);
@@ -109,10 +94,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new AllocColorCellsReply(result.Value, socket);
     }
-
-    public AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
-        ushort greens, ushort blues) =>
-        this.AllocColorPlanes(contiguous, colorMap, colors, reds, greens, blues, false);
 
     private AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
         ushort greens, ushort blues, bool isThrow)
@@ -126,9 +107,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new AllocColorPlanesReply(result.Value, socket);
     }
-
-    public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name) =>
-        this.AllocNamedColor(colorMap, name, false);
 
     private AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name, bool isThrow)
     {
@@ -170,9 +148,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void AllowEvents(EventsMode mode, uint time) =>
-        this.AllowEvents(mode, time, false);
-
     private void Bell(sbyte percent, bool isThrow)
     {
         if (percent is > 100 or < -100)
@@ -184,9 +159,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void Bell(sbyte percent) =>
-        this.Bell(percent, false);
-
     private void ChangeActivePointerGrab(uint cursor, uint time, ushort mask, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -194,9 +166,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void ChangeActivePointerGrab(uint cursor, uint time, ushort mask) =>
-        this.ChangeActivePointerGrab(cursor, time, mask, false);
 
     private void ChangeGC(uint gc, GCMask mask, Span<uint> args, bool isThrow)
     {
@@ -224,9 +193,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-
-    public void ChangeGC(uint gc, GCMask mask, Span<uint> args) =>
-        this.ChangeGC(gc, mask, args, false);
 
     private void ChangeHosts(HostMode mode, Family family, Span<byte> address, bool isThrow)
     {
@@ -256,9 +222,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeHosts(HostMode mode, Family family, Span<byte> address) =>
-        this.ChangeHosts(mode, family, address, false);
-
     private void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -287,10 +250,8 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args) =>
-        this.ChangeKeyboardControl(mask, args, false);
-
-    private void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> keysym, bool isThrow)
+    private void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> keysym,
+        bool isThrow)
     {
         ProcessEvents(isThrow);
         var requiredBuffer = 8 + keycodeCount * keysymsPerKeycode * 4;
@@ -318,9 +279,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> keysym) =>
-        this.ChangeKeyboardMapping(keycodeCount, firstKeycode, keysymsPerKeycode, keysym, false);
-
     private void ChangePointerControl(Acceleration? acceleration, ushort? threshold, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -331,13 +289,10 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangePointerControl(Acceleration? acceleration, ushort? threshold) =>
-        this.ChangePointerControl(acceleration, threshold, false);
-
     private void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args, bool isThrow)
         where T : struct
 #if !NETSTANDARD
-        , INumber<T>
+            , INumber<T>
 #endif
     {
         var size = Marshal.SizeOf<T>();
@@ -369,13 +324,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
-    where T : struct
-#if !NETSTANDARD
-        , INumber<T>
-#endif
-    => this.ChangeProperty<T>(mode, window, property, type, args, false);
-
     private void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -383,15 +331,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window) =>
-        this.ChangeSaveSet(changeSaveSetMode, window, false);
-
-    public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args) =>
-        this.ChangeWindowAttributes(window, mask, args, false);
-
-    public void CirculateWindow(Circulate circulate, uint window) =>
-        this.CirculateWindow(circulate, window, false);
 
     private void CirculateWindow(Circulate circulate, uint window, bool isThrow)
     {
@@ -401,9 +340,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height) =>
-        this.ClearArea(exposures, window, x, y, width, height, false);
-
     private void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -412,9 +348,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CloseFont(uint fontId) =>
-        this.CloseFont(fontId, false);
-
     private void CloseFont(uint fontId, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -422,9 +355,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args) =>
-        this.ConfigureWindow(window, mask, args, false);
 
     private void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args, bool isThrow)
     {
@@ -454,21 +384,14 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp) =>
-        this.ConvertSelection(requestor, selection, target, property, timestamp, false);
-
-    private void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp, bool isThrow)
+    private void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp,
+        bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX, ushort destinationY, ushort width, ushort height) =>
-        this.CopyArea(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width,
-        height, false);
 
     private void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height, bool isThrow)
@@ -480,9 +403,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CopyColormapAndFree(uint colormapId, uint srcColormapId) =>
-        this.CopyColormapAndFree(colormapId, srcColormapId, false);
-
     private void CopyColormapAndFree(uint colormapId, uint srcColormapId, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -491,9 +411,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CopyGC(uint srcGc, uint dstGc, GCMask mask) =>
-        this.CopyGC(srcGc, dstGc, mask, false);
-
     private void CopyGC(uint srcGc, uint dstGc, GCMask mask, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -501,11 +418,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane) =>
-        this.CopyPlane(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width,
-        height, bitPlane, false);
 
     private void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane, bool isThrow)
@@ -518,10 +430,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual) =>
-        this.CreateColormap(alloc, colormapId, window, visual, false);
-
-
     private void CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -529,10 +437,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue,
-        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y) =>
-        this.CreateCursor(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y, false);
 
     private void CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue,
         ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y, bool isThrow)
@@ -543,9 +447,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args) =>
-        this.CreateGC(gc, drawable, mask, args, false);
 
     private void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args, bool isThrow)
     {
@@ -575,13 +476,9 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
-        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue) =>
-        this.CreateGlyphCursor(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue, backRed,
-        backGreen, backBlue, false);
-
     private void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
-        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, bool isThrow)
+        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue,
+        bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
@@ -589,10 +486,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height) =>
-        this.CreatePixmap(depth, pixmapId, drawable, width, height, false);
-
 
     private void CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height, bool isThrow)
     {
@@ -632,14 +525,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
-        this.CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
-        args, false);
-
-    public void DeleteProperty(uint window, ATOM atom) =>
-        this.DeleteProperty(window, atom, false);
-
     private void DeleteProperty(uint window, ATOM atom, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -647,9 +532,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void DestroySubwindows(uint window) =>
-        this.DestroySubwindows(window, false);
 
     private void DestroySubwindows(uint window, bool isThrow)
     {
@@ -659,13 +541,8 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void DestroyWindow(uint window) =>
-        this.DestroyWindow(window, false);
-
-    public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points) =>
-        this.FillPoly(drawable, gc, shape, coordinate, points, false);
-
-    private void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points, bool isThrow)
+    private void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points,
+        bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
@@ -693,9 +570,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ForceScreenSaver(ForceScreenSaverMode mode) =>
-        this.ForceScreenSaver(mode, false);
-
     private void ForceScreenSaver(ForceScreenSaverMode mode, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -704,9 +578,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void FreeColormap(uint colormapId) =>
-        this.FreeColormap(colormapId, false);
-
     private void FreeColormap(uint colormapId, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -714,9 +585,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels) =>
-        this.FreeColors(colormapId, planeMask, pixels, false);
 
     private void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels, bool isThrow)
     {
@@ -746,9 +614,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void FreeCursor(uint cursorId) =>
-        this.FreeCursor(cursorId, false);
-
     private void FreeCursor(uint cursorId, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -756,9 +621,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void FreeGC(uint gc) =>
-        this.FreeGC(gc, false);
 
     private void FreeGC(uint gc, bool isThrow)
     {
@@ -768,9 +630,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void FreePixmap(uint pixmapId) =>
-        this.FreePixmap(pixmapId, false);
-
     private void FreePixmap(uint pixmapId, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -778,9 +637,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public GetAtomNameReply GetAtomName(ATOM atom) =>
-        this.GetAtomName(atom, false);
 
     private GetAtomNameReply GetAtomName(ATOM atom, bool isThrow)
     {
@@ -793,10 +649,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new GetAtomNameReply(result.Value, socket);
     }
-
-
-    public InternAtomReply InternAtom(bool onlyIfExist, string atomName) =>
-        this.InternAtom(onlyIfExist, atomName, false);
 
     private InternAtomReply InternAtom(bool onlyIfExist, string atomName, bool isThrow)
     {
@@ -836,9 +688,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public GetFontPathReply GetFontPath() =>
-        this.GetFontPath(false);
-
     private GetFontPathReply GetFontPath(bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -851,10 +700,6 @@ internal class XProto : BaseProtoClient, IXProto
         return new GetFontPathReply(result.Value, socket);
     }
 
-
-    public GetGeometryReply GetGeometry(uint drawable) =>
-        this.GetGeometry(drawable, false);
-
     private GetGeometryReply GetGeometry(uint drawable, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -866,10 +711,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return result.Value;
     }
-
-    public GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
-        uint planeMask) =>
-        this.GetImage(format, drawable, x, y, width, height, planeMask, false);
 
     private GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
         uint planeMask, bool isThrow)
@@ -884,10 +725,6 @@ internal class XProto : BaseProtoClient, IXProto
         return new GetImageReply(result.Value, socket);
     }
 
-
-    public GetInputFocusReply GetInputFocus() =>
-        this.GetInputFocus(false);
-
     private GetInputFocusReply GetInputFocus(bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -899,10 +736,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return result.Value;
     }
-
-
-    public GetKeyboardControlReply GetKeyboardControl() =>
-        this.GetKeyboardControl(false);
 
     private GetKeyboardControlReply GetKeyboardControl(bool isThrow)
     {
@@ -917,10 +750,6 @@ internal class XProto : BaseProtoClient, IXProto
         return new GetKeyboardControlReply(result.Value);
     }
 
-
-    public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count) =>
-        this.GetKeyboardMapping(firstKeycode, count, false);
-
     private GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -932,10 +761,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new GetKeyboardMappingReply(result.Value, count, socket);
     }
-
-
-    public GetModifierMappingReply GetModifierMapping() =>
-        this.GetModifierMapping(false);
 
     private GetModifierMappingReply GetModifierMapping(bool isThrow)
     {
@@ -949,10 +774,6 @@ internal class XProto : BaseProtoClient, IXProto
         return new GetModifierMappingReply(result.Value, socket);
     }
 
-
-    public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime) =>
-        this.GetMotionEvents(window, startTime, endTime, false);
-
     private GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -964,10 +785,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new GetMotionEventsReply(result.Value, socket);
     }
-
-
-    public GetPointerControlReply GetPointerControl() =>
-        this.GetPointerControl(false);
 
     private GetPointerControlReply GetPointerControl(bool isThrow)
     {
@@ -981,10 +798,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-
-    public GetPointerMappingReply GetPointerMapping() =>
-        this.GetPointerMapping(false);
-
     private GetPointerMappingReply GetPointerMapping(bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -997,11 +810,8 @@ internal class XProto : BaseProtoClient, IXProto
         return new GetPointerMappingReply(result.Value, socket);
     }
 
-
-    public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length) =>
-        this.GetProperty(delete, window, property, type, offset, length, false);
-
-    private GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length, bool isThrow)
+    private GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length,
+        bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new GetPropertyType(delete, window, property, type, offset, length);
@@ -1012,9 +822,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new GetPropertyReply(result.Value, socket);
     }
-
-    public GetScreenSaverReply GetScreenSaver() =>
-        this.GetScreenSaver(false);
 
     private GetScreenSaverReply GetScreenSaver(bool isThrow)
     {
@@ -1028,10 +835,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-
-    public GetSelectionOwnerReply GetSelectionOwner(ATOM atom) =>
-        this.GetSelectionOwner(atom, false);
-
     private GetSelectionOwnerReply GetSelectionOwner(ATOM atom, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1043,10 +846,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return result.Value;
     }
-
-
-    public GetWindowAttributesReply GetWindowAttributes(uint window) =>
-        this.GetWindowAttributes(window, false);
 
     private GetWindowAttributesReply GetWindowAttributes(uint window, bool isThrow)
     {
@@ -1060,12 +859,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
-            uint confineTo, uint cursor, Button button, ModifierMask modifiers) =>
-            this.GrabButton(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers,
-            false);
-
-
     private void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
         uint confineTo, uint cursor, Button button, ModifierMask modifiers, bool isThrow)
     {
@@ -1076,11 +869,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
-            GrabMode keyboardMode) =>
-            this.GrabKey(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode, false);
-
-
     private void GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
         GrabMode keyboardMode, bool isThrow)
     {
@@ -1089,11 +877,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
-            GrabMode keyboardMode) =>
-            this.GrabKeyboard(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode, false);
-
 
     private GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode, bool isThrow)
@@ -1108,12 +891,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return result.Value;
     }
-
-    public GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
-            GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp) =>
-            this.GrabPointer(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, timeStamp,
-            false);
-
 
     private GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp, bool isThrow)
@@ -1130,9 +907,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public void GrabServer() =>
-        this.GrabServer(false);
-
     private void GrabServer(bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1140,9 +914,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text) =>
-        this.ImageText16(drawable, gc, x, y, text, false);
 
     private void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text, bool isThrow)
     {
@@ -1179,9 +950,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text) =>
-        this.ImageText8(drawable, gc, x, y, text, false);
-
     private void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1212,9 +980,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void InstallColormap(uint colormapId) =>
-        this.InstallColormap(colormapId, false);
-
     private void InstallColormap(uint colormapId, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1231,12 +996,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void KillClient(uint resource) =>
-        this.KillClient(resource, false);
-
-    public ListExtensionsReply ListExtensions() =>
-        this.ListExtensions();
-
     private ListExtensionsReply ListExtensions(bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1248,10 +1007,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new ListExtensionsReply(result.Value, socket);
     }
-
-
-    public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames) =>
-        this.ListFonts(pattern, maxNames, false);
 
     private ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames, bool isThrow)
     {
@@ -1287,10 +1042,6 @@ internal class XProto : BaseProtoClient, IXProto
         return new ListFontsReply(result.Value, socket);
     }
 
-
-    public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames) =>
-        this.ListFontsWithInfo(pattan, maxNames, false);
-
     private ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1317,6 +1068,7 @@ internal class XProto : BaseProtoClient, IXProto
             );
             socket.SendExact(workingBuffer);
         }
+
         var (response, error) = ReceivedResponseAndVerify<ListFontsWithInfoResponse>();
         if (error.HasValue || !response.HasValue)
             throw new XEventException(error!.Value);
@@ -1325,10 +1077,6 @@ internal class XProto : BaseProtoClient, IXProto
             result.Add(item);
         return result.ToArray();
     }
-
-
-    public ListHostsReply ListHosts() =>
-        this.ListHosts(false);
 
     private ListHostsReply ListHosts(bool isThrow)
     {
@@ -1341,10 +1089,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new ListHostsReply(result.Value, socket);
     }
-
-
-    public ListInstalledColormapsReply ListInstalledColormaps(uint window) =>
-        this.ListInstalledColormaps(window, false);
 
     private ListInstalledColormapsReply ListInstalledColormaps(uint window, bool isThrow)
     {
@@ -1359,10 +1103,6 @@ internal class XProto : BaseProtoClient, IXProto
         ;
     }
 
-
-    public ListPropertiesReply ListProperties(uint window) =>
-        this.ListProperties(window, false);
-
     private ListPropertiesReply ListProperties(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1374,10 +1114,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new ListPropertiesReply(result.Value, socket);
     }
-
-
-    public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name) =>
-        this.LookupColor(colorMap, name, false);
 
     private LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name, bool isThrow)
     {
@@ -1411,10 +1147,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-
-    public void MapSubwindows(uint window) =>
-        this.MapSubwindows(window, false);
-
     private void MapSubwindows(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1423,9 +1155,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void MapWindow(uint window) =>
-        this.MapWindow(window, false);
-
     private void MapWindow(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1433,9 +1162,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void NoOperation(Span<uint> args) =>
-        this.NoOperation(args, false);
 
     private void NoOperation(Span<uint> args, bool isThrow)
     {
@@ -1464,9 +1190,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-
-    public void OpenFont(string fontName, uint fontId) =>
-        this.OpenFont(fontName, fontId, false);
 
     private void OpenFont(string fontName, uint fontId, bool isThrow)
     {
@@ -1502,9 +1225,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyArc(uint drawable, uint gc, Span<Arc> arcs) =>
-        this.PolyArc(drawable, gc, arcs, false);
-
     private void PolyArc(uint drawable, uint gc, Span<Arc> arcs, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1532,9 +1252,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-
-    public void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs) =>
-        this.PolyFillArc(drawable, gc, arcs, false);
 
     private void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs, bool isThrow)
     {
@@ -1564,9 +1281,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
-        this.PolyFillRectangle(drawable, gc, rectangles, false);
-
     private void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1594,9 +1308,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-
-    public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
-        this.PolyLine(coordinate, drawable, gc, points, false);
 
     private void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points, bool isThrow)
     {
@@ -1626,9 +1337,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
-        this.PolyPoint(coordinate, drawable, gc, points, false);
-
     private void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1656,9 +1364,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-
-    public void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
-        this.PolyRectangle(drawable, gc, rectangles, false);
 
     private void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles, bool isThrow)
     {
@@ -1688,9 +1393,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolySegment(uint drawable, uint gc, Span<Segment> segments) =>
-        this.PolySegment(drawable, gc, segments, false);
-
     private void PolySegment(uint drawable, uint gc, Span<Segment> segments, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1718,9 +1420,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-
-    public void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
-        this.PolyText16(drawable, gc, x, y, data, false);
 
     private void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data, bool isThrow)
     {
@@ -1750,9 +1449,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
-        this.PolyText8(drawable, gc, x, y, data, false);
-
     private void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1781,11 +1477,8 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
-        byte leftPad, byte depth, Span<byte> data) =>
-        this.PutImage(format, drawable, gc, width, height, x, y, leftPad, depth, data, false);
-
-    private void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
+    private void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x,
+        short y,
         byte leftPad, byte depth, Span<byte> data, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1813,10 +1506,9 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-    public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height) =>
-        this.QueryBestSize(shape, drawable, width, height, false);
 
-    private QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height, bool isThrow)
+    private QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height,
+        bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new QueryBestSizeType(shape, drawable, width, height);
@@ -1827,9 +1519,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return result.Value;
     }
-
-    public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels) =>
-        this.QueryColors(colorMap, pixels, false);
 
     private QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels, bool isThrow)
     {
@@ -1863,9 +1552,6 @@ internal class XProto : BaseProtoClient, IXProto
         return new QueryColorsReply(result.Value, socket);
     }
 
-    public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name) =>
-        this.QueryExtension(name, false);
-
     private QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name, bool isThrow)
     {
         if (name.Length > ushort.MaxValue)
@@ -1894,9 +1580,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public QueryFontReply QueryFont(uint fontId) =>
-        this.QueryFont(fontId, false);
-
     private QueryFontReply QueryFont(uint fontId, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1908,9 +1591,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return new QueryFontReply(result.Value, socket);
     }
-
-    public QueryKeymapReply QueryKeymap() =>
-        this.QueryKeymap(false);
 
     private QueryKeymapReply QueryKeymap(bool isThrow)
     {
@@ -1924,9 +1604,6 @@ internal class XProto : BaseProtoClient, IXProto
         return new QueryKeymapReply(result.Value, socket);
     }
 
-    public QueryPointerReply QueryPointer(uint window) =>
-        this.QueryPointer(window, false);
-
     private QueryPointerReply QueryPointer(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1939,8 +1616,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         return result.Value;
     }
-    public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery) =>
-        this.QueryTextExtents(font, stringForQuery, false);
 
     private QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery, bool isThrow)
     {
@@ -1981,9 +1656,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public QueryTreeReply QueryTree(uint window) =>
-        this.QueryTree(window, false);
-
     private QueryTreeReply QueryTree(uint window, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -1996,10 +1668,6 @@ internal class XProto : BaseProtoClient, IXProto
         return new QueryTreeReply(result.Value, socket);
     }
 
-    public void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
-        ushort backGreen, ushort backBlue) =>
-        this.RecolorCursor(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, false);
-
     private void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
         ushort backGreen, ushort backBlue, bool isThrow)
     {
@@ -2009,9 +1677,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void ReparentWindow(uint window, uint parent, short x, short y) =>
-        this.ReparentWindow(window, parent, x, y, false);
-
     private void ReparentWindow(uint window, uint parent, short x, short y, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -2019,9 +1684,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void RotateProperties(uint window, ushort delta, Span<ATOM> properties) =>
-        this.RotateProperties(window, delta, properties, false);
 
     private void RotateProperties(uint window, ushort delta, Span<ATOM> properties, bool isThrow)
     {
@@ -2051,9 +1713,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt) =>
-        this.SendEvent(propagate, destination, eventMask, evnt, false);
-
     private void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -2061,9 +1720,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void SetAccessControl(AccessControlMode mode) =>
-        this.SetAccessControl(mode, false);
 
     private void SetAccessControl(AccessControlMode mode, bool isThrow)
     {
@@ -2073,10 +1729,8 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles) =>
-        this.SetClipRectangles(ordering, gc, clipX, clipY, rectangles, false);
-
-    private void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles, bool isThrow)
+    private void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
+        Span<Rectangle> rectangles, bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
@@ -2104,9 +1758,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetCloseDownMode(CloseDownMode mode) =>
-        this.SetCloseDownMode(mode, false);
-
     private void SetCloseDownMode(CloseDownMode mode, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -2114,9 +1765,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes) =>
-        this.SetDashes(gc, dashOffset, dashes, false);
 
     private void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes, bool isThrow)
     {
@@ -2145,9 +1793,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-
-    public void SetFontPath(string[] strPaths) =>
-        this.SetFontPath(strPaths, false);
 
     private void SetFontPath(string[] strPaths, bool isThrow)
     {
@@ -2194,9 +1839,6 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    public void SetInputFocus(InputFocusMode mode, uint focus, uint time) =>
-        this.SetInputFocus(mode, focus, time, false);
-
     private void SetInputFocus(InputFocusMode mode, uint focus, uint time, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -2204,8 +1846,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes) =>
-        this.SetModifierMapping(keycodes, false);
 
     private SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes, bool isThrow)
     {
@@ -2239,9 +1879,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public SetPointerMappingReply SetPointerMapping(Span<byte> maps) =>
-        this.SetPointerMapping(maps, false);
-
     private SetPointerMappingReply SetPointerMapping(Span<byte> maps, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -2274,20 +1911,14 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures) =>
-        this.SetScreenSaver(timeout, interval, preferBlanking, allowExposures, false);
-
-
-    private void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures, bool isThrow)
+    private void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures,
+        bool isThrow)
     {
         ProcessEvents(isThrow);
         var request = new SetScreenSaverType(timeout, interval, preferBlanking, allowExposures);
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public void SetSelectionOwner(uint owner, ATOM atom, uint timestamp) =>
-        this.SetSelectionOwner(owner, atom, timestamp, false);
-
 
     private void SetSelectionOwner(uint owner, ATOM atom, uint timestamp, bool isThrow)
     {
@@ -2296,9 +1927,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public void StoreColors(uint colormapId, Span<ColorItem> item) =>
-        this.StoreColors(colormapId, item, false);
-
 
     private void StoreColors(uint colormapId, Span<ColorItem> item, bool isThrow)
     {
@@ -2329,9 +1957,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-    public void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name) =>
-        this.StoreNamedColor(mode, colormapId, pixels, name, false);
-
 
     private void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name, bool isThrow)
     {
@@ -2360,10 +1985,6 @@ internal class XProto : BaseProtoClient, IXProto
 
         sequenceNumber++;
     }
-    public TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
-    ushort srcY) =>
-        this.TranslateCoordinates(srcWindow, destinationWindow, srcX, srcY, false);
-
 
     private TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
         ushort srcY, bool isThrow)
@@ -2378,10 +1999,6 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    public void UngrabButton(Button button, uint grabWindow, ModifierMask mask) =>
-        this.UngrabButton(button, grabWindow, mask, false);
-
-
     private void UngrabButton(Button button, uint grabWindow, ModifierMask mask, bool isThrow)
     {
         ProcessEvents(isThrow);
@@ -2389,9 +2006,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public void UngrabKey(byte key, uint grabWindow, ModifierMask modifier) =>
-        this.UngrabKey(key, grabWindow, modifier, false);
-
 
     private void UngrabKey(byte key, uint grabWindow, ModifierMask modifier, bool isThrow)
     {
@@ -2400,9 +2014,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public void UngrabKeyboard(uint time) =>
-        this.UngrabKeyboard(time, false);
-
 
     private void UngrabKeyboard(uint time, bool isThrow)
     {
@@ -2411,9 +2022,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public void UngrabPointer(uint time) =>
-        this.UngrabPointer(time, false);
-
 
     private void UngrabPointer(uint time, bool isThrow)
     {
@@ -2422,9 +2030,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public void UngrabServer() =>
-        this.UngrabServer(false);
-
 
     private void UngrabServer(bool isThrow)
     {
@@ -2433,9 +2038,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public void UninstallColormap(uint colormapId) =>
-        this.UninstallColormap(colormapId, false);
-
 
     private void UninstallColormap(uint colormapId, bool isThrow)
     {
@@ -2444,9 +2046,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public void UnmapSubwindows(uint window) =>
-        this.UnmapSubwindows(window, false);
-
 
     private void UnmapSubwindows(uint window, bool isThrow)
     {
@@ -2455,9 +2054,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-    public void UnmapWindow(uint window) =>
-        this.UnmapWindow(window, false);
-
 
     private void UnmapWindow(uint window, bool isThrow)
     {
@@ -2466,11 +2062,6 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
-
-    public void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
-            ushort srcHeight, short destinationX, short destinationY) =>
-            this.WarpPointer(srcWindow, destinationWindow, srcX, srcY, srcWidth,
-            srcHeight, destinationX, destinationY, false);
 
     private void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
         ushort srcHeight, short destinationX, short destinationY, bool isThrow)
@@ -2481,6 +2072,411 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
         sequenceNumber++;
     }
+
+    #endregion
+
+    public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
+
+    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
+
+    public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult) : base(socket)
+    {
+        HandshakeSuccessResponseBody = connectionResult;
+        _globalId = 0;
+        sequenceNumber = 0;
+    }
+
+    public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue) =>
+        this.AllocColor(colorMap, red, green, blue, false);
+
+    public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes) =>
+        this.AllocColorCells(contiguous, colorMap, colors, planes, false);
+
+    public AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
+        ushort greens, ushort blues) =>
+        this.AllocColorPlanes(contiguous, colorMap, colors, reds, greens, blues, false);
+
+    public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name) =>
+        this.AllocNamedColor(colorMap, name, false);
+
+    public void AllowEvents(EventsMode mode, uint time) =>
+        this.AllowEvents(mode, time, false);
+
+    public void Bell(sbyte percent) =>
+        this.Bell(percent, false);
+
+    public void ChangeActivePointerGrab(uint cursor, uint time, ushort mask) =>
+        this.ChangeActivePointerGrab(cursor, time, mask, false);
+
+    public void ChangeGC(uint gc, GCMask mask, Span<uint> args) =>
+        this.ChangeGC(gc, mask, args, false);
+
+    public void ChangeHosts(HostMode mode, Family family, Span<byte> address) =>
+        this.ChangeHosts(mode, family, address, false);
+
+    public void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args) =>
+        this.ChangeKeyboardControl(mask, args, false);
+
+    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
+        Span<uint> keysym) =>
+        this.ChangeKeyboardMapping(keycodeCount, firstKeycode, keysymsPerKeycode, keysym, false);
+
+    public void ChangePointerControl(Acceleration? acceleration, ushort? threshold) =>
+        this.ChangePointerControl(acceleration, threshold, false);
+
+    public void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+        where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
+        => this.ChangeProperty<T>(mode, window, property, type, args, false);
+
+    public void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window) =>
+        this.ChangeSaveSet(changeSaveSetMode, window, false);
+
+    public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args) =>
+        this.ChangeWindowAttributes(window, mask, args, false);
+
+    public void CirculateWindow(Circulate circulate, uint window) =>
+        this.CirculateWindow(circulate, window, false);
+
+    public void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height) =>
+        this.ClearArea(exposures, window, x, y, width, height, false);
+
+    public void CloseFont(uint fontId) =>
+        this.CloseFont(fontId, false);
+
+    public void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args) =>
+        this.ConfigureWindow(window, mask, args, false);
+
+    public void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp) =>
+        this.ConvertSelection(requestor, selection, target, property, timestamp, false);
+
+    public void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX, ushort destinationY, ushort width, ushort height) =>
+        this.CopyArea(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width,
+            height, false);
+
+    public void CopyColormapAndFree(uint colormapId, uint srcColormapId) =>
+        this.CopyColormapAndFree(colormapId, srcColormapId, false);
+
+    public void CopyGC(uint srcGc, uint dstGc, GCMask mask) =>
+        this.CopyGC(srcGc, dstGc, mask, false);
+
+    public void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane) =>
+        this.CopyPlane(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width,
+            height, bitPlane, false);
+
+    public void CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual) =>
+        this.CreateColormap(alloc, colormapId, window, visual, false);
+
+    public void CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue,
+        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y) =>
+        this.CreateCursor(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y,
+            false);
+
+    public void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args) =>
+        this.CreateGC(gc, drawable, mask, args, false);
+
+    public void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
+        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue) =>
+        this.CreateGlyphCursor(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
+            backRed,
+            backGreen, backBlue, false);
+
+    public void CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height) =>
+        this.CreatePixmap(depth, pixmapId, drawable, width, height, false);
+
+    public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
+        this.CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
+            args, false);
+
+    public void DeleteProperty(uint window, ATOM atom) =>
+        this.DeleteProperty(window, atom, false);
+
+    public void DestroySubwindows(uint window) =>
+        this.DestroySubwindows(window, false);
+
+    public void DestroyWindow(uint window) =>
+        this.DestroyWindow(window, false);
+
+    public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points) =>
+        this.FillPoly(drawable, gc, shape, coordinate, points, false);
+
+    public void ForceScreenSaver(ForceScreenSaverMode mode) =>
+        this.ForceScreenSaver(mode, false);
+
+    public void FreeColormap(uint colormapId) =>
+        this.FreeColormap(colormapId, false);
+
+    public void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels) =>
+        this.FreeColors(colormapId, planeMask, pixels, false);
+
+    public void FreeCursor(uint cursorId) =>
+        this.FreeCursor(cursorId, false);
+
+    public void FreeGC(uint gc) =>
+        this.FreeGC(gc, false);
+
+    public void FreePixmap(uint pixmapId) =>
+        this.FreePixmap(pixmapId, false);
+
+    public GetAtomNameReply GetAtomName(ATOM atom) =>
+        this.GetAtomName(atom, false);
+
+    public InternAtomReply InternAtom(bool onlyIfExist, string atomName) =>
+        this.InternAtom(onlyIfExist, atomName, false);
+
+    public GetFontPathReply GetFontPath() =>
+        this.GetFontPath(false);
+
+    public GetGeometryReply GetGeometry(uint drawable) =>
+        this.GetGeometry(drawable, false);
+
+    public GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
+        uint planeMask) =>
+        this.GetImage(format, drawable, x, y, width, height, planeMask, false);
+
+    public GetInputFocusReply GetInputFocus() =>
+        this.GetInputFocus(false);
+
+    public GetKeyboardControlReply GetKeyboardControl() =>
+        this.GetKeyboardControl(false);
+
+    public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count) =>
+        this.GetKeyboardMapping(firstKeycode, count, false);
+
+    public GetModifierMappingReply GetModifierMapping() =>
+        this.GetModifierMapping(false);
+
+    public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime) =>
+        this.GetMotionEvents(window, startTime, endTime, false);
+
+    public GetPointerControlReply GetPointerControl() =>
+        this.GetPointerControl(false);
+
+    public GetPointerMappingReply GetPointerMapping() =>
+        this.GetPointerMapping(false);
+
+    public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length) =>
+        this.GetProperty(delete, window, property, type, offset, length, false);
+
+    public GetScreenSaverReply GetScreenSaver() =>
+        this.GetScreenSaver(false);
+
+    public GetSelectionOwnerReply GetSelectionOwner(ATOM atom) =>
+        this.GetSelectionOwner(atom, false);
+
+    public GetWindowAttributesReply GetWindowAttributes(uint window) =>
+        this.GetWindowAttributes(window, false);
+
+    public void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
+        uint confineTo, uint cursor, Button button, ModifierMask modifiers) =>
+        this.GrabButton(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers,
+            false);
+
+    public void GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
+        GrabMode keyboardMode) =>
+        this.GrabKey(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode, false);
+
+    public GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+        GrabMode keyboardMode) =>
+        this.GrabKeyboard(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode, false);
+
+    public GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+        GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp) =>
+        this.GrabPointer(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, timeStamp,
+            false);
+
+    public void GrabServer() =>
+        this.GrabServer(false);
+
+    public void ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text) =>
+        this.ImageText16(drawable, gc, x, y, text, false);
+
+    public void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text) =>
+        this.ImageText8(drawable, gc, x, y, text, false);
+
+    public void InstallColormap(uint colormapId) =>
+        this.InstallColormap(colormapId, false);
+
+    public void KillClient(uint resource) =>
+        this.KillClient(resource, false);
+
+    public ListExtensionsReply ListExtensions() =>
+        this.ListExtensions();
+
+    public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames) =>
+        this.ListFonts(pattern, maxNames, false);
+
+    public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames) =>
+        this.ListFontsWithInfo(pattan, maxNames, false);
+
+    public ListHostsReply ListHosts() =>
+        this.ListHosts(false);
+
+    public ListInstalledColormapsReply ListInstalledColormaps(uint window) =>
+        this.ListInstalledColormaps(window, false);
+
+    public ListPropertiesReply ListProperties(uint window) =>
+        this.ListProperties(window, false);
+
+    public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name) =>
+        this.LookupColor(colorMap, name, false);
+
+    public void MapSubwindows(uint window) =>
+        this.MapSubwindows(window, false);
+
+    public void MapWindow(uint window) =>
+        this.MapWindow(window, false);
+
+    public void NoOperation(Span<uint> args) =>
+        this.NoOperation(args, false);
+
+    public void OpenFont(string fontName, uint fontId) =>
+        this.OpenFont(fontName, fontId, false);
+
+    public void PolyArc(uint drawable, uint gc, Span<Arc> arcs) =>
+        this.PolyArc(drawable, gc, arcs, false);
+
+    public void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs) =>
+        this.PolyFillArc(drawable, gc, arcs, false);
+
+    public void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
+        this.PolyFillRectangle(drawable, gc, rectangles, false);
+
+    public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
+        this.PolyLine(coordinate, drawable, gc, points, false);
+
+    public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
+        this.PolyPoint(coordinate, drawable, gc, points, false);
+
+    public void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
+        this.PolyRectangle(drawable, gc, rectangles, false);
+
+    public void PolySegment(uint drawable, uint gc, Span<Segment> segments) =>
+        this.PolySegment(drawable, gc, segments, false);
+
+    public void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
+        this.PolyText16(drawable, gc, x, y, data, false);
+
+    public void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
+        this.PolyText8(drawable, gc, x, y, data, false);
+
+    public void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x,
+        short y,
+        byte leftPad, byte depth, Span<byte> data) =>
+        this.PutImage(format, drawable, gc, width, height, x, y, leftPad, depth, data, false);
+
+    public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height) =>
+        this.QueryBestSize(shape, drawable, width, height, false);
+
+    public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels) =>
+        this.QueryColors(colorMap, pixels, false);
+
+    public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name) =>
+        this.QueryExtension(name, false);
+
+    public QueryFontReply QueryFont(uint fontId) =>
+        this.QueryFont(fontId, false);
+
+    public QueryKeymapReply QueryKeymap() =>
+        this.QueryKeymap(false);
+
+    public QueryPointerReply QueryPointer(uint window) =>
+        this.QueryPointer(window, false);
+
+    public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery) =>
+        this.QueryTextExtents(font, stringForQuery, false);
+
+    public QueryTreeReply QueryTree(uint window) =>
+        this.QueryTree(window, false);
+
+    public void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
+        ushort backGreen, ushort backBlue) =>
+        this.RecolorCursor(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, false);
+
+    public void ReparentWindow(uint window, uint parent, short x, short y) =>
+        this.ReparentWindow(window, parent, x, y, false);
+
+    public void RotateProperties(uint window, ushort delta, Span<ATOM> properties) =>
+        this.RotateProperties(window, delta, properties, false);
+
+    public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt) =>
+        this.SendEvent(propagate, destination, eventMask, evnt, false);
+
+    public void SetAccessControl(AccessControlMode mode) =>
+        this.SetAccessControl(mode, false);
+
+    public void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
+        Span<Rectangle> rectangles) =>
+        this.SetClipRectangles(ordering, gc, clipX, clipY, rectangles, false);
+
+    public void SetCloseDownMode(CloseDownMode mode) =>
+        this.SetCloseDownMode(mode, false);
+
+    public void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes) =>
+        this.SetDashes(gc, dashOffset, dashes, false);
+
+    public void SetFontPath(string[] strPaths) =>
+        this.SetFontPath(strPaths, false);
+
+    public void SetInputFocus(InputFocusMode mode, uint focus, uint time) =>
+        this.SetInputFocus(mode, focus, time, false);
+
+    public SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes) =>
+        this.SetModifierMapping(keycodes, false);
+
+    public SetPointerMappingReply SetPointerMapping(Span<byte> maps) =>
+        this.SetPointerMapping(maps, false);
+
+
+    public void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures) =>
+        this.SetScreenSaver(timeout, interval, preferBlanking, allowExposures, false);
+
+    public void SetSelectionOwner(uint owner, ATOM atom, uint timestamp) =>
+        this.SetSelectionOwner(owner, atom, timestamp, false);
+
+    public void StoreColors(uint colormapId, Span<ColorItem> item) =>
+        this.StoreColors(colormapId, item, false);
+
+    public void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name) =>
+        this.StoreNamedColor(mode, colormapId, pixels, name, false);
+
+    public TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
+        ushort srcY) =>
+        this.TranslateCoordinates(srcWindow, destinationWindow, srcX, srcY, false);
+
+    public void UngrabButton(Button button, uint grabWindow, ModifierMask mask) =>
+        this.UngrabButton(button, grabWindow, mask, false);
+
+    public void UngrabKey(byte key, uint grabWindow, ModifierMask modifier) =>
+        this.UngrabKey(key, grabWindow, modifier, false);
+
+    public void UngrabKeyboard(uint time) =>
+        this.UngrabKeyboard(time, false);
+
+    public void UngrabPointer(uint time) =>
+        this.UngrabPointer(time, false);
+
+    public void UngrabServer() =>
+        this.UngrabServer(false);
+
+    public void UninstallColormap(uint colormapId) =>
+        this.UninstallColormap(colormapId, false);
+
+    public void UnmapSubwindows(uint window) =>
+        this.UnmapSubwindows(window, false);
+
+    public void UnmapWindow(uint window) =>
+        this.UnmapWindow(window, false);
+
+    public void WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
+        ushort srcHeight, short destinationX, short destinationY) =>
+        this.WarpPointer(srcWindow, destinationWindow, srcX, srcY, srcWidth,
+            srcHeight, destinationX, destinationY, false);
 
     public void Dispose()
     {
@@ -2523,7 +2519,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
         ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
     {
-        this.CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args, true);
+        this.CreateWindow(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args,
+            true);
         CheckError();
     }
 
@@ -2642,7 +2639,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void GrabButtonChecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
     {
-        this.GrabButton(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers, true);
+        this.GrabButton(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers,
+            true);
         CheckError();
     }
 
@@ -2698,7 +2696,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void WarpPointerChecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
         ushort srcHeight, short destinationX, short destinationY)
     {
-        this.WarpPointer(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX, destinationY, true);
+        this.WarpPointer(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX, destinationY,
+            true);
         CheckError();
     }
 
@@ -2784,7 +2783,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void CopyAreaChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height)
     {
-        this.CopyArea(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height, true);
+        this.CopyArea(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height,
+            true);
         CheckError();
     }
 
@@ -2914,7 +2914,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void CreateCursorChecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
         ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
-        this.CreateCursor(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y, true);
+        this.CreateCursor(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y,
+            true);
         CheckError();
     }
 
