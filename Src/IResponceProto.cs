@@ -7,10 +7,8 @@ public interface IResponseProto
 {
     AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue);
     QueryPointerReply QueryPointer(uint window);
-
     GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp);
-
     InternAtomReply InternAtom(bool onlyIfExist, string atomName);
     GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length);
     GetWindowAttributesReply GetWindowAttributes(uint window);
@@ -30,13 +28,14 @@ public interface IResponseProto
     ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames);
     ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames);
     GetFontPathReply GetFontPath();
-    GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height, uint planeMask);
+    GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
+        uint planeMask);
     ListInstalledColormapsReply ListInstalledColormaps(uint window);
     AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name);
     AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes);
+
     AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens,
         ushort blues);
-
     QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels);
     LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name);
     QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height);

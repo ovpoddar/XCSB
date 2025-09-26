@@ -13,7 +13,7 @@ client.CreateWindowChecked(
     0, 0, 600, 800, 0, ClassType.InputOutput,
     client.HandshakeSuccessResponseBody.Screens[0].RootVisualId,
     ValueMask.BackgroundPixel | ValueMask.EventMask,
-    [0x00ff00, (uint)(EventMask.ExposureMask)]
+    [0x00ff00, (uint)(EventMask.ExposureMask | EventMask.KeyReleaseMask | EventMask.KeyPressMask)]
 );
 client.MapWindowChecked(window);
 
@@ -63,7 +63,6 @@ var queryColor = client.QueryColors(client.HandshakeSuccessResponseBody.Screens[
 foreach (var color in queryColor.Colors)
     Console.WriteLine($"Blue: {color.Blue} Green: {color.Green} Red: {color.Red} Reserved: {color.Reserved}");
 
-
 while (true)
 {
     var Event = client.GetEvent();
@@ -77,9 +76,6 @@ while (true)
 
     if (Event.ReplyType == XEventType.Expose)
     {
-        var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
-        Console.WriteLine(resultGetMotionEvents.Events.Length);
-
         var getBestWindowSize = client.QueryBestSize(QueryShapeOf.LargestCursor,
             window, 32, 32);
         Console.WriteLine($"Best size for 32x32: {getBestWindowSize.Width} {getBestWindowSize.Height}");
@@ -100,4 +96,10 @@ while (true)
         var resultSetPointerMapping = client.SetPointerMapping(resultGetPointerMapping.Map);
         Console.WriteLine(resultSetPointerMapping.Status);
     }
+
+
+
+    var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
+    Console.WriteLine(resultGetMotionEvents.Events.Length);
+
 }

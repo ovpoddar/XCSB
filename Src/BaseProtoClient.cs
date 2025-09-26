@@ -77,7 +77,6 @@ internal class BaseProtoClient
         }
         else
         {
-            socket.EnsureReadSize(32);
             var result = new byte[32];
             var isError = false;
             while (socket.Available != 0)
