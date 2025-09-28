@@ -2385,7 +2385,7 @@ internal class XProto : BaseProtoClient, IXProto
         this.KillClient(resource, false);
 
     public ListExtensionsReply? ListExtensions() =>
-        this.ListExtensions();
+        this.ListExtensions(false);
 
     public ListFontsReply? ListFonts(ReadOnlySpan<byte> pattern, int maxNames) =>
         this.ListFonts(pattern, maxNames, false);
