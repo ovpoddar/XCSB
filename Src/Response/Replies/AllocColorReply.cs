@@ -16,7 +16,7 @@ public readonly struct AllocColorReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence &&
+        return this.ResponseHeader.Reply == ResponseType.Reply &&
                _pad1 == 0 && this.Length == 0;
     }
 }

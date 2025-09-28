@@ -17,6 +17,6 @@ public readonly struct ImplementationError : IXError
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence && this._pad0 == 0;
+        return this.ResponseHeader.Reply == ResponseType.Error && this._pad0 == 0;
     }
 }

@@ -132,10 +132,10 @@ while (isRunning)
         if (Event.As<ButtonPressEvent>().Detail == Button.LeftButton)
         {
             var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
-            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
+            Console.WriteLine($"before warp the pointer {currentPos.Value.RootX}   {currentPos.Value.RootY}");
             c.WarpPointer(0, window, 0, 0, 0, 0, 200, 150);
             currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
-            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
+            Console.WriteLine($"before warp the pointer {currentPos.Value.RootX}   {currentPos.Value.RootY}");
         }
 
     }

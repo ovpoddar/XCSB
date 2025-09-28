@@ -28,7 +28,7 @@ public readonly struct GetWindowAttributesReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence &&
+        return this.ResponseHeader.Reply == ResponseType.Reply &&
                Length == 3 && this._pad0 == 0;
     }
 

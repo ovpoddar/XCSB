@@ -91,7 +91,7 @@ void demo_change_hosts()
 {
     Console.WriteLine("=== ChangeHosts Demo ===\n");
     var hosts = connection.ListHosts();
-    foreach (var s in hosts.Hosts)
+    foreach (var s in hosts.Value.Hosts)
     {
         Console.WriteLine("ablaible hosts: " + s);
     }
@@ -136,8 +136,8 @@ void demo_store_color()
 {
     Console.WriteLine("=== StoreNamedColor Demo ===\n");
     var cookie = connection.AllocColor(colormap, 65535, 0, 0);
-    Console.WriteLine("StoreNamedColor: Red color allocated, Pixel value: %u\n", cookie.Pixel);
-    connection.ChangeGC(gc, GCMask.Foreground, [cookie.Pixel]);
+    Console.WriteLine("StoreNamedColor: Red color allocated, Pixel value: %u\n", cookie.Value.Pixel);
+    connection.ChangeGC(gc, GCMask.Foreground, [cookie.Value.Pixel]);
     connection.PolyFillRectangle(window, gc, [new Rectangle() { X = 300, Y = 50, Width = 80, Height = 30 }]);
 }
 

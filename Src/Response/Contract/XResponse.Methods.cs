@@ -8,11 +8,7 @@ internal partial struct XResponse : IXBaseResponse
 {
     public bool Verify(in int sequence)
     {
-#if NETSTANDARD
-        return (int)this.Reply <= 34 && (int)this.Reply >= 0;
-#else
-        return Enum.IsDefined(this.Reply);
-#endif
+        return this.Sequence == sequence;
     }
 
     internal readonly XResponseType GetResponseType() => this.Reply switch

@@ -67,14 +67,14 @@ x.CreateGC(gc, window1, GCMask.Foreground | GCMask.Background, [screen.BlackPixe
 // Track current focused window
 
 var resultGetInputFocus = x.GetInputFocus();
-var currentFocus = resultGetInputFocus.Focus;
+var currentFocus = resultGetInputFocus.Value.Focus;
 
         
 var resultTranslateCoordinates = x.TranslateCoordinates(
     window1,
      window2,
     100, 100);
-Console.WriteLine($"10, 10 trnsalate to  {resultTranslateCoordinates.DestinationX}, {resultTranslateCoordinates.DestinationY}");;
+Console.WriteLine($"10, 10 trnsalate to  {resultTranslateCoordinates.Value.DestinationX}, {resultTranslateCoordinates.Value.DestinationY}");;
 // Event loop to demonstrate focus changes
 var isRunning = true;
 while (isRunning)

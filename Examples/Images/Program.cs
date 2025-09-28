@@ -13,18 +13,18 @@ var window = xcsb.NewId();
 var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
 var extensations = xcsb.ListExtensions();
 Console.Write("available extensions: ");
-foreach (var extensation in extensations.Names)
+foreach (var extensation in extensations.Value.Names)
     Console.WriteLine($"    {extensation}");
 
-var extension = xcsb.QueryExtension(Encoding.UTF8.GetBytes(extensations.Names[5]));
-Console.WriteLine(extension.FirstEvent);
+var extension = xcsb.QueryExtension(Encoding.UTF8.GetBytes(extensations.Value.Names[5]));
+Console.WriteLine(extension.Value.FirstEvent);
 
 var rootProprityes = xcsb.ListProperties(screen.Root);
 Console.Write("root properties: ");
-foreach (var atom in rootProprityes.Atoms)
+foreach (var atom in rootProprityes.Value.Atoms)
 {
     var atomName = xcsb.GetAtomName(atom);
-    Console.WriteLine(atomName.Name);
+    Console.WriteLine(atomName.Value.Name);
 }
 
 xcsb.CreateWindow(screen.RootDepth.DepthValue,
@@ -128,6 +128,6 @@ while (isRunning)
 
 
         var image = xcsb.GetImage(ImageFormat.ZPixmap, window, 300, 0, WIDTH, HEIGHT, uint.MaxValue);
-        Console.WriteLine($"First pixels {image.Data[100]} {image.Data[101]} {image.Data[102]} {image.Data[103]}");
+        Console.WriteLine($"First pixels {image.Value.Data[100]} {image.Value.Data[101]} {image.Value.Data[102]} {image.Value.Data[103]}");
     }
 }

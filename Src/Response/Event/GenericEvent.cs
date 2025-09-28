@@ -111,7 +111,7 @@ public unsafe struct GenericEvent : IXEvent
                 EventType.ColormapNotify => new Span<byte>(ptr, 32).AsStruct<ColorMapNotifyEvent>().Verify(in sequence),
                 EventType.ClientMessage => new Span<byte>(ptr, 32).AsStruct<ClientMessageEvent>().Verify(in sequence),
                 EventType.MappingNotify => new Span<byte>(ptr, 32).AsStruct<MappingNotifyEvent>().Verify(in sequence),
-                _ => false
+                _ => true
             };
         }
     }

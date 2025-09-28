@@ -22,6 +22,27 @@ internal class BaseProtoClient
         bufferEvents = new Stack<GenericEvent>();
     }
 
+
+    private (T? result, GenericError? error, int? eventSequence) ParseResponse<T>(scoped ref Span<byte> receivedBuffer)
+        where T : unmanaged, IXReply
+    {
+        ref var content = ref receivedBuffer.AsStruct<XResponse>();
+        var responseType = content.GetResponseType();
+        if (content.Verify(sequenceNumber))
+        {
+            if (responseType is XResponseType.Error)
+                return (null, content.As<GenericError>(), null);
+
+            socket.ReceiveExact(receivedBuffer[32..]);
+            return (receivedBuffer.ToStruct<T>(), null, null);
+        }
+
+        var eventContent = content.As<GenericEvent>();
+        if (eventContent.Verify(sequenceNumber))
+            bufferEvents.Push(content.As<GenericEvent>());
+        return (null, null, eventContent.Sequence);
+    }
+    
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
@@ -29,106 +50,52 @@ internal class BaseProtoClient
         where T : unmanaged, IXReply
     {
         sequenceNumber++;
-        var resultLength = Marshal.SizeOf<T>();
-        Span<byte> buffer = stackalloc byte[resultLength];
-        if (!exhaustSocket)
+        var requestLength = Unsafe.SizeOf<T>();
+        Span<byte> responseBuffer = stackalloc byte[requestLength];
+        var breakCounter = 3;
+        while (true)
         {
-            while (true)
+            socket.EnsureReadSize(32);
+            socket.ReceiveExact(responseBuffer[..32]);
+            var result = ParseResponse<T>(ref responseBuffer);
+            if (result.eventSequence.HasValue)
             {
-                socket.EnsureReadSize(32);
-                socket.ReceiveExact(buffer[0..32]);
-                ref var content = ref buffer[0..32].AsStruct<XResponse>();
-                var responseType = content.GetResponseType();
-                // this is the response verification. which ensures the reply type.
-                Debug.Assert(content.Verify(sequenceNumber));
+                if (result.eventSequence.Value > sequenceNumber || breakCounter == 0) 
+                    return (null, null);
+                if (socket.Available == 0) 
+                    breakCounter--;
 
-                switch (responseType)
-                {
-                    case XResponseType.Unknown:
-                        throw new Exception("Should not come here");
-                    case XResponseType.Reply:
-                        {
-                            socket.ReceiveExact(buffer[32..]);
-                            ref var responce = ref buffer.AsStruct<T>();
-                            // this is the reply verification. which ensures the structure of the reply.
-                            if (responce.Verify(sequenceNumber))
-                                return (buffer.ToStruct<T>(), null);
-                            break;
-                        }
-                    case XResponseType.Error:
-                        {
-                            var error = content.As<GenericError>();
-                            if (error.Verify(sequenceNumber))
-                                return (null, error);
-                            break;
-                        }
-                    case XResponseType.Event:
-                    case XResponseType.Notify:
-                        {
-                            var eventContent = content.As<GenericEvent>();
-                            if (eventContent.Verify(sequenceNumber))
-                                bufferEvents.Push(content.As<GenericEvent>());
-                            break;
-                        }
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-        else
-        {
-            var result = new byte[32];
-            var isError = false;
-            while (socket.Available != 0)
-            {
-                socket.EnsureReadSize(32);
-                socket.ReceiveExact(buffer[0..32]);
-                ref var content = ref buffer[0..32].AsStruct<XResponse>();
-                Debug.Assert(content.Verify(sequenceNumber));
-
-                var responseType = content.GetResponseType();
-                switch (responseType)
-                {
-                    case XResponseType.Reply:
-                        {
-                            socket.ReceiveExact(buffer[32..]);
-                            ref var responce = ref buffer.AsStruct<T>();
-                            // this is the reply verification. which ensures the structure of the reply.
-                            if (responce.Verify(sequenceNumber))
-                            {
-                                result = buffer.ToArray();
-                                isError = false;
-                            }
-                            break;
-                        }
-                    case XResponseType.Error:
-                        {
-                            var error = content.As<GenericError>();
-                            if (error.Verify(sequenceNumber))
-                            {
-                                result = buffer.ToArray();
-                                isError = true;
-                            }
-                            break;
-                        }
-                    case XResponseType.Event:
-                    case XResponseType.Notify:
-                    case XResponseType.Unknown:
-                        {
-                            var eventContent = content.As<GenericEvent>();
-                            if (eventContent.Verify(sequenceNumber))
-                                bufferEvents.Push(content.As<GenericEvent>());
-                            break;
-                        }
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                continue;
             }
 
-            return isError
-                ? (null, result.AsSpan().ToStruct<GenericError>())
-                : (result.AsSpan().ToStruct<T>(), null);
+            if (exhaustSocket)
+                result.result = ExhustSocket<T>() ?? result.result;
+            return (result.result, result.error);
         }
+    }
+
+    private T? ExhustSocket<T>() where T : unmanaged, IXReply
+    {
+        if (socket.Available == 0)
+            return null;
+        Span<byte> buffer = stackalloc byte[32];
+        T? result = default;
+        while (socket.Available != 0 && socket.Available % 32 == 0)
+        {
+            socket.ReceiveExact(buffer);
+            ref var content = ref buffer.AsStruct<XResponse>();
+            var responseType = content.GetResponseType();
+            if (responseType is not XResponseType.Event or XResponseType.Notify or XResponseType.Unknown)
+            {
+                result = buffer.ToStruct<T>();
+                continue;
+            }
+
+            var eventContent = content.As<GenericEvent>();
+            if (eventContent.Verify(sequenceNumber))
+                bufferEvents.Push(content.As<GenericEvent>());
+        }
+        return result;
     }
 
     internal GenericError? Received()

@@ -69,13 +69,14 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    private AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue, bool isThrow)
+    private AllocColorReply? AllocColor(uint colorMap, ushort red, ushort green, ushort blue, bool isThrow)
     {
         var request = new AllocColorType(colorMap, red, green, blue);
         ProcessEvents(isThrow);
         socket.Send(ref request);
 
         var (result, error) = ReceivedResponseAndVerify<AllocColorReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -83,33 +84,35 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    private AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes,
+    private AllocColorCellsReply? AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes,
         bool isThrow)
     {
         var request = new AllocColorCellsType(contiguous, colorMap, colors, planes);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<AllocColorCellsResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new AllocColorCellsReply(result.Value, socket);
     }
 
-    private AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
+    private AllocColorPlanesReply? AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
         ushort greens, ushort blues, bool isThrow)
     {
         var request = new AllocColorPlanesType(contiguous, colorMap, colors, reds, greens, blues);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<AllocColorPlanesResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new AllocColorPlanesReply(result.Value, socket);
     }
 
-    private AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name, bool isThrow)
+    private AllocNamedColorReply? AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name, bool isThrow)
     {
         var request = new AllocNamedColorType(colorMap, name.Length);
         var requiredBuffer = 12 + name.Length.AddPadding();
@@ -136,6 +139,7 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (result, error) = ReceivedResponseAndVerify<AllocNamedColorReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -649,19 +653,20 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    private GetAtomNameReply GetAtomName(ATOM atom, bool isThrow)
+    private GetAtomNameReply? GetAtomName(ATOM atom, bool isThrow)
     {
         var request = new GetAtomNameType(atom);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetAtomNameResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new GetAtomNameReply(result.Value, socket);
     }
 
-    private InternAtomReply InternAtom(bool onlyIfExist, string atomName, bool isThrow)
+    private InternAtomReply? InternAtom(bool onlyIfExist, string atomName, bool isThrow)
     {
         var request = new InternAtomType(onlyIfExist, atomName.Length);
         var requiredBuffer = 8 + atomName.Length.AddPadding();
@@ -693,6 +698,7 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (result, error) = ReceivedResponseAndVerify<InternAtomReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -700,171 +706,185 @@ internal class XProto : BaseProtoClient, IXProto
         return result.Value;
     }
 
-    private GetFontPathReply GetFontPath(bool isThrow)
+    private GetFontPathReply? GetFontPath(bool isThrow)
     {
         var request = new GetFontPathType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetFontPathResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new GetFontPathReply(result.Value, socket);
     }
 
-    private GetGeometryReply GetGeometry(uint drawable, bool isThrow)
+    private GetGeometryReply? GetGeometry(uint drawable, bool isThrow)
     {
         var request = new GetGeometryType(drawable);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetGeometryReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
+    private GetImageReply? GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
         uint planeMask, bool isThrow)
     {
         var request = new GetImageType(format, drawable, x, y, width, height, planeMask);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetImageResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new GetImageReply(result.Value, socket);
     }
 
-    private GetInputFocusReply GetInputFocus(bool isThrow)
+    private GetInputFocusReply? GetInputFocus(bool isThrow)
     {
         var request = new GetInputFocusType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetInputFocusReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private GetKeyboardControlReply GetKeyboardControl(bool isThrow)
+    private GetKeyboardControlReply? GetKeyboardControl(bool isThrow)
     {
         var request = new GetKeyboardControlType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
 
         var (result, error) = ReceivedResponseAndVerify<GetKeyboardControlResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new GetKeyboardControlReply(result.Value);
     }
 
-    private GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count, bool isThrow)
+    private GetKeyboardMappingReply? GetKeyboardMapping(byte firstKeycode, byte count, bool isThrow)
     {
         var request = new GetKeyboardMappingType(firstKeycode, count);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetKeyboardMappingResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new GetKeyboardMappingReply(result.Value, count, socket);
     }
 
-    private GetModifierMappingReply GetModifierMapping(bool isThrow)
+    private GetModifierMappingReply? GetModifierMapping(bool isThrow)
     {
         var request = new GetModifierMappingType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetModifierMappingResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new GetModifierMappingReply(result.Value, socket);
     }
 
-    private GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime, bool isThrow)
+    private GetMotionEventsReply? GetMotionEvents(uint window, uint startTime, uint endTime, bool isThrow)
     {
         var request = new GetMotionEventsType(window, startTime, endTime);
-        ProcessEvents(isThrow);
+        ProcessEvents(throwOnError: isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetMotionEventsResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new GetMotionEventsReply(result.Value, socket);
     }
 
-    private GetPointerControlReply GetPointerControl(bool isThrow)
+    private GetPointerControlReply? GetPointerControl(bool isThrow)
     {
         var request = new GetPointerControlType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetPointerControlReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private GetPointerMappingReply GetPointerMapping(bool isThrow)
+    private GetPointerMappingReply? GetPointerMapping(bool isThrow)
     {
         var request = new GetPointerMappingType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetPointerMappingResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new GetPointerMappingReply(result.Value, socket);
     }
 
-    private GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length,
+    private GetPropertyReply? GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length,
         bool isThrow)
     {
         var request = new GetPropertyType(delete, window, property, type, offset, length);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetPropertyResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new GetPropertyReply(result.Value, socket);
     }
 
-    private GetScreenSaverReply GetScreenSaver(bool isThrow)
+    private GetScreenSaverReply? GetScreenSaver(bool isThrow)
     {
         var request = new GetScreenSaverType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetScreenSaverReply>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private GetSelectionOwnerReply GetSelectionOwner(ATOM atom, bool isThrow)
+    private GetSelectionOwnerReply? GetSelectionOwner(ATOM atom, bool isThrow)
     {
         var request = new GetSelectionOwnerType(atom);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetSelectionOwnerReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private GetWindowAttributesReply GetWindowAttributes(uint window, bool isThrow)
+    private GetWindowAttributesReply? GetWindowAttributes(uint window, bool isThrow)
     {
         var request = new GetWindowAttributesType(window);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<GetWindowAttributesReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -890,7 +910,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    private GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+    private GrabKeyboardReply? GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode, bool isThrow)
     {
         var request = new GrabKeyboardType(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
@@ -898,13 +918,14 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
 
         var (result, error) = ReceivedResponseAndVerify<GrabKeyboardReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+    private GrabPointerReply? GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp, bool isThrow)
     {
         var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
@@ -913,6 +934,7 @@ internal class XProto : BaseProtoClient, IXProto
         socket.Send(ref request);
 
         var (result, error) = ReceivedResponseAndVerify<GrabPointerReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1010,19 +1032,20 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    private ListExtensionsReply ListExtensions(bool isThrow)
+    private ListExtensionsReply? ListExtensions(bool isThrow)
     {
         var request = new ListExtensionsType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<ListExtensionsResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new ListExtensionsReply(result.Value, socket);
     }
 
-    private ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames, bool isThrow)
+    private ListFontsReply? ListFonts(ReadOnlySpan<byte> pattern, int maxNames, bool isThrow)
     {
         var request = new ListFontsType(pattern.Length, maxNames);
         var requiredBuffer = 8 + (pattern.Length * 2).AddPadding();
@@ -1051,13 +1074,14 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (result, error) = ReceivedResponseAndVerify<ListFontsResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new ListFontsReply(result.Value, socket);
     }
 
-    private ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames, bool isThrow)
+    private ListFontsWithInfoReply[]? ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames, bool isThrow)
     {
         var request = new ListFontsWithInfoType(pattan.Length, maxNames);
         var requiredBuffer = 8 + pattan.Length.AddPadding();
@@ -1086,6 +1110,7 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (response, error) = ReceivedResponseAndVerify<ListFontsWithInfoResponse>();
+        if (!error.HasValue && !response.HasValue) return null;
         if (error.HasValue || !response.HasValue)
             throw new XEventException(error!.Value);
         var result = new List<ListFontsWithInfoReply>(maxNames);
@@ -1094,24 +1119,26 @@ internal class XProto : BaseProtoClient, IXProto
         return result.ToArray();
     }
 
-    private ListHostsReply ListHosts(bool isThrow)
+    private ListHostsReply? ListHosts(bool isThrow)
     {
         var request = new ListHostsType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<ListHostsResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new ListHostsReply(result.Value, socket);
     }
 
-    private ListInstalledColormapsReply ListInstalledColormaps(uint window, bool isThrow)
+    private ListInstalledColormapsReply? ListInstalledColormaps(uint window, bool isThrow)
     {
         var request = new ListInstalledColormapsType(window);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<ListInstalledColormapsResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1119,19 +1146,20 @@ internal class XProto : BaseProtoClient, IXProto
         ;
     }
 
-    private ListPropertiesReply ListProperties(uint window, bool isThrow)
+    private ListPropertiesReply? ListProperties(uint window, bool isThrow)
     {
         var request = new ListPropertiesType(window);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<ListPropertiesResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new ListPropertiesReply(result.Value, socket);
     }
 
-    private LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name, bool isThrow)
+    private LookupColorReply? LookupColor(uint colorMap, ReadOnlySpan<byte> name, bool isThrow)
     {
         var request = new LookupColorType(colorMap, name.Length);
         var requiredBuffer = 12 + name.Length.AddPadding();
@@ -1158,6 +1186,7 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (result, error) = ReceivedResponseAndVerify<LookupColorReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1535,20 +1564,21 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    private QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height,
+    private QueryBestSizeReply? QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height,
         bool isThrow)
     {
         var request = new QueryBestSizeType(shape, drawable, width, height);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<QueryBestSizeReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels, bool isThrow)
+    private QueryColorsReply? QueryColors(uint colorMap, Span<uint> pixels, bool isThrow)
     {
         var request = new QueryColorsType(colorMap, pixels.Length);
         var requiredBuffer = 8 + pixels.Length * 4;
@@ -1575,13 +1605,14 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (result, error) = ReceivedResponseAndVerify<QueryColorsResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new QueryColorsReply(result.Value, socket);
     }
 
-    private QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name, bool isThrow)
+    private QueryExtensionReply? QueryExtension(ReadOnlySpan<byte> name, bool isThrow)
     {
         if (name.Length > ushort.MaxValue)
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
@@ -1604,50 +1635,54 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (result, error) = ReceivedResponseAndVerify<QueryExtensionReply>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private QueryFontReply QueryFont(uint fontId, bool isThrow)
+    private QueryFontReply? QueryFont(uint fontId, bool isThrow)
     {
         var request = new QueryFontType(fontId);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<QueryFontResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new QueryFontReply(result.Value, socket);
     }
 
-    private QueryKeymapReply QueryKeymap(bool isThrow)
+    private QueryKeymapReply? QueryKeymap(bool isThrow)
     {
         var request = new QueryKeymapType();
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<QueryKeymapResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return new QueryKeymapReply(result.Value, socket);
     }
 
-    private QueryPointerReply QueryPointer(uint window, bool isThrow)
+    private QueryPointerReply? QueryPointer(uint window, bool isThrow)
     {
         var request = new QueryPointerType(window);
         ProcessEvents(isThrow);
         socket.Send(ref request);
 
         var (result, error) = ReceivedResponseAndVerify<QueryPointerReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery, bool isThrow)
+    private QueryTextExtentsReply? QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery, bool isThrow)
     {
         var request = new QueryTextExtentsType(font, stringForQuery.Length);
         var requiredBuffer = 8 + (stringForQuery.Length * 2).AddPadding();
@@ -1681,18 +1716,20 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (result, error) = ReceivedResponseAndVerify<QueryTextExtentsReply>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private QueryTreeReply QueryTree(uint window, bool isThrow)
+    private QueryTreeReply? QueryTree(uint window, bool isThrow)
     {
         var request = new QueryTreeType(window);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<QueryTreeResponse>();
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -1882,7 +1919,7 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    private SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes, bool isThrow)
+    private SetModifierMappingReply? SetModifierMapping(Span<ulong> keycodes, bool isThrow)
     {
         var request = new SetModifierMappingType(keycodes.Length);
         var requiredBuffer = 4 + keycodes.Length * 8;
@@ -1909,13 +1946,14 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (result, error) = ReceivedResponseAndVerify<SetModifierMappingReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
         return result.Value;
     }
 
-    private SetPointerMappingReply SetPointerMapping(Span<byte> maps, bool isThrow)
+    private SetPointerMappingReply? SetPointerMapping(Span<byte> maps, bool isThrow)
     {
         var request = new SetPointerMappingType(maps);
         var requiredBuffer = maps.Length.AddPadding() + 5;
@@ -1942,6 +1980,7 @@ internal class XProto : BaseProtoClient, IXProto
         }
 
         var (result, error) = ReceivedResponseAndVerify<SetPointerMappingReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -2025,13 +2064,14 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber++;
     }
 
-    private TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
+    private TranslateCoordinatesReply? TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
         ushort srcY, bool isThrow)
     {
         var request = new TranslateCoordinatesType(srcWindow, destinationWindow, srcX, srcY);
         ProcessEvents(isThrow);
         socket.Send(ref request);
         var (result, error) = ReceivedResponseAndVerify<TranslateCoordinatesReply>(true);
+        if (!error.HasValue && !result.HasValue) return null;
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
@@ -2125,17 +2165,17 @@ internal class XProto : BaseProtoClient, IXProto
         sequenceNumber = 0;
     }
 
-    public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue) =>
+    public AllocColorReply? AllocColor(uint colorMap, ushort red, ushort green, ushort blue) =>
         this.AllocColor(colorMap, red, green, blue, false);
 
-    public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes) =>
+    public AllocColorCellsReply? AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes) =>
         this.AllocColorCells(contiguous, colorMap, colors, planes, false);
 
-    public AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
+    public AllocColorPlanesReply? AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
         ushort greens, ushort blues) =>
         this.AllocColorPlanes(contiguous, colorMap, colors, reds, greens, blues, false);
 
-    public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name) =>
+    public AllocNamedColorReply? AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name) =>
         this.AllocNamedColor(colorMap, name, false);
 
     public void AllowEvents(EventsMode mode, uint time) =>
@@ -2262,53 +2302,53 @@ internal class XProto : BaseProtoClient, IXProto
     public void FreePixmap(uint pixmapId) =>
         this.FreePixmap(pixmapId, false);
 
-    public GetAtomNameReply GetAtomName(ATOM atom) =>
+    public GetAtomNameReply? GetAtomName(ATOM atom) =>
         this.GetAtomName(atom, false);
 
-    public InternAtomReply InternAtom(bool onlyIfExist, string atomName) =>
+    public InternAtomReply? InternAtom(bool onlyIfExist, string atomName) =>
         this.InternAtom(onlyIfExist, atomName, false);
 
-    public GetFontPathReply GetFontPath() =>
+    public GetFontPathReply? GetFontPath() =>
         this.GetFontPath(false);
 
-    public GetGeometryReply GetGeometry(uint drawable) =>
+    public GetGeometryReply? GetGeometry(uint drawable) =>
         this.GetGeometry(drawable, false);
 
-    public GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
+    public GetImageReply? GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
         uint planeMask) =>
         this.GetImage(format, drawable, x, y, width, height, planeMask, false);
 
-    public GetInputFocusReply GetInputFocus() =>
+    public GetInputFocusReply? GetInputFocus() =>
         this.GetInputFocus(false);
 
-    public GetKeyboardControlReply GetKeyboardControl() =>
+    public GetKeyboardControlReply? GetKeyboardControl() =>
         this.GetKeyboardControl(false);
 
-    public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count) =>
+    public GetKeyboardMappingReply? GetKeyboardMapping(byte firstKeycode, byte count) =>
         this.GetKeyboardMapping(firstKeycode, count, false);
 
-    public GetModifierMappingReply GetModifierMapping() =>
+    public GetModifierMappingReply? GetModifierMapping() =>
         this.GetModifierMapping(false);
 
-    public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime) =>
+    public GetMotionEventsReply? GetMotionEvents(uint window, uint startTime, uint endTime) =>
         this.GetMotionEvents(window, startTime, endTime, false);
 
-    public GetPointerControlReply GetPointerControl() =>
+    public GetPointerControlReply? GetPointerControl() =>
         this.GetPointerControl(false);
 
-    public GetPointerMappingReply GetPointerMapping() =>
+    public GetPointerMappingReply? GetPointerMapping() =>
         this.GetPointerMapping(false);
 
-    public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length) =>
+    public GetPropertyReply? GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length) =>
         this.GetProperty(delete, window, property, type, offset, length, false);
 
-    public GetScreenSaverReply GetScreenSaver() =>
+    public GetScreenSaverReply? GetScreenSaver() =>
         this.GetScreenSaver(false);
 
-    public GetSelectionOwnerReply GetSelectionOwner(ATOM atom) =>
+    public GetSelectionOwnerReply? GetSelectionOwner(ATOM atom) =>
         this.GetSelectionOwner(atom, false);
 
-    public GetWindowAttributesReply GetWindowAttributes(uint window) =>
+    public GetWindowAttributesReply? GetWindowAttributes(uint window) =>
         this.GetWindowAttributes(window, false);
 
     public void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
@@ -2320,11 +2360,11 @@ internal class XProto : BaseProtoClient, IXProto
         GrabMode keyboardMode) =>
         this.GrabKey(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode, false);
 
-    public GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+    public GrabKeyboardReply? GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode) =>
         this.GrabKeyboard(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode, false);
 
-    public GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+    public GrabPointerReply? GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp) =>
         this.GrabPointer(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, timeStamp,
             false);
@@ -2344,25 +2384,25 @@ internal class XProto : BaseProtoClient, IXProto
     public void KillClient(uint resource) =>
         this.KillClient(resource, false);
 
-    public ListExtensionsReply ListExtensions() =>
+    public ListExtensionsReply? ListExtensions() =>
         this.ListExtensions();
 
-    public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames) =>
+    public ListFontsReply? ListFonts(ReadOnlySpan<byte> pattern, int maxNames) =>
         this.ListFonts(pattern, maxNames, false);
 
-    public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames) =>
+    public ListFontsWithInfoReply[]? ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames) =>
         this.ListFontsWithInfo(pattan, maxNames, false);
 
-    public ListHostsReply ListHosts() =>
+    public ListHostsReply? ListHosts() =>
         this.ListHosts(false);
 
-    public ListInstalledColormapsReply ListInstalledColormaps(uint window) =>
+    public ListInstalledColormapsReply? ListInstalledColormaps(uint window) =>
         this.ListInstalledColormaps(window, false);
 
-    public ListPropertiesReply ListProperties(uint window) =>
+    public ListPropertiesReply? ListProperties(uint window) =>
         this.ListProperties(window, false);
 
-    public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name) =>
+    public LookupColorReply? LookupColor(uint colorMap, ReadOnlySpan<byte> name) =>
         this.LookupColor(colorMap, name, false);
 
     public void MapSubwindows(uint window) =>
@@ -2409,28 +2449,28 @@ internal class XProto : BaseProtoClient, IXProto
         byte leftPad, byte depth, Span<byte> data) =>
         this.PutImage(format, drawable, gc, width, height, x, y, leftPad, depth, data, false);
 
-    public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height) =>
+    public QueryBestSizeReply? QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height) =>
         this.QueryBestSize(shape, drawable, width, height, false);
 
-    public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels) =>
+    public QueryColorsReply? QueryColors(uint colorMap, Span<uint> pixels) =>
         this.QueryColors(colorMap, pixels, false);
 
-    public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name) =>
+    public QueryExtensionReply? QueryExtension(ReadOnlySpan<byte> name) =>
         this.QueryExtension(name, false);
 
-    public QueryFontReply QueryFont(uint fontId) =>
+    public QueryFontReply? QueryFont(uint fontId) =>
         this.QueryFont(fontId, false);
 
-    public QueryKeymapReply QueryKeymap() =>
+    public QueryKeymapReply? QueryKeymap() =>
         this.QueryKeymap(false);
 
-    public QueryPointerReply QueryPointer(uint window) =>
+    public QueryPointerReply? QueryPointer(uint window) =>
         this.QueryPointer(window, false);
 
-    public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery) =>
+    public QueryTextExtentsReply? QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery) =>
         this.QueryTextExtents(font, stringForQuery, false);
 
-    public QueryTreeReply QueryTree(uint window) =>
+    public QueryTreeReply? QueryTree(uint window) =>
         this.QueryTree(window, false);
 
     public void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
@@ -2465,10 +2505,10 @@ internal class XProto : BaseProtoClient, IXProto
     public void SetInputFocus(InputFocusMode mode, uint focus, uint time) =>
         this.SetInputFocus(mode, focus, time, false);
 
-    public SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes) =>
+    public SetModifierMappingReply? SetModifierMapping(Span<ulong> keycodes) =>
         this.SetModifierMapping(keycodes, false);
 
-    public SetPointerMappingReply SetPointerMapping(Span<byte> maps) =>
+    public SetPointerMappingReply? SetPointerMapping(Span<byte> maps) =>
         this.SetPointerMapping(maps, false);
 
 
@@ -2484,7 +2524,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name) =>
         this.StoreNamedColor(mode, colormapId, pixels, name, false);
 
-    public TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
+    public TranslateCoordinatesReply? TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
         ushort srcY) =>
         this.TranslateCoordinates(srcWindow, destinationWindow, srcX, srcY, false);
 

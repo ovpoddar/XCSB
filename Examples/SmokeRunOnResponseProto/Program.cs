@@ -24,43 +24,43 @@ client.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
 
 
 var namedColor = client.AllocNamedColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Red"u8);
-Console.WriteLine($"{namedColor.ExactBlue} {namedColor.ExactGreen} {namedColor.ExactRed}");
+Console.WriteLine($"{namedColor.Value.ExactBlue} {namedColor.Value.ExactGreen} {namedColor.Value.ExactRed}");
 
 client.CloseFont(font);
 
-Debug.Assert(namedColor.VisualRed == namedColor.ExactRed && namedColor.ExactRed == ushort.MaxValue);
-Debug.Assert(namedColor.VisualGreen == namedColor.ExactGreen && namedColor.ExactGreen == 0);
-Debug.Assert(namedColor.VisualBlue == namedColor.ExactBlue && namedColor.ExactBlue == 0);
+Debug.Assert(namedColor.Value.VisualRed == namedColor.Value.ExactRed && namedColor.Value.ExactRed == ushort.MaxValue);
+Debug.Assert(namedColor.Value.VisualGreen == namedColor.Value.ExactGreen && namedColor.Value.ExactGreen == 0);
+Debug.Assert(namedColor.Value.VisualBlue == namedColor.Value.ExactBlue && namedColor.Value.ExactBlue == 0);
 
 var detailsFont = client.ListFontsWithInfo("*"u8, 5);
 foreach (var item in detailsFont)
     Console.WriteLine(item.Name);
 
 var lookUpColor = client.LookupColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Light Yellow"u8);
-Debug.Assert(lookUpColor.VisualRed == lookUpColor.ExactRed && lookUpColor.ExactRed == ushort.MaxValue);
-Debug.Assert(lookUpColor.VisualGreen == lookUpColor.ExactGreen && lookUpColor.ExactGreen == ushort.MaxValue);
+Debug.Assert(lookUpColor.Value.VisualRed == lookUpColor.Value.ExactRed && lookUpColor.Value.ExactRed == ushort.MaxValue);
+Debug.Assert(lookUpColor.Value.VisualGreen == lookUpColor.Value.ExactGreen && lookUpColor.Value.ExactGreen == ushort.MaxValue);
 
 var keyboardMapping = client.GetKeyboardMapping(client.HandshakeSuccessResponseBody.MinKeyCode,
     (byte)(client.HandshakeSuccessResponseBody.MaxKeyCode - client.HandshakeSuccessResponseBody.MinKeyCode + 1));
 
-var originalKeySym = keyboardMapping.Keysyms;
+var originalKeySym = keyboardMapping.Value.Keysyms;
 Console.WriteLine(string.Join(", ", originalKeySym));
-var keysyms_per_keycode = new uint[keyboardMapping.KeyPerKeyCode];
-Array.Copy(originalKeySym[0..keyboardMapping.KeyPerKeyCode], keysyms_per_keycode, keyboardMapping.KeyPerKeyCode);
+var keysyms_per_keycode = new uint[keyboardMapping.Value.KeyPerKeyCode];
+Array.Copy(originalKeySym[0..keyboardMapping.Value.KeyPerKeyCode], keysyms_per_keycode, keyboardMapping.Value.KeyPerKeyCode);
 keysyms_per_keycode[0] = 0x0061;
 keysyms_per_keycode[1] = 0x0062;
 
 client.ChangeKeyboardMappingChecked(
     1,
     8,
-    keyboardMapping.KeyPerKeyCode,
+    keyboardMapping.Value.KeyPerKeyCode,
     keysyms_per_keycode
 );
 Console.WriteLine("ChangeKeyboardMapping: Modified one key (dummy)\n");
 
 var queryColor = client.QueryColors(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
     [0x0000, 0x00FF, 0xFF00, 0xFFFF]);
-foreach (var color in queryColor.Colors)
+foreach (var color in queryColor.Value.Colors)
     Console.WriteLine($"Blue: {color.Blue} Green: {color.Green} Red: {color.Red} Reserved: {color.Reserved}");
 
 while (true)
@@ -78,28 +78,28 @@ while (true)
     {
         var getBestWindowSize = client.QueryBestSize(QueryShapeOf.LargestCursor,
             window, 32, 32);
-        Console.WriteLine($"Best size for 32x32: {getBestWindowSize.Width} {getBestWindowSize.Height}");
+        Console.WriteLine($"Best size for 32x32: {getBestWindowSize.Value.Width} {getBestWindowSize.Value.Height}");
 
         var resultQueryKeymap = client.QueryKeymap();
-        Console.WriteLine($"{resultQueryKeymap.keys.Length}");
+        Console.WriteLine($"{resultQueryKeymap.Value.keys.Length}");
         var resultGetScreenSaver = client.GetScreenSaver();
-        Console.WriteLine($"GetScreenSaver will time out {resultGetScreenSaver.Timeout}");
+        Console.WriteLine($"GetScreenSaver will time out {resultGetScreenSaver.Value.Timeout}");
         var resultGetPointerControl = client.GetPointerControl();
-        Console.WriteLine($"{resultGetPointerControl.AccelDenominator} {resultGetPointerControl.AccelNumerator}");
+        Console.WriteLine($"{resultGetPointerControl.Value.AccelDenominator} {resultGetPointerControl.Value.AccelNumerator}");
         var resultGetModifierMapping = client.GetModifierMapping();
         Console.WriteLine("GetModifierMapping");
-        var resultSetModifierMapping = client.SetModifierMapping(resultGetModifierMapping.Keycodes);
-        Console.WriteLine(resultSetModifierMapping.Status);
+        var resultSetModifierMapping = client.SetModifierMapping(resultGetModifierMapping.Value.Keycodes);
+        Console.WriteLine(resultSetModifierMapping.Value.Status);
         var resultGetKeyboardControl = client.GetKeyboardControl();
-        Console.WriteLine($"{resultGetKeyboardControl.BellPercent}");
+        Console.WriteLine($"{resultGetKeyboardControl.Value.BellPercent}");
         var resultGetPointerMapping = client.GetPointerMapping();
-        var resultSetPointerMapping = client.SetPointerMapping(resultGetPointerMapping.Map);
-        Console.WriteLine(resultSetPointerMapping.Status);
+        var resultSetPointerMapping = client.SetPointerMapping(resultGetPointerMapping.Value.Map);
+        Console.WriteLine(resultSetPointerMapping.Value.Status);
     }
 
 
 
     var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
-    Console.WriteLine(resultGetMotionEvents.Events.Length);
+    Console.WriteLine(resultGetMotionEvents.Value.Events.Length);
 
 }
