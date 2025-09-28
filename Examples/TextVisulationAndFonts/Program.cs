@@ -1,14 +1,14 @@
 ﻿using System.Text;
 using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 
 using var c = XcsbClient.Initialized();
 
 var window = c.NewId();
 c.CreateWindow(0,
-    window,
+    window, 
     c.HandshakeSuccessResponseBody.Screens[0].Root,
  0,
  0,
@@ -32,14 +32,14 @@ while (isRunning)
 {
     var Event = c.GetEvent();
 
-    if (!Event.HasValue) return;
-    if (Event.Value.EventType == EventType.Error)
+    if (Event.ReplyType == XEventType.LastEvent) return;
+    if (Event.Error.HasValue)
     {
-        Console.WriteLine(Event.Value.ErrorEvent.ErrorCode.ToString());
+        Console.WriteLine(Event.Error.Value.ResponseHeader.Reply);
         isRunning = false;
         break;
     }
-    else if (Event.Value.EventType is EventType.KeyPress or EventType.ButtonPress)
+    else if (Event.ReplyType is XEventType.KeyPress)
     {
         if (!isExecuted)
         {
@@ -48,32 +48,26 @@ while (isRunning)
                 [0x00ffffff, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask | EventMask.ButtonPressMask)]);
             isExecuted = true;
         }
-        if (Event.Value.InputEvent.Detail == 24)//d
+
+        var keyPressEvent = Event.As<KeyPressEvent>();  
+        if (keyPressEvent.Detail == 24)//d
         {
             c.DestroyWindow(window);
             isRunning = false;
         }
-        if (Event.Value.InputEvent.Detail == 46) //c
+        if (keyPressEvent.Detail == 46) //c
         {
-            c.CirculateWindow(Direction.LowerHighest, window);
+            c.CirculateWindow(Circulate.LowerHighest, window);
         }
 
-        if (Event.Value.EventType == EventType.ButtonPress && Event.Value.InputEvent.Detail == 1) //left
-        {
-            var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
-            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
-            c.WarpPointer(0, window, 0, 0, 0, 0, 200, 150);
-            currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
-            Console.WriteLine($"before warp the pointer {currentPos.RootX} {currentPos.RootY}");
-        }
-        if (Event.Value.InputEvent.Detail == 58) //m
+        if (keyPressEvent.Detail == 58) //m
         {
             c.UnmapWindow(window);
             Thread.Sleep(1000);
             c.MapWindow(window);
         }
 
-        if (Event.Value.InputEvent.Detail == 25)// w
+        if (keyPressEvent.Detail == 25)// w
         {
 
             c.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", fontId);
@@ -107,7 +101,7 @@ while (isRunning)
             c.CloseFont(fontId);
         }
 
-        if (Event.Value.InputEvent.Detail == 54) //c
+        if (keyPressEvent.Detail == 54) //c
         {
             var gc = c.NewId();
             c.CreateGC(gc, window, GCMask.Foreground, [0x00ffffff]);
@@ -120,9 +114,9 @@ while (isRunning)
         }
 
         c.Bell(100);
-        Console.WriteLine($"event {Event.Value.EventType} {Event.Value.InputEvent.Detail}");
+        Console.WriteLine($"event {Event.ReplyType} {keyPressEvent.Detail}");
     }
-    else if (Event.Value.EventType == EventType.Expose)
+    else if (Event.ReplyType == XEventType.Expose)
     {
         var gc = c.NewId();
         c.CreateGC(gc, window, GCMask.Foreground, [0x00ff0000]);
@@ -133,8 +127,20 @@ while (isRunning)
 
         c.FreeGC(gc);
     }
+    else if (Event.ReplyType is XEventType.ButtonPress)
+    {
+        if (Event.As<ButtonPressEvent>().Detail == Button.LeftButton)
+        {
+            var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
+            Console.WriteLine($"before warp the pointer {currentPos.Value.RootX}   {currentPos.Value.RootY}");
+            c.WarpPointer(0, window, 0, 0, 0, 0, 200, 150);
+            currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
+            Console.WriteLine($"before warp the pointer {currentPos.Value.RootX}   {currentPos.Value.RootY}");
+        }
+
+    }
     else
     {
-        Console.WriteLine(Event.Value.EventType);
+        Console.WriteLine(Event.ReplyType);
     }
 }

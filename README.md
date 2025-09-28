@@ -3,8 +3,8 @@
 > ⚠️ **Warning:** Xcsb is currently in an unstable state. APIs and functionality may change without notice. Not all
 > methods are implemented. Use in production environments is not recommended.
 
-**Xcsb** is a .NET library that lets you talk directly to the X11 Window System. For .NET developers, this means you can
-build cross-platform desktop apps that interact with X11 servers.
+**Xcsb** is a .NET library designed to interface with the X11 Window System. It allows .NET developers to create
+cross-platform desktop applications that communicate directly with X11 servers.
 
 ## Features
 

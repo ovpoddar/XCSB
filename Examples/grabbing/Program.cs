@@ -1,7 +1,7 @@
 ﻿using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 
 var connection = XcsbClient.Initialized();
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];
@@ -16,8 +16,8 @@ connection.CreateWindow(0, window, screen.Root,
         (uint)(EventMask.KeyPressMask | EventMask.ExposureMask | EventMask.ButtonPressMask |
                EventMask.ButtonReleaseMask)
     ]);
-connection.ChangeProperty(PropertyMode.Replace, window,
-    39, 31, "XCB System Control Demo"u8.ToArray());
+connection.ChangeProperty<byte>(PropertyMode.Replace, window,
+    (ATOM)39, ATOM.String, "XCB System Control Demo"u8.ToArray());
 var gc = connection.NewId();
 connection.CreateGC(gc, window, 0, []);
 connection.MapWindow(window);
@@ -27,23 +27,30 @@ bool isRunning = true;
 while (isRunning)
 {
     var evnt = connection.GetEvent();
-    if (!evnt.HasValue) return 0;
-    switch (evnt.Value.EventType)
+    if (evnt.ReplyType == XEventType.LastEvent) return 0;
+    if (evnt.Error.HasValue)
     {
-        case EventType.Expose:
+        isRunning = false;
+        Console.WriteLine(evnt.Error.Value.ResponseHeader);
+    }
+    
+    switch (evnt.ReplyType)
+    {
+        case XEventType.Expose:
             draw_interface();
             break;
 
-        case EventType.KeyPress:
+        case XEventType.KeyPress:
             {
-                if (evnt.Value.InputEvent.Detail == 45 && evnt.Value.InputEvent.State == KeyButMask.Control)
+                var keyPressEvent = evnt.As<KeyPressEvent>();
+                if (keyPressEvent is { Detail: 45, State: KeyButMask.Control })
                 {
                     Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
-                    connection.AllowEvents(EventsMode.SyncKeyboard, evnt.Value.InputEvent.TimeStamp);
+                    connection.AllowEvents(EventsMode.SyncKeyboard, keyPressEvent.TimeStamp);
                     break;
                 }
 
-                switch (evnt.Value.InputEvent.Detail)
+                switch (keyPressEvent.Detail)
                 {
                     case 10: demo_change_hosts(); break; // 1
                     case 11: demo_keyboard_control(); break; // 2
@@ -64,10 +71,10 @@ while (isRunning)
                 break;
             }
 
-        case EventType.ButtonPress:
+        case XEventType.ButtonPress:
             {
-                var bp = evnt.Value.InputEvent;
-                if (bp.Detail == 3 && (bp.State == KeyButMask.Control))
+                var bp = evnt.As<ButtonPressEvent>();
+                if (bp is { Detail: Button.RightButton, State: KeyButMask.Control })
                 {
                     Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
                     connection.AllowEvents(EventsMode.SyncPointer, bp.TimeStamp);
@@ -75,10 +82,6 @@ while (isRunning)
 
                 break;
             }
-        case EventType.Error:
-            isRunning = false;
-            Console.WriteLine(evnt.Value.ErrorEvent.ErrorCode);
-            break;
     }
 }
 
@@ -87,6 +90,12 @@ return 0;
 void demo_change_hosts()
 {
     Console.WriteLine("=== ChangeHosts Demo ===\n");
+    var hosts = connection.ListHosts();
+    foreach (var s in hosts.Value.Hosts)
+    {
+        Console.WriteLine("ablaible hosts: " + s);
+    }
+
     connection.ChangeHosts(HostMode.Insert,
         Family.Internet, [127, 0, 0, 1]);
 
@@ -127,8 +136,8 @@ void demo_store_color()
 {
     Console.WriteLine("=== StoreNamedColor Demo ===\n");
     var cookie = connection.AllocColor(colormap, 65535, 0, 0);
-    Console.WriteLine("StoreNamedColor: Red color allocated, Pixel value: %u\n", cookie.Pixel);
-    connection.ChangeGC(gc, GCMask.Foreground, cookie.Pixel);
+    Console.WriteLine("StoreNamedColor: Red color allocated, Pixel value: %u\n", cookie.Value.Pixel);
+    connection.ChangeGC(gc, GCMask.Foreground, [cookie.Value.Pixel]);
     connection.PolyFillRectangle(window, gc, [new Rectangle() { X = 300, Y = 50, Width = 80, Height = 30 }]);
 }
 
@@ -156,11 +165,11 @@ void show_help()
 
 void draw_interface()
 {
-    connection.ChangeGC(gc, GCMask.Foreground, screen.WhitePixel);
+    connection.ChangeGC(gc, GCMask.Foreground, [screen.WhitePixel]);
     connection.PolyFillRectangle(window, gc, [
         new Rectangle() { X = 0, Y = 0, Width = 500, Height = 400 }
     ]);
-    connection.ChangeGC(gc, GCMask.Foreground, screen.BlackPixel);
+    connection.ChangeGC(gc, GCMask.Foreground, [screen.BlackPixel]);
     connection.ImageText8(window, gc, 20, 30, "XCB System Control Demo"u8);
     connection.ImageText8(window, gc, 20, 60, "Press number keys (1-6) for demos"u8);
     connection.ImageText8(window, gc, 20, 90, "Press 'h' for help, 'q' to quit"u8);

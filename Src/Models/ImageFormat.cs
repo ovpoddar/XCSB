@@ -2,7 +2,6 @@
 
 public enum ImageFormat : byte
 {
-    XYBitmap,
-    XYPixmap,
-    ZPixmap
+    XYPixmap = 1,
+    ZPixmap = 2
 }

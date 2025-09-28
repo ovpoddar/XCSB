@@ -1,6 +1,7 @@
-﻿using Xcsb.Masks;
+﻿using Xcsb.Event;
+using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -10,9 +11,9 @@ namespace Xcsb;
 public interface IVoidProtoChecked
 {
     void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args);
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args);
 
-    void ChangeWindowAttributesChecked(uint window, ValueMask mask, params uint[] args);
+    void ChangeWindowAttributesChecked(uint window, ValueMask mask, Span<uint> args);
 
     void DestroyWindowChecked(uint window);
     void DestroySubwindowsChecked(uint window);
@@ -26,24 +27,24 @@ public interface IVoidProtoChecked
     void UnmapWindowChecked(uint window);
     void UnmapSubwindowsChecked(uint window);
 
-    void ConfigureWindowChecked(uint window, ConfigureValueMask mask, params uint[] args);
+    void ConfigureWindowChecked(uint window, ConfigureValueMask mask, Span<uint> args);
 
-    void CirculateWindowChecked(Direction direction, uint window);
+    void CirculateWindowChecked(Circulate circulate, uint window);
 
-    void ChangePropertyChecked<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
+    void ChangePropertyChecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
     ;
 
-    void DeletePropertyChecked(uint window, uint atom);
+    void DeletePropertyChecked(uint window, ATOM atom);
 
-    void RotatePropertiesChecked(uint window, ushort delta, params uint[] properties);
+    void RotatePropertiesChecked(uint window, ushort delta, Span<ATOM> properties);
 
-    void SetSelectionOwnerChecked(uint owner, uint atom, uint timestamp);
+    void SetSelectionOwnerChecked(uint owner, ATOM atom, uint timestamp);
 
-    void ConvertSelectionChecked(uint requestor, uint selection, uint target, uint property, uint timestamp);
+    void ConvertSelectionChecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp);
 
     void SendEventChecked(bool propagate, uint destination, uint eventMask, XEvent evnt);
 
@@ -82,15 +83,15 @@ public interface IVoidProtoChecked
 
     void FreePixmapChecked(uint pixmapId);
 
-    void CreateGCChecked(uint gc, uint drawable, GCMask mask, params uint[] args);
+    void CreateGCChecked(uint gc, uint drawable, GCMask mask, Span<uint> args);
 
-    void ChangeGCChecked(uint gc, GCMask mask, params uint[] args);
+    void ChangeGCChecked(uint gc, GCMask mask, Span<uint> args);
 
     void CopyGCChecked(uint srcGc, uint dstGc, GCMask mask);
 
-    void SetDashesChecked(uint gc, ushort dashOffset, byte[] dashes);
+    void SetDashesChecked(uint gc, ushort dashOffset, Span<byte> dashes);
 
-    void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Rectangle[] rectangles);
+    void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles);
 
     void FreeGCChecked(uint gc);
 
@@ -102,23 +103,23 @@ public interface IVoidProtoChecked
     void CopyPlaneChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane);
 
-    void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
+    void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points);
 
-    void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
+    void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points);
 
-    void PolySegmentChecked(uint drawable, uint gc, Segment[] segments);
+    void PolySegmentChecked(uint drawable, uint gc, Span<Segment> segments);
 
-    void PolyRectangleChecked(uint drawable, uint gc, Rectangle[] rectangles);
+    void PolyRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles);
 
-    void PolyArcChecked(uint drawable, uint gc, Arc[] arcs);
+    void PolyArcChecked(uint drawable, uint gc, Span<Arc> arcs);
 
-    void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points);
+    void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points);
 
-    void PolyFillRectangleChecked(uint drawable, uint gc, Rectangle[] rectangles);
+    void PolyFillRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles);
 
-    void PolyFillArcChecked(uint drawable, uint gc, Arc[] arcs);
+    void PolyFillArcChecked(uint drawable, uint gc, Span<Arc> arcs);
 
-    void PutImageChecked(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
+    void PutImageChecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
         byte leftPad, byte depth, Span<byte> data);
 
     void ImageText8Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text);
@@ -134,9 +135,9 @@ public interface IVoidProtoChecked
     void InstallColormapChecked(uint colormapId);
     void UninstallColormapChecked(uint colormapId);
 
-    void FreeColorsChecked(uint colormapId, uint planeMask, params uint[] pixels);
+    void FreeColorsChecked(uint colormapId, uint planeMask, Span<uint> pixels);
 
-    void StoreColorsChecked(uint colormapId, params ColorItem[] item);
+    void StoreColorsChecked(uint colormapId, Span<ColorItem> item);
 
     void StoreNamedColorChecked(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name);
 
@@ -152,11 +153,11 @@ public interface IVoidProtoChecked
         ushort backGreen, ushort backBlue);
 
     // suppose need changes
-    void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym);
+    void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym);
 
     void BellChecked(sbyte percent);
 
-    void ChangeKeyboardControlChecked(KeyboardControlMask mask, params uint[] args);
+    void ChangeKeyboardControlChecked(KeyboardControlMask mask, Span<uint> args);
 
     void ChangePointerControlChecked(Acceleration acceleration, ushort? threshold);
 
@@ -164,13 +165,13 @@ public interface IVoidProtoChecked
 
     void ForceScreenSaverChecked(ForceScreenSaverMode mode);
 
-    void ChangeHostsChecked(HostMode mode, Family family, byte[] address);
+    void ChangeHostsChecked(HostMode mode, Family family, Span<byte> address);
 
     void SetAccessControlChecked(AccessControlMode mode);
     void SetCloseDownModeChecked(CloseDownMode mode);
     void KillClientChecked(uint resource);
 
-    void NoOperationChecked(params uint[] args);
+    void NoOperationChecked(Span<uint> args);
 
     // todo: need a writer for the TEXTITEM16, TEXTITEM8
     void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);

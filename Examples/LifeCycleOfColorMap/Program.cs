@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics;
 using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
-using Xcsb.Models.Event;
+using Xcsb.Models;
 
 var x = XcsbClient.Initialized();
 
@@ -17,7 +18,7 @@ x.CreateColormapChecked(Xcsb.Models.ColormapAlloc.None,
     screen.RootVisualId);
 
 var win = x.NewId();
-x.CreateWindowChecked(screen.RootDepth.DepthValue,
+x.CreateWindowChecked(screen.RootDepth!.DepthValue,
     win,
     root,
     0, 0, 500, 500,
@@ -26,7 +27,7 @@ x.CreateWindowChecked(screen.RootDepth.DepthValue,
     [screen.WhitePixel, (uint)EventMask.ExposureMask, colormap]);
 
 x.InstallColormapChecked(colormap);
-Console.WriteLine("Colormap installed.");
+Console.WriteLine("ColorMap installed.");
 
 x.UngrabServerChecked();
 
@@ -34,10 +35,10 @@ x.MapWindowChecked(win);
 Thread.Sleep(3000);
 
 x.UninstallColormapChecked(colormap);
-Console.WriteLine("Colormap uninstalled.");
+Console.WriteLine("ColorMap uninstalled.");
 
 x.FreeColormapChecked(colormap);
-Console.WriteLine("Colormap freed.");
+Console.WriteLine("ColorMap freed.");
 
 x.ConfigureWindowChecked(win, ConfigureValueMask.X | ConfigureValueMask.Y | ConfigureValueMask.Width | ConfigureValueMask.Height,
     [100, 100, 300, 300]);
@@ -75,7 +76,7 @@ x.CreateWindowChecked(0,
     sub1, win,
     30, 30, 500, 250, 2,
     Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [screen.WhitePixel]);
-x.MapSubwindowsChecked(win);
+x.MapSubwindowsChecked(sub);
 Console.WriteLine("Subwindow mapped.");
 
 Thread.Sleep(5000);
@@ -95,11 +96,25 @@ x.CopyColormapAndFreeChecked(cmap, colormap1);
 Console.WriteLine("Copied colormap and freed old one.");
 Thread.Sleep(100);
 
-var xevnt = x.GetEvent();
-Debug.Assert(xevnt!.Value.EventType == EventType.Expose || xevnt!.Value.EventType == EventType.MappingNotify);
-Console.WriteLine("all success {0}", xevnt!.Value.EventType != EventType.Error);
 
-x.DestroyWindowChecked(sub);
+var resultGrabKeyboard = x.GrabKeyboard(
+    false,
+    win,
+    0,
+    GrabMode.Asynchronous,
+    GrabMode.Asynchronous
+);
+        
+Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Value.Status}");
+x.UngrabKeyboard(0);
+
+var xevnt = x.GetEvent();
+Debug.Assert(xevnt.ReplyType == XEventType.Expose || xevnt.ReplyType == XEventType.MappingNotify);
+// todo: fix this
+Console.WriteLine("all success {0}", !xevnt.Error.HasValue);
+
+x.UnmapSubwindowsChecked(sub);
 x.DestroyWindowChecked(sub1);
 x.DestroySubwindowsChecked(win);
 x.DestroyWindowChecked(win);
+Console.WriteLine("closing");

@@ -1,104 +1,141 @@
-﻿using System.Net.Sockets;
+﻿using System.Diagnostics;
+using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Event;
 using Xcsb.Helpers;
-using Xcsb.Models.Event;
+using Xcsb.Models.Infrastructure.Exceptions;
+using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
 
 namespace Xcsb;
 
 internal class BaseProtoClient
 {
-    internal readonly Stack<XEvent> bufferEvents;
+    internal readonly Stack<GenericEvent> bufferEvents;
     internal readonly Socket socket;
     internal ushort sequenceNumber;
 
     public BaseProtoClient(Socket socket)
     {
         this.socket = socket;
-        bufferEvents = new Stack<XEvent>();
+        bufferEvents = new Stack<GenericEvent>();
     }
 
-    internal (T? result, ErrorEvent? error) ReceivedResponse<T>() where T : struct
-    {
-        if (socket.Available == 0)
-            socket.Poll(-1, SelectMode.SelectRead);
 
-        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
-        while (socket.Available != 0)
+    private (T? result, GenericError? error, int? eventSequence) ParseResponse<T>(scoped ref Span<byte> receivedBuffer)
+        where T : unmanaged, IXReply
+    {
+        ref var content = ref receivedBuffer.AsStruct<XResponse>();
+        var responseType = content.GetResponseType();
+        if (content.Verify(sequenceNumber))
         {
-            socket.ReceiveExact(buffer);
-            ref var content = ref buffer.AsStruct<XEvent>();
-            switch (content)
-            {
-                case { EventType: EventType.Error }:
-                    return (null, content.ErrorEvent);
-                case { EventType: (EventType)1 }:
-                    return (buffer.AsStruct<T>(), null);
-                default:
-                    bufferEvents.Push(content);
-                    break;
-            }
+            if (responseType is XResponseType.Error)
+                return (null, content.As<GenericError>(), null);
+
+            socket.ReceiveExact(receivedBuffer[32..]);
+            return (receivedBuffer.ToStruct<T>(), null, null);
         }
 
-        throw new Exception();
+        var eventContent = content.As<GenericEvent>();
+        if (eventContent.Verify(sequenceNumber))
+            bufferEvents.Push(content.As<GenericEvent>());
+        return (null, null, eventContent.Sequence);
+    }
+    
+#if !NETSTANDARD
+    [SkipLocalsInit]
+#endif
+    internal (T? result, GenericError? error) ReceivedResponseAndVerify<T>(bool exhaustSocket = false)
+        where T : unmanaged, IXReply
+    {
+        sequenceNumber++;
+        var requestLength = Unsafe.SizeOf<T>();
+        Span<byte> responseBuffer = stackalloc byte[requestLength];
+        var breakCounter = 3;
+        while (true)
+        {
+            socket.EnsureReadSize(32);
+            socket.ReceiveExact(responseBuffer[..32]);
+            var result = ParseResponse<T>(ref responseBuffer);
+            if (result.eventSequence.HasValue)
+            {
+                if (result.eventSequence.Value > sequenceNumber || breakCounter == 0) 
+                    return (null, null);
+                if (socket.Available == 0) 
+                    breakCounter--;
+
+                continue;
+            }
+
+            if (exhaustSocket)
+                result.result = ExhustSocket<T>() ?? result.result;
+            return (result.result, result.error);
+        }
     }
 
-    internal ErrorEvent? Received()
+    private T? ExhustSocket<T>() where T : unmanaged, IXReply
+    {
+        if (socket.Available == 0)
+            return null;
+        Span<byte> buffer = stackalloc byte[32];
+        T? result = default;
+        while (socket.Available != 0 && socket.Available % 32 == 0)
+        {
+            socket.ReceiveExact(buffer);
+            ref var content = ref buffer.AsStruct<XResponse>();
+            var responseType = content.GetResponseType();
+            if (responseType is not XResponseType.Event or XResponseType.Notify or XResponseType.Unknown)
+            {
+                result = buffer.ToStruct<T>();
+                continue;
+            }
+
+            var eventContent = content.As<GenericEvent>();
+            if (eventContent.Verify(sequenceNumber))
+                bufferEvents.Push(content.As<GenericEvent>());
+        }
+        return result;
+    }
+
+    internal GenericError? Received()
     {
         if (socket.Available == 0)
             return null;
 
-        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
+        Span<byte> buffer = stackalloc byte[Marshal.SizeOf<XResponse>()];
         while (socket.Available != 0)
         {
             socket.ReceiveExact(buffer);
-            ref var content = ref buffer.AsStruct<XEvent>();
-            switch (content.EventType)
+            ref var content = ref buffer.AsStruct<XResponse>();
+            var responseType = content.GetResponseType();
+            switch (responseType)
             {
-                case EventType.Error:
-                    return content.ErrorEvent;
-                case (EventType)1:
+                case XResponseType.Error:
+                    return content.As<GenericError>();
+                case XResponseType.Event:
+                case XResponseType.Notify:
+                case XResponseType.Unknown:
+                    bufferEvents.Push(content.As<GenericEvent>());
                     break;
-                case EventType.KeyPress:
-                case EventType.KeyRelease:
-                case EventType.ButtonPress:
-                case EventType.ButtonRelease:
-                case EventType.MotionNotify:
-                case EventType.EnterNotify:
-                case EventType.LeaveNotify:
-                case EventType.FocusIn:
-                case EventType.FocusOut:
-                case EventType.KeymapNotify:
-                case EventType.Expose:
-                case EventType.GraphicsExpose:
-                case EventType.NoExpose:
-                case EventType.VisibilityNotify:
-                case EventType.CreateNotify:
-                case EventType.DestroyNotify:
-                case EventType.UnMapNotify:
-                case EventType.MapNotify:
-                case EventType.MapRequest:
-                case EventType.ReParentNotify:
-                case EventType.ConfigureNotify:
-                case EventType.ConfigureRequest:
-                case EventType.GravityNotify:
-                case EventType.ResizeRequest:
-                case EventType.CirculateNotify:
-                case EventType.CirculateRequest:
-                case EventType.PropertyNotify:
-                case EventType.SelectionClear:
-                case EventType.SelectionRequest:
-                case EventType.SelectionNotify:
-                case EventType.ColormapNotify:
-                case EventType.ClientMessage:
-                case EventType.MappingNotify:
-                case EventType.GenericEvent:
-                case EventType.LastEvent:
+                case XResponseType.Reply:
                 default:
-                    bufferEvents.Push(content);
-                    break;
+                    continue;
             }
         }
 
         return null;
+    }
+
+    internal void ProcessEvents(bool throwOnError)
+    {
+        while (true)
+        {
+            var error = Received();
+            if (error.HasValue && throwOnError)
+                throw new XEventException(error.Value);
+            if (socket.Available == 0)
+                break;
+        }
     }
 }

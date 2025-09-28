@@ -1,9 +1,9 @@
 ﻿using System.Buffers;
 using System.Text;
 using Xcsb;
+using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
 
 const int WIDTH = 50;
 const int HEIGHT = 50;
@@ -23,7 +23,7 @@ xcsb.CreateWindow(screen.RootDepth.DepthValue,
     [screen.WhitePixel, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask)]
 );
 
-lazyXcsb.ChangeProperty(PropertyMode.Replace, window, 39, 31, Encoding.UTF8.GetBytes("working fixing dodo"));
+lazyXcsb.ChangeProperty<byte>(PropertyMode.Replace, window, ATOM.WmName, ATOM.String, Encoding.UTF8.GetBytes("working fixing dodo"));
 
 var gc = xcsb.NewId();
 lazyXcsb.CreateGC(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
@@ -54,15 +54,10 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (!evnt.HasValue) return;
-    if (evnt.Value.EventType == EventType.Error)
+    if (evnt.ReplyType == XEventType.LastEvent) return;
+    if (evnt.ReplyType == XEventType.Expose)
     {
-        Console.WriteLine(evnt.Value.ErrorEvent.ErrorCode.ToString());
-        isRunning = false;
-    }
-    if (evnt.Value.EventType == EventType.Expose)
-    {
-        lazyXcsb.PutImage(ImageFormat.ZPixmap,
+        lazyXcsb.PutImage(ImageFormatBitmap.ZPixmap,
             window,
             gc,
             WIDTH,

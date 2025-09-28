@@ -1,5 +1,6 @@
 ﻿namespace Xcsb.Models;
 
+[Flags]
 public enum ColorFlag : byte
 {
     Red = 1,

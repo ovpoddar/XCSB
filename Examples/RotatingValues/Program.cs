@@ -4,14 +4,14 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
 
-int screen_num;
+int screen_num = 0;
 var x = XcsbClient.Initialized();
 
 var screen = x.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
 
 var win = x.NewId();
-x.CreateWindow(screen.RootDepth.DepthValue,
+x.CreateWindow(screen.RootDepth!.DepthValue,
     win,
     root,
     0, 0, 300, 200,
@@ -20,10 +20,10 @@ x.CreateWindow(screen.RootDepth.DepthValue,
 x.MapWindow(win);
 
 var alloc_cookie = x.AllocColor(screen.DefaultColormap, 65535, 0, 0); // Red
-Console.WriteLine("Allocated red color, Pixel value: {0}", alloc_cookie.Pixel);
+Console.WriteLine("Allocated red color, Pixel value: {0}", alloc_cookie.Value.Pixel);
 
 // Free the color
-x.FreeColors(screen.DefaultColormap, 0, [alloc_cookie.Pixel]);
+x.FreeColors(screen.DefaultColormap, 0, [alloc_cookie.Value.Pixel]);
 Console.WriteLine("Color freed successfully");
 
 var grabResult = x.GrabPointer(false,
@@ -32,7 +32,7 @@ var grabResult = x.GrabPointer(false,
     GrabMode.Asynchronous, GrabMode.Asynchronous,
     0, 0, 0);
 
-Console.WriteLine($"Grab status {grabResult.Status}");
+Console.WriteLine($"Grab status {grabResult.Value.Status}");
 
 x.UngrabPointer(0);
 Console.WriteLine("Ungrab pointer completed.");
@@ -47,22 +47,28 @@ x.ImageText8(win, _gc, 10, 40, "the background will change"u8);
 Thread.Sleep(5000);
 string[] colors = ["Red", "Green", "Blue"];
 string[] propNames = ["COLOR_A", "COLOR_B", "COLOR_C"];
-var atoms = new uint[3];
+var atoms = new ATOM[3];
 
 for (var i = 0; i < colors.Length; i++)
 {
-    //todo: handle return in a better way
     var reply = x.InternAtom(false, propNames[i]);
-    atoms[i] = reply.Atom;
-    x.ChangeProperty<byte>(PropertyMode.Replace, win, atoms[i], 31, Encoding.UTF8.GetBytes(colors[i]));
+     atoms[i] = reply.Value.Atom;
+    x.ChangeProperty<byte>(PropertyMode.Replace, win, atoms[i], ATOM.String, Encoding.UTF8.GetBytes(colors[i]));
 }
+
+foreach (var atom in atoms)
+{
+    var details = x.GetAtomName(atom);
+    Console.WriteLine($"{atom}: {details.Value.Name}");
+}
+
 
 for (var i = 0; i < 6; i++)
 {
-    var reply = x.GetProperty(false, win, atoms[0], 31, 0, 32);
-    if (reply.Data.Length > 0)
+    var reply = x.GetProperty(false, win, atoms[0], ATOM.String, 0, 32);
+    if (reply.Value.Data.Length > 0)
     {
-        x.ChangeWindowAttributes(win, ValueMask.BackgroundPixel, [(GetNameColor(reply.Data, screen))]);
+        x.ChangeWindowAttributes(win, ValueMask.BackgroundPixel, [(GetNameColor(reply.Value.Data, screen))]);
         x.ClearArea(false, win, 0, 0, 0, 0);
     }
 
@@ -123,7 +129,7 @@ Console.WriteLine("Pointer control changed: acceleration 2:1, threshold 4 pixels
 Thread.Sleep(3000);
 
 
-x.ConvertSelection(win, 1, 31, 9, 0);
+x.ConvertSelection(win, ATOM.Primary, ATOM.String, ATOM.CutBuffer0, 0);
 Console.WriteLine("Selection conversion requested");
 Thread.Sleep(3000);
 
@@ -169,12 +175,12 @@ Console.WriteLine("freed cursor");
 
 x.CloseFont(font);
 
-x.SetSelectionOwner(win, 1, 0);
+x.SetSelectionOwner(win, ATOM.Primary, 0);
 
 Console.WriteLine("Selection owner set for PRIMARY selection");
 Thread.Sleep(1500);
 
-x.SetSelectionOwner(0, 1, 0);
+x.SetSelectionOwner(0, ATOM.Primary, 0);
 Console.WriteLine("Selection owner cleared");
 
 x.SetCloseDownMode(CloseDownMode.Destroy);

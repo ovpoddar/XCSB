@@ -1,12 +1,15 @@
-﻿using System.Buffers;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Event;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
-using Xcsb.Models.Infrastructure;
-using Xcsb.Models.Requests;
+using Xcsb.Models.Infrastructure.Exceptions;
+using Xcsb.Requests;
+using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
+
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -48,7 +51,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ChangeGC(uint gc, GCMask mask, params uint[] args)
+    public void ChangeGC(uint gc, GCMask mask, Span<uint> args)
     {
         var request = new ChangeGCType(gc, mask, args.Length);
         _buffer.Add(ref request);
@@ -57,7 +60,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ChangeHosts(HostMode mode, Family family, byte[] address)
+    public void ChangeHosts(HostMode mode, Family family, Span<byte> address)
     {
         var request = new ChangeHostsType(mode, family, address.Length);
         _buffer.Add(ref request);
@@ -67,7 +70,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args)
+    public void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args)
     {
         var request = new ChangeKeyboardControlType(mask, args.Length);
         _buffer.Add(ref request);
@@ -75,7 +78,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] keysym)
+    public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> keysym)
     {
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         _buffer.Add(ref request);
@@ -92,7 +95,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
+    public void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -115,7 +118,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ChangeWindowAttributes(uint window, ValueMask mask, params uint[] args)
+    public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args)
     {
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         _buffer.Add(ref request);
@@ -123,9 +126,9 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void CirculateWindow(Direction direction, uint window)
+    public void CirculateWindow(Circulate circulate, uint window)
     {
-        var request = new CirculateWindowType(direction, window);
+        var request = new CirculateWindowType(circulate, window);
         _buffer.Add(ref request);
         _requestLength++;
     }
@@ -144,7 +147,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ConfigureWindow(uint window, ConfigureValueMask mask, params uint[] args)
+    public void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args)
     {
         var request = new ConfigureWindowType(window, mask, args.Length);
         _buffer.Add(ref request);
@@ -152,7 +155,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp)
+    public void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
         var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
         _buffer.Add(ref request);
@@ -210,7 +213,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args)
+    public void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         _buffer.Add(ref request);
@@ -235,7 +238,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     }
 
     public void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args)
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
     {
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
@@ -244,7 +247,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void DeleteProperty(uint window, uint atom)
+    public void DeleteProperty(uint window, ATOM atom)
     {
         var request = new DeletePropertyType(window, atom);
         _buffer.Add(ref request);
@@ -265,7 +268,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points)
+    public void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
         _buffer.Add(ref request);
@@ -278,23 +281,31 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #if NETSTANDARD
         socket.SendExact(_buffer.ToArray());
 #else
-            socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+        socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
 #endif
-        using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<XEvent>() * _requestLength);
+        using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<GenericEvent>() * _requestLength);
         var received = socket.Receive(buffer);
-        foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
-            if (evnt.EventType == EventType.Error)
-                throw new XEventException(evnt.ErrorEvent);
-            else if ((int)evnt.EventType == 1)
-                throw new Exception("internal issue");
-            else
+        foreach (var evnt in MemoryMarshal.Cast<byte, XResponse>(buffer[..received]))
+        {
+            switch (evnt.GetResponseType())
             {
-                bufferEvents.Push(evnt);
+                case XResponseType.Unknown:
+                case XResponseType.Error:
+                    throw new XEventException(evnt.As<GenericError>());
+                case XResponseType.Reply:
+                    throw new Exception("internal issue");
+                case XResponseType.Event:
+                case XResponseType.Notify:
+                    bufferEvents.Push(evnt.As<GenericEvent>());
 
-                sequenceNumber += (ushort)_requestLength;
-                _requestLength = 0;
-                _buffer.Clear();
+                    sequenceNumber += (ushort)_requestLength;
+                    _requestLength = 0;
+                    _buffer.Clear();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
+        }
     }
 
     public void Flush()
@@ -308,13 +319,27 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 #endif
             using var buffer = new ArrayPoolUsing<byte>(socket.Available);
             var received = socket.Receive(buffer);
-            foreach (var evnt in MemoryMarshal.Cast<byte, XEvent>(buffer[..received]))
-                if (evnt.EventType == EventType.Error)
-                    _requestLength--;
-                else if ((int)evnt.EventType == 1)
-                    continue;
-                else
-                    bufferEvents.Push(evnt);
+            foreach (var evnt in MemoryMarshal.Cast<byte, XResponse>(buffer[..received]))
+            {
+                switch (evnt.GetResponseType())
+                {
+                    case XResponseType.Unknown:
+                    case XResponseType.Error:
+                        break;
+                    case XResponseType.Reply:
+                        throw new Exception("internal issue");
+                    case XResponseType.Event:
+                    case XResponseType.Notify:
+                        bufferEvents.Push(evnt.As<GenericEvent>());
+
+                        sequenceNumber += (ushort)_requestLength;
+                        _requestLength = 0;
+                        _buffer.Clear();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
         }
         finally
         {
@@ -340,7 +365,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void FreeColors(uint colormapId, uint planeMask, params uint[] pixels)
+    public void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels)
     {
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
         _buffer.Add(ref request);
@@ -450,7 +475,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void NoOperation(params uint[] args)
+    public void NoOperation(Span<uint> args)
     {
         var requiredBuffer = 4 + args.Length * 4;
         _buffer.AddRange([(byte)Opcode.NoOperation, 0]);
@@ -461,10 +486,15 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
 
     public void OpenFont(string fontName, uint fontId)
     {
-        throw new NotImplementedException();
+        var request = new OpenFontType(fontId, fontName.Length);
+        _buffer.Add(ref request);
+        _buffer.AddRange(Encoding.ASCII.GetBytes(fontName));
+        _buffer.AddRange(new byte[fontName.Length.Padding()]);
+        _requestLength++;
+
     }
 
-    public void PolyArc(uint drawable, uint gc, Arc[] arcs)
+    public void PolyArc(uint drawable, uint gc, Span<Arc> arcs)
     {
         var request = new PolyArcType(drawable, gc, arcs.Length);
         _buffer.Add(ref request);
@@ -472,7 +502,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void PolyFillArc(uint drawable, uint gc, Arc[] arcs)
+    public void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs)
     {
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
         _buffer.Add(ref request);
@@ -480,7 +510,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles)
+    public void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
         _buffer.Add(ref request);
@@ -488,7 +518,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
+    public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
         _buffer.Add(ref request);
@@ -496,7 +526,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Point[] points)
+    public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
         _buffer.Add(ref request);
@@ -504,7 +534,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void PolyRectangle(uint drawable, uint gc, Rectangle[] rectangles)
+    public void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         _buffer.Add(ref request);
@@ -512,7 +542,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void PolySegment(uint drawable, uint gc, Segment[] segments)
+    public void PolySegment(uint drawable, uint gc, Span<Segment> segments)
     {
         var request = new PolySegmentType(drawable, gc, segments.Length);
         _buffer.Add(ref request);
@@ -536,7 +566,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
+    public void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
         byte leftPad, byte depth, Span<byte> data)
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
@@ -561,11 +591,11 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void RotateProperties(uint window, ushort delta, params uint[] properties)
+    public void RotateProperties(uint window, ushort delta, Span<ATOM> properties)
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
         _buffer.Add(ref request);
-        _buffer.AddRange(MemoryMarshal.Cast<uint, byte>(properties));
+        _buffer.AddRange(MemoryMarshal.Cast<ATOM, byte>(properties));
         _requestLength++;
     }
 
@@ -583,7 +613,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Rectangle[] rectangles)
+    public void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles)
     {
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
         _buffer.Add(ref request);
@@ -598,7 +628,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void SetDashes(uint gc, ushort dashOffset, byte[] dashes)
+    public void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes)
     {
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
         _buffer.Add(ref request);
@@ -631,14 +661,14 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         _requestLength++;
     }
 
-    public void SetSelectionOwner(uint owner, uint atom, uint timestamp)
+    public void SetSelectionOwner(uint owner, ATOM atom, uint timestamp)
     {
         var request = new SetSelectionOwnerType(owner, atom, timestamp);
         _buffer.Add(ref request);
         _requestLength++;
     }
 
-    public void StoreColors(uint colormapId, params ColorItem[] item)
+    public void StoreColors(uint colormapId, Span<ColorItem> item)
     {
         var request = new StoreColorsType(colormapId, item.Length);
         _buffer.Add(ref request);

@@ -1,6 +1,12 @@
-﻿using System.Net.Sockets;
+﻿using System.Diagnostics;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Event;
+using Xcsb.Models;
+using Xcsb.Response;
+using Xcsb.Response.Event;
+using Xcsb.Response.Internals;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -9,11 +15,19 @@ namespace Xcsb.Helpers;
 
 internal static class GenericHelper
 {
-    internal static ref T AsStruct<T>(this Span<byte> bytes) where T : struct => 
+    internal static ref T AsStruct<T>(this Span<byte> bytes) where T : struct =>
         ref Unsafe.As<byte, T>(ref bytes[0]);
 
-    internal static T ToStruct<T>(this Span<byte> bytes) where T : struct => 
+    internal static T ToStruct<T>(this Span<byte> bytes) where T : struct =>
         Unsafe.As<byte, T>(ref bytes[0]);
+
+    internal static T Make<T, I>(this Span<byte> bytes, I value) where T : struct
+        where I : struct
+    {
+        Debug.Assert(Unsafe.SizeOf<I>() == bytes.Length);
+        Unsafe.As<byte, I>(ref bytes[0]) = value;
+        return bytes.ToStruct<T>();
+    }
 
     internal static T AddPadding<T>(this T pad) where T :
 #if NETSTANDARD
@@ -83,17 +97,23 @@ internal static class GenericHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged => 
+    internal static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged =>
         socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
 
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
+        if (buffer.Length == 0)
+            return;
+        
         var total = 0;
         while (socket.Connected)
         {
             total += socket.Receive(buffer[total..]);
             if (total == buffer.Length)
                 break;
+
+            if (socket.Available == 0 && total < buffer.Length)
+                socket.Poll(-1, SelectMode.SelectRead);
         }
     }
 
@@ -108,7 +128,55 @@ internal static class GenericHelper
         requestBody.CopyTo(writeBuffer[size..]);
         var remainder = requestBody.Length.Padding();
         if (remainder == 0) return;
-        var paddingStart = size + requestBody.Length;
-        writeBuffer.Slice(paddingStart, remainder).Clear();
+        writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
+    }
+
+    internal static IEnumerable<DataRange> GetNextStrValue(ArraySegment<byte> buffer)
+    {
+        var index = 0;
+        while (index < buffer.Count)
+        {
+            var length = buffer[index++];
+            if (length == 0)
+                break;
+            if (index + length > buffer.Count)
+                yield return new DataRange(index, buffer.Count - index);
+            else
+                yield return new DataRange(index, length);
+            index += length;
+        }
+    }
+
+    internal static IEnumerable<ListFontsWithInfoReply> GetNextStrValue(this Socket socket, ListFontsWithInfoResponse firstInfo)
+    {
+        while (firstInfo.HasMore)
+        {
+            yield return new ListFontsWithInfoReply(firstInfo, socket);
+            firstInfo = socket.ReceivedResponse<ListFontsWithInfoResponse>();
+        }
+    }
+
+
+#if !NETSTANDARD
+    [SkipLocalsInit]
+#endif
+    private static T ReceivedResponse<T>(this Socket socket) where T : unmanaged
+    {
+        var resultLength = Unsafe.SizeOf<T>();
+        Span<byte> buffer = stackalloc byte[resultLength];
+        socket.EnsureReadSize(resultLength);
+        socket.ReceiveExact(buffer);
+        return buffer.ToStruct<T>();
+    }
+
+
+    internal static void EnsureReadSize(this Socket socket, int size)
+    {
+        while (true)
+        {
+            if (socket.Available >= size)
+                break;
+            socket.Poll(-1, SelectMode.SelectRead);
+        }
     }
 }

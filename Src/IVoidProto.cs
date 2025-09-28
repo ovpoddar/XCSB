@@ -1,6 +1,7 @@
-﻿using Xcsb.Masks;
+﻿using Xcsb.Event;
+using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Event;
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -10,9 +11,9 @@ namespace Xcsb;
 public interface IVoidProto
 {
     void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, params uint[] args);
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args);
 
-    void ChangeWindowAttributes(uint window, ValueMask mask, params uint[] args);
+    void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args);
 
     void DestroyWindow(uint window);
     void DestroySubwindows(uint window);
@@ -26,24 +27,24 @@ public interface IVoidProto
     void UnmapWindow(uint window);
     void UnmapSubwindows(uint window);
 
-    void ConfigureWindow(uint window, ConfigureValueMask mask, params uint[] args);
+    void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args);
 
-    void CirculateWindow(Direction direction, uint window);
+    void CirculateWindow(Circulate circulate, uint window);
 
-    void ChangeProperty<T>(PropertyMode mode, uint window, uint property, uint type, params T[] args)
+    void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
     ;
 
-    void DeleteProperty(uint window, uint atom);
+    void DeleteProperty(uint window, ATOM atom);
 
-    void RotateProperties(uint window, ushort delta, params uint[] properties);
+    void RotateProperties(uint window, ushort delta, Span<ATOM> properties);
 
-    void SetSelectionOwner(uint owner, uint atom, uint timestamp);
+    void SetSelectionOwner(uint owner, ATOM atom, uint timestamp);
 
-    void ConvertSelection(uint requestor, uint selection, uint target, uint property, uint timestamp);
+    void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp);
 
     void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt);
 
@@ -82,45 +83,43 @@ public interface IVoidProto
 
     void FreePixmap(uint pixmapId);
 
-    void CreateGC(uint gc, uint drawable, GCMask mask, params uint[] args);
+    void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args);
 
-    void ChangeGC(uint gc, GCMask mask, params uint[] args);
+    void ChangeGC(uint gc, GCMask mask, Span<uint> args);
 
     void CopyGC(uint srcGc, uint dstGc, GCMask mask);
 
-    void SetDashes(uint gc, ushort dashOffset, byte[] dashes);
+    void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes);
 
-    void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Rectangle[] rectangles);
+    void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles);
 
     void FreeGC(uint gc);
 
     void ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height);
 
     void CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX,
-        ushort destinationY,
-        ushort width, ushort height);
+        ushort destinationY, ushort width, ushort height);
 
     void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX,
-        ushort destinationY,
-        ushort width, ushort height, uint bitPlane);
+        ushort destinationY, ushort width, ushort height, uint bitPlane);
 
-    void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
+    void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points);
 
-    void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Point[] points);
+    void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points);
 
-    void PolySegment(uint drawable, uint gc, Segment[] segments);
+    void PolySegment(uint drawable, uint gc, Span<Segment> segments);
 
-    void PolyRectangle(uint drawable, uint gc, Rectangle[] rectangles);
+    void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles);
 
-    void PolyArc(uint drawable, uint gc, Arc[] arcs);
+    void PolyArc(uint drawable, uint gc, Span<Arc> arcs);
 
-    void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Point[] points);
+    void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points);
 
-    void PolyFillRectangle(uint drawable, uint gc, Rectangle[] rectangles);
+    void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles);
 
-    void PolyFillArc(uint drawable, uint gc, Arc[] arcs);
+    void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs);
 
-    void PutImage(ImageFormat format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
+    void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
         byte leftPad, byte depth, Span<byte> data);
 
     void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text);
@@ -136,9 +135,9 @@ public interface IVoidProto
     void InstallColormap(uint colormapId);
     void UninstallColormap(uint colormapId);
 
-    void FreeColors(uint colormapId, uint planeMask, params uint[] pixels);
+    void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels);
 
-    void StoreColors(uint colormapId, params ColorItem[] item);
+    void StoreColors(uint colormapId, Span<ColorItem> item);
 
     void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name);
 
@@ -154,11 +153,11 @@ public interface IVoidProto
         ushort backGreen, ushort backBlue);
 
     // suppose need changes
-    void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, uint[] Keysym);
+    void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym);
 
     void Bell(sbyte percent);
 
-    void ChangeKeyboardControl(KeyboardControlMask mask, params uint[] args);
+    void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args);
 
     void ChangePointerControl(Acceleration acceleration, ushort? threshold);
 
@@ -166,13 +165,13 @@ public interface IVoidProto
 
     void ForceScreenSaver(ForceScreenSaverMode mode);
 
-    void ChangeHosts(HostMode mode, Family family, byte[] address);
+    void ChangeHosts(HostMode mode, Family family, Span<byte> address);
 
     void SetAccessControl(AccessControlMode mode);
     void SetCloseDownMode(CloseDownMode mode);
     void KillClient(uint resource);
 
-    void NoOperation(params uint[] args);
+    void NoOperation(Span<uint> args);
 
     // todo: need a writer for the TEXTITEM16, TEXTITEM8
     void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);

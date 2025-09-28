@@ -77,8 +77,6 @@ public static class XcsbClient
             result = task1 && task2;
         }
 
-        if (!result)
-            throw new Exception("Initialized failed");
-        return details;
+        return result ? details : throw new Exception("Initialized failed");
     }
 }

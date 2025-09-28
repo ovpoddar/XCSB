@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
-using Xcsb.Models.Requests;
+using Xcsb.Requests;
 
 namespace Xcsb;
 

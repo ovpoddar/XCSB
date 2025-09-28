@@ -1,7 +1,6 @@
-﻿using Xcsb.Models;
-using Xcsb.Models.Event;
+﻿using Xcsb.Event;
+using Xcsb.Models;
 using Xcsb.Models.Handshake;
-using Xcsb.Models.Response;
 
 namespace Xcsb;
 
@@ -11,28 +10,23 @@ public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IDispo
     IXBufferProto BufferClient { get; }
 
     /// <summary>
-    ///     Retrieves the next event from the X server's event queue, if available.
+    /// Retrieves the next <see cref="XEvent"/> from the X server's event queue.
     /// </summary>
     /// <returns>
-    ///     An <see cref="XEvent" /> instance representing the next event in the queue,
-    ///     or <c>null</c> if there are no more events or if the connection should be closed.
+    /// An <see cref="XEvent"/> instance representing the next event received from the X server.  
+    /// If the server has closed the connection or no more events are available, a sentinel
+    /// <c>LastEvent</c> instance is returned instead.
     /// </returns>
     /// <remarks>
-    ///     This method processes and returns the next available event from the X server's event queue.
-    ///     A return value of <c>null</c> indicates that either no events are currently available,
-    ///     or that the X server connection is no longer valid and should be terminated.
-    ///     <para>
-    ///         To determine the specific type of event, inspect the <see cref="XEvent.EventType" /> property.
-    ///     </para>
+    /// Consumers should inspect the <see cref="XEvent.EventType"/> property to determine the  
+    /// specific type of event received. A <c>LastEvent</c> instance indicates the end of the event  
+    /// stream, which typically means the X server connection has been closed.
     /// </remarks>
-    /// <exception cref="XProtocolError">
-    ///     Thrown when a protocol-level error occurs while attempting to retrieve the event from the X server.
-    /// </exception>
-    XEvent? GetEvent();
+    XEvent GetEvent();
     bool IsEventAvailable();
     void WaitForEvent();
     uint NewId();
-    
-    
-    
+
+
+
 }
