@@ -12,14 +12,14 @@ namespace Xcsb;
 
 internal class BaseProtoClient
 {
-    internal readonly Stack<GenericEvent> bufferEvents;
+    internal readonly Queue<GenericEvent> bufferEvents;
     internal readonly Socket socket;
     internal ushort sequenceNumber;
 
     public BaseProtoClient(Socket socket)
     {
         this.socket = socket;
-        bufferEvents = new Stack<GenericEvent>();
+        bufferEvents = new Queue<GenericEvent>();
     }
 
 
@@ -39,7 +39,7 @@ internal class BaseProtoClient
 
         var eventContent = content.As<GenericEvent>();
         if (eventContent.Verify(sequenceNumber))
-            bufferEvents.Push(content.As<GenericEvent>());
+            bufferEvents.Enqueue(content.As<GenericEvent>());
         return (null, null, eventContent.Sequence);
     }
     
@@ -93,7 +93,7 @@ internal class BaseProtoClient
 
             var eventContent = content.As<GenericEvent>();
             if (eventContent.Verify(sequenceNumber))
-                bufferEvents.Push(content.As<GenericEvent>());
+                bufferEvents.Enqueue(content.As<GenericEvent>());
         }
         return result;
     }
@@ -116,7 +116,7 @@ internal class BaseProtoClient
                 case XResponseType.Event:
                 case XResponseType.Notify:
                 case XResponseType.Unknown:
-                    bufferEvents.Push(content.As<GenericEvent>());
+                    bufferEvents.Enqueue(content.As<GenericEvent>());
                     break;
                 case XResponseType.Reply:
                 default:

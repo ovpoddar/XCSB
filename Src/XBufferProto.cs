@@ -296,7 +296,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
                     throw new Exception("internal issue");
                 case XResponseType.Event:
                 case XResponseType.Notify:
-                    bufferEvents.Push(evnt.As<GenericEvent>());
+                    bufferEvents.Enqueue(evnt.As<GenericEvent>());
 
                     sequenceNumber += (ushort)_requestLength;
                     _requestLength = 0;
@@ -330,7 +330,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
                         throw new Exception("internal issue");
                     case XResponseType.Event:
                     case XResponseType.Notify:
-                        bufferEvents.Push(evnt.As<GenericEvent>());
+                        bufferEvents.Enqueue(evnt.As<GenericEvent>());
 
                         sequenceNumber += (ushort)_requestLength;
                         _requestLength = 0;
