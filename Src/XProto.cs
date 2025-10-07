@@ -14,6 +14,8 @@ using Xcsb.Requests;
 using Xcsb.Response;
 using Xcsb.Response.Internals;
 using Xcsb.Response.Event;
+using Src.Handlers;
+
 
 #if !NETSTANDARD
 using System.Numerics;
@@ -29,6 +31,8 @@ internal class XProto : BaseProtoClient, IXProto
     private bool _disposedValue;
     private int _globalId;
     private XBufferProto? _xBufferProto;
+    private ProtoIn _protoIn;
+    private ProtoOut _protoOut;
 
     #region private implementation
 
@@ -43,7 +47,6 @@ internal class XProto : BaseProtoClient, IXProto
         if (error.HasValue || !result.HasValue)
             throw new XEventException(error!.Value);
 
-        Debug.Assert(sequenceNumber == result.Value.ResponseHeader.Sequence);
         return result.Value;
     }
 
@@ -808,7 +811,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
             ProcessEvents(isThrow);
-            socket.SendExact(scratchBuffer);
+            _protoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -819,7 +822,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
             ProcessEvents(isThrow);
-            socket.SendExact(workingBuffer);
+            _protoOut.SendExact(workingBuffer);
         }
 
         sequenceNumber++;
@@ -872,7 +875,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
             ProcessEvents(isThrow);
-            socket.SendExact(scratchBuffer);
+            _protoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -882,7 +885,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
             ProcessEvents(isThrow);
-            socket.SendExact(workingBuffer);
+            _protoOut.SendExact(workingBuffer);
         }
 
         sequenceNumber++;
@@ -1142,7 +1145,7 @@ internal class XProto : BaseProtoClient, IXProto
         var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
         ProcessEvents(isThrow);
-        socket.Send(ref request);
+        _protoOut.Send(ref request);
         sequenceNumber++;
     }
 
@@ -1158,7 +1161,7 @@ internal class XProto : BaseProtoClient, IXProto
                 16,
                 MemoryMarshal.Cast<uint, byte>(args));
             ProcessEvents(isThrow);
-            socket.SendExact(scratchBuffer);
+            _protoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1169,7 +1172,7 @@ internal class XProto : BaseProtoClient, IXProto
                 16,
                 MemoryMarshal.Cast<uint, byte>(args));
             ProcessEvents(isThrow);
-            socket.SendExact(workingBuffer);
+            _protoOut.SendExact(workingBuffer);
         }
 
         sequenceNumber++;
@@ -1190,7 +1193,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new CreatePixmapType(depth, pixmapId, drawable, width, height);
         ProcessEvents(isThrow);
-        socket.Send(ref request);
+        _protoOut.Send(ref request);
         sequenceNumber++;
     }
 
@@ -1208,7 +1211,7 @@ internal class XProto : BaseProtoClient, IXProto
                 32,
                 MemoryMarshal.Cast<uint, byte>(args));
             ProcessEvents(isThrow);
-            socket.SendExact(scratchBuffer);
+            _protoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1219,10 +1222,11 @@ internal class XProto : BaseProtoClient, IXProto
                 32,
                 MemoryMarshal.Cast<uint, byte>(args));
             ProcessEvents(isThrow);
-            socket.SendExact(workingBuffer);
+            _protoOut.SendExact(workingBuffer);
         }
 
         sequenceNumber++;
+
     }
 
     private void DeleteProperty(uint window, ATOM atom, bool isThrow)
@@ -1320,7 +1324,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new FreeCursorType(cursorId);
         ProcessEvents(isThrow);
-        socket.Send(ref request);
+        _protoOut.Send(ref request);
         sequenceNumber++;
     }
 
@@ -1328,7 +1332,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new FreeGCType(gc);
         ProcessEvents(isThrow);
-        socket.Send(ref request);
+        _protoOut.Send(ref request);
         sequenceNumber++;
     }
 
@@ -1336,7 +1340,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new FreePixmapType(pixmapId);
         ProcessEvents(isThrow);
-        socket.Send(ref request);
+        _protoOut.Send(ref request);
         sequenceNumber++;
     }
 
@@ -1462,8 +1466,9 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new MapWindowType(window);
         ProcessEvents(isThrow);
-        socket.Send(ref request);
+        _protoOut.Send(ref request);
         sequenceNumber++;
+
     }
 
     private void NoOperation(Span<uint> args, bool isThrow)
@@ -1599,7 +1604,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
             ProcessEvents(isThrow);
-            socket.SendExact(scratchBuffer);
+            _protoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1610,7 +1615,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
             ProcessEvents(isThrow);
-            socket.SendExact(workingBuffer);
+            _protoOut.SendExact(workingBuffer);
         }
 
         sequenceNumber++;
@@ -1686,7 +1691,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
             ProcessEvents(isThrow);
-            socket.SendExact(scratchBuffer);
+            _protoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1697,7 +1702,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
             ProcessEvents(isThrow);
-            socket.SendExact(workingBuffer);
+            _protoOut.SendExact(workingBuffer);
         }
 
         sequenceNumber++;
@@ -1715,7 +1720,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<Segment, byte>(segments));
             ProcessEvents(isThrow);
-            socket.SendExact(scratchBuffer);
+            _protoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1726,7 +1731,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<Segment, byte>(segments));
             ProcessEvents(isThrow);
-            socket.SendExact(workingBuffer);
+            _protoOut.SendExact(workingBuffer);
         }
 
         sequenceNumber++;
@@ -1826,7 +1831,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
         ProcessEvents(isThrow);
-        socket.Send(ref request);
+        _protoOut.Send(ref request);
         sequenceNumber++;
     }
 
@@ -1896,7 +1901,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
             ProcessEvents(isThrow);
-            socket.SendExact(scratchBuffer);
+            _protoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1907,7 +1912,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
             ProcessEvents(isThrow);
-            socket.SendExact(workingBuffer);
+            _protoOut.SendExact(workingBuffer);
         }
 
         sequenceNumber++;
@@ -1933,7 +1938,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 dashes);
             ProcessEvents(isThrow);
-            socket.SendExact(scratchBuffer);
+            _protoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1944,7 +1949,7 @@ internal class XProto : BaseProtoClient, IXProto
                 12,
                 dashes);
             ProcessEvents(isThrow);
-            socket.SendExact(workingBuffer);
+            _protoOut.SendExact(workingBuffer);
         }
 
         sequenceNumber++;
@@ -2166,6 +2171,8 @@ internal class XProto : BaseProtoClient, IXProto
         HandshakeSuccessResponseBody = connectionResult;
         _globalId = 0;
         sequenceNumber = 0;
+        this._protoIn = new ProtoIn(socket);
+        this._protoOut = new ProtoOut(socket);
     }
 
     public AllocColorReply? AllocColor(uint colorMap, ushort red, ushort green, ushort blue) =>

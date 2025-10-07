@@ -1,12 +1,16 @@
-﻿using System.Diagnostics;
+﻿using System.Collections;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Src.Response.Contract;
 using Xcsb.Event;
 using Xcsb.Helpers;
 using Xcsb.Models.Infrastructure.Exceptions;
+using Xcsb.Response;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
+using Xcsb.Response.Internals;
 
 namespace Xcsb;
 
@@ -21,7 +25,6 @@ internal class BaseProtoClient
         this.socket = socket;
         bufferEvents = new Queue<GenericEvent>();
     }
-
 
     private (T? result, GenericError? error, int? eventSequence) ParseResponse<T>(scoped ref Span<byte> receivedBuffer)
         where T : unmanaged, IXReply
@@ -42,7 +45,7 @@ internal class BaseProtoClient
             bufferEvents.Enqueue(content.As<GenericEvent>());
         return (null, null, eventContent.Sequence);
     }
-    
+
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
@@ -60,9 +63,9 @@ internal class BaseProtoClient
             var result = ParseResponse<T>(ref responseBuffer);
             if (result.eventSequence.HasValue)
             {
-                if (result.eventSequence.Value > sequenceNumber || breakCounter == 0) 
+                if (result.eventSequence.Value > sequenceNumber || breakCounter == 0)
                     return (null, null);
-                if (socket.Available == 0) 
+                if (socket.Available == 0)
                     breakCounter--;
 
                 continue;
@@ -95,10 +98,11 @@ internal class BaseProtoClient
             if (eventContent.Verify(sequenceNumber))
                 bufferEvents.Enqueue(content.As<GenericEvent>());
         }
+
         return result;
     }
 
-    internal GenericError? Received()
+    public GenericError? Received()
     {
         if (socket.Available == 0)
             return null;
@@ -138,4 +142,5 @@ internal class BaseProtoClient
                 break;
         }
     }
+
 }
