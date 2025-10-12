@@ -1,11 +1,12 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct ListPropertiesReply
 {
@@ -13,18 +14,19 @@ public readonly struct ListPropertiesReply
     public readonly ushort Sequence;
     public readonly ATOM[] Atoms;
 
-    internal ListPropertiesReply(ListPropertiesResponse response, Socket socket)
+    internal ListPropertiesReply(Span<byte> response)
     {
-        Reply = response.ResponseHeader.Reply;
-        Sequence = response.ResponseHeader.Sequence;
+         ref var context = ref response.AsStruct<ListPropertiesResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
 
-        if (response.NumberOfProperties == 0)
+        if (context.NumberOfProperties == 0)
             Atoms = [];
         else
         {
-            var atoms = new ArrayPoolUsing<byte>(response.NumberOfProperties * 4);
-            socket.ReceiveExact(atoms);
-            Atoms = MemoryMarshal.Cast<byte, ATOM>(atoms).ToArray();
+            var cursor = Unsafe.SizeOf<ListPropertiesResponse>();
+            var length = context.NumberOfProperties * 4;
+            Atoms = MemoryMarshal.Cast<byte, ATOM>(response.Slice(cursor, length)).ToArray();
         }
     }
 }

@@ -2,7 +2,7 @@
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Internals;
+namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 60)]
 internal readonly struct QueryFontResponse : IXReply
@@ -16,7 +16,7 @@ internal readonly struct QueryFontResponse : IXReply
     public readonly ushort MinChar;
     public readonly ushort MaxChar;
     public readonly ushort DefaultChar;
-    public readonly ushort PropertieLenght;
+    public readonly ushort PropertiesLength;
     public readonly FontDraw Direction;
     public readonly byte MinByte;
     public readonly byte MaxByte;
@@ -27,8 +27,8 @@ internal readonly struct QueryFontResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply &&
-               _pad1 == 0 && _pad2 == 0 && this.Length > 7;
+        return ResponseHeader.Reply == ResponseType.Reply &&
+               _pad1 == 0 && _pad2 == 0 && Length > 7;
     }
 
     public readonly bool AllCharsExist => _allCharsExist == 1;

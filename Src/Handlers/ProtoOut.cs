@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
-namespace Src.Handlers;
+namespace Xcsb.Handlers;
 
 internal struct ProtoOut
 {
@@ -15,8 +11,8 @@ internal struct ProtoOut
     internal int Sequence { get; set; }
     internal ProtoOut(Socket socket)
     {
-        this._socket = socket;
-        this.Sequence = 0;
+        _socket = socket;
+        Sequence = 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -37,6 +33,6 @@ internal struct ProtoOut
                 throw new SocketException();
             total += sent;
         }
-        this.Sequence++;
+        Sequence++;
     }
 }

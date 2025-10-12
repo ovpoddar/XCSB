@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Event;
 using Xcsb.Models;
 
 namespace Xcsb.Requests;

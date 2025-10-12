@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Xcsb.Models;
@@ -165,24 +162,24 @@ public readonly struct ATOM : IEquatable<ATOM>, IComparable<ATOM>
     public static explicit operator uint(ATOM value) => value._value;
     public static explicit operator ATOM(uint value) => new(value);
 
-    public bool Equals(ATOM other) => 
+    public bool Equals(ATOM other) =>
         _value == other._value;
-    
+
     public override bool Equals(object? obj) =>
         obj is ATOM other && Equals(other);
-    
+
     public override int GetHashCode() =>
         _value.GetHashCode();
 
     public int CompareTo(ATOM other) =>
         _value.CompareTo(other._value);
 
-    public bool IsValid => 
+    public bool IsValid =>
         _value != 0;
-    public bool IsPredefined => 
+    public bool IsPredefined =>
         _value < Enum.GetValues(typeof(PredefinedAtom)).Length;
 
-    public override string ToString() => 
+    public override string ToString() =>
         _value < Enum.GetValues(typeof(PredefinedAtom)).Length
             ? ((PredefinedAtom)_value).ToString()
             : _value.ToString();

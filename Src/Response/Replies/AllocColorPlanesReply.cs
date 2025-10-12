@@ -1,10 +1,12 @@
-﻿using System.Net.Sockets;
+﻿using System.Diagnostics;
+using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public struct AllocColorPlanesReply
 {
@@ -15,21 +17,22 @@ public struct AllocColorPlanesReply
     public readonly uint BlueMask;
     public uint[] Pixels;
 
-    internal AllocColorPlanesReply(AllocColorPlanesResponse response, Socket stream)
+    internal AllocColorPlanesReply(Span<byte> response)
     {
-        Reply = response.ResponseHeader.Reply;
-        Sequence = response.ResponseHeader.Sequence;
-        RedMask = response.RedMask;
-        GreenMask = response.GreenMask;
-        BlueMask = response.BlueMask;
-        if (response.NumberOfPixels == 0)
+        ref var context = ref response.AsStruct<AllocColorPlanesResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+        RedMask = context.RedMask;
+        GreenMask = context.GreenMask;
+        BlueMask = context.BlueMask;
+        if (context.NumberOfPixels == 0)
             Pixels = [];
         else
         {
-            var requiredSize = (int)response.Length * 4;
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            stream.ReceiveExact(buffer[0..requiredSize]);
-            Pixels = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();
+            var cursor = Unsafe.SizeOf<AllocColorPlanesResponse>();
+            var length = (context.NumberOfPixels * 4);
+            Debug.Assert(cursor + length == response.Length);
+            Pixels = MemoryMarshal.Cast<byte, uint>(response.Slice(cursor, length)).ToArray();
         }
     }
 }

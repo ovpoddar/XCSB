@@ -1,47 +1,79 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Src.Response.Contract;
-using Xcsb.Event;
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using Xcsb.Helpers;
+using Xcsb.Models;
+using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
+using Xcsb.Response.Event;
 
-namespace Src.Handlers;
+namespace Xcsb.Handlers;
 
+// todo: want to use this https://learn.microsoft.com/en-us/dotnet/communitytoolkit/high-performance/memoryowner
+// looks perfectly for this situation
 internal struct ProtoIn
 {
     private readonly Socket _socket;
 
     internal readonly Queue<GenericEvent> bufferEvents;
-    internal List<(int, byte[])> replyBuffer;
+    internal Dictionary<int, byte[]> replyBuffer;
     internal int Sequence { get; set; }
     internal ProtoIn(Socket socket)
     {
-        this._socket = socket;
-        this.Sequence = 0;
-        replyBuffer = new List<(int, byte[])>();
+        _socket = socket;
+        Sequence = 0;
+        bufferEvents = new Queue<GenericEvent>();
+        replyBuffer = new Dictionary<int, byte[]>();
     }
 
-    public byte[] ReceivedResponse(int sequence)
+    public (T?, GenericError?) ReceivedResponse<T>(int sequence, int timeout = 1000) where T : unmanaged, IXReply
     {
-        //todo: timeout after some time.
-        while (true)
-        {
-            if (sequence > this.Sequence)
+        var (result, error) = ReceivedResponseSpan<T>(sequence, timeout);
+        if (result == null)
+            return (null, error);
+        return (result.AsSpan().AsStruct<T>(), error);
+    }
+
+    public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply
+    {
+        for (var attempts = 3; attempts > 0; attempts--)
+            if (sequence > Sequence)
             {
+                if (_socket.Available == 0)
+                    _socket.Poll(timeOut, SelectMode.SelectRead);
                 FlushSocket();
             }
             else
             {
-                var reply = replyBuffer.FirstOrDefault(a => a.Item1 == sequence);
-                return replyBuffer.Remove(reply)
-                    ? reply.Item2
-                    : [];
+                var reply = replyBuffer[sequence];
+                replyBuffer.Remove(sequence);
+                var response = reply.AsSpan().AsStruct<T>();
+                return response.Verify(sequence)
+                    ? (reply, null)
+                    : (null, reply.AsSpan().ToStruct<GenericError>());
             }
+        Debug.Assert(false);
+        return (null, null);
+    }
+
+    //todo: update the code so only XEvent gets return;
+    public XEvent ReceivedResponse()
+    {
+        if (bufferEvents.TryDequeue(out var result))
+            return result.As<XEvent>();
+        Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
+
+        if (_socket.Poll(-1, SelectMode.SelectRead))
+        {
+            var totalRead = _socket.Receive(scratchBuffer);
+            if (totalRead == 0)
+                return scratchBuffer.Make<XEvent, LastEvent>(new(Sequence));
         }
+
+        return scratchBuffer.ToStruct<XEvent>();
     }
 
     private void FlushSocket()
@@ -50,7 +82,6 @@ internal struct ProtoIn
         Span<byte> buffer = stackalloc byte[bufferSize];
         while (_socket.Available != 0)
         {
-            _socket.EnsureReadSize(bufferSize);
             _socket.ReceiveExact(buffer);
             ref var content = ref buffer.AsStruct<XResponse>();
             var responseType = content.GetResponseType();
@@ -62,10 +93,10 @@ internal struct ProtoIn
                     bufferEvents.Enqueue(content.As<GenericEvent>());
                     break;
                 case XResponseType.Error:
-                    replyBuffer.Add((content.Sequence, buffer.ToArray()));
+                    replyBuffer[content.Sequence] = buffer.ToArray();
                     break;
                 case XResponseType.Reply:
-                    replyBuffer.Add((content.Sequence, ComputeResponse(ref buffer, _socket)));
+                    ComputeResponse(ref buffer, _socket);
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -73,18 +104,54 @@ internal struct ProtoIn
         }
     }
 
-    private byte[] ComputeResponse(ref Span<byte> buffer, Socket socket)
+    private void ComputeResponse(ref Span<byte> buffer, Socket socket)
     {
         ref var content = ref buffer.AsStruct<RepliesHeader>();
-        if (content.Sequence > this.Sequence)
-            this.Sequence = content.Sequence;
+        if (content.Sequence > Sequence)
+            Sequence = content.Sequence;
 
-        var replySize = content.Length * 4;
-        Span<byte> result = stackalloc byte[(int)(32 + replySize)];
+        var replySize = (int)(content.Length * 4);
+        Span<byte> result = stackalloc byte[32 + replySize];
         buffer.CopyTo(result[..32]);
+
         socket.EnsureReadSize((int)replySize);
         socket.ReceiveExact(result[32..]);
-        return result.ToArray();
+
+        if (replyBuffer.ContainsKey(content.Sequence))
+        {
+            var response = replyBuffer[content.Sequence];
+            replySize = result.Length + response.Length;
+            using var scratchBuffer = new ArrayPoolUsing<byte>(replySize);
+            response.CopyTo(scratchBuffer);
+            result.CopyTo(scratchBuffer[response.Length..]);
+            replyBuffer[content.Sequence] = scratchBuffer[..replySize].ToArray();
+        }
+        else
+        {
+            replyBuffer[content.Sequence] = result.ToArray();
+        }
+
+    }
+
+    public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
+    {
+        if (this._socket.Available == 0)
+            _socket.Poll(1000, SelectMode.SelectRead);
+
+        FlushSocket();
+        var isAnyError = replyBuffer.TryGetValue(sequence, out var response);
+        if (!isAnyError)
+            return;
+
+        var error = response.AsSpan().AsStruct<GenericError>();
+        if (error.Verify(sequence) && replyBuffer.Remove(sequence))
+        {
+            if (!shouldThrow)
+                return;
+            throw new XEventException(error, name);
+        }
+
+        Environment.Exit(-10);
     }
 
 }

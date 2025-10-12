@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct GraphicsExposeEvent : IXEvent
@@ -18,6 +18,6 @@ public struct GraphicsExposeEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.GraphicsExpose && this.ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.GraphicsExpose && ResponseHeader.GetValue() == 0;
     }
 }

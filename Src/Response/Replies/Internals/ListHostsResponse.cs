@@ -2,7 +2,7 @@
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Internals;
+namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct ListHostsResponse : IXReply
@@ -13,7 +13,7 @@ internal readonly struct ListHostsResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence;
+        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Sequence == sequence;
     }
     public AccessControlMode Mode => ResponseHeader.GetValue();
 }

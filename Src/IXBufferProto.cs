@@ -1,6 +1,9 @@
-﻿namespace Xcsb;
+﻿using Xcsb.Infrastructure;
+using Xcsb.Infrastructure.VoidProto;
 
-public interface IXBufferProto : IVoidProto
+namespace Xcsb;
+
+public interface IXBufferProto : IVoidBufferProto
 {
     void FlushChecked();
     void Flush();

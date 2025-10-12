@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct DestroyNotifyEvent : IXEvent
@@ -13,6 +13,6 @@ public struct DestroyNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.DestroyNotify && this.ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.DestroyNotify && ResponseHeader.GetValue() == 0;
     }
 }

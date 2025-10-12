@@ -1,7 +1,6 @@
 ﻿using System.Buffers;
 using System.Text;
 using Xcsb;
-using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
@@ -13,7 +12,7 @@ var window = xcsb.NewId();
 var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
 var lazyXcsb = xcsb.BufferClient;
 
-xcsb.CreateWindow(screen.RootDepth.DepthValue,
+xcsb.CreateWindowUnchecked(screen.RootDepth.DepthValue,
     window,
     screen.Root,
     0, 0, WIDTH * 10, HEIGHT * 10,

@@ -1,12 +1,12 @@
-﻿using Xcsb.Event;
-using Xcsb.Masks;
+﻿using Xcsb.Masks;
 using Xcsb.Models;
+
 
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb;
+namespace Xcsb.Infrastructure;
 
 public interface IVoidProtoChecked
 {

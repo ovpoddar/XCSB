@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct GetScreenSaverReply : IXReply
@@ -15,7 +15,7 @@ public readonly struct GetScreenSaverReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply && this.ResponseHeader.Sequence == sequence;
+        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Sequence == sequence;
     }
 
     public readonly bool AllowExposures => _allowExposures == 1;

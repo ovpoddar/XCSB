@@ -1,29 +1,31 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct QueryColorsReply
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public readonly Pixel[] Colors;
-    internal QueryColorsReply(QueryColorsResponse result, Socket socket)
+    internal QueryColorsReply(Span<byte> response)
     {
-        Reply = result.ResponseHeader.Reply;
-        Sequence = result.ResponseHeader.Sequence;
-        if (result.NumberOfColors == 0)
+        ref var context = ref response.AsStruct<QueryColorsResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+        if (context.NumberOfColors == 0)
             Colors = [];
         else
         {
-            var requiredSize = (int)result.NumberOfColors * Marshal.SizeOf<Pixel>();
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            socket.ReceiveExact(buffer);
-            Colors = MemoryMarshal.Cast<byte, Pixel>(buffer[0..requiredSize]).ToArray();
+
+            var cursor = Unsafe.SizeOf<QueryColorsResponse>();
+            var length = context.NumberOfColors * Marshal.SizeOf<Pixel>();
+            Colors = MemoryMarshal.Cast<byte, Pixel>(response.Slice(cursor, length)).ToArray();
         }
     }
 }

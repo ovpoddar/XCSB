@@ -2,7 +2,7 @@
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Internals;
+namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 52)]
 internal unsafe struct GetKeyboardControlResponse : IXReply
@@ -19,7 +19,7 @@ internal unsafe struct GetKeyboardControlResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply &&
-               this.Length == 5;
+        return ResponseHeader.Reply == ResponseType.Reply &&
+               Length == 5;
     }
 }

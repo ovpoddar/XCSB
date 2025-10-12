@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Xcsb;
-using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
@@ -20,13 +19,13 @@ client.MapWindowChecked(window);
 client.ChangeActivePointerGrabChecked(0, 0, (ushort)EventMask.ButtonPressMask);
 
 var font = client.NewId();
-client.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
+client.OpenFontUnchecked("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
 
 
 var namedColor = client.AllocNamedColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Red"u8);
 Console.WriteLine($"{namedColor.Value.ExactBlue} {namedColor.Value.ExactGreen} {namedColor.Value.ExactRed}");
 
-client.CloseFont(font);
+client.CloseFontUnchecked(font);
 
 Debug.Assert(namedColor.Value.VisualRed == namedColor.Value.ExactRed && namedColor.Value.ExactRed == ushort.MaxValue);
 Debug.Assert(namedColor.Value.VisualGreen == namedColor.Value.ExactGreen && namedColor.Value.ExactGreen == 0);

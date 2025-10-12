@@ -2,11 +2,12 @@
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Event;
 using Xcsb.Models;
-using Xcsb.Response;
-using Xcsb.Response.Event;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Contract;
+using Xcsb.Response.Replies;
+using Xcsb.Response.Replies.Internals;
+
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -104,7 +105,7 @@ internal static class GenericHelper
     {
         if (buffer.Length == 0)
             return;
-        
+
         var total = 0;
         while (socket.Connected)
         {
@@ -131,32 +132,6 @@ internal static class GenericHelper
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
 
-    internal static IEnumerable<DataRange> GetNextStrValue(ArraySegment<byte> buffer)
-    {
-        var index = 0;
-        while (index < buffer.Count)
-        {
-            var length = buffer[index++];
-            if (length == 0)
-                break;
-            if (index + length > buffer.Count)
-                yield return new DataRange(index, buffer.Count - index);
-            else
-                yield return new DataRange(index, length);
-            index += length;
-        }
-    }
-
-    internal static IEnumerable<ListFontsWithInfoReply> GetNextStrValue(this Socket socket, ListFontsWithInfoResponse firstInfo)
-    {
-        while (firstInfo.HasMore)
-        {
-            yield return new ListFontsWithInfoReply(firstInfo, socket);
-            firstInfo = socket.ReceivedResponse<ListFontsWithInfoResponse>();
-        }
-    }
-
-
 #if !NETSTANDARD
     [SkipLocalsInit]
 #endif
@@ -169,6 +144,32 @@ internal static class GenericHelper
         return buffer.ToStruct<T>();
     }
 
+    internal static ListFontsWithInfoReply[] GetListFontsWithInfoReplies(this Span<byte> buffer, int maxNames)
+    {
+        var result = new ListFontsWithInfoReply[maxNames];
+        var count = 0;
+        var cursor = 0;
+
+        while (true)
+        {
+            ref var response = ref buffer[cursor..].AsStruct<ListFontsWithInfoResponse>();
+            if (!response.HasMore) break;
+
+            if (count == result.Length)
+                Array.Resize(ref result, result.Length << 1);
+
+            cursor += Unsafe.SizeOf<ListFontsWithInfoResponse>();
+            var responseLength = (int)(response.Length * 4) - 28;
+            result[count++] = new ListFontsWithInfoReply(ref response, buffer.Slice(cursor, responseLength));
+            cursor += responseLength;
+        }
+
+
+        if (count != result.Length)
+            Array.Resize(ref result, count);
+
+        return result.ToArray();
+    }
 
     internal static void EnsureReadSize(this Socket socket, int size)
     {
@@ -179,4 +180,5 @@ internal static class GenericHelper
             socket.Poll(-1, SelectMode.SelectRead);
         }
     }
+
 }

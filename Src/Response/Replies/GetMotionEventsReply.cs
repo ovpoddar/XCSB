@@ -1,11 +1,12 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct GetMotionEventsReply
 {
@@ -13,18 +14,19 @@ public readonly struct GetMotionEventsReply
     public readonly ushort Sequence;
     public readonly TimeCoord[] Events;
 
-    internal GetMotionEventsReply(GetMotionEventsResponse result, Socket socket)
+    internal GetMotionEventsReply(Span<byte> response)
     {
-        Reply = result.ResponseHeader.Reply;
-        Sequence = result.ResponseHeader.Sequence;
-        if (result.NumberOfEvents == 0)
+        ref var context = ref response.AsStruct<GetMotionEventsResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+        if (context.NumberOfEvents == 0)
             Events = [];
         else
         {
-            var requiredSize = (int)result.NumberOfEvents * 8;
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            socket.ReceiveExact(buffer);
-            Events = MemoryMarshal.Cast<byte, TimeCoord>(buffer[0..requiredSize]).ToArray();
+
+            var cursor = Unsafe.SizeOf<GetMotionEventsResponse>();
+            var length = (int)context.NumberOfEvents * 8;
+            Events = MemoryMarshal.Cast<byte, TimeCoord>(response[cursor..length]).ToArray();
         }
     }
 }

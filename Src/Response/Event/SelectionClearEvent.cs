@@ -2,7 +2,7 @@
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct SelectionClearEvent : IXEvent
@@ -11,9 +11,9 @@ public struct SelectionClearEvent : IXEvent
     public uint Time;
     public uint Owner;
     public ATOM Selection;
-    
+
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.SelectionClear && this.ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.SelectionClear && ResponseHeader.GetValue() == 0;
     }
 }

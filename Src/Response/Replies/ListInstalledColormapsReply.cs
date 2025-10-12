@@ -1,10 +1,11 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public struct ListInstalledColormapsReply
 {
@@ -12,18 +13,19 @@ public struct ListInstalledColormapsReply
     public ushort Sequence;
     public uint[] Colormap;
 
-    internal ListInstalledColormapsReply(ListInstalledColormapsResponse response, Socket socket)
+    internal ListInstalledColormapsReply(Span<byte> response)
     {
-        Reply = response.ResponseHeader.Reply;
-        Sequence = response.ResponseHeader.Sequence;
-        if (response.Length == 0)
+        ref var context = ref response.AsStruct<ListInstalledColormapsResponse>();
+
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+        if (context.Length == 0)
             Colormap = [];
         else
         {
-            var requiredSize = response.NumberOfColormaps * 4;
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            socket.ReceiveExact(buffer[0..requiredSize]);
-            Colormap = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();
+            var cursor = Unsafe.SizeOf<ListInstalledColormapsResponse>();
+            var length = context.NumberOfColormaps * 4;
+            Colormap = MemoryMarshal.Cast<byte, uint>(response.Slice(cursor, length)).ToArray();
         }
     }
 }

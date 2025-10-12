@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Internals;
+namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct QueryTreeResponse : IXReply
@@ -10,11 +10,11 @@ internal readonly struct QueryTreeResponse : IXReply
     public readonly uint Length;
     public readonly uint Root;
     public readonly uint Parent;
-    public readonly ushort WindowChildrenLenght;
+    public readonly ushort WindowChildrenLength;
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply &&
-               this.Length == WindowChildrenLenght;
+        return ResponseHeader.Reply == ResponseType.Reply &&
+               Length == WindowChildrenLength;
     }
 }

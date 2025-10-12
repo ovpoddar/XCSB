@@ -1,10 +1,8 @@
-﻿using System.Net.Sockets;
-using Xcsb.Helpers;
-using Xcsb.Models;
+﻿using Xcsb.Models;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public struct GetKeyboardControlReply
 {

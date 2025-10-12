@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 // TODO: need a way to access similar event in a single type
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
@@ -24,6 +24,6 @@ public struct KeyPressEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.KeyPress;
+        return ResponseHeader.Reply == ResponseType.KeyPress;
     }
 }

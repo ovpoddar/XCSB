@@ -1,4 +1,6 @@
-﻿using Xcsb.Event;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using Xcsb.Masks;
 using Xcsb.Models;
 
@@ -6,9 +8,8 @@ using Xcsb.Models;
 using System.Numerics;
 #endif
 
-namespace Xcsb;
-
-public interface IVoidProto
+namespace Xcsb.Infrastructure.VoidProto;
+public interface IVoidBufferProto
 {
     void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
         ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args);

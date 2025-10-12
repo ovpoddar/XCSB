@@ -1,9 +1,10 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct GetPointerMappingReply
 {
@@ -11,17 +12,17 @@ public readonly struct GetPointerMappingReply
     public readonly ushort Sequence;
     public readonly byte[] Map;
 
-    internal GetPointerMappingReply(GetPointerMappingResponse response, Socket socket)
+    internal GetPointerMappingReply(Span<byte> response)
     {
-        Reply = response.ResponseHeader.Reply;
-        Sequence = response.ResponseHeader.Sequence;
-        if (response.ResponseHeader.GetValue() == 0)
+        ref var context = ref response.AsStruct<GetPointerMappingResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+        if (context.ResponseHeader.GetValue() == 0)
             Map = [];
         else
         {
-            using var mapBuffer = new ArrayPoolUsing<byte>((int)response.Length * 4);
-            socket.ReceiveExact(mapBuffer);
-            Map = mapBuffer[0..response.ResponseHeader.GetValue()].ToArray();
+            var cursor = Unsafe.SizeOf<GetPointerMappingResponse>();
+            Map = response[cursor..context.ResponseHeader.GetValue()].ToArray();
         }
     }
 }

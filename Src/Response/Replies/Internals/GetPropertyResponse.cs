@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Internals;
+namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct GetPropertyResponse : IXReply
@@ -14,9 +14,9 @@ internal readonly struct GetPropertyResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply &&
-               ValueLength != this.Length;
+        return ResponseHeader.Reply == ResponseType.Reply &&
+               ValueLength != Length;
     }
-    
+
     public byte Format => ResponseHeader.GetValue();
 }

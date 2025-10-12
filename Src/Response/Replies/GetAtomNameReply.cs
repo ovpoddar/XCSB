@@ -1,10 +1,12 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct GetAtomNameReply
 {
@@ -12,17 +14,18 @@ public readonly struct GetAtomNameReply
     public readonly ushort Sequence;
     public readonly string Name;
 
-    internal GetAtomNameReply(GetAtomNameResponse response, Socket socket)
+    internal GetAtomNameReply(Span<byte> response)
     {
-        Reply = response.ResponseHeader.Reply;
-        Sequence = response.ResponseHeader.Sequence;
-        if (response.Length == 0)
+        ref var context = ref response.AsStruct<GetAtomNameResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+
+        if (context.Length == 0)
             Name = string.Empty;
         else
         {
-            using var nameBuffer = new ArrayPoolUsing<byte>((int)response.Length * 4);
-            socket.ReceiveExact(nameBuffer);
-            Name = Encoding.ASCII.GetString(nameBuffer, 0, response.LengthOfName);
+            var cursor = Unsafe.SizeOf<GetAtomNameResponse>();
+            Name = Encoding.ASCII.GetString(response.Slice(cursor, context.LengthOfName).ToArray());
         }
     }
 }

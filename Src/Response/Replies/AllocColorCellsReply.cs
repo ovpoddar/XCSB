@@ -1,10 +1,11 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public struct AllocColorCellsReply
 {
@@ -13,19 +14,21 @@ public struct AllocColorCellsReply
     public uint[] Pixels;
     public ushort[] Masks;
 
-    internal AllocColorCellsReply(AllocColorCellsResponse result, Socket socket)
+    internal AllocColorCellsReply(Span<byte> response)
     {
-        Reply = result.ResponseHeader.Reply;
-        Sequence = result.ResponseHeader.Sequence;
-        var requiredSize = (int)result.Length * 4;
-        using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-        socket.ReceiveExact(buffer);
-        Pixels = result.NumberOfPixels == 0
-            ? []
-            : MemoryMarshal.Cast<byte, uint>(buffer[0..(result.NumberOfPixels * 4)]).ToArray();
+        ref var context = ref response.AsStruct<AllocColorCellsResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
 
-        Masks = result.NumberOfMasks == 0
+        var cursor = Unsafe.SizeOf<AllocColorCellsReply>();
+        var length = (context.NumberOfPixels * 4);
+        Pixels = context.NumberOfPixels == 0
             ? []
-            : MemoryMarshal.Cast<byte, ushort>(buffer[(result.NumberOfPixels * 4)..requiredSize]).ToArray();
+            : MemoryMarshal.Cast<byte, uint>(response.Slice(cursor, length)).ToArray();
+        cursor += length;
+
+        Masks = context.NumberOfMasks == 0
+            ? []
+            : MemoryMarshal.Cast<byte, ushort>(response[cursor..]).ToArray();
     }
 }

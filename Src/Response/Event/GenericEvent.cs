@@ -1,10 +1,9 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
 public unsafe struct GenericEvent : IXEvent
@@ -17,7 +16,7 @@ public unsafe struct GenericEvent : IXEvent
 
     internal readonly ref T As<T>() where T : struct
     {
-        var isNotValid = this.Reply switch
+        var isNotValid = Reply switch
         {
             EventType.KeyPress when typeof(T) == typeof(KeyPressEvent) => false,
             EventType.KeyRelease when typeof(T) == typeof(KeyReleaseEvent) => false,
@@ -57,17 +56,17 @@ public unsafe struct GenericEvent : IXEvent
             _ => true
         };
 
-        if (this.Reply is > EventType.KeyPress or not < EventType.LastEvent && isNotValid)
+        if (Reply is > EventType.KeyPress or not < EventType.LastEvent && isNotValid)
             throw new InvalidCastException();
 
-        fixed (byte* ptr = this._data)
+        fixed (byte* ptr = _data)
             return ref new Span<byte>(ptr, 32).AsStruct<T>();
     }
 
 
     public bool Verify(in int sequence)
     {
-        fixed (byte* ptr = this._data)
+        fixed (byte* ptr = _data)
         {
             return Reply switch
             {

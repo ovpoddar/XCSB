@@ -1,6 +1,5 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
-using Xcsb.Event;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
@@ -8,7 +7,7 @@ using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Requests;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
-
+using Xcsb.Response.Event;
 
 #if !NETSTANDARD
 using System.Numerics;
@@ -21,7 +20,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     private readonly List<byte> _buffer = [];
     private int _requestLength;
 
-    public XBufferProto(XProto xProto) : base(xProto.socket)
+    public XBufferProto(XProto xProto) : base(xProto.Socket)
     {
         // todo: pass a configuration object and based on that set up the XBufferProto
         _requestLength = 0;
@@ -279,12 +278,13 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
     public void FlushChecked()
     {
 #if NETSTANDARD
-        socket.SendExact(_buffer.ToArray());
+        _protoOut.SendExact(_buffer.ToArray());
 #else
-        socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+        _protoOut.SendExact(CollectionsMarshal.AsSpan(_buffer));
 #endif
+        throw new NotImplementedException();
         using var buffer = new ArrayPoolUsing<byte>(Marshal.SizeOf<GenericEvent>() * _requestLength);
-        var received = socket.Receive(buffer);
+        /*var received = Socket.Receive(buffer);
         foreach (var evnt in MemoryMarshal.Cast<byte, XResponse>(buffer[..received]))
         {
             switch (evnt.GetResponseType())
@@ -305,7 +305,7 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
+        }*/
     }
 
     public void Flush()
@@ -313,10 +313,12 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
         try
         {
 #if NETSTANDARD
-            socket.SendExact(_buffer.ToArray());
+            _protoOut.SendExact(_buffer.ToArray());
 #else
-            socket.SendExact(CollectionsMarshal.AsSpan(_buffer));
+            _protoOut.SendExact(CollectionsMarshal.AsSpan(_buffer));
 #endif
+            throw new NotImplementedException();
+            /*
             using var buffer = new ArrayPoolUsing<byte>(socket.Available);
             var received = socket.Receive(buffer);
             foreach (var evnt in MemoryMarshal.Cast<byte, XResponse>(buffer[..received]))
@@ -340,10 +342,10 @@ internal class XBufferProto : BaseProtoClient, IXBufferProto
                         throw new ArgumentOutOfRangeException();
                 }
             }
+            */
         }
         finally
         {
-            sequenceNumber += (ushort)_requestLength;
             _requestLength = 0;
             _buffer.Clear();
         }

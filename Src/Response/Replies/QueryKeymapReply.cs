@@ -1,28 +1,23 @@
 ﻿using System.Diagnostics;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public struct QueryKeymapReply
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
-    public byte[] keys;
+    public byte[] keys = new byte[32];
 
-    internal unsafe QueryKeymapReply(QueryKeymapResponse response, Socket socket)
+    internal unsafe QueryKeymapReply(QueryKeymapResponse response)
     {
         Reply = response.ResponseHeader.Reply;
         Sequence = response.ResponseHeader.Sequence;
-        keys = new byte[32];
-
-        Debug.Assert(response.Length * 4 == 8);
-        Span<byte> buffer = stackalloc byte[(int)(response.Length * 4)];
-        socket.ReceiveExact(buffer);
-
-        new Span<byte>(response.Keys, 24).CopyTo(keys[0..24]);
-        buffer.CopyTo(keys[24..32]);
+        new Span<byte>(response.Keys, 32)
+            .CopyTo(keys);
     }
 }

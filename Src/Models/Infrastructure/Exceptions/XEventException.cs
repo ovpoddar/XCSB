@@ -1,5 +1,4 @@
-﻿using Xcsb.Event;
-using Xcsb.Response.Errors;
+﻿using Xcsb.Response.Errors;
 
 namespace Xcsb.Models.Infrastructure.Exceptions;
 

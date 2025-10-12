@@ -1,12 +1,11 @@
 ﻿using Xcsb;
-using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
 var conn = XcsbClient.Initialized();
 var screen = conn.HandshakeSuccessResponseBody.Screens[0];
 var window = conn.NewId();
-conn.CreateWindow(
+conn.CreateWindowUnchecked(
     0,
     window,
     screen.Root,
@@ -16,7 +15,7 @@ conn.CreateWindow(
     ValueMask.BackgroundPixel | ValueMask.EventMask,
     [screen.WhitePixel, (uint)(EventMask.KeyPressMask | EventMask.ExposureMask)]);
 
-conn.MapWindow(window);
+conn.MapWindowUnchecked(window);
 
 var font_path_reply = conn.GetFontPath();
 conn.SetFontPathChecked(font_path_reply.Value.Paths);
@@ -27,7 +26,7 @@ foreach (var fontName in listFonts.Value.Fonts)
     Console.WriteLine(fontName);
 
 var font = conn.NewId();
-conn.OpenFont("fixed", font);
+conn.OpenFontUnchecked("fixed", font);
 var font_info = conn.QueryFont(font);
 Console.WriteLine($"QueryFont: Max bounds width:  {font_info.Value.MaxBounds.CharacterWidth}\n");
 var text = "Hello, XCB!";
@@ -47,10 +46,12 @@ foreach (var color in queryColor.Value.Colors)
 while (true)
 {
     var Event = conn.GetEvent();
-    if (Event.ReplyType == XEventType.LastEvent || Event.Error.HasValue)
-        break;
+    if (Event.ReplyType == XEventType.LastEvent)
+        return;
+    if (Event.Error.HasValue)
+        throw new Exception(Event.Error.Value.ToString());
     if (Event.ReplyType == XEventType.KeyPress)
         break;
 }
 
-conn.DestroyWindow(window);
+conn.DestroyWindowUnchecked(window);

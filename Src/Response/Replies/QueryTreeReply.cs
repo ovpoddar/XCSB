@@ -1,10 +1,10 @@
-﻿using System.Net.Sockets;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct QueryTreeReply
 {
@@ -14,20 +14,21 @@ public readonly struct QueryTreeReply
     public readonly uint Parent;
     public readonly uint[] WindowChildren;
 
-    internal QueryTreeReply(QueryTreeResponse response, Socket socket)
+    internal QueryTreeReply(Span<byte> response)
     {
-        Reply = response.ResponseHeader.Reply;
-        Sequence = response.ResponseHeader.Sequence;
-        Root = response.Root;
-        Parent = response.Parent;
+        ref var context = ref response.AsStruct<QueryTreeResponse>();
 
-        if (response.WindowChildrenLenght == 0)
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+        Root = context.Root;
+        Parent = context.Parent;
+
+        if (context.WindowChildrenLength == 0)
             WindowChildren = [];
         else
         {
-            using var windowChildren = new ArrayPoolUsing<byte>(response.WindowChildrenLenght * 4);
-            socket.ReceiveExact(windowChildren);
-            WindowChildren = MemoryMarshal.Cast<byte, uint>(windowChildren).ToArray();
+            var responseSize = Unsafe.SizeOf<QueryTreeResponse>();
+            WindowChildren = MemoryMarshal.Cast<byte, uint>(response[responseSize..]).ToArray();
         }
     }
 }

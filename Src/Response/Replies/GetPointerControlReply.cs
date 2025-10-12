@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct GetPointerControlReply : IXReply
@@ -14,7 +14,7 @@ public readonly struct GetPointerControlReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply &&
-               this.Length == 0;
+        return ResponseHeader.Reply == ResponseType.Reply &&
+               Length == 0;
     }
 }

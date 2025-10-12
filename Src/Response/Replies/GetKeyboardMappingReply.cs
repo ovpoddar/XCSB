@@ -1,11 +1,11 @@
-﻿using System.Diagnostics;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct GetKeyboardMappingReply
 {
@@ -14,23 +14,23 @@ public readonly struct GetKeyboardMappingReply
     public readonly uint[] Keysyms;
     public readonly byte KeyPerKeyCode;
 
-    internal GetKeyboardMappingReply(GetKeyboardMappingResponse result, byte count, Socket socket)
+    internal GetKeyboardMappingReply(Span<byte> response, byte count)
     {
-        if (result.ResponseHeader.GetValue() * count != result.Length)
+        ref var context = ref response.AsStruct<GetKeyboardMappingResponse>();
+         if (context.ResponseHeader.GetValue() * count != context.Length)
             throw new InvalidOperationException("Unknown reply");
 
-        Reply = result.ResponseHeader.Reply;
-        Sequence = result.ResponseHeader.Sequence;
-        KeyPerKeyCode = result.ResponseHeader.GetValue();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+        KeyPerKeyCode = context.ResponseHeader.GetValue();
 
-        if (result.ResponseHeader.GetValue() == 0)
+        if (KeyPerKeyCode == 0)
             Keysyms = [];
         else
         {
-            var requiredSize = (int)result.Length * 4;
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            socket.ReceiveExact(buffer[0..requiredSize]);
-            Keysyms = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();
+            var cursor = Unsafe.SizeOf<GetKeyboardMappingResponse>();
+            var length = (int)context.Length * 4;
+            Keysyms = MemoryMarshal.Cast<byte, uint>(response[cursor..length]).ToArray();
             // todo: implement try a custom reader of span and span or similar structure dimantion should be extra to
             // store but it's not a big deal' because it does not map to any native types
             // Keysyms = new uint[count][];

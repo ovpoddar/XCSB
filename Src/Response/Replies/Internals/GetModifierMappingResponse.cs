@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Internals;
+namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct GetModifierMappingResponse : IXReply
@@ -11,8 +11,8 @@ internal readonly struct GetModifierMappingResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply &&
-               this.Length == KeycodesPerModifier * 2 && ResponseHeader.Sequence == sequence;
+        return ResponseHeader.Reply == ResponseType.Reply &&
+               Length == KeycodesPerModifier * 2 && ResponseHeader.Sequence == sequence;
     }
 
     public byte KeycodesPerModifier => ResponseHeader.GetValue();
