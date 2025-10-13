@@ -144,7 +144,7 @@ internal static class GenericHelper
         return buffer.ToStruct<T>();
     }
 
-    internal static ListFontsWithInfoReply[] GetListFontsWithInfoReplies(this Span<byte> buffer, int maxNames)
+    internal static ListFontsWithInfoReply[] GetListFontsWithInfoReplies(this Span<byte> buffer, int maxNames, Handlers.ProtoIn protoIn)
     {
         var result = new ListFontsWithInfoReply[maxNames];
         var count = 0;

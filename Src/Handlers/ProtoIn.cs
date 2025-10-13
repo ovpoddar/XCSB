@@ -14,16 +14,15 @@ namespace Xcsb.Handlers;
 
 // todo: want to use this https://learn.microsoft.com/en-us/dotnet/communitytoolkit/high-performance/memoryowner
 // looks perfectly for this situation
-internal struct ProtoIn
+internal class ProtoIn
 {
-    private readonly Socket _socket;
-
+    internal readonly Socket Socket;
     internal readonly Queue<GenericEvent> bufferEvents;
     internal Dictionary<int, byte[]> replyBuffer;
     internal int Sequence { get; set; }
     internal ProtoIn(Socket socket)
     {
-        _socket = socket;
+        Socket = socket;
         Sequence = 0;
         bufferEvents = new Queue<GenericEvent>();
         replyBuffer = new Dictionary<int, byte[]>();
@@ -42,8 +41,8 @@ internal struct ProtoIn
         for (var attempts = 3; attempts > 0; attempts--)
             if (sequence > Sequence)
             {
-                if (_socket.Available == 0)
-                    _socket.Poll(timeOut, SelectMode.SelectRead);
+                if (Socket.Available == 0)
+                    Socket.Poll(timeOut, SelectMode.SelectRead);
                 FlushSocket();
             }
             else
@@ -66,23 +65,22 @@ internal struct ProtoIn
             return result.As<XEvent>();
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
 
-        if (_socket.Poll(-1, SelectMode.SelectRead))
-        {
-            var totalRead = _socket.Receive(scratchBuffer);
-            if (totalRead == 0)
-                return scratchBuffer.Make<XEvent, LastEvent>(new(Sequence));
-        }
+        if (!Socket.Poll(-1, SelectMode.SelectRead))
+            return scratchBuffer.ToStruct<XEvent>();
 
-        return scratchBuffer.ToStruct<XEvent>();
+        var totalRead = Socket.Receive(scratchBuffer);
+        return totalRead == 0
+            ? scratchBuffer.Make<XEvent, LastEvent>(new LastEvent(Sequence))
+            : scratchBuffer.ToStruct<XEvent>();
     }
 
     private void FlushSocket()
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
         Span<byte> buffer = stackalloc byte[bufferSize];
-        while (_socket.Available != 0)
+        while (Socket.Available != 0)
         {
-            _socket.ReceiveExact(buffer);
+            Socket.ReceiveExact(buffer);
             ref var content = ref buffer.AsStruct<XResponse>();
             var responseType = content.GetResponseType();
             switch (responseType)
@@ -96,7 +94,7 @@ internal struct ProtoIn
                     replyBuffer[content.Sequence] = buffer.ToArray();
                     break;
                 case XResponseType.Reply:
-                    ComputeResponse(ref buffer, _socket);
+                    ComputeResponse(ref buffer, Socket);
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -130,13 +128,12 @@ internal struct ProtoIn
         {
             replyBuffer[content.Sequence] = result.ToArray();
         }
-
     }
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
-        if (this._socket.Available == 0)
-            _socket.Poll(1000, SelectMode.SelectRead);
+        if (this.Socket.Available == 0)
+            Socket.Poll(1000, SelectMode.SelectRead);
 
         FlushSocket();
         var isAnyError = replyBuffer.TryGetValue(sequence, out var response);

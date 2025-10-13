@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Xcsb.Handlers;
 
-internal struct ProtoOut
+internal class ProtoOut
 {
     private readonly Socket _socket;
 

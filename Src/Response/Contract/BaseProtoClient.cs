@@ -19,13 +19,13 @@ namespace Xcsb.Response.Contract;
 
 internal class BaseProtoClient
 {
-    protected ProtoIn _protoIn;
-    protected ProtoOut _protoOut;
+    public readonly ProtoIn ProtoIn;
+    public readonly ProtoOut ProtoOut;
 
     public BaseProtoClient(Socket socket)
     {
-        this._protoIn = new ProtoIn(socket);
-        this._protoOut = new ProtoOut(socket);
+        this.ProtoIn = new ProtoIn(socket);
+        this.ProtoOut = new ProtoOut(socket);
     }
 
     protected void ChangeWindowAttributesBase(uint window, ValueMask mask, Span<uint> args)
@@ -39,7 +39,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -49,7 +49,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -57,13 +57,13 @@ internal class BaseProtoClient
     protected void DestroyWindowBase(uint window)
     {
         var request = new DestroyWindowType(window);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void AllowEventsBase(EventsMode mode, uint time)
     {
         var request = new AllowEventsType(mode, time);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void BellBase(sbyte percent)
@@ -72,13 +72,13 @@ internal class BaseProtoClient
             throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
 
         var request = new BellType(percent);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void ChangeActivePointerGrabBase(uint cursor, uint time, ushort mask)
     {
         var request = new ChangeActivePointerGrabType(cursor, time, mask);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void ChangeGCBase(uint gc, GCMask mask, Span<uint> args)
@@ -92,7 +92,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -101,7 +101,7 @@ internal class BaseProtoClient
             workingBuffer.WriteRequest(ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -117,7 +117,7 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 address);
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -127,7 +127,7 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 address);
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -143,7 +143,7 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -153,7 +153,7 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -169,7 +169,7 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 MemoryMarshal.Cast<uint, byte>(keysym));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -179,7 +179,7 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 MemoryMarshal.Cast<uint, byte>(keysym));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -189,7 +189,7 @@ internal class BaseProtoClient
         var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
             threshold ?? 0, (byte)(acceleration is null ? 0 : 1),
             (byte)(threshold.HasValue ? 1 : 0));
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void ChangePropertyBase<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
@@ -210,7 +210,7 @@ internal class BaseProtoClient
                 ref request,
                 24,
                 MemoryMarshal.Cast<T, byte>(args));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -220,7 +220,7 @@ internal class BaseProtoClient
                 ref request,
                 24,
                 MemoryMarshal.Cast<T, byte>(args));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -228,25 +228,25 @@ internal class BaseProtoClient
     protected void ChangeSaveSetBase(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
         var request = new ChangeSaveSetType(changeSaveSetMode, window);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CirculateWindowBase(Circulate circulate, uint window)
     {
         var request = new CirculateWindowType(circulate, window);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void ClearAreaBase(bool exposures, uint window, short x, short y, ushort width, ushort height)
     {
         var request = new ClearAreaType(exposures, window, x, y, width, height);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CloseFontBase(uint fontId)
     {
         var request = new CloseFontType(fontId);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void ConfigureWindowBase(uint window, ConfigureValueMask mask, Span<uint> args)
@@ -260,7 +260,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -270,7 +270,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -278,7 +278,7 @@ internal class BaseProtoClient
     protected void ConvertSelectionBase(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
         var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CopyAreaBase(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -286,19 +286,19 @@ internal class BaseProtoClient
     {
         var request = new CopyAreaType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CopyColormapAndFreeBase(uint colormapId, uint srcColormapId)
     {
         var request = new CopyColormapAndFreeType(colormapId, srcColormapId);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CopyGCBase(uint srcGc, uint dstGc, GCMask mask)
     {
         var request = new CopyGCType(srcGc, dstGc, mask);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CopyPlaneBase(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -306,13 +306,13 @@ internal class BaseProtoClient
     {
         var request = new CopyPlaneType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height, bitPlane);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CreateColormapBase(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
         var request = new CreateColormapType(alloc, colormapId, window, visual);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CreateCursorBase(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue,
@@ -320,7 +320,7 @@ internal class BaseProtoClient
     {
         var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CreateGCBase(uint gc, uint drawable, GCMask mask, Span<uint> args)
@@ -334,7 +334,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -344,7 +344,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -354,13 +354,13 @@ internal class BaseProtoClient
     {
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CreatePixmapBase(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
         var request = new CreatePixmapType(depth, pixmapId, drawable, width, height);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void CreateWindowBase(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
@@ -376,7 +376,7 @@ internal class BaseProtoClient
                 ref request,
                 32,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -386,20 +386,20 @@ internal class BaseProtoClient
                 ref request,
                 32,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
     }
 
     protected void DeletePropertyBase(uint window, ATOM atom)
     {
         var request = new DeletePropertyType(window, atom);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void DestroySubwindowsBase(uint window)
     {
         var request = new DestroySubWindowsType(window);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void FillPolyBase(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
@@ -413,7 +413,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 MemoryMarshal.Cast<Point, byte>(points));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -423,7 +423,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 MemoryMarshal.Cast<Point, byte>(points));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -431,13 +431,13 @@ internal class BaseProtoClient
     protected void ForceScreenSaverBase(ForceScreenSaverMode mode)
     {
         var request = new ForceScreenSaverType(mode);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void FreeColormapBase(uint colormapId)
     {
         var request = new FreeColormapType(colormapId);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void FreeColorsBase(uint colormapId, uint planeMask, Span<uint> pixels)
@@ -451,7 +451,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(pixels));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -461,7 +461,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<uint, byte>(pixels));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -469,19 +469,19 @@ internal class BaseProtoClient
     protected void FreeCursorBase(uint cursorId)
     {
         var request = new FreeCursorType(cursorId);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void FreeGCBase(uint gc)
     {
         var request = new FreeGCType(gc);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void FreePixmapBase(uint pixmapId)
     {
         var request = new FreePixmapType(pixmapId);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void GrabButtonBase(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
@@ -489,20 +489,20 @@ internal class BaseProtoClient
     {
         var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void GrabKeyBase(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
         var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void GrabServerBase()
     {
         var request = new GrabServerType();
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void ImageText16Base(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
@@ -520,7 +520,7 @@ internal class BaseProtoClient
 #endif
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(text.Length * 2 + 16)..requiredBuffer].Clear();
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -533,7 +533,7 @@ internal class BaseProtoClient
 #endif
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(text.Length * 2 + 16)..requiredBuffer].Clear();
-            _protoOut.SendExact(scratchBuffer[..requiredBuffer]);
+            ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
     }
@@ -550,7 +550,7 @@ internal class BaseProtoClient
                 16,
                 text
             );
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -561,7 +561,7 @@ internal class BaseProtoClient
                 16,
                 text
             );
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -569,25 +569,25 @@ internal class BaseProtoClient
     protected void InstallColormapBase(uint colormapId)
     {
         var request = new InstallColormapType(colormapId);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void KillClientBase(uint resource)
     {
         var request = new KillClientType(resource);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void MapSubwindowsBase(uint window)
     {
         var request = new MapSubWindowsType(window);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void MapWindowBase(uint window)
     {
         var request = new MapWindowType(window);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
 
     }
 
@@ -602,7 +602,7 @@ internal class BaseProtoClient
                 ref request,
                 4,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -612,7 +612,7 @@ internal class BaseProtoClient
                 ref request,
                 4,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -631,7 +631,7 @@ internal class BaseProtoClient
 #endif
             Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
             scratchBuffer[(fontName.Length + 12)..requiredBuffer].Clear();
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -643,7 +643,7 @@ internal class BaseProtoClient
 #endif
             Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
             scratchBuffer[(fontName.Length + 12)..requiredBuffer].Clear();
-            _protoOut.SendExact(scratchBuffer[..requiredBuffer]);
+            ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
     }
@@ -659,7 +659,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Arc, byte>(arcs));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -669,7 +669,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Arc, byte>(arcs));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -685,7 +685,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Arc, byte>(arcs));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -695,7 +695,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Arc, byte>(arcs));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -711,7 +711,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -721,7 +721,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -737,7 +737,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Point, byte>(points));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -747,7 +747,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Point, byte>(points));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -763,7 +763,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Point, byte>(points));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -773,7 +773,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Point, byte>(points));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -789,7 +789,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -799,7 +799,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -815,7 +815,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Segment, byte>(segments));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -825,7 +825,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Segment, byte>(segments));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -841,7 +841,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 data);
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -851,7 +851,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 data);
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -867,7 +867,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 data);
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -877,7 +877,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 data);
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -895,7 +895,7 @@ internal class BaseProtoClient
                 ref request,
                 24,
                 data);
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -905,7 +905,7 @@ internal class BaseProtoClient
                 ref request,
                 24,
                 data);
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -914,14 +914,14 @@ internal class BaseProtoClient
         ushort backGreen, ushort backBlue)
     {
         var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
 
     }
 
     protected void ReparentWindowBase(uint window, uint parent, short x, short y)
     {
         var request = new ReparentWindowType(window, parent, x, y);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void RotatePropertiesBase(uint window, ushort delta, Span<ATOM> properties)
@@ -935,7 +935,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<ATOM, byte>(properties));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -945,7 +945,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<ATOM, byte>(properties));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -953,13 +953,13 @@ internal class BaseProtoClient
     protected void SendEventBase(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
         var request = new SendEventType(propagate, destination, eventMask, evnt);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void SetAccessControlBase(AccessControlMode mode)
     {
         var request = new SetAccessControlType(mode);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void SetClipRectanglesBase(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
@@ -974,7 +974,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -984,7 +984,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -992,7 +992,7 @@ internal class BaseProtoClient
     protected void SetCloseDownModeBase(CloseDownMode mode)
     {
         var request = new SetCloseDownModeType(mode);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void SetDashesBase(uint gc, ushort dashOffset, Span<byte> dashes)
@@ -1006,7 +1006,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 dashes);
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1016,7 +1016,7 @@ internal class BaseProtoClient
                 ref request,
                 12,
                 dashes);
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
 
@@ -1043,7 +1043,7 @@ internal class BaseProtoClient
             }
 
             scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1060,7 +1060,7 @@ internal class BaseProtoClient
             }
 
             scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
-            _protoOut.SendExact(scratchBuffer[..requiredBuffer]);
+            ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
     }
@@ -1068,19 +1068,19 @@ internal class BaseProtoClient
     protected void SetInputFocusBase(InputFocusMode mode, uint focus, uint time)
     {
         var request = new SetInputFocusType(mode, focus, time);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void SetScreenSaverBase(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
     {
         var request = new SetScreenSaverType(timeout, interval, preferBlanking, allowExposures);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void SetSelectionOwnerBase(uint owner, ATOM atom, uint timestamp)
     {
         var request = new SetSelectionOwnerType(owner, atom, timestamp);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void StoreColorsBase(uint colormapId, Span<ColorItem> item)
@@ -1095,7 +1095,7 @@ internal class BaseProtoClient
                 8,
                 MemoryMarshal.Cast<ColorItem, byte>(item));
             scratchBuffer[requiredBuffer - 1] = 0;
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1106,7 +1106,7 @@ internal class BaseProtoClient
                 8,
                 MemoryMarshal.Cast<ColorItem, byte>(item));
             scratchBuffer[requiredBuffer - 1] = 0;
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -1122,7 +1122,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 name);
-            _protoOut.SendExact(scratchBuffer);
+            ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -1132,7 +1132,7 @@ internal class BaseProtoClient
                 ref request,
                 16,
                 name);
-            _protoOut.SendExact(workingBuffer);
+            ProtoOut.SendExact(workingBuffer);
         }
 
     }
@@ -1140,49 +1140,49 @@ internal class BaseProtoClient
     protected void UngrabButtonBase(Button button, uint grabWindow, ModifierMask mask)
     {
         var request = new UngrabButtonType(button, grabWindow, mask);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void UngrabKeyBase(byte key, uint grabWindow, ModifierMask modifier)
     {
         var request = new UngrabKeyType(key, grabWindow, modifier);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void UngrabKeyboardBase(uint time)
     {
         var request = new UngrabKeyboardType(time);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void UngrabPointerBase(uint time)
     {
         var request = new UngrabPointerType(time);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void UngrabServerBase()
     {
         var request = new UnGrabServerType();
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void UninstallColormapBase(uint colormapId)
     {
         var request = new UninstallColormapType(colormapId);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void UnmapSubwindowsBase(uint window)
     {
         var request = new UnMapSubwindowsType(window);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void UnmapWindowBase(uint window)
     {
         var request = new UnmapWindowType(window);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
     protected void WarpPointerBase(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
@@ -1190,7 +1190,7 @@ internal class BaseProtoClient
     {
         var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
-        _protoOut.Send(ref request);
+        ProtoOut.Send(ref request);
     }
 
 }

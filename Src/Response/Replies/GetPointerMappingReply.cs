@@ -22,7 +22,7 @@ public readonly struct GetPointerMappingReply
         else
         {
             var cursor = Unsafe.SizeOf<GetPointerMappingResponse>();
-            Map = response[cursor..context.ResponseHeader.GetValue()].ToArray();
+            Map = response.Slice(cursor, context.ResponseHeader.GetValue()).ToArray();
         }
     }
 }
