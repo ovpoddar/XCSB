@@ -92,9 +92,8 @@ internal struct ArrayPoolUsing<T> : IDisposable
         }
     }
 
-    //todo: optamice with length veriable
     public readonly Span<T> this[Range range] =>
         _values is null
             ? []
-            : _values.AsSpan(range);
+            : _values.AsSpan(0, Length)[range];
 }

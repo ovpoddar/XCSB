@@ -99,6 +99,6 @@ while (true)
 
 
     var resultGetMotionEvents = client.GetMotionEvents(window, 0, 0);
-    Console.WriteLine(resultGetMotionEvents.Value.Events.Length);
+    Console.WriteLine(resultGetMotionEvents.HasValue ? resultGetMotionEvents.Value.Events.Length : 0);
 
 }

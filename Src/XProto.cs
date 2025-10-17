@@ -45,10 +45,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public AllocColorReply? AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
     {
-        var request = new AllocColorType(colorMap, red, green, blue);
-        ProtoOut.Send(ref request);
-
-        var (result, error) = ProtoIn.ReceivedResponse<AllocColorReply>(ProtoOut.Sequence);
+        var cookie = AllocColorBase(colorMap, red, green, blue);
+        var (result, error) = ProtoIn.ReceivedResponse<AllocColorReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
 
@@ -57,9 +55,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public AllocColorCellsReply? AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
     {
-        var request = new AllocColorCellsType(contiguous, colorMap, colors, planes);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorCellsResponse>(ProtoOut.Sequence);
+        var cookie = AllocColorCellsBase(contiguous, colorMap, colors, planes);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorCellsResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -69,9 +66,8 @@ internal class XProto : BaseProtoClient, IXProto
     public AllocColorPlanesReply? AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
         ushort greens, ushort blues)
     {
-        var request = new AllocColorPlanesType(contiguous, colorMap, colors, reds, greens, blues);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorPlanesResponse>(ProtoOut.Sequence);
+        var cookie = AllocColorPlanesBase(contiguous, colorMap, colors, reds, greens, blues);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorPlanesResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -80,29 +76,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public AllocNamedColorReply? AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name)
     {
-        var request = new AllocNamedColorType(colorMap, name.Length);
-        var requiredBuffer = 12 + name.Length.AddPadding();
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                name);
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                name);
-            ProtoOut.SendExact(workingBuffer);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponse<AllocNamedColorReply>(ProtoOut.Sequence);
+        var cookie = AllocNamedColorBase(colorMap, name);
+        var (result, error) = ProtoIn.ReceivedResponse<AllocNamedColorReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -111,9 +86,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetAtomNameReply? GetAtomName(ATOM atom)
     {
-        var request = new GetAtomNameType(atom);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetAtomNameResponse>(ProtoOut.Sequence);
+        var cookie = GetAtomNameBase(atom);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<GetAtomNameResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -122,34 +96,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public InternAtomReply? InternAtom(bool onlyIfExist, string atomName)
     {
-        var request = new InternAtomType(onlyIfExist, atomName.Length);
-        var requiredBuffer = 8 + atomName.Length.AddPadding();
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-#if NETSTANDARD
-            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
-#else
-            MemoryMarshal.Write(scratchBuffer[..8], in request);
-#endif
-            Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
-            scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-#if NETSTANDARD
-            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
-#else
-            MemoryMarshal.Write(scratchBuffer[..8], in request);
-#endif
-            Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
-            scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
-            ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponse<InternAtomReply>(ProtoOut.Sequence);
+        var cookie = InternAtomBase(onlyIfExist, atomName);
+        var (result, error) = ProtoIn.ReceivedResponse<InternAtomReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -157,9 +105,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetFontPathReply? GetFontPath()
     {
-        var request = new GetFontPathType();
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetFontPathResponse>(ProtoOut.Sequence);
+        var cookie = GetFontPathBase();
+        var (result, error) = ProtoIn.ReceivedResponseSpan<GetFontPathResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -168,10 +115,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetGeometryReply? GetGeometry(uint drawable)
     {
-        var request = new GetGeometryType(drawable);
-        ProtoOut.Send(ref request);
-
-        var (result, error) = ProtoIn.ReceivedResponse<GetGeometryReply>(ProtoOut.Sequence);
+        var cookie = GetGeometryBase(drawable);
+        var (result, error) = ProtoIn.ReceivedResponse<GetGeometryReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -180,9 +125,8 @@ internal class XProto : BaseProtoClient, IXProto
     public GetImageReply? GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
         uint planeMask)
     {
-        var request = new GetImageType(format, drawable, x, y, width, height, planeMask);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetImageResponse>(ProtoOut.Sequence);
+        var cookie = GetImageBase(format, drawable, x, y, width, height, planeMask);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<GetImageResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -191,9 +135,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetInputFocusReply? GetInputFocus()
     {
-        var request = new GetInputFocusType();
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponse<GetInputFocusReply>(ProtoOut.Sequence);
+        var cookie = GetInputFocusBase();
+        var (result, error) = ProtoIn.ReceivedResponse<GetInputFocusReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -201,10 +144,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetKeyboardControlReply? GetKeyboardControl()
     {
-        var request = new GetKeyboardControlType();
-        ProtoOut.Send(ref request);
-
-        var (result, error) = ProtoIn.ReceivedResponse<GetKeyboardControlResponse>(ProtoOut.Sequence);
+        var cookie = GetKeyboardControlBase();
+        var (result, error) = ProtoIn.ReceivedResponse<GetKeyboardControlResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -213,9 +154,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetKeyboardMappingReply? GetKeyboardMapping(byte firstKeycode, byte count)
     {
-        var request = new GetKeyboardMappingType(firstKeycode, count);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetKeyboardMappingResponse>(ProtoOut.Sequence);
+        var cookie = GetKeyboardMappingBase(firstKeycode, count);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<GetKeyboardMappingResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -224,9 +164,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetModifierMappingReply? GetModifierMapping()
     {
-        var request = new GetModifierMappingType();
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetModifierMappingResponse>(ProtoOut.Sequence);
+        var cookie = GetModifierMappingBase();
+        var (result, error) = ProtoIn.ReceivedResponseSpan<GetModifierMappingResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -235,9 +174,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetMotionEventsReply? GetMotionEvents(uint window, uint startTime, uint endTime)
     {
-        var request = new GetMotionEventsType(window, startTime, endTime);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetMotionEventsResponse>(ProtoOut.Sequence);
+        var cookie = GetMotionEventsBase(window, startTime, endTime);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<GetMotionEventsResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -246,9 +184,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetPointerControlReply? GetPointerControl()
     {
-        var request = new GetPointerControlType();
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponse<GetPointerControlReply>(ProtoOut.Sequence);
+        var cookie = GetPointerControlBase();
+        var (result, error) = ProtoIn.ReceivedResponse<GetPointerControlReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -256,9 +193,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetPointerMappingReply? GetPointerMapping()
     {
-        var request = new GetPointerMappingType();
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetPointerMappingResponse>(ProtoOut.Sequence);
+        var cookie = GetPointerMappingBase();
+        var (result, error) = ProtoIn.ReceivedResponseSpan<GetPointerMappingResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -267,9 +203,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetPropertyReply? GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
     {
-        var request = new GetPropertyType(delete, window, property, type, offset, length);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetPropertyResponse>(ProtoOut.Sequence);
+        var cookie = GetPropertyBase(delete, window, property, type, offset, length);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<GetPropertyResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -278,9 +213,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetScreenSaverReply? GetScreenSaver()
     {
-        var request = new GetScreenSaverType();
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponse<GetScreenSaverReply>(ProtoOut.Sequence);
+        var cookie = GetScreenSaverBase();
+        var (result, error) = ProtoIn.ReceivedResponse<GetScreenSaverReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -288,9 +222,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetSelectionOwnerReply? GetSelectionOwner(ATOM atom)
     {
-        var request = new GetSelectionOwnerType(atom);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponse<GetSelectionOwnerReply>(ProtoOut.Sequence);
+        var cookie = GetSelectionOwnerBase(atom);
+        var (result, error) = ProtoIn.ReceivedResponse<GetSelectionOwnerReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -298,10 +231,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public GetWindowAttributesReply? GetWindowAttributes(uint window)
     {
-        var request = new GetWindowAttributesType(window);
-        ProtoOut.Send(ref request);
-
-        var (result, error) = ProtoIn.ReceivedResponse<GetWindowAttributesReply>(ProtoOut.Sequence);
+        var cookie = GetWindowAttributesBase(window);
+        var (result, error) = ProtoIn.ReceivedResponse<GetWindowAttributesReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -309,9 +240,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public ListExtensionsReply? ListExtensions()
     {
-        var request = new ListExtensionsType();
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListExtensionsResponse>(ProtoOut.Sequence);
+        var cookie = ListExtensionsBase();
+        var (result, error) = ProtoIn.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -320,31 +250,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public ListFontsReply? ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
     {
-        var request = new ListFontsType(pattern.Length, maxNames);
-        var requiredBuffer = 8 + (pattern.Length * 2).AddPadding();
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                8,
-                pattern
-            );
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                8,
-                pattern
-            );
-            ProtoOut.SendExact(workingBuffer);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListFontsResponse>(ProtoOut.Sequence);
+        var cookie = ListFontsBase(pattern, maxNames);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<ListFontsResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -353,31 +260,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public ListFontsWithInfoReply[]? ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
     {
-        var request = new ListFontsWithInfoType(pattan.Length, maxNames);
-        var requiredBuffer = 8 + pattan.Length.AddPadding();
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                8,
-                pattan
-            );
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                8,
-                pattan
-            );
-            ProtoOut.SendExact(workingBuffer);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponseArray(ProtoOut.Sequence, maxNames);
+        var cookie = ListFontsWithInfoBase(pattan, maxNames);
+        var (result, error) = ProtoIn.ReceivedResponseArray(cookie.Id, maxNames);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -386,9 +270,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public ListHostsReply? ListHosts()
     {
-        var request = new ListHostsType();
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListHostsResponse>(ProtoOut.Sequence);
+        var cookie = ListHostsBase();
+        var (result, error) = ProtoIn.ReceivedResponseSpan<ListHostsResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -397,9 +280,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public ListInstalledColormapsReply? ListInstalledColormaps(uint window)
     {
-        var request = new ListInstalledColormapsType(window);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListInstalledColormapsResponse>(ProtoOut.Sequence);
+        var cookie = ListInstalledColormapsBase(window);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<ListInstalledColormapsResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -408,9 +290,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public ListPropertiesReply? ListProperties(uint window)
     {
-        var request = new ListPropertiesType(window);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListPropertiesResponse>(ProtoOut.Sequence);
+        var cookie = ListPropertiesBase(window);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<ListPropertiesResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -419,29 +300,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public LookupColorReply? LookupColor(uint colorMap, ReadOnlySpan<byte> name)
     {
-        var request = new LookupColorType(colorMap, name.Length);
-        var requiredBuffer = 12 + name.Length.AddPadding();
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                name);
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                name);
-            ProtoOut.SendExact(workingBuffer);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponse<LookupColorReply>(ProtoOut.Sequence);
+        var cookie = LookupColorBase(colorMap, name);
+        var (result, error) = ProtoIn.ReceivedResponse<LookupColorReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -449,9 +309,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public QueryBestSizeReply? QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height)
     {
-        var request = new QueryBestSizeType(shape, drawable, width, height);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponse<QueryBestSizeReply>(ProtoOut.Sequence);
+        var cookie = QueryBestSizeBase(shape, drawable, width, height);
+        var (result, error) = ProtoIn.ReceivedResponse<QueryBestSizeReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -459,29 +318,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public QueryColorsReply? QueryColors(uint colorMap, Span<uint> pixels)
     {
-        var request = new QueryColorsType(colorMap, pixels.Length);
-        var requiredBuffer = 8 + pixels.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<uint, byte>(pixels));
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<uint, byte>(pixels));
-            ProtoOut.SendExact(workingBuffer);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponseSpan<QueryColorsResponse>(ProtoOut.Sequence);
+        var cookie = QueryColorsBase(colorMap, pixels);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<QueryColorsResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -492,23 +330,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         if (name.Length > ushort.MaxValue)
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
-        var request = new QueryExtensionType((ushort)name.Length);
-        var requiredBuffer = 8 + name.Length.AddPadding();
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(ref request, 8, name);
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(ref request, 8, name);
-            ProtoOut.SendExact(workingBuffer);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponse<QueryExtensionReply>(ProtoOut.Sequence);
+        var cookie = QueryExtensionBase(name);
+        var (result, error) = ProtoIn.ReceivedResponse<QueryExtensionReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -516,9 +339,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public QueryFontReply? QueryFont(uint fontId)
     {
-        var request = new QueryFontType(fontId);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<QueryFontResponse>(ProtoOut.Sequence);
+        var cookie = QueryFontBase(fontId);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<QueryFontResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -527,9 +349,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public QueryKeymapReply? QueryKeymap()
     {
-        var request = new QueryKeymapType();
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponse<QueryKeymapResponse>(ProtoOut.Sequence);
+        var cookie = QueryKeymapBase();
+        var (result, error) = ProtoIn.ReceivedResponse<QueryKeymapResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -538,10 +359,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public QueryPointerReply? QueryPointer(uint window)
     {
-        var request = new QueryPointerType(window);
-        ProtoOut.Send(ref request);
-
-        var (result, error) = ProtoIn.ReceivedResponse<QueryPointerReply>(ProtoOut.Sequence);
+        var cookie = QueryPointerBase(window);
+        var (result, error) = ProtoIn.ReceivedResponse<QueryPointerReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -549,36 +368,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public QueryTextExtentsReply? QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery)
     {
-        var request = new QueryTextExtentsType(font, stringForQuery.Length);
-        var requiredBuffer = 8 + (stringForQuery.Length * 2).AddPadding();
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-
-#if NETSTANDARD
-            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
-#else
-            MemoryMarshal.Write(scratchBuffer[..8], in request);
-#endif
-            Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
-            scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-
-#if NETSTANDARD
-            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
-#else
-            MemoryMarshal.Write(scratchBuffer[..8], in request);
-#endif
-            Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
-            scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
-            ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponse<QueryTextExtentsReply>(ProtoOut.Sequence);
+        var cookie = QueryTextExtentsBase(font, stringForQuery);
+        var (result, error) = ProtoIn.ReceivedResponse<QueryTextExtentsReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -586,10 +377,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public QueryTreeReply? QueryTree(uint window)
     {
-        var request = new QueryTreeType(window);
-        ProtoOut.Send(ref request);
-
-        var (result, error) = ProtoIn.ReceivedResponseSpan<QueryTreeResponse>(ProtoOut.Sequence);
+        var cookie = QueryTreeBase(window);
+        var (result, error) = ProtoIn.ReceivedResponseSpan<QueryTreeResponse>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error!.Value);
 
@@ -600,10 +389,8 @@ internal class XProto : BaseProtoClient, IXProto
     public GrabKeyboardReply? GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
-        var request = new GrabKeyboardType(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
-        ProtoOut.Send(ref request);
-
-        var (result, error) = ProtoIn.ReceivedResponse<GrabKeyboardReply>(ProtoOut.Sequence);
+        var cookie = GrabKeyboardBase(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
+        var (result, error) = ProtoIn.ReceivedResponse<GrabKeyboardReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -612,11 +399,9 @@ internal class XProto : BaseProtoClient, IXProto
     public GrabPointerReply? GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp)
     {
-        var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
+        var cookie = GrabPointerBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
-        ProtoOut.Send(ref request);
-
-        var (result, error) = ProtoIn.ReceivedResponse<GrabPointerReply>(ProtoOut.Sequence);
+        var (result, error) = ProtoIn.ReceivedResponse<GrabPointerReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -624,29 +409,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public SetModifierMappingReply? SetModifierMapping(Span<ulong> keycodes)
     {
-        var request = new SetModifierMappingType(keycodes.Length);
-        var requiredBuffer = 4 + keycodes.Length * 8;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                4,
-                MemoryMarshal.Cast<ulong, byte>(keycodes));
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchbuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchbuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                4,
-                MemoryMarshal.Cast<ulong, byte>(keycodes));
-            ProtoOut.SendExact(workingBuffer);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponse<SetModifierMappingReply>(ProtoOut.Sequence);
+        var cookie = SetModifierMappingBase(keycodes);
+        var (result, error) = ProtoIn.ReceivedResponse<SetModifierMappingReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -654,29 +418,8 @@ internal class XProto : BaseProtoClient, IXProto
 
     public SetPointerMappingReply? SetPointerMapping(Span<byte> maps)
     {
-        var request = new SetPointerMappingType(maps);
-        var requiredBuffer = maps.Length.AddPadding() + 5;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                4,
-                maps);
-            ProtoOut.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                4,
-                maps);
-            ProtoOut.SendExact(workingBuffer[..requiredBuffer]);
-        }
-
-        var (result, error) = ProtoIn.ReceivedResponse<SetPointerMappingReply>(ProtoOut.Sequence);
+        var cookie = SetPointerMappingBase(maps);
+        var (result, error) = ProtoIn.ReceivedResponse<SetPointerMappingReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;
@@ -685,9 +428,8 @@ internal class XProto : BaseProtoClient, IXProto
     public TranslateCoordinatesReply? TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
         ushort srcY)
     {
-        var request = new TranslateCoordinatesType(srcWindow, destinationWindow, srcX, srcY);
-        ProtoOut.Send(ref request);
-        var (result, error) = ProtoIn.ReceivedResponse<TranslateCoordinatesReply>(ProtoOut.Sequence);
+        var cookie = TranslateCoordinatesBase(srcWindow, destinationWindow, srcX, srcY);
+        var (result, error) = ProtoIn.ReceivedResponse<TranslateCoordinatesReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
         return result;

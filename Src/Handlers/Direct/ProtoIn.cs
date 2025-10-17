@@ -16,8 +16,6 @@ using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Handlers;
 
-// todo: want to use this https://learn.microsoft.com/en-us/dotnet/communitytoolkit/high-performance/memoryowner
-// looks perfectly for this situation
 internal class ProtoIn : ProtoBase
 {
     internal int Sequence { get; set; }

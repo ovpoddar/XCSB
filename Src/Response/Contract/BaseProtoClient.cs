@@ -1243,4 +1243,453 @@ internal class BaseProtoClient
         return new ResponseProto(ProtoOut.Sequence);
     }
 
+    protected ResponseProto AllocColorBase(uint colorMap, ushort red, ushort green, ushort blue)
+    {
+        var request = new AllocColorType(colorMap, red, green, blue);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto QueryPointerBase(uint window)
+    {
+        var request = new QueryPointerType(window);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GrabPointerBase(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+        GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp)
+    {
+        var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
+            timeStamp);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto InternAtomBase(bool onlyIfExist, string atomName)
+    {
+        var request = new InternAtomType(onlyIfExist, atomName.Length);
+        var requiredBuffer = 8 + atomName.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
+            scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
+            scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
+            ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetPropertyBase(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
+    {
+        var request = new GetPropertyType(delete, window, property, type, offset, length);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetWindowAttributesBase(uint window)
+    {
+        var request = new GetWindowAttributesType(window);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetGeometryBase(uint drawable)
+    {
+        var request = new GetGeometryType(drawable);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto QueryTreeBase(uint window)
+    {
+        var request = new QueryTreeType(window);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetAtomNameBase(ATOM atom)
+    {
+        var request = new GetAtomNameType(atom);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto ListPropertiesBase(uint window)
+    {
+        var request = new ListPropertiesType(window);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetSelectionOwnerBase(ATOM atom)
+    {
+        var request = new GetSelectionOwnerType(atom);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GrabKeyboardBase(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+        GrabMode keyboardMode)
+    {
+        var request = new GrabKeyboardType(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetMotionEventsBase(uint window, uint startTime, uint endTime)
+    {
+        var request = new GetMotionEventsType(window, startTime, endTime);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto TranslateCoordinatesBase(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY)
+    {
+        var request = new TranslateCoordinatesType(srcWindow, destinationWindow, srcX, srcY);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetInputFocusBase()
+    {
+        var request = new GetInputFocusType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto QueryKeymapBase()
+    {
+        var request = new QueryKeymapType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto QueryFontBase(uint fontId)
+    {
+        var request = new QueryFontType(fontId);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto QueryTextExtentsBase(uint font, ReadOnlySpan<char> stringForQuery)
+    {
+
+        var request = new QueryTextExtentsType(font, stringForQuery.Length);
+        var requiredBuffer = 8 + (stringForQuery.Length * 2).AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
+            scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
+            scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
+            ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto ListFontsBase(ReadOnlySpan<byte> pattern, int maxNames)
+    {
+        var request = new ListFontsType(pattern.Length, maxNames);
+        var requiredBuffer = 8 + (pattern.Length * 2).AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                pattern
+            );
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                pattern
+            );
+            ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto ListFontsWithInfoBase(ReadOnlySpan<byte> pattan, int maxNames)
+    {
+        var request = new ListFontsWithInfoType(pattan.Length, maxNames);
+        var requiredBuffer = 8 + pattan.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                pattan
+            );
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                pattan
+            );
+            ProtoOut.SendExact(workingBuffer);
+        }
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetFontPathBase()
+    {
+        var request = new GetFontPathType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetImageBase(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
+        uint planeMask)
+    {
+        var request = new GetImageType(format, drawable, x, y, width, height, planeMask);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto ListInstalledColormapsBase(uint window)
+    {
+        var request = new ListInstalledColormapsType(window);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto AllocNamedColorBase(uint colorMap, ReadOnlySpan<byte> name)
+    {
+        var request = new AllocNamedColorType(colorMap, name.Length);
+        var requiredBuffer = 12 + name.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto AllocColorCellsBase(bool contiguous, uint colorMap, ushort colors, ushort planes)
+    {
+        var request = new AllocColorCellsType(contiguous, colorMap, colors, planes);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+
+    protected ResponseProto AllocColorPlanesBase(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens,
+        ushort blues)
+    {
+        var request = new AllocColorPlanesType(contiguous, colorMap, colors, reds, greens, blues);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto QueryColorsBase(uint colorMap, Span<uint> pixels)
+    {
+        var request = new QueryColorsType(colorMap, pixels.Length);
+        var requiredBuffer = 8 + pixels.Length * 4;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(pixels));
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(pixels));
+            ProtoOut.SendExact(workingBuffer);
+        }
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto LookupColorBase(uint colorMap, ReadOnlySpan<byte> name)
+    {
+        var request = new LookupColorType(colorMap, name.Length);
+        var requiredBuffer = 12 + name.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            ProtoOut.SendExact(workingBuffer);
+        }
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto QueryBestSizeBase(QueryShapeOf shape, uint drawable, ushort width, ushort height)
+    {
+        var request = new QueryBestSizeType(shape, drawable, width, height);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto QueryExtensionBase(ReadOnlySpan<byte> name)
+    {
+        var request = new QueryExtensionType((ushort)name.Length);
+        var requiredBuffer = 8 + name.Length.AddPadding();
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(ref request, 8, name);
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(ref request, 8, name);
+            ProtoOut.SendExact(workingBuffer);
+        }
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto ListExtensionsBase()
+    {
+        var request = new ListExtensionsType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto SetModifierMappingBase(Span<ulong> keycodes)
+    {
+        var request = new SetModifierMappingType(keycodes.Length);
+        var requiredBuffer = 4 + keycodes.Length * 8;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                4,
+                MemoryMarshal.Cast<ulong, byte>(keycodes));
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchbuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchbuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                4,
+                MemoryMarshal.Cast<ulong, byte>(keycodes));
+            ProtoOut.SendExact(workingBuffer);
+        }
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetModifierMappingBase()
+    {
+        var request = new GetModifierMappingType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetKeyboardMappingBase(byte firstKeycode, byte count)
+    {
+        var request = new GetKeyboardMappingType(firstKeycode, count);
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetKeyboardControlBase()
+    {
+        var request = new GetKeyboardControlType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto SetPointerMappingBase(Span<byte> maps)
+    {
+        var request = new SetPointerMappingType(maps);
+        var requiredBuffer = maps.Length.AddPadding() + 5;
+        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                4,
+                maps);
+            ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                4,
+                maps);
+            ProtoOut.SendExact(workingBuffer[..requiredBuffer]);
+        }
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetPointerMappingBase()
+    {
+        var request = new GetPointerMappingType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetPointerControlBase()
+    {
+        var request = new GetPointerControlType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto GetScreenSaverBase()
+    {
+        var request = new GetScreenSaverType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
+    protected ResponseProto ListHostsBase()
+    {
+        var request = new ListHostsType();
+        ProtoOut.Send(ref request);
+        return new ResponseProto(ProtoOut.Sequence, true);
+    }
 }
