@@ -34,7 +34,7 @@ public class HandshakeSuccessResponseBody
         socket.ReceiveExact(scratchBuffer);
         readIndex += scratchBuffer.Length;
 
-        ref var successResponseBody = ref scratchBuffer.AsStruct<_handshakeSuccessResponseBody>();
+        ref readonly var successResponseBody = ref scratchBuffer.AsStruct<_handshakeSuccessResponseBody>();
         var result = new HandshakeSuccessResponseBody
         {
             ReleaseNumber = successResponseBody.ReleaseNumber,

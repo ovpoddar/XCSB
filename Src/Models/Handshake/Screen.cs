@@ -34,7 +34,7 @@ public class Screen
         socket.ReceiveExact(scratchBuffer);
         currentlyRead += scratchBuffer.Length;
 
-        ref var screen = ref scratchBuffer.AsStruct<_screen>();
+        ref readonly var screen = ref scratchBuffer.AsStruct<_screen>();
         var result = new Screen
         {
             BackingStore = screen.BackingStore,

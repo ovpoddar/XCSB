@@ -14,7 +14,7 @@ public unsafe struct GenericEvent : IXEvent
 
     [FieldOffset(0)] private fixed byte _data[32];
 
-    internal readonly ref T As<T>() where T : struct
+    internal readonly ref readonly T As<T>() where T : struct
     {
         var isNotValid = Reply switch
         {

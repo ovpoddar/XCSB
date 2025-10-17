@@ -14,7 +14,7 @@ public readonly struct GetPointerMappingReply
 
     internal GetPointerMappingReply(Span<byte> response)
     {
-        ref var context = ref response.AsStruct<GetPointerMappingResponse>();
+        ref readonly var context = ref response.AsStruct<GetPointerMappingResponse>();
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         if (context.ResponseHeader.GetValue() == 0)

@@ -98,7 +98,7 @@ while (true)
 
 
 
-    var resultGetMotionEvents = client.GetMotionEvents(window, 0, 10000);
+    var resultGetMotionEvents = client.GetMotionEvents(window, 0, 0);
     Console.WriteLine(resultGetMotionEvents.Value.Events.Length);
 
 }

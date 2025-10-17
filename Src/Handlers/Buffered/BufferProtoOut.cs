@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 
 namespace Xcsb.Handlers;
 
-internal class BufferProtoOut
+internal class BufferProtoOut : ProtoBase
 {
     private readonly List<byte> _buffer;
     internal readonly ProtoOut ProtoOut;
     internal int RequestLength;
 
-    public BufferProtoOut(ProtoOut protoOut)
+    public BufferProtoOut(ProtoOut protoOut) : base(protoOut)
     {
         ProtoOut = protoOut;
         _buffer = new List<byte>();
@@ -44,8 +44,7 @@ internal class BufferProtoOut
 #else
         CollectionsMarshal.AsSpan(_buffer);
 #endif
-        ProtoOut.SendExact(buffer);
-        ProtoOut.Sequence += RequestLength;
+        this.SendExact(buffer, SocketFlags.None);
     }
 
     internal void Reset()
@@ -53,4 +52,11 @@ internal class BufferProtoOut
         _buffer.Clear();
         RequestLength = 0;
     }
+
+    protected override void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
+    {
+        base.SendExact(in buffer, socketFlags);
+        ProtoOut.Sequence += RequestLength;
+    }
+    
 }

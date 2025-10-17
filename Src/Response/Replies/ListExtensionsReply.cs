@@ -16,7 +16,7 @@ public readonly struct ListExtensionsReply
 
     internal ListExtensionsReply(Span<byte> response)
     {
-        ref var context = ref response.AsStruct<ListExtensionsResponse>();
+        ref readonly var context = ref response.AsStruct<ListExtensionsResponse>();
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         if (context.ResponseHeader.GetValue() == 0)

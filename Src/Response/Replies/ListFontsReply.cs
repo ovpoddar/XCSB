@@ -16,7 +16,7 @@ public readonly struct ListFontsReply
     internal ListFontsReply(Span<byte> response)
     {
 
-        ref var context = ref response.AsStruct<ListFontsResponse>();
+        ref readonly var context = ref response.AsStruct<ListFontsResponse>();
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         if (context.NumberOfFonts == 0)

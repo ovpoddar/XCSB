@@ -19,7 +19,7 @@ public struct AllocColorPlanesReply
 
     internal AllocColorPlanesReply(Span<byte> response)
     {
-        ref var context = ref response.AsStruct<AllocColorPlanesResponse>();
+        ref readonly var context = ref response.AsStruct<AllocColorPlanesResponse>();
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         RedMask = context.RedMask;

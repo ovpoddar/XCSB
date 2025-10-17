@@ -19,7 +19,7 @@ public class Depth
         socket.ReceiveExact(scratchBuffer);
         currentlyRead += scratchBuffer.Length;
 
-        ref var depth = ref scratchBuffer.AsStruct<_Depth>();
+        ref readonly var depth = ref scratchBuffer.AsStruct<_Depth>();
         var result = new Depth
         {
             DepthValue = depth.DepthValue,

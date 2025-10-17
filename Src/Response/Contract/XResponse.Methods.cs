@@ -19,7 +19,7 @@ internal partial struct XResponse : IXBaseResponse
     };
 
 
-    internal readonly unsafe ref T As<T>() where T : struct
+    internal readonly unsafe ref readonly T As<T>() where T : struct
     {
         var responseType = GetResponseType();
         if ((responseType != XResponseType.Event && (typeof(IXEvent).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(GenericEvent)))

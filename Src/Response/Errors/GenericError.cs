@@ -52,7 +52,7 @@ public unsafe struct GenericError : IXError
         }
     }
 
-    public readonly ref T As<T>() where T : struct
+    public readonly ref readonly T As<T>() where T : struct
     {
         var isNotValid = this.ResponseHeader.GetValue() switch
         {

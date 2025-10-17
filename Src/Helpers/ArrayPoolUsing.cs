@@ -5,15 +5,15 @@ namespace Xcsb.Helpers;
 
 internal struct ArrayPoolUsing<T> : IDisposable
 {
+    public int Length { get; private set; }
+
     private readonly ArrayPool<T> _arrayPool;
-    private readonly int _length;
     private readonly bool _clearArray;
     private T[]? _values;
 
     public ArrayPoolUsing(int length = 0, bool clearArray = false)
     {
         _arrayPool = ArrayPool<T>.Shared;
-        _length = length;
         _clearArray = clearArray;
 
         Rent(length);
@@ -27,6 +27,8 @@ internal struct ArrayPoolUsing<T> : IDisposable
         if (_values != null)
             _arrayPool.Return(_values, _clearArray);
         _values = _arrayPool.Rent(size);
+
+        Length = size;
         return this;
     }
 
@@ -37,21 +39,33 @@ internal struct ArrayPoolUsing<T> : IDisposable
             _arrayPool.Return(_values, _clearArray);
     }
 
-    public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing) =>
-        arrayPoolUsing._values ?? [];
-
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator T[](ArrayPoolUsing<T> arrayPoolUsing)
+    {
+        try
+        {
+            if (arrayPoolUsing._values == null) return [];
+            var result = new T[arrayPoolUsing.Length];
+            Array.Copy(arrayPoolUsing._values, result, result.Length);
+            return result;
+        }
+        finally
+        {
+            arrayPoolUsing.Dispose();
+        }
+    }
 
     public static implicit operator ArraySegment<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
         arrayPoolUsing._values is null
             ? []
-            : new ArraySegment<T>(arrayPoolUsing._values, 0, arrayPoolUsing._length);
+            : new ArraySegment<T>(arrayPoolUsing._values, 0, arrayPoolUsing.Length);
 
     public static implicit operator Span<T>(ArrayPoolUsing<T> arrayPoolUsing) =>
-        arrayPoolUsing._values.AsSpan(0, arrayPoolUsing._length);
+        arrayPoolUsing._values.AsSpan(0, arrayPoolUsing.Length);
 
     public readonly Span<T> Slice(int start, int length)
     {
-        if (length < 0 || length > _length)
+        if (length < 0 || length > Length)
             throw new ArgumentOutOfRangeException(nameof(length));
         return _values.AsSpan(start, length);
     }
@@ -78,6 +92,7 @@ internal struct ArrayPoolUsing<T> : IDisposable
         }
     }
 
+    //todo: optamice with length veriable
     public readonly Span<T> this[Range range] =>
         _values is null
             ? []

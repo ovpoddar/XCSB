@@ -10,8 +10,8 @@ namespace Xcsb.Response.Contract;
 internal class BaseBufferProtoClient
 {
     protected readonly BufferProtoOut BufferProtoOut;
-    protected readonly BufferProtoIn BufferProtoIn; 
-    
+    protected readonly BufferProtoIn BufferProtoIn;
+
     internal BaseBufferProtoClient(ProtoIn protoIn, ProtoOut protoOut)
     {
         BufferProtoOut = new BufferProtoOut(protoOut);
@@ -22,8 +22,10 @@ internal class BaseBufferProtoClient
     {
         try
         {
+            BufferProtoIn.ProtoIn.FlushSocket();
+            var outProtoSequence = BufferProtoOut.ProtoOut.Sequence;
             BufferProtoOut.Flush();
-            BufferProtoIn.FlushSocket(BufferProtoIn.ProtoIn.Sequence, shouldThorw);
+            BufferProtoIn.FlushSocket(BufferProtoIn.ProtoIn.Sequence, outProtoSequence, shouldThorw);
         }
         finally
         {

@@ -39,7 +39,7 @@ public unsafe struct XEvent
             _ => XEventType.Unknown,
         };
 
-    public readonly unsafe ref T As<T>() where T : struct =>
+    public readonly unsafe ref readonly T As<T>() where T : struct =>
         ref _response.As<T>();
 
     public readonly GenericError? Error =>

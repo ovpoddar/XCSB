@@ -16,7 +16,7 @@ public readonly struct QueryTreeReply
 
     internal QueryTreeReply(Span<byte> response)
     {
-        ref var context = ref response.AsStruct<QueryTreeResponse>();
+        ref readonly var context = ref response.AsStruct<QueryTreeResponse>();
 
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;

@@ -16,7 +16,7 @@ namespace Xcsb.Helpers;
 
 internal static class GenericHelper
 {
-    internal static ref T AsStruct<T>(this Span<byte> bytes) where T : struct =>
+    internal static ref readonly T AsStruct<T>(this Span<byte> bytes) where T : struct =>
         ref Unsafe.As<byte, T>(ref bytes[0]);
 
     internal static T ToStruct<T>(this Span<byte> bytes) where T : struct =>
@@ -118,10 +118,6 @@ internal static class GenericHelper
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged =>
-        list.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
-
     internal static void WriteRequest<T>(this Span<byte> writeBuffer, ref T requestType, int size,
         ReadOnlySpan<byte> requestBody) where T : unmanaged
     {
@@ -142,33 +138,6 @@ internal static class GenericHelper
         socket.EnsureReadSize(resultLength);
         socket.ReceiveExact(buffer);
         return buffer.ToStruct<T>();
-    }
-
-    internal static ListFontsWithInfoReply[] GetListFontsWithInfoReplies(this Span<byte> buffer, int maxNames, Handlers.ProtoIn protoIn)
-    {
-        var result = new ListFontsWithInfoReply[maxNames];
-        var count = 0;
-        var cursor = 0;
-
-        while (true)
-        {
-            ref var response = ref buffer[cursor..].AsStruct<ListFontsWithInfoResponse>();
-            if (!response.HasMore) break;
-
-            if (count == result.Length)
-                Array.Resize(ref result, result.Length << 1);
-
-            cursor += Unsafe.SizeOf<ListFontsWithInfoResponse>();
-            var responseLength = (int)(response.Length * 4) - 28;
-            result[count++] = new ListFontsWithInfoReply(ref response, buffer.Slice(cursor, responseLength));
-            cursor += responseLength;
-        }
-
-
-        if (count != result.Length)
-            Array.Resize(ref result, count);
-
-        return result.ToArray();
     }
 
     internal static void EnsureReadSize(this Socket socket, int size)

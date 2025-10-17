@@ -16,7 +16,7 @@ public readonly struct ListPropertiesReply
 
     internal ListPropertiesReply(Span<byte> response)
     {
-         ref var context = ref response.AsStruct<ListPropertiesResponse>();
+         ref readonly var context = ref response.AsStruct<ListPropertiesResponse>();
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
 

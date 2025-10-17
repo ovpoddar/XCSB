@@ -16,7 +16,7 @@ public readonly struct GetKeyboardMappingReply
 
     internal GetKeyboardMappingReply(Span<byte> response, byte count)
     {
-        ref var context = ref response.AsStruct<GetKeyboardMappingResponse>();
+        ref readonly var context = ref response.AsStruct<GetKeyboardMappingResponse>();
          if (context.ResponseHeader.GetValue() * count != context.Length)
             throw new InvalidOperationException("Unknown reply");
 

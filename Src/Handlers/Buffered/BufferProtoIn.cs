@@ -1,0 +1,85 @@
+﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using Xcsb.Helpers;
+using Xcsb.Models.Infrastructure.Exceptions;
+using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
+using Xcsb.Response.Event;
+
+namespace Xcsb.Handlers;
+
+internal class BufferProtoIn : ProtoBase
+{
+    internal readonly ProtoIn ProtoIn;
+
+    public BufferProtoIn(ProtoIn protoIn) : base(protoIn)
+    {
+        ProtoIn = protoIn;
+    }
+
+    internal void FlushSocket(in int requestLength, int outProtoSequence, bool shouldThrowOnError)
+    {
+        if (base.Socket.Available == 0)
+            base.Socket.Poll(1000, SelectMode.SelectRead);
+
+        var bufferSize = Unsafe.SizeOf<XResponse>();
+        Span<byte> buffer = stackalloc byte[bufferSize];
+        while (base.Socket.Available != 0)
+        {
+            base.Socket.ReceiveExact(buffer);
+            ref readonly var content = ref buffer.AsStruct<XResponse>();
+            var responseType = content.GetResponseType();
+            switch (responseType)
+            {
+                case XResponseType.Event:
+                case XResponseType.Notify:
+                case XResponseType.Unknown:
+                    base.BufferEvents.Enqueue(content.As<GenericEvent>());
+                    break;
+                case XResponseType.Error:
+                    if (ProtoIn.Sequence > outProtoSequence)
+                        ReplyBuffer[content.Sequence] = buffer.ToArray();
+                    else
+                    {
+                        if (shouldThrowOnError)
+                            throw new XEventException(buffer.ToStruct<GenericError>());
+                    }
+                    break;
+                case XResponseType.Reply:
+                    ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
+                    break;
+                default:
+                    throw new Exception(string.Join(", ", buffer.ToArray()));
+            }
+        }
+
+        ProtoIn.Sequence += requestLength;
+    }
+
+    private byte[] ComputeResponse(ref Span<byte> buffer)
+    {
+        ref readonly var content = ref buffer.AsStruct<RepliesHeader>();
+
+        var replySize = (int)(content.Length * 4);
+        if (replySize == 0)
+            return buffer.ToArray();
+
+        using var result = new ArrayPoolUsing<byte>(32 + replySize);
+        buffer.CopyTo(result[..32]);
+
+        Socket.EnsureReadSize(replySize);
+        Socket.ReceiveExact(result[32..result.Length]);
+
+
+        if (!ReplyBuffer.TryRemove(content.Sequence, out var response))
+            return result;
+
+        replySize = result.Length + response.Length;
+        using var scratchBuffer = new ArrayPoolUsing<byte>(replySize);
+        response.CopyTo(scratchBuffer);
+        result[0..result.Length].CopyTo(scratchBuffer[response.Length..]);
+        return scratchBuffer;
+    }
+
+
+}

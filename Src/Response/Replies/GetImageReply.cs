@@ -16,7 +16,7 @@ public readonly struct GetImageReply
     
     internal GetImageReply(Span<byte> response)
     {
-        ref var context = ref response.AsStruct<GetImageResponse>();
+        ref readonly var context = ref response.AsStruct<GetImageResponse>();
         Reply = context.ResponseHeader.Reply;
         Depth = context.ResponseHeader.GetValue();
         Sequence = context.ResponseHeader.Sequence;

@@ -15,7 +15,7 @@ public readonly struct QueryColorsReply
     public readonly Pixel[] Colors;
     internal QueryColorsReply(Span<byte> response)
     {
-        ref var context = ref response.AsStruct<QueryColorsResponse>();
+        ref readonly var context = ref response.AsStruct<QueryColorsResponse>();
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         if (context.NumberOfColors == 0)

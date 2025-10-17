@@ -27,7 +27,7 @@ public readonly struct ListFontsWithInfoReply
     public readonly FontProp[] Properties;
     public readonly string Name;
 
-    internal ListFontsWithInfoReply(ref ListFontsWithInfoResponse response, Span<byte> buffer)
+    internal ListFontsWithInfoReply(ref readonly ListFontsWithInfoResponse response, Span<byte> buffer)
     {
 
         Reply = response.ResponseHeader.Reply;

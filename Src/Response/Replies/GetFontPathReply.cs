@@ -16,7 +16,7 @@ public struct GetFontPathReply
 
     internal GetFontPathReply(Span<byte> response)
     {
-        ref var context = ref response.AsStruct<GetFontPathResponse>();
+        ref readonly var context = ref response.AsStruct<GetFontPathResponse>();
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         if (context.StringLength == 0)

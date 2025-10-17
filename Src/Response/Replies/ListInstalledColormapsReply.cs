@@ -15,7 +15,7 @@ public struct ListInstalledColormapsReply
 
     internal ListInstalledColormapsReply(Span<byte> response)
     {
-        ref var context = ref response.AsStruct<ListInstalledColormapsResponse>();
+        ref readonly var context = ref response.AsStruct<ListInstalledColormapsResponse>();
 
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
