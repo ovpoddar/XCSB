@@ -442,11 +442,9 @@ internal class XProto : BaseProtoClient, IXProto
             Socket.Poll(-1, SelectMode.SelectRead);
     }
 
-    public uint NewId()
-    {
-        return (uint)((HandshakeSuccessResponseBody.ResourceIDMask & _globalId++) |
-                      HandshakeSuccessResponseBody.ResourceIDBase);
-    }
+    public uint NewId() =>
+        (uint)((HandshakeSuccessResponseBody.ResourceIDMask & _globalId++) |
+               HandshakeSuccessResponseBody.ResourceIDBase);
 
     public XEvent GetEvent() =>
         ProtoIn.ReceivedResponse();
@@ -470,432 +468,271 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
-        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
-    {
-        return this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
+        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
+        this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
             args);
-    }
 
-    public ResponseProto ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args)
-    {
-        return ChangeWindowAttributesBase(window, mask, args);
-    }
+    public ResponseProto ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args) =>
+        ChangeWindowAttributesBase(window, mask, args);
 
-    public ResponseProto DestroyWindow(uint window)
-    {
-        return DestroyWindowBase(window);
-    }
+    public ResponseProto DestroyWindow(uint window) =>
+        DestroyWindowBase(window);
 
-    public ResponseProto DestroySubwindows(uint window)
-    {
-        return DestroySubwindowsBase(window);
-    }
+    public ResponseProto DestroySubwindows(uint window) =>
+        DestroySubwindowsBase(window);
 
-    public ResponseProto ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
-    {
-        return ChangeSaveSetBase(changeSaveSetMode, window);
-    }
+    public ResponseProto ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window) =>
+        ChangeSaveSetBase(changeSaveSetMode, window);
 
-    public ResponseProto ReparentWindow(uint window, uint parent, short x, short y)
-    {
-        return ReparentWindowBase(window, parent, x, y);
-    }
+    public ResponseProto ReparentWindow(uint window, uint parent, short x, short y) =>
+        ReparentWindowBase(window, parent, x, y);
 
-    public ResponseProto MapWindow(uint window)
-    {
-        return MapWindowBase(window);
-    }
+    public ResponseProto MapWindow(uint window) =>
+        MapWindowBase(window);
 
-    public ResponseProto MapSubwindows(uint window)
-    {
-        return MapSubwindowsBase(window);
-    }
+    public ResponseProto MapSubwindows(uint window) =>
+        MapSubwindowsBase(window);
 
-    public ResponseProto UnmapWindow(uint window)
-    {
-        return UnmapWindowBase(window);
-    }
+    public ResponseProto UnmapWindow(uint window) =>
+        UnmapWindowBase(window);
 
-    public ResponseProto UnmapSubwindows(uint window)
-    {
-        return UnmapSubwindowsBase(window);
-    }
+    public ResponseProto UnmapSubwindows(uint window) =>
+        UnmapSubwindowsBase(window);
 
-    public ResponseProto ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args)
-    {
-        return ConfigureWindowBase(window, mask, args);
-    }
+    public ResponseProto ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args) =>
+        ConfigureWindowBase(window, mask, args);
 
-    public ResponseProto CirculateWindow(Circulate circulate, uint window)
-    {
-        return CirculateWindowBase(circulate, window);
-    }
+    public ResponseProto CirculateWindow(Circulate circulate, uint window) =>
+        CirculateWindowBase(circulate, window);
 
     public ResponseProto ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
-    {
-        return ChangePropertyBase<T>(mode, window, property, type, args);
-    }
+        => ChangePropertyBase<T>(mode, window, property, type, args);
 
-    public ResponseProto DeleteProperty(uint window, ATOM atom)
-    {
-        return DeletePropertyBase(window, atom);
-    }
+    public ResponseProto DeleteProperty(uint window, ATOM atom) =>
+        DeletePropertyBase(window, atom);
 
-    public ResponseProto RotateProperties(uint window, ushort delta, Span<ATOM> properties)
-    {
-        return RotatePropertiesBase(window, delta, properties);
-    }
+    public ResponseProto RotateProperties(uint window, ushort delta, Span<ATOM> properties) =>
+        RotatePropertiesBase(window, delta, properties);
 
-    public ResponseProto SetSelectionOwner(uint owner, ATOM atom, uint timestamp)
-    {
-        return SetSelectionOwnerBase(owner, atom, timestamp);
-    }
+    public ResponseProto SetSelectionOwner(uint owner, ATOM atom, uint timestamp) =>
+        SetSelectionOwnerBase(owner, atom, timestamp);
 
-    public ResponseProto ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
-    {
-        return ConvertSelectionBase(requestor, selection, target, property, timestamp);
-    }
+    public ResponseProto ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp) =>
+        ConvertSelectionBase(requestor, selection, target, property, timestamp);
 
-    public ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt)
-    {
-        return SendEventBase(propagate, destination, eventMask, evnt);
-    }
+    public ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt) =>
+        SendEventBase(propagate, destination, eventMask, evnt);
 
-    public ResponseProto UngrabPointer(uint time)
-    {
-        return UngrabPointerBase(time);
-    }
+    public ResponseProto UngrabPointer(uint time) =>
+        UngrabPointerBase(time);
 
     public ResponseProto GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
-        GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
-    {
-        return GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers);
-    }
+        GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers) =>
+        GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button, modifiers);
 
-    public ResponseProto UngrabButton(Button button, uint grabWindow, ModifierMask mask)
-    {
-        return UngrabButtonBase(button, grabWindow, mask);
-    }
+    public ResponseProto UngrabButton(Button button, uint grabWindow, ModifierMask mask) =>
+        UngrabButtonBase(button, grabWindow, mask);
 
-    public ResponseProto ChangeActivePointerGrab(uint cursor, uint time, ushort mask)
-    {
-        return ChangeActivePointerGrabBase(cursor, time, mask);
-    }
+    public ResponseProto ChangeActivePointerGrab(uint cursor, uint time, ushort mask) =>
+        ChangeActivePointerGrabBase(cursor, time, mask);
 
-    public ResponseProto UngrabKeyboard(uint time)
-    {
-        return UngrabKeyboardBase(time);
-    }
+    public ResponseProto UngrabKeyboard(uint time) =>
+        UngrabKeyboardBase(time);
 
     public ResponseProto GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
-        GrabMode keyboardMode)
-    {
-        return GrabKeyBase(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
-    }
+        GrabMode keyboardMode) => GrabKeyBase(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
 
-    public ResponseProto UngrabKey(byte key, uint grabWindow, ModifierMask modifier)
-    {
-        return UngrabKeyBase(key, grabWindow, modifier);
-    }
+    public ResponseProto UngrabKey(byte key, uint grabWindow, ModifierMask modifier) =>
+        UngrabKeyBase(key, grabWindow, modifier);
 
-    public ResponseProto AllowEvents(EventsMode mode, uint time)
-    {
-        return AllowEventsBase(mode, time);
-    }
+    public ResponseProto AllowEvents(EventsMode mode, uint time) =>
+        AllowEventsBase(mode, time);
 
-    public ResponseProto GrabServer()
-    {
-        return GrabServerBase();
-    }
+    public ResponseProto GrabServer() =>
+        GrabServerBase();
 
-    public ResponseProto UngrabServer()
-    {
-        return UngrabServerBase();
-    }
+    public ResponseProto UngrabServer() =>
+        UngrabServerBase();
 
     public ResponseProto WarpPointer(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
-        ushort srcHeight, short destinationX, short destinationY)
-    {
-        return WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX, destinationY);
-    }
+        ushort srcHeight, short destinationX, short destinationY) =>
+        WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX, destinationY);
 
-    public ResponseProto SetInputFocus(InputFocusMode mode, uint focus, uint time)
-    {
-        return SetInputFocusBase(mode, focus, time);
-    }
+    public ResponseProto SetInputFocus(InputFocusMode mode, uint focus, uint time) =>
+        SetInputFocusBase(mode, focus, time);
 
-    public ResponseProto OpenFont(string fontName, uint fontId)
-    {
-        return OpenFontBase(fontName, fontId);
-    }
+    public ResponseProto OpenFont(string fontName, uint fontId) =>
+        OpenFontBase(fontName, fontId);
 
-    public ResponseProto CloseFont(uint fontId)
-    {
-        return CloseFontBase(fontId);
-    }
+    public ResponseProto CloseFont(uint fontId) =>
+        CloseFontBase(fontId);
 
-    public ResponseProto SetFontPath(string[] strPaths)
-    {
-        return SetFontPathBase(strPaths);
-    }
+    public ResponseProto SetFontPath(string[] strPaths) =>
+        SetFontPathBase(strPaths);
 
-    public ResponseProto CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
-    {
-        return CreatePixmapBase(depth, pixmapId, drawable, width, height);
-    }
+    public ResponseProto CreatePixmap(byte depth, uint pixmapId, uint drawable, ushort width, ushort height) =>
+        CreatePixmapBase(depth, pixmapId, drawable, width, height);
 
-    public ResponseProto FreePixmap(uint pixmapId)
-    {
-        return FreePixmapBase(pixmapId);
-    }
+    public ResponseProto FreePixmap(uint pixmapId) =>
+        FreePixmapBase(pixmapId);
 
-    public ResponseProto CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args)
-    {
-        return CreateGCBase(gc, drawable, mask, args);
-    }
+    public ResponseProto CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args) =>
+        CreateGCBase(gc, drawable, mask, args);
 
-    public ResponseProto ChangeGC(uint gc, GCMask mask, Span<uint> args)
-    {
-        return ChangeGCBase(gc, mask, args);
-    }
+    public ResponseProto ChangeGC(uint gc, GCMask mask, Span<uint> args) =>
+        ChangeGCBase(gc, mask, args);
 
-    public ResponseProto CopyGC(uint srcGc, uint dstGc, GCMask mask)
-    {
-        return CopyGCBase(srcGc, dstGc, mask);
-    }
+    public ResponseProto CopyGC(uint srcGc, uint dstGc, GCMask mask) =>
+        CopyGCBase(srcGc, dstGc, mask);
 
-    public ResponseProto SetDashes(uint gc, ushort dashOffset, Span<byte> dashes)
-    {
-        return SetDashesBase(gc, dashOffset, dashes);
-    }
+    public ResponseProto SetDashes(uint gc, ushort dashOffset, Span<byte> dashes) =>
+        SetDashesBase(gc, dashOffset, dashes);
 
     public ResponseProto SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
-        Span<Rectangle> rectangles)
-    {
-        return SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
-    }
+        Span<Rectangle> rectangles) =>
+        SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
 
-    public ResponseProto FreeGC(uint gc)
-    {
-        return FreeGCBase(gc);
-    }
+    public ResponseProto FreeGC(uint gc) =>
+        FreeGCBase(gc);
 
-    public ResponseProto ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height)
-    {
-        return ClearAreaBase(exposures, window, x, y, width, height);
-    }
+    public ResponseProto ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height) =>
+        ClearAreaBase(exposures, window, x, y, width, height);
 
     public ResponseProto CopyArea(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX, ushort destinationY, ushort width, ushort height)
-    {
-        return CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height);
-    }
+        ushort destinationX, ushort destinationY, ushort width, ushort height) =>
+        CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height);
 
     public ResponseProto CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
-        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
-    {
-        return CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height,
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane) =>
+        CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height,
             bitPlane);
-    }
 
-    public ResponseProto PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
-    {
-        return PolyPointBase(coordinate, drawable, gc, points);
-    }
+    public ResponseProto PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
+        PolyPointBase(coordinate, drawable, gc, points);
 
-    public ResponseProto PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
-    {
-        return PolyLineBase(coordinate, drawable, gc, points);
-    }
+    public ResponseProto PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
+        PolyLineBase(coordinate, drawable, gc, points);
 
-    public ResponseProto PolySegment(uint drawable, uint gc, Span<Segment> segments)
-    {
-        return PolySegmentBase(drawable, gc, segments);
-    }
+    public ResponseProto PolySegment(uint drawable, uint gc, Span<Segment> segments) =>
+        PolySegmentBase(drawable, gc, segments);
 
-    public ResponseProto PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
-    {
-        return PolyRectangleBase(drawable, gc, rectangles);
-    }
+    public ResponseProto PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
+        PolyRectangleBase(drawable, gc, rectangles);
 
-    public ResponseProto PolyArc(uint drawable, uint gc, Span<Arc> arcs)
-    {
-        return PolyArcBase(drawable, gc, arcs);
-    }
+    public ResponseProto PolyArc(uint drawable, uint gc, Span<Arc> arcs) =>
+        PolyArcBase(drawable, gc, arcs);
 
     public ResponseProto FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate,
-        Span<Point> points)
-    {
-        return FillPolyBase(drawable, gc, shape, coordinate, points);
-    }
+        Span<Point> points) =>
+        FillPolyBase(drawable, gc, shape, coordinate, points);
 
-    public ResponseProto PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
-    {
-        return PolyFillRectangleBase(drawable, gc, rectangles);
-    }
+    public ResponseProto PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
+        PolyFillRectangleBase(drawable, gc, rectangles);
 
-    public ResponseProto PolyFillArc(uint drawable, uint gc, Span<Arc> arcs)
-    {
-        return PolyFillArcBase(drawable, gc, arcs);
-    }
+    public ResponseProto PolyFillArc(uint drawable, uint gc, Span<Arc> arcs) =>
+        PolyFillArcBase(drawable, gc, arcs);
 
     public ResponseProto PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height,
-        short x, short y, byte leftPad, byte depth, Span<byte> data)
-    {
-        return PutImageBase(format, drawable, gc, width, height, x, y, leftPad, depth, data);
-    }
+        short x, short y, byte leftPad, byte depth, Span<byte> data) =>
+        PutImageBase(format, drawable, gc, width, height, x, y, leftPad, depth, data);
 
-    public ResponseProto ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
-    {
-        return ImageText8Base(drawable, gc, x, y, text);
-    }
+    public ResponseProto ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text) =>
+        ImageText8Base(drawable, gc, x, y, text);
 
-    public ResponseProto ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
-    {
-        return ImageText16Base(drawable, gc, x, y, text);
-    }
+    public ResponseProto ImageText16(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text) =>
+        ImageText16Base(drawable, gc, x, y, text);
 
-    public ResponseProto CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
-    {
-        return CreateColormapBase(alloc, colormapId, window, visual);
-    }
+    public ResponseProto CreateColormap(ColormapAlloc alloc, uint colormapId, uint window, uint visual) =>
+        CreateColormapBase(alloc, colormapId, window, visual);
 
-    public ResponseProto FreeColormap(uint colormapId)
-    {
-        return FreeColormapBase(colormapId);
-    }
+    public ResponseProto FreeColormap(uint colormapId) =>
+        FreeColormapBase(colormapId);
 
-    public ResponseProto CopyColormapAndFree(uint colormapId, uint srcColormapId)
-    {
-        return CopyColormapAndFreeBase(colormapId, srcColormapId);
-    }
+    public ResponseProto CopyColormapAndFree(uint colormapId, uint srcColormapId) =>
+        CopyColormapAndFreeBase(colormapId, srcColormapId);
 
-    public ResponseProto InstallColormap(uint colormapId)
-    {
-        return InstallColormapBase(colormapId);
-    }
+    public ResponseProto InstallColormap(uint colormapId) =>
+        InstallColormapBase(colormapId);
 
-    public ResponseProto UninstallColormap(uint colormapId)
-    {
-        return UninstallColormapBase(colormapId);
-    }
+    public ResponseProto UninstallColormap(uint colormapId) =>
+        UninstallColormapBase(colormapId);
 
-    public ResponseProto FreeColors(uint colormapId, uint planeMask, Span<uint> pixels)
-    {
-        return FreeColorsBase(colormapId, planeMask, pixels);
-    }
+    public ResponseProto FreeColors(uint colormapId, uint planeMask, Span<uint> pixels) =>
+        FreeColorsBase(colormapId, planeMask, pixels);
 
-    public ResponseProto StoreColors(uint colormapId, Span<ColorItem> item)
-    {
-        return StoreColorsBase(colormapId, item);
-    }
+    public ResponseProto StoreColors(uint colormapId, Span<ColorItem> item) =>
+        StoreColorsBase(colormapId, item);
 
-    public ResponseProto StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
-    {
-        return StoreNamedColorBase(mode, colormapId, pixels, name);
-    }
+    public ResponseProto StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name) =>
+        StoreNamedColorBase(mode, colormapId, pixels, name);
 
     public ResponseProto CreateCursor(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
-        ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
-    {
-        return CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y);
-    }
+        ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y) =>
+        CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y);
 
     public ResponseProto CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
         ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen,
-        ushort backBlue)
-    {
-        return CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
+        ushort backBlue) =>
+        CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
             backRed, backGreen, backBlue);
-    }
 
-    public ResponseProto FreeCursor(uint cursorId)
-    {
-        return FreeCursorBase(cursorId);
-    }
+    public ResponseProto FreeCursor(uint cursorId) =>
+        FreeCursorBase(cursorId);
 
     public ResponseProto RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
-        ushort backGreen, ushort backBlue)
-    {
-        return RecolorCursorBase(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
-    }
+        ushort backGreen, ushort backBlue) =>
+        RecolorCursorBase(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
 
     public ResponseProto ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
-        Span<uint> Keysym)
-    {
-        return ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, Keysym);
-    }
+        Span<uint> Keysym) =>
+        ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, Keysym);
 
-    public ResponseProto Bell(sbyte percent)
-    {
-        return BellBase(percent);
-    }
+    public ResponseProto Bell(sbyte percent) =>
+        BellBase(percent);
 
-    public ResponseProto ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args)
-    {
-        return ChangeKeyboardControlBase(mask, args);
-    }
+    public ResponseProto ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args) =>
+        ChangeKeyboardControlBase(mask, args);
 
-    public ResponseProto ChangePointerControl(Acceleration acceleration, ushort? threshold)
-    {
-        return ChangePointerControlBase(acceleration, threshold);
-    }
+    public ResponseProto ChangePointerControl(Acceleration acceleration, ushort? threshold) =>
+        ChangePointerControlBase(acceleration, threshold);
 
-    public ResponseProto SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
-    {
-        return SetScreenSaverBase(timeout, interval, preferBlanking, allowExposures);
-    }
+    public ResponseProto SetScreenSaver(short timeout, short interval, TriState preferBlanking,
+        TriState allowExposures) =>
+        SetScreenSaverBase(timeout, interval, preferBlanking, allowExposures);
 
-    public ResponseProto ForceScreenSaver(ForceScreenSaverMode mode)
-    {
-        return ForceScreenSaverBase(mode);
-    }
+    public ResponseProto ForceScreenSaver(ForceScreenSaverMode mode) =>
+        ForceScreenSaverBase(mode);
 
-    public ResponseProto ChangeHosts(HostMode mode, Family family, Span<byte> address)
-    {
-        return ChangeHostsBase(mode, family, address);
-    }
+    public ResponseProto ChangeHosts(HostMode mode, Family family, Span<byte> address) =>
+        ChangeHostsBase(mode, family, address);
 
-    public ResponseProto SetAccessControl(AccessControlMode mode)
-    {
-        return SetAccessControlBase(mode);
-    }
+    public ResponseProto SetAccessControl(AccessControlMode mode) =>
+        SetAccessControlBase(mode);
 
-    public ResponseProto SetCloseDownMode(CloseDownMode mode)
-    {
-        return SetCloseDownModeBase(mode);
-    }
+    public ResponseProto SetCloseDownMode(CloseDownMode mode) =>
+        SetCloseDownModeBase(mode);
 
-    public ResponseProto KillClient(uint resource)
-    {
-        return KillClientBase(resource);
-    }
+    public ResponseProto KillClient(uint resource) =>
+        KillClientBase(resource);
 
-    public ResponseProto NoOperation(Span<uint> args)
-    {
-        return NoOperationBase(args);
-    }
+    public ResponseProto NoOperation(Span<uint> args) =>
+        NoOperationBase(args);
 
-    public ResponseProto PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
-    {
-        return PolyText8Base(drawable, gc, x, y, data);
-    }
+    public ResponseProto PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
+        PolyText8Base(drawable, gc, x, y, data);
 
-    public ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
-    {
-        return PolyText16Base(drawable, gc, x, y, data);
-    }
+    public ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
+        PolyText16Base(drawable, gc, x, y, data);
 
     public void CreateWindowUnchecked(byte depth, uint window, uint parent, short x, short y, ushort width,
-        ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
     {
-        var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
-            args);
+        var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType,
+            rootVisualId, mask, args);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
@@ -1014,8 +851,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void GrabButtonUnchecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
     {
-        var cookie = this.GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button,
-            modifiers);
+        var cookie = this.GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
+            button, modifiers);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
@@ -1071,7 +908,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void WarpPointerUnchecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
         ushort srcHeight, short destinationX, short destinationY)
     {
-        var cookie = this.WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX, destinationY);
+        var cookie = this.WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
+            destinationY);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
@@ -1157,15 +995,16 @@ internal class XProto : BaseProtoClient, IXProto
     public void CopyAreaUnchecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height)
     {
-        var cookie = this.CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height);
+        var cookie = this.CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyPlaneUnchecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
     {
-        var cookie = this.CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height,
-            bitPlane);
+        var cookie = this.CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height, bitPlane);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
@@ -1289,7 +1128,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void CreateCursorUnchecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
         ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
-        var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y);
+        var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
+            backBlue, x, y);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
@@ -1297,8 +1137,8 @@ internal class XProto : BaseProtoClient, IXProto
         ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen,
         ushort backBlue)
     {
-        var cookie = this.CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
-            backRed, backGreen, backBlue);
+        var cookie = this.CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
+            foreGreen, foreBlue, backRed, backGreen, backBlue);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
@@ -1397,8 +1237,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
         ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
     {
-        var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
-            args);
+        var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType,
+            rootVisualId, mask, args);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
@@ -1517,8 +1357,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void GrabButtonChecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
     {
-        var cookie = this.GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor, button,
-            modifiers);
+        var cookie = this.GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
+            button, modifiers);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
@@ -1574,7 +1414,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void WarpPointerChecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
         ushort srcHeight, short destinationX, short destinationY)
     {
-        var cookie = this.WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX, destinationY);
+        var cookie = this.WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
+            destinationY);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
@@ -1660,15 +1501,16 @@ internal class XProto : BaseProtoClient, IXProto
     public void CopyAreaChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height)
     {
-        var cookie = this.CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height);
+        var cookie = this.CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyPlaneChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
     {
-        var cookie = this.CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height,
-            bitPlane);
+        var cookie = this.CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height, bitPlane);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
@@ -1790,7 +1632,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void CreateCursorChecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
         ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
-        var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue, x, y);
+        var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
+            backBlue, x, y);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
@@ -1798,8 +1641,8 @@ internal class XProto : BaseProtoClient, IXProto
         ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen,
         ushort backBlue)
     {
-        var cookie = this.CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed, foreGreen, foreBlue,
-            backRed, backGreen, backBlue);
+        var cookie = this.CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
+            foreGreen, foreBlue, backRed, backGreen, backBlue);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 

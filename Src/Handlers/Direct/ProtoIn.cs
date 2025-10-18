@@ -184,7 +184,7 @@ internal class ProtoIn : ProtoBase
         while (cursor < reply.Length)
         {
             ref readonly var response = ref reply[cursor..].AsStruct<ListFontsWithInfoResponse>();
-            if (!response.HasMore) return result;
+            if (!response.HasMore) return result[0..count].ToArray();
 
             if (count == result.Length)
             {
@@ -208,7 +208,7 @@ internal class ProtoIn : ProtoBase
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
             Debug.Assert(response.ResponseHeader.Sequence == sequence);
-            if (!response.HasMore) return result; 
+            if (!response.HasMore) return result[0..count].ToArray(); 
 
             result[count++] = new ListFontsWithInfoReply(in response, packet[60..]);
 

@@ -19,13 +19,13 @@ client.MapWindowChecked(window);
 client.ChangeActivePointerGrabChecked(0, 0, (ushort)EventMask.ButtonPressMask);
 
 var font = client.NewId();
-client.OpenFontUnchecked("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
+client.OpenFontChecked("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
 
 
 var namedColor = client.AllocNamedColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Red"u8);
 Console.WriteLine($"{namedColor.Value.ExactBlue} {namedColor.Value.ExactGreen} {namedColor.Value.ExactRed}");
 
-client.CloseFontUnchecked(font);
+client.CloseFontChecked(font);
 
 Debug.Assert(namedColor.Value.VisualRed == namedColor.Value.ExactRed && namedColor.Value.ExactRed == ushort.MaxValue);
 Debug.Assert(namedColor.Value.VisualGreen == namedColor.Value.ExactGreen && namedColor.Value.ExactGreen == 0);
@@ -95,10 +95,6 @@ while (true)
         var resultSetPointerMapping = client.SetPointerMapping(resultGetPointerMapping.Value.Map);
         Console.WriteLine(resultSetPointerMapping.Value.Status);
     }
-
-
-
-    var resultGetMotionEvents = client.GetMotionEvents(window, 0, 0);
-    Console.WriteLine(resultGetMotionEvents.HasValue ? resultGetMotionEvents.Value.Events.Length : 0);
-
+    var resultGetMotionEvents = client.GetMotionEvents(window, 0, 1000);
+    Console.WriteLine(resultGetMotionEvents.Value.Events.Length);
 }
