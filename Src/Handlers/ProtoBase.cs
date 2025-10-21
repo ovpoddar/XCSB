@@ -27,16 +27,7 @@ internal abstract class ProtoBase
         ReplyBuffer = proto.ReplyBuffer;
     }
 
-    protected virtual void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
-    {
-        var total = 0;
-        while (total < buffer.Length)
-        {
-            var sent = Socket.Send(buffer[total..], socketFlags);
-            if (sent <= 0)
-                throw new SocketException();
-            total += sent;
-        }
-    }
+    protected virtual void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags) =>
+        Socket.SendExact(buffer, socketFlags);
 
 }

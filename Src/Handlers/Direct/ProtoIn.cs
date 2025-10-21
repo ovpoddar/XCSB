@@ -212,13 +212,12 @@ internal class ProtoIn : ProtoBase
 
             result[count++] = new ListFontsWithInfoReply(in response, packet[60..]);
 
-            if (count == result.Length)
-            {
-                var larger = new ArrayPoolUsing<ListFontsWithInfoReply>(result.Length << 1);
-                result[0..result.Length].CopyTo(larger);
-                result.Dispose();
-                result = larger;
-            }
+            if (count != result.Length) continue;
+            
+            var larger = new ArrayPoolUsing<ListFontsWithInfoReply>(result.Length << 1);
+            result[0..result.Length].CopyTo(larger);
+            result.Dispose();
+            result = larger;
         }
 
     }
