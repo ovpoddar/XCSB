@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -10,7 +11,7 @@ using System.Xml.Linq;
 namespace ConnectionTest.TestFunctionBuilder;
 internal class CFunctionBuilder : BaseTestBuilder
 {
-    const string moniterContent =
+    private const string _moniterContent =
 $$"""
 #define _GNU_SOURCE
 #include <dlfcn.h>
@@ -64,7 +65,8 @@ ssize_t sendmsg(int fd, const struct msghdr *msg, int flags) {
 }
                       
 """;
-    static string VoidMethodTemplate(string functionName, int[] arguments) =>
+
+    private static string VoidMethodTemplate(string functionName, int[] arguments) =>
 $$"""
 #include <xcb/xcb.h>
 #include <stdlib.h>
@@ -78,7 +80,6 @@ int main()
     }
     const xcb_setup_t *setup = xcb_get_setup(connection);
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-    //todo pass the params to the function
     xcb_void_cookie_t cookie = {{functionName}}(connection{{(arguments.Length == 0 ? "" : ", " + string.Join(", ", arguments))}});
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
     if (!error)
@@ -115,7 +116,7 @@ int main()
                 continue;
             return command;
         }
-        Debug.Assert(false, "Could not find any compiler to build c project");
+        Assert.Fail("Could not find any compiler to build c project");
         return null;
     }
 
@@ -150,7 +151,7 @@ int main()
             File.Delete(monitorFile);
         CreateProcess(compiler,
             $"-shared -fPIC -o \"{monitorFile}\" -ldl -x c -",
-            moniterContent);
+            _moniterContent);
         Assert.True(File.Exists(monitorFile));
         return monitorFile;
     }
@@ -195,5 +196,7 @@ int main()
         return process;
     }
 
-    public override string GetWorkingFolder => base.GetWorkingFolder + "cdir";
+    [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
+    public CFunctionBuilder() : base("cdir") { }
+    
 }

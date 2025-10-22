@@ -6,30 +6,34 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 
 namespace ConnectionTest.TestFunctionBuilder;
+
 public abstract class BaseTestBuilder : IDisposable
 {
-    private static readonly string _workingDirectory = Path.GetTempPath() + "out";
+    private static readonly string _workingDirectory = Path.Join(Path.GetTempPath(), "out");
     private bool _disposedValue;
 
-    public virtual string GetWorkingFolder => _workingDirectory;
+    protected string GetWorkingFolder;
 
     public abstract Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments);
 
     [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
-    protected BaseTestBuilder()
+    protected BaseTestBuilder(string outPath)
     {
-        Assert.False(Directory.Exists(_workingDirectory));
-        Directory.CreateDirectory(_workingDirectory,
+        if (Directory.Exists(_workingDirectory))
+            Directory.Delete(_workingDirectory, true);
+        
+        GetWorkingFolder = Path.Join(_workingDirectory, outPath);
+        Directory.CreateDirectory(GetWorkingFolder,
             UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
     }
 
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposedValue)
-        {
-            Directory.Delete(_workingDirectory, true);
-            _disposedValue = true;
-        }
+        if (_disposedValue)
+            return;
+        
+        Directory.Delete(_workingDirectory, true);
+        _disposedValue = true;
     }
 
     public void Dispose()
