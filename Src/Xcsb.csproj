@@ -18,6 +18,10 @@
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+		<DefineConstants>$(FLAG)</DefineConstants>
+	</PropertyGroup>
+
     <ItemGroup>
         <None Remove="Requests\*.h" />
         <Compile Remove="**\Tools*.cs" />
