@@ -14,8 +14,9 @@ internal class CSFunctionBuilder : BaseTestBuilder
          <Project Sdk="Microsoft.NET.Sdk">
              <PropertyGroup>
                   <OutputType>Exe</OutputType>
-                  <TargetFramework>net9.0</TargetFramework>
-                  <ImplicitUsings>enable</ImplicitUsings>
+                 <TargetFramework>net9.0</TargetFramework>
+                 <ImplicitUsings>enable</ImplicitUsings>
+                 <Nullable>enable</Nullable>
              </PropertyGroup>
              
              <ItemGroup>
@@ -67,9 +68,8 @@ internal class CSFunctionBuilder : BaseTestBuilder
         $"""
          using Xcsb;
 
-         var xcsb = XcsbClient.Initialized();
+         using var xcsb = XcsbClient.Initialized();
          xcsb.{functionName}({(arguments.Length == 0 ? "" : string.Join(", ", arguments))});
-         return 0;
          """;
 
     public override Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments)
@@ -77,27 +77,38 @@ internal class CSFunctionBuilder : BaseTestBuilder
         var compiler = GenerateTestXCB();
         var projectDir = CompileXCBWithCustomeFlag(compiler);
         var executable = CreateApplication(compiler, projectDir, functionName, arguments);
-        Assert.True(File.Exists(executable));
+        Assert.False(string.IsNullOrWhiteSpace(executable));
 
-        return null;
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = compiler,
+                Arguments = executable,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        };
+        return process;
     }
 
     private string CompileXCBWithCustomeFlag(string compiler)
     {
         var xcbProjectPath = XCBProjectPath();
-        Assert.NotEmpty(Directory.GetFiles(xcbProjectPath, "*.csproj"));
+        var csproj = Directory.GetFiles(xcbProjectPath, "*.csproj", SearchOption.TopDirectoryOnly);
+        Assert.NotEmpty(csproj);
         var process = new Process()
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = compiler,
-                Arguments = $"build -p:FLAG=\"DEBUGSEND;\" -o \"{GetWorkingFolder}\"",
+                Arguments = $"build \"{csproj[0]}\" -p:FLAG=\"DEBUGSEND;\" -o \"{GetWorkingFolder}\"",
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
-                CreateNoWindow = true,
-                WorkingDirectory = xcbProjectPath
+                CreateNoWindow = true
             }
         };
         process.Start();
@@ -111,28 +122,28 @@ internal class CSFunctionBuilder : BaseTestBuilder
             Path.Join(projectDir, "Program.cs"),
             GenerateVoidProgramFile(functionName, arguments)
         );
+        var csProjPath = Path.Join(projectDir, "Main.csproj");
         File.WriteAllText(
-            Path.Join(projectDir, "Xcsb.csproj"),
+            csProjPath,
             rawCsProjContent
         );
-
+        projectDir = Path.Join(projectDir, "out");
         var process = new Process()
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = compiler,
-                Arguments = $"build -o \"{projectDir}\" -v quiet",
+                Arguments = $"build \"{csProjPath}\" -o \"{projectDir}\" -v quiet",
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                WorkingDirectory = projectDir
             }
         };
         process.Start();
         process.WaitForExit();
-        return projectDir;
+        return Directory.GetFiles(projectDir, "Main.dll", SearchOption.TopDirectoryOnly)[0];
     }
 
     public CSFunctionBuilder() : base("csdir")

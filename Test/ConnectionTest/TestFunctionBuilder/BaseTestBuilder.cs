@@ -19,10 +19,10 @@ public abstract class BaseTestBuilder : IDisposable
     [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
     protected BaseTestBuilder(string outPath)
     {
-        if (Directory.Exists(_workingDirectory))
-            Directory.Delete(_workingDirectory, true);
-        
         GetWorkingFolder = Path.Join(_workingDirectory, outPath);
+        
+        if (Directory.Exists(GetWorkingFolder))
+            Directory.Delete(GetWorkingFolder, true);
         Directory.CreateDirectory(GetWorkingFolder,
             UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
     }
@@ -31,8 +31,8 @@ public abstract class BaseTestBuilder : IDisposable
     {
         if (_disposedValue)
             return;
-        
-        Directory.Delete(_workingDirectory, true);
+        if (Directory.Exists(_workingDirectory))
+            Directory.Delete(_workingDirectory, true);
         _disposedValue = true;
     }
 

@@ -93,18 +93,20 @@ public class VoidCallerTest
 
         // arrange
         using var cProcessBuilder = new CFunctionBuilder();
-
-        // act
-        
+        using var csProcessBuilder = new CSFunctionBuilder();
+        var csProcess = csProcessBuilder.GetApplicationProcess(methodName, isVoidReturn, args);
         var cProcess = cProcessBuilder.GetApplicationProcess(methodName, isVoidReturn, args);
+        // act
         cProcess.Start();
-
+        csProcess.Start();
         // assert
-
+        var csResponse = csProcess.StandardError.ReadToEnd();
+        var cResponse = cProcess.StandardError.ReadToEnd();
+        
         Assert.NotNull(methodName);
         Assert.True(isVoidReturn);
-        Assert.Null(args);
-        Assert.Null(cProcess.StandardError.ReadToEnd());
+        Assert.False(string.IsNullOrWhiteSpace(csResponse));
+        Assert.False(string.IsNullOrWhiteSpace(cResponse));
     }
 
 }

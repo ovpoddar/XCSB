@@ -81,6 +81,7 @@ int main()
     const xcb_setup_t *setup = xcb_get_setup(connection);
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
     xcb_void_cookie_t cookie = {{functionName}}(connection{{(arguments.Length == 0 ? "" : ", " + string.Join(", ", arguments))}});
+    xcb_flush(connection);
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
     if (!error)
         return 1;

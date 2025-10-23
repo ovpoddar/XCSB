@@ -96,7 +96,7 @@ internal static class GenericHelper
             total += sent;
         }
 #if DEBUGSEND
-        Debug.WriteLine("[SEND] : " + string.Join(" ", buffer.ToArray()));
+        Console.Error.WriteLine("[SEND] : " + string.Join(" ", buffer.ToArray()));
 #endif
     }
 
@@ -120,7 +120,7 @@ internal static class GenericHelper
                 socket.Poll(-1, SelectMode.SelectRead);
         }
 #if DEBUGRECV
-        Debug.WriteLine("[RECV] : " + string.Join(" ", buffer.ToArray()));
+        Console.Error.WriteLine("[RECV] : " + string.Join(" ", buffer.ToArray()));
 #endif
     }
 
