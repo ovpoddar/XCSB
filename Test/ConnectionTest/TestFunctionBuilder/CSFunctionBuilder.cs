@@ -64,15 +64,17 @@ internal class CSFunctionBuilder : BaseTestBuilder
         return "";
     }
 
-    string GenerateVoidProgramFile(string functionName, params int[] arguments) =>
+    private static string GenerateVoidProgramFile(string functionName, params int[] arguments) =>
         $"""
          using Xcsb;
 
          using var xcsb = XcsbClient.Initialized();
+         Console.Error.WriteLine("------------");
          xcsb.{functionName}({(arguments.Length == 0 ? "" : string.Join(", ", arguments))});
+         Console.Error.WriteLine("------------");
          """;
 
-    public override Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments)
+    protected override Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments)
     {
         var compiler = GenerateTestXcb();
         var projectDir = CompileXcbWithCustomeFlag(compiler);
@@ -116,7 +118,7 @@ internal class CSFunctionBuilder : BaseTestBuilder
         return GetWorkingFolder;
     }
 
-    private string CreateApplication(string compiler, string projectDir, string functionName, params int[] arguments)
+    private static string CreateApplication(string compiler, string projectDir, string functionName, params int[] arguments)
     {
         File.WriteAllText(
             Path.Join(projectDir, "Program.cs"),

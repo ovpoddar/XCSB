@@ -9,87 +9,92 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace ConnectionTest.TestFunctionBuilder;
+
 internal class CFunctionBuilder : BaseTestBuilder
 {
     private const string _moniterContent =
-$$"""
-#define _GNU_SOURCE
-#include <dlfcn.h>
-#include <stdio.h>
-#include <sys/uio.h>
-#include <sys/socket.h>
-#include <unistd.h>
+        $$"""
+          #define _GNU_SOURCE
+          #include <dlfcn.h>
+          #include <stdio.h>
+          #include <sys/uio.h>
+          #include <sys/socket.h>
+          #include <unistd.h>
 
-const char* SEND = "SEND";
+          const char* SEND = "SEND";
 
-ssize_t (*real_write)(int, const void *, size_t) = NULL;
-ssize_t (*real_writev)(int, const struct iovec *, int) = NULL;
-ssize_t (*real_sendmsg)(int, const struct msghdr *, int) = NULL;
+          ssize_t (*real_write)(int, const void *, size_t) = NULL;
+          ssize_t (*real_writev)(int, const struct iovec *, int) = NULL;
+          ssize_t (*real_sendmsg)(int, const struct msghdr *, int) = NULL;
 
-__attribute__((constructor))
-void init() {
-    real_write = dlsym(RTLD_NEXT, "write");
-    real_writev = dlsym(RTLD_NEXT, "writev");
-    real_sendmsg = dlsym(RTLD_NEXT, "sendmsg");
-}
+          __attribute__((constructor))
+          void init() {
+              real_write = dlsym(RTLD_NEXT, "write");
+              real_writev = dlsym(RTLD_NEXT, "writev");
+              real_sendmsg = dlsym(RTLD_NEXT, "sendmsg");
+          }
 
-static void hex_dump(const char* callerType, const void *buf, size_t len) {
-    const unsigned char *p = buf;
-    fprintf(stderr, "[%s] : ", callerType);
-    for (size_t i = 0; i < len; ++i) {
-        // fprintf(stderr, "%02x ", p[i]);
-        fprintf(stderr, "%d ", p[i]);
-    }
-    fprintf(stderr, "\n");
-}
+          static void hex_dump(const char* callerType, const void *buf, size_t len) {
+              const unsigned char *p = buf;
+              fprintf(stderr, "[%s] :", callerType);
+              for (size_t i = 0; i < len; ++i) {
+                  // fprintf(stderr, "%02x ", p[i]);
+                  fprintf(stderr, " %d", p[i]);
+              }
+              fprintf(stderr, "\n");
+          }
 
-/****************************************************************/
+          /****************************************************************/
 
-ssize_t write(int fd, const void *buf, size_t count) {
-    hex_dump(SEND, buf, count);
-    return real_write(fd, buf, count);
-}
+          ssize_t write(int fd, const void *buf, size_t count) {
+              hex_dump(SEND, buf, count);
+              return real_write(fd, buf, count);
+          }
 
-ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
-    for (int i = 0; i < iovcnt; ++i) {
-        hex_dump(SEND, iov[i].iov_base, iov[i].iov_len);
-    }
-    return real_writev(fd, iov, iovcnt);
-}
+          ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
+              for (int i = 0; i < iovcnt; ++i) {
+                  hex_dump(SEND, iov[i].iov_base, iov[i].iov_len);
+              }
+              return real_writev(fd, iov, iovcnt);
+          }
 
-ssize_t sendmsg(int fd, const struct msghdr *msg, int flags) {
-    for (int i = 0; i < msg->msg_iovlen; ++i) {
-        hex_dump(SEND, msg->msg_iov[i].iov_base, msg->msg_iov[i].iov_len);
-    }
-    return real_sendmsg(fd, msg, flags);
-}
-                      
-""";
+          ssize_t sendmsg(int fd, const struct msghdr *msg, int flags) {
+              for (int i = 0; i < msg->msg_iovlen; ++i) {
+                  hex_dump(SEND, msg->msg_iov[i].iov_base, msg->msg_iov[i].iov_len);
+              }
+              return real_sendmsg(fd, msg, flags);
+          }
+                                
+          """;
 
     private static string VoidMethodTemplate(string functionName, int[] arguments) =>
-$$"""
-#include <xcb/xcb.h>
-#include <stdlib.h>
+        $$"""
+          #include <xcb/xcb.h>
+          #include <stdlib.h>
+          #include <stdio.h>
+          #include <unistd.h>
 
-int main()
-{
-    xcb_connection_t *connection = xcb_connect(NULL, NULL);
-    if (xcb_connection_has_error(connection))
-    {
-        return -1;
-    }
-    const xcb_setup_t *setup = xcb_get_setup(connection);
-    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(arguments.Length == 0 ? "" : ", " + string.Join(", ", arguments))}});
-    xcb_flush(connection);
-    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
-    if (!error)
-        return 1;
+          int main()
+          {
+              xcb_connection_t *connection = xcb_connect(NULL, NULL);
+              if (xcb_connection_has_error(connection))
+              {
+                  return -1;
+              }
+              const xcb_setup_t *setup = xcb_get_setup(connection);
+              xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+              fprintf(stderr, "------------\n");
+              xcb_void_cookie_t cookie = {{functionName}}(connection{{(arguments.Length == 0 ? "" : ", " + string.Join(", ", arguments))}});
+              xcb_flush(connection);
+              fprintf(stderr, "------------\n");
+              xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+              if (!error)
+                  return 1;
 
-    free(error);
-    return -1;
-}
-""";
+              free(error);
+              return -1;
+          }
+          """;
 
     private static string GetCCompiler()
     {
@@ -117,6 +122,7 @@ int main()
                 continue;
             return command;
         }
+
         Assert.Fail("Could not find any compiler to build c project");
         return null;
     }
@@ -157,14 +163,15 @@ int main()
         return monitorFile;
     }
 
-    private string GenerateExecutableFile(string compiler, string functionName, bool isVoidReturn, params int[] arguments)
+    private string GenerateExecutableFile(string compiler, string functionName, bool isVoidReturn,
+        params int[] arguments)
     {
         var outPutFile = Path.Join(this.GetWorkingFolder, "main");
         if (Path.Exists(outPutFile))
             File.Delete(outPutFile);
 
         var name = functionName.Aggregate("xcb",
-                      (current, chars) => current + (char.IsUpper(chars) ? "_" + char.ToLower(chars) : chars));
+            (current, chars) => current + (char.IsUpper(chars) ? "_" + char.ToLower(chars) : chars));
         if (isVoidReturn)
             name += "_checked";
         var functionContent = isVoidReturn
@@ -177,8 +184,8 @@ int main()
         Assert.True(File.Exists(outPutFile));
         return outPutFile;
     }
-
-    public override Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments)
+   
+    protected override Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments)
     {
         var compiler = GetCCompiler();
         var monitorFile = GenerateMonitorFile(compiler);
@@ -198,6 +205,7 @@ int main()
     }
 
     [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
-    public CFunctionBuilder() : base("cdir") { }
-    
+    public CFunctionBuilder() : base("cdir")
+    {
+    }
 }

@@ -10,11 +10,23 @@ namespace ConnectionTest.TestFunctionBuilder;
 public abstract class BaseTestBuilder : IDisposable
 {
     private static readonly string _workingDirectory = Path.Join(Path.GetTempPath(), "out");
+    private const string _marker = "------------";
     private bool _disposedValue;
 
     protected string GetWorkingFolder;
 
-    public abstract Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments);
+    protected abstract Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments);
+    
+    public ReadOnlySpan<char> GetFunctionContent(string functionName, bool isVoidReturn, params int[] arguments)
+    {
+        var process = GetApplicationProcess(functionName, isVoidReturn, arguments);
+        process.Start();
+        var response = process.StandardError.ReadToEnd().AsSpan();
+        var startIndex = response.IndexOf(_marker) + _marker.Length;
+        var lastIndex = response.LastIndexOf(_marker);
+        return response[startIndex..lastIndex];
+    }
+    
 
     [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
     protected BaseTestBuilder(string outPath)
