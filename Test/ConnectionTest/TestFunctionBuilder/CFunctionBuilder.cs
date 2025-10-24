@@ -96,6 +96,39 @@ internal class CFunctionBuilder : BaseTestBuilder
           }
           """;
 
+    private static string NonVoidMethodTemplate(string functionName, int[] arguments) =>
+        $$"""
+        #include <xcb/xcb.h>
+        #include <stdlib.h>
+        #include <stdio.h>
+        #include <unistd.h>
+        #include <assert.h>
+
+        int main()
+        {
+            xcb_connection_t * connection = xcb_connect(NULL, NULL);
+            if (xcb_connection_has_error(connection))
+            {
+                return -1;
+            }
+            const xcb_setup_t *setup = xcb_get_setup(connection);
+            xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+            fprintf(stderr, "------------\n");
+            {{functionName}}_cookie_t cookie = {{functionName}}(connection{{(arguments.Length == 0 ? "" : ", " + string.Join(", ", arguments))}});
+            xcb_flush(connection);
+            fprintf(stderr, "------------\n");
+            xcb_generic_error_t *error;
+            {{functionName}}_reply_t *reply = {{functionName}}_reply(connection, cookie, &error);
+            if (error)
+            {
+                free(error);
+                return -1;
+            }
+            assert(reply->sequence =! 0);
+            free(reply);
+        }
+        """;
+
     private static string GetCCompiler()
     {
         string[] compilerCommands = ["gcc", "clang"];
@@ -176,7 +209,7 @@ internal class CFunctionBuilder : BaseTestBuilder
             name += "_checked";
         var functionContent = isVoidReturn
             ? VoidMethodTemplate(name, arguments)
-            : "assert(false)";
+            : NonVoidMethodTemplate(name, arguments);
 
         CreateProcess(compiler,
             $"-x c -o \"{outPutFile}\" - -lxcb",
@@ -184,7 +217,7 @@ internal class CFunctionBuilder : BaseTestBuilder
         Assert.True(File.Exists(outPutFile));
         return outPutFile;
     }
-   
+
     protected override Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments)
     {
         var compiler = GetCCompiler();

@@ -16,7 +16,7 @@ public abstract class BaseTestBuilder : IDisposable
     protected string GetWorkingFolder;
 
     protected abstract Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments);
-    
+
     public ReadOnlySpan<char> GetFunctionContent(string functionName, bool isVoidReturn, params int[] arguments)
     {
         var process = GetApplicationProcess(functionName, isVoidReturn, arguments);
@@ -26,13 +26,13 @@ public abstract class BaseTestBuilder : IDisposable
         var lastIndex = response.LastIndexOf(_marker);
         return response[startIndex..lastIndex];
     }
-    
+
 
     [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
     protected BaseTestBuilder(string outPath)
     {
         GetWorkingFolder = Path.Join(_workingDirectory, outPath);
-        
+
         if (Directory.Exists(GetWorkingFolder))
             Directory.Delete(GetWorkingFolder, true);
         Directory.CreateDirectory(GetWorkingFolder,
