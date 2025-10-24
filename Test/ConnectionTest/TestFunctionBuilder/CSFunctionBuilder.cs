@@ -9,7 +9,7 @@ namespace ConnectionTest.TestFunctionBuilder;
 
 internal class CSFunctionBuilder : BaseTestBuilder
 {
-    private const string rawCsProjContent =
+    private const string _rawCsProjContent =
         $"""
          <Project Sdk="Microsoft.NET.Sdk">
              <PropertyGroup>
@@ -27,7 +27,7 @@ internal class CSFunctionBuilder : BaseTestBuilder
          </Project>
          """;
 
-    private string GenerateTestXCB()
+    private static string GenerateTestXcb()
     {
         var process = new Process()
         {
@@ -74,8 +74,8 @@ internal class CSFunctionBuilder : BaseTestBuilder
 
     public override Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments)
     {
-        var compiler = GenerateTestXCB();
-        var projectDir = CompileXCBWithCustomeFlag(compiler);
+        var compiler = GenerateTestXcb();
+        var projectDir = CompileXcbWithCustomeFlag(compiler);
         var executable = CreateApplication(compiler, projectDir, functionName, arguments);
         Assert.False(string.IsNullOrWhiteSpace(executable));
 
@@ -93,9 +93,9 @@ internal class CSFunctionBuilder : BaseTestBuilder
         return process;
     }
 
-    private string CompileXCBWithCustomeFlag(string compiler)
+    private string CompileXcbWithCustomeFlag(string compiler)
     {
-        var xcbProjectPath = XCBProjectPath();
+        var xcbProjectPath = XcbProjectPath();
         var csproj = Directory.GetFiles(xcbProjectPath, "*.csproj", SearchOption.TopDirectoryOnly);
         Assert.NotEmpty(csproj);
         var process = new Process()
@@ -125,7 +125,7 @@ internal class CSFunctionBuilder : BaseTestBuilder
         var csProjPath = Path.Join(projectDir, "Main.csproj");
         File.WriteAllText(
             csProjPath,
-            rawCsProjContent
+            _rawCsProjContent
         );
         projectDir = Path.Join(projectDir, "out");
         var process = new Process()
@@ -150,7 +150,7 @@ internal class CSFunctionBuilder : BaseTestBuilder
     {
     }
 
-    private static string XCBProjectPath()
+    private static string XcbProjectPath()
     {
         var currentDirectory = Directory.GetCurrentDirectory().AsSpan();
         var binFolder = currentDirectory.LastIndexOf("/Test/", StringComparison.CurrentCulture);
