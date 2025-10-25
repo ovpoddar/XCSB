@@ -9,6 +9,8 @@ namespace ConnectionTest.TestFunctionBuilder;
 
 internal class CSFunctionBuilder : BaseTestBuilder
 {
+    private readonly SetupTestEnviroment _setupTestEnviroment;
+
     private const string _rawCsProjContent =
         $"""
          <Project Sdk="Microsoft.NET.Sdk">
@@ -21,48 +23,12 @@ internal class CSFunctionBuilder : BaseTestBuilder
              
              <ItemGroup>
                <Reference Include="Xcsb">
-                <HintPath>Xcsb.dll</HintPath>
+                <HintPath>../Xcsb.dll</HintPath>
                </Reference>
              </ItemGroup>
          </Project>
          """;
 
-    private static string GenerateTestXcb()
-    {
-        var process = new Process()
-        {
-            StartInfo = new ProcessStartInfo()
-            {
-                FileName = "which",
-                Arguments = "dotnet",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }
-        };
-        process.Start();
-        process.WaitForExit();
-        var response = process.StandardOutput.ReadToEnd();
-        if (!string.IsNullOrWhiteSpace(response))
-        {
-            return response;
-        }
-
-        if (File.Exists("/usr/share/dotnet"))
-            return "/usr/share/dotnet/dotnet";
-        if (File.Exists("/usr/local/share/dotnet"))
-            return "/usr/local/share/dotnet/dotnet";
-        if (File.Exists("/usr/lib/dotnet"))
-            return "/usr/lib/dotnet/dotnet";
-        var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var dotnetDirectory = Path.Combine(homeDirectory, ".dotnet", "dotnet");
-        if (File.Exists(dotnetDirectory))
-            return dotnetDirectory;
-
-        Assert.Fail("dotnet not found");
-        return "";
-    }
 
     private static string GenerateVoidProgramFile(string functionName, params int[] arguments) =>
         $"""
@@ -76,9 +42,8 @@ internal class CSFunctionBuilder : BaseTestBuilder
 
     protected override Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments)
     {
-        var compiler = GenerateTestXcb();
-        var projectDir = CompileXcbWithCustomeFlag(compiler);
-        var executable = CreateApplication(compiler, projectDir, functionName, arguments);
+        var compiler = _setupTestEnviroment.CSCompailer;
+        var executable = CreateApplication(compiler, GetWorkingFolder, functionName, arguments);
         Assert.False(string.IsNullOrWhiteSpace(executable));
 
         var process = new Process
@@ -95,28 +60,6 @@ internal class CSFunctionBuilder : BaseTestBuilder
         return process;
     }
 
-    private string CompileXcbWithCustomeFlag(string compiler)
-    {
-        var xcbProjectPath = XcbProjectPath();
-        var csproj = Directory.GetFiles(xcbProjectPath, "*.csproj", SearchOption.TopDirectoryOnly);
-        Assert.NotEmpty(csproj);
-        var process = new Process()
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = compiler,
-                Arguments = $"build \"{csproj[0]}\" -p:FLAG=\"DEBUGSEND;\" -o \"{GetWorkingFolder}\"",
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }
-        };
-        process.Start();
-        process.WaitForExit();
-        return GetWorkingFolder;
-    }
 
     private static string CreateApplication(string compiler, string projectDir, string functionName, params int[] arguments)
     {
@@ -148,17 +91,9 @@ internal class CSFunctionBuilder : BaseTestBuilder
         return Directory.GetFiles(projectDir, "Main.dll", SearchOption.TopDirectoryOnly)[0];
     }
 
-    public CSFunctionBuilder() : base("csdir")
+    public CSFunctionBuilder(SetupTestEnviroment setupTestEnviroment) : base("csdir")
     {
+        _setupTestEnviroment = setupTestEnviroment;
     }
 
-    private static string XcbProjectPath()
-    {
-        var currentDirectory = Directory.GetCurrentDirectory().AsSpan();
-        var binFolder = currentDirectory.LastIndexOf("/Test/", StringComparison.CurrentCulture);
-        Assert.True(binFolder != -1);
-        var workingDirectory = currentDirectory[..binFolder];
-
-        return Path.Join(workingDirectory, "Src");
-    }
 }

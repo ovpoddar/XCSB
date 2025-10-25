@@ -3,8 +3,15 @@ using System.Diagnostics;
 
 namespace ConnectionTest;
 
-public class VoidCallerTest
+public class CallerTest : IClassFixture<SetupTestEnviroment>
 {
+    private readonly SetupTestEnviroment _setupTestEnviroment;
+
+    public CallerTest(SetupTestEnviroment setupTestEnviroment)
+    {
+        _setupTestEnviroment = setupTestEnviroment;
+    }
+    
     [Theory]
     [InlineData("GrabServer", true)]
     [InlineData("UngrabServer", true)]
@@ -24,15 +31,14 @@ public class VoidCallerTest
             return;
 
         // arrange
-        using var cProcessBuilder = new CFunctionBuilder();
-        using var csProcessBuilder = new CSFunctionBuilder();
+        using var cProcessBuilder = new CFunctionBuilder(_setupTestEnviroment);
+        using var csProcessBuilder = new CSFunctionBuilder(_setupTestEnviroment);
         // act
         var csResponse = csProcessBuilder.GetFunctionContent(methodName, isVoidReturn, args);
         var cResponse = cProcessBuilder.GetFunctionContent(methodName, isVoidReturn, args);
         // assert
 
         Assert.NotNull(methodName);
-        Assert.True(isVoidReturn);
         Assert.NotEqual(0, csResponse.Length);
         Assert.NotEqual(0, cResponse.Length);
         Assert.True(csResponse.SequenceEqual(cResponse));

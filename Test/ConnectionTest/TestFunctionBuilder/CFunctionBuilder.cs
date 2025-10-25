@@ -12,60 +12,7 @@ namespace ConnectionTest.TestFunctionBuilder;
 
 internal class CFunctionBuilder : BaseTestBuilder
 {
-    private const string _moniterContent =
-        $$"""
-          #define _GNU_SOURCE
-          #include <dlfcn.h>
-          #include <stdio.h>
-          #include <sys/uio.h>
-          #include <sys/socket.h>
-          #include <unistd.h>
-
-          const char* SEND = "SEND";
-
-          ssize_t (*real_write)(int, const void *, size_t) = NULL;
-          ssize_t (*real_writev)(int, const struct iovec *, int) = NULL;
-          ssize_t (*real_sendmsg)(int, const struct msghdr *, int) = NULL;
-
-          __attribute__((constructor))
-          void init() {
-              real_write = dlsym(RTLD_NEXT, "write");
-              real_writev = dlsym(RTLD_NEXT, "writev");
-              real_sendmsg = dlsym(RTLD_NEXT, "sendmsg");
-          }
-
-          static void hex_dump(const char* callerType, const void *buf, size_t len) {
-              const unsigned char *p = buf;
-              fprintf(stderr, "[%s] :", callerType);
-              for (size_t i = 0; i < len; ++i) {
-                  // fprintf(stderr, "%02x ", p[i]);
-                  fprintf(stderr, " %d", p[i]);
-              }
-              fprintf(stderr, "\n");
-          }
-
-          /****************************************************************/
-
-          ssize_t write(int fd, const void *buf, size_t count) {
-              hex_dump(SEND, buf, count);
-              return real_write(fd, buf, count);
-          }
-
-          ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
-              for (int i = 0; i < iovcnt; ++i) {
-                  hex_dump(SEND, iov[i].iov_base, iov[i].iov_len);
-              }
-              return real_writev(fd, iov, iovcnt);
-          }
-
-          ssize_t sendmsg(int fd, const struct msghdr *msg, int flags) {
-              for (int i = 0; i < msg->msg_iovlen; ++i) {
-                  hex_dump(SEND, msg->msg_iov[i].iov_base, msg->msg_iov[i].iov_len);
-              }
-              return real_sendmsg(fd, msg, flags);
-          }
-                                
-          """;
+    private readonly SetupTestEnviroment _enviroment;
 
     private static string VoidMethodTemplate(string functionName, int[] arguments) =>
         $$"""
@@ -129,36 +76,7 @@ internal class CFunctionBuilder : BaseTestBuilder
         }
         """;
 
-    private static string GetCCompiler()
-    {
-        string[] compilerCommands = ["gcc", "clang"];
-        foreach (var command in compilerCommands)
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = command,
-                    Arguments = command == "cl" ? "" : "--version",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            if (process.ExitCode != 0
-                && !output.Contains("version", StringComparison.OrdinalIgnoreCase))
-                continue;
-            return command;
-        }
-
-        Assert.Fail("Could not find any compiler to build c project");
-        return null;
-    }
+    
 
     private static void CreateProcess(string compiler, string command, string input)
     {
@@ -182,18 +100,6 @@ internal class CFunctionBuilder : BaseTestBuilder
 
         Assert.True(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Assert.True(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
-    }
-
-    private string GenerateMonitorFile(string compiler)
-    {
-        var monitorFile = Path.Join(this.GetWorkingFolder, "moniterLog.so");
-        if (Path.Exists(monitorFile))
-            File.Delete(monitorFile);
-        CreateProcess(compiler,
-            $"-shared -fPIC -o \"{monitorFile}\" -ldl -x c -",
-            _moniterContent);
-        Assert.True(File.Exists(monitorFile));
-        return monitorFile;
     }
 
     private string GenerateExecutableFile(string compiler, string functionName, bool isVoidReturn,
@@ -220,8 +126,7 @@ internal class CFunctionBuilder : BaseTestBuilder
 
     protected override Process GetApplicationProcess(string functionName, bool isVoidReturn, params int[] arguments)
     {
-        var compiler = GetCCompiler();
-        var monitorFile = GenerateMonitorFile(compiler);
+        var compiler = _enviroment.CCompiler;
         var mainFile = GenerateExecutableFile(compiler, functionName, isVoidReturn, arguments);
         var process = new Process
         {
@@ -233,12 +138,13 @@ internal class CFunctionBuilder : BaseTestBuilder
                 RedirectStandardError = true
             }
         };
-        process.StartInfo.EnvironmentVariables["LD_PRELOAD"] = monitorFile;
+        process.StartInfo.EnvironmentVariables["LD_PRELOAD"] = _enviroment.MoniterFile;
         return process;
     }
 
     [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
-    public CFunctionBuilder() : base("cdir")
+    public CFunctionBuilder(SetupTestEnviroment enviroment) : base("cdir")
     {
+        _enviroment = enviroment;
     }
 }

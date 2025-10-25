@@ -32,9 +32,7 @@ public abstract class BaseTestBuilder : IDisposable
     protected BaseTestBuilder(string outPath)
     {
         GetWorkingFolder = Path.Join(_workingDirectory, outPath);
-
-        if (Directory.Exists(GetWorkingFolder))
-            Directory.Delete(GetWorkingFolder, true);
+        Assert.False(Directory.Exists(_workingDirectory));
         Directory.CreateDirectory(GetWorkingFolder,
             UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
     }
@@ -43,8 +41,8 @@ public abstract class BaseTestBuilder : IDisposable
     {
         if (_disposedValue)
             return;
-        if (Directory.Exists(_workingDirectory))
-            Directory.Delete(_workingDirectory, true);
+        Assert.True(Directory.Exists(_workingDirectory));
+        Directory.Delete(GetWorkingFolder, true);
         _disposedValue = true;
     }
 
