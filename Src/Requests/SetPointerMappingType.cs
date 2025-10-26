@@ -7,9 +7,9 @@ namespace Xcsb.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct SetPointerMappingType(Span<byte> maps)
+internal readonly struct SetPointerMappingType(int mapLenght)
 {
     public readonly Opcode Opcode = Opcode.SetPointerMapping;
-    public readonly byte Length = (byte)maps.Length;
-    public readonly ushort MapLength = (ushort)(maps.Length.AddPadding() / 4 + 1);
+    public readonly byte MapLength= (byte)mapLenght;
+    public readonly ushort Length = (ushort)((mapLenght.AddPadding() / 4) + 1);
 }

@@ -1645,8 +1645,8 @@ internal class BaseProtoClient
     }
     protected ResponseProto SetPointerMappingBase(Span<byte> maps)
     {
-        var request = new SetPointerMappingType(maps);
-        var requiredBuffer = maps.Length.AddPadding() + 5;
+        var request = new SetPointerMappingType(maps.Length);
+        var requiredBuffer = request.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
