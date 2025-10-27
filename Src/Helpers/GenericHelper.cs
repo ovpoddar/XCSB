@@ -95,9 +95,6 @@ internal static class GenericHelper
                 throw new SocketException();
             total += sent;
         }
-#if DEBUGSEND
-        Console.Error.WriteLine("[SEND] : " + string.Join(" ", buffer.ToArray()));
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -119,9 +116,6 @@ internal static class GenericHelper
             if (socket.Available == 0 && total < buffer.Length)
                 socket.Poll(-1, SelectMode.SelectRead);
         }
-#if DEBUGRECV
-        Console.Error.WriteLine("[RECV] : " + string.Join(" ", buffer.ToArray()));
-#endif
     }
 
     internal static void WriteRequest<T>(this Span<byte> writeBuffer, ref T requestType, int size,

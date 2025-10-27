@@ -33,7 +33,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transparent", "Examples\Tra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmokeRunOnResponseProto", "Examples\SmokeRunOnResponseProto\SmokeRunOnResponseProto.csproj", "{93131303-B5FB-4E6A-B439-A1D6458D205D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MethodCheck", "Test\MethodCheck\MethodCheck.csproj", "{7D6FDC92-9D3B-4535-A4FF-1FF849DD13D2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MethodRequestBuilder", "Test\MethodRequestBuilder\MethodRequestBuilder.csproj", "{7D6FDC92-9D3B-4535-A4FF-1FF849DD13D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
