@@ -9,8 +9,8 @@ namespace Xcsb.Response.Contract;
 
 internal class BaseBufferProtoClient
 {
-    protected readonly BufferProtoOut BufferProtoOut;
-    protected readonly BufferProtoIn BufferProtoIn;
+    protected internal readonly BufferProtoOut BufferProtoOut;
+    protected internal readonly BufferProtoIn BufferProtoIn;
 
     internal BaseBufferProtoClient(ProtoIn protoIn, ProtoOut protoOut)
     {
