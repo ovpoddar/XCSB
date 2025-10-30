@@ -1,17 +1,22 @@
 #:sdk Microsoft.NET.Sdk
 
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Text;
-
+// Global Set Up
 var compiler = GetCCompiler();
 var monitorFile = GenerateMonitorFile(compiler);
 
-
-
-string[] noParamMethod = ["GrabServer", "UngrabServer"];
-using var fileStream = File.Open("./NoParameter.cs", FileMode.OpenOrCreate);
-fileStream.Write(
-"""
+// No Parameter Methods Set Up
+MethodDetails[] noParamMethod = [new("NoParameter", "GrabServer", [""]), new("NoParameter", "UngrabServer", [""])];
+// independentMethod ["UngrabPointer", "UngrabKeyboard", "AllowEvents", "SetFontPath", "Bell",
+// "ChangeKeyboardControl", "ChangePointerControl", "SetScreenSaver", "ForceScreenSaver", "ChangeHosts", "SetAccessControl",
+// "SetCloseDownMode", "NoOperation"];
+using (var fileStream = File.Open("./NoParameter.cs", FileMode.OpenOrCreate))
+{
+    fileStream.Write(
+    """
 // DO NOT MODIFY THIS
 using Xcsb;
 
@@ -26,31 +31,38 @@ public class VoidMethodsTest : IDisposable
     }
 
 """u8);
-foreach (var method in noParamMethod)
-{
-    var cResponse = GetCResult(compiler, method, monitorFile);
-    var functionContent = GetNoParameterFunctionTestContent(method, cResponse);
-    fileStream.Write(Encoding.UTF8.GetBytes(functionContent));
-}
-
-fileStream.Write(
-"""
+    foreach (var method in noParamMethod)
+        WriteCsMethodContent(method, fileStream);
+    fileStream.Write(
+    """
     public void Dispose() => 
         _xProto.Dispose();
 }
 """u8);
+}
 
+// Global Clean Up
 File.Delete(monitorFile);
 return 0;
 
-static string GetNoParameterFunctionTestContent(string methodName, string cResponse)
+void WriteCsMethodContent(MethodDetails method, FileStream fileStream)
 {
-    return
-$$"""
+    fileStream.Write(
+"""
 
     [Theory]
-    [InlineData(new byte[] { {{cResponse}} })]
-    public void {{methodName.ToSnakeCase()}}_test(byte[] expectedResult)
+"""u8);
+    foreach (var testCase in method.Parameters)
+    {
+        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(), monitorFile);
+        fileStream.Write(GetDataAttribute(testCase, cResponse));
+    }
+    fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{method.Categories.ToSnakeCase()}}_{{method.MethodName.ToSnakeCase()}}_test(
+    //todo
+    
+    byte[] expectedResult)
     {
         // arrange
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
@@ -58,7 +70,10 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 
         // act
-        bufferClient.{{methodName}}();
+        bufferClient.{{method.MethodName}}(
+        // todo:
+        
+        );
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -68,17 +83,22 @@ $$"""
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
     }
-    
-""";
 
+"""));
 
 }
 
-static string GetCResult(string compiler, string method, string monitorFile)
+static Span<byte> GetDataAttribute(string parameter, string cResponse) =>
+    Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{(string.IsNullOrWhiteSpace(parameter) ? "" : parameter + ",")}} new byte[] { {{cResponse}} })]
+""");
+
+static string GetCResult(string compiler, string method, string? parameter, string monitorFile)
 {
     const string MARKER = "****************************************************************";
     var execFile = Path.Join(Environment.CurrentDirectory, "main");
-    var cMainBody = GetCMethodBody(method, MARKER);
+    var cMainBody = GetCMethodBody(method, parameter, MARKER);
 
     var process = new Process
     {
@@ -121,7 +141,7 @@ static string GetCResult(string compiler, string method, string monitorFile)
     return response[startIndex..lastIndex];
 }
 
-static object GetCMethodBody(string method, ReadOnlySpan<char> marker)
+static string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
 {
     var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
     return
@@ -141,7 +161,7 @@ int main()
     const xcb_setup_t *setup = xcb_get_setup(connection);
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection);
+    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -271,6 +291,24 @@ file static class StringHelper
         return result;
     }
 
+    public static string? ToCParams(this string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+        var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var sb = new StringBuilder();
+        foreach (var field in items)
+        {
+            if (field.StartsWith('"') && field.EndsWith('"'))
+            {
+                sb.Append(" ," + (field.Length - 2));
+            }
+
+            sb.Append(", " + field);
+        }
+        return sb.ToString();
+    }
+
     public static string ToSnakeCase(this string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -301,3 +339,5 @@ file static class StringHelper
         return new string(buffer[..pos]);
     }
 }
+
+file record MethodDetails(string Categories, string MethodName, string[] Parameters);
