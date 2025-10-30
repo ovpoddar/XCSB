@@ -8,15 +8,14 @@ var monitorFile = GenerateMonitorFile(compiler);
 
 
 
-string[] noParamMethod = ["GrabServer", "UngrabServer", "GetInputFocus", "QueryKeymap", "GetFontPath", "ListExtensions",
-"GetModifierMapping", "GetKeyboardControl", "GetPointerMapping", "GetPointerControl", "GetScreenSaver", "ListHosts"];
-var fileStream = File.Open("./NoParameter.cs", FileMode.OpenOrCreate);
+string[] noParamMethod = ["GrabServer", "UngrabServer"];
+using var fileStream = File.Open("./NoParameter.cs", FileMode.OpenOrCreate);
 fileStream.Write(
 """
 // DO NOT MODIFY THIS
 using Xcsb;
 
-namespace MethodRequestBuilder.Test;
+namespace MethodRequestBuilder.Test.Generated;
 
 public class VoidMethodsTest : IDisposable
 {
@@ -41,14 +40,16 @@ fileStream.Write(
 }
 """u8);
 
+File.Delete(monitorFile);
 return 0;
 
 static string GetNoParameterFunctionTestContent(string methodName, string cResponse)
 {
     return
 $$"""
+
     [Theory]
-    [InlineData(new byte[] { {{Encoding.UTF8.GetBytes(cResponse)}} })]");
+    [InlineData(new byte[] { {{cResponse}} })]
     public void {{methodName.ToSnakeCase()}}_test(byte[] expectedResult)
     {
         // arrange
@@ -63,10 +64,11 @@ $$"""
         // assert
         Assert.NotNull(buffer);
         Assert.NotNull(expectedResult);
-        Assert.NotEmpty(buffer.Count);
-        Assert.NotEmpty(expectedResult.Length);
-        Assert.True(result.SequenceEqual(buffer));
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
     }
+    
 """;
 
 
@@ -113,8 +115,9 @@ static string GetCResult(string compiler, string method, string monitorFile)
     process.StartInfo.EnvironmentVariables["LD_PRELOAD"] = monitorFile;
     process.Start();
     var response = process.StandardError.ReadToEnd();
-    var startIndex = response.IndexOf(MARKER) + MARKER.Length;
-    var lastIndex = response.LastIndexOf(MARKER);
+    var startIndex = response.IndexOf(MARKER) + MARKER.Length + 2;
+    var lastIndex = response.LastIndexOf(MARKER) - 2;
+    File.Delete(execFile);
     return response[startIndex..lastIndex];
 }
 
