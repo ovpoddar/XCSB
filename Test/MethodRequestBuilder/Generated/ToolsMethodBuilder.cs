@@ -9,14 +9,18 @@ var compiler = GetCCompiler();
 var monitorFile = GenerateMonitorFile(compiler);
 
 // No Parameter Methods Set Up
-MethodDetails[] noParamMethod = [new("NoParameter", "GrabServer", [""]), new("NoParameter", "UngrabServer", [""])];
-// independentMethod ["UngrabPointer", "UngrabKeyboard", "AllowEvents", "SetFontPath", "Bell",
+MethodDetails[] noParamMethod = [
+    new("NoParameter", "GrabServer", [""]),
+    new("NoParameter", "UngrabServer", [""]),
+    new("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"])
+];
+// independentMethod ["UngrabPointer", "UngrabKeyboard", "AllowEvents", "SetFontPath",
 // "ChangeKeyboardControl", "ChangePointerControl", "SetScreenSaver", "ForceScreenSaver", "ChangeHosts", "SetAccessControl",
 // "SetCloseDownMode", "NoOperation"];
-using (var fileStream = File.Open("./NoParameter.cs", FileMode.OpenOrCreate))
+using (var fileStream = File.Open("./VoidMethodsTest.cs", FileMode.OpenOrCreate))
 {
     fileStream.Write(
-    """
+"""
 // DO NOT MODIFY THIS
 using Xcsb;
 
@@ -34,7 +38,7 @@ public class VoidMethodsTest : IDisposable
     foreach (var method in noParamMethod)
         WriteCsMethodContent(method, fileStream);
     fileStream.Write(
-    """
+"""
     public void Dispose() => 
         _xProto.Dispose();
 }
@@ -51,6 +55,7 @@ void WriteCsMethodContent(MethodDetails method, FileStream fileStream)
 """
 
     [Theory]
+
 """u8);
     foreach (var testCase in method.Parameters)
     {
@@ -60,7 +65,7 @@ void WriteCsMethodContent(MethodDetails method, FileStream fileStream)
     fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{method.Categories.ToSnakeCase()}}_{{method.MethodName.ToSnakeCase()}}_test(
-    //todo
+    // todo:
     
     byte[] expectedResult)
     {
@@ -92,6 +97,7 @@ static Span<byte> GetDataAttribute(string parameter, string cResponse) =>
     Encoding.UTF8.GetBytes(
 $$"""
     [InlineData({{(string.IsNullOrWhiteSpace(parameter) ? "" : parameter + ",")}} new byte[] { {{cResponse}} })]
+
 """);
 
 static string GetCResult(string compiler, string method, string? parameter, string monitorFile)
@@ -280,7 +286,6 @@ static string GetCCompiler()
     throw new Exception("Could not find any compiler to build c project");
 }
 
-
 file static class StringHelper
 {
     private static int CountUpperCaseLetter(ReadOnlySpan<char> value)
@@ -341,3 +346,4 @@ file static class StringHelper
 }
 
 file record MethodDetails(string Categories, string MethodName, string[] Parameters);
+
