@@ -13,10 +13,14 @@ MethodDetails[] noParamMethod = [
     new("NoParameter", "GrabServer", [""], []),
     new("NoParameter", "UngrabServer", [""], []),
     new("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"]),
+    new("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"]),
+    new("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"]),
+    new("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"]),
+    // new("IndependentMethod", "SetFontPath", [$"\"built-ins\""], ["string[]"]),// figure out how xcb_str_t gets placed again.
+    new("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"]),
 ];
-// independentMethod ["UngrabPointer", "UngrabKeyboard", "AllowEvents", "SetFontPath",
+// independentMethod ["NoOperation"
 // "ChangeKeyboardControl", "ChangePointerControl", "SetScreenSaver", "ForceScreenSaver", "ChangeHosts", "SetAccessControl",
-// "SetCloseDownMode", "NoOperation"];
 using (var fileStream = File.Open("./GeneratedVoidMethodsTest.cs", FileMode.OpenOrCreate))
 {
     fileStream.Write(
@@ -61,7 +65,7 @@ void WriteCsMethodContent(MethodDetails method, FileStream fileStream)
     foreach (var testCase in method.Parameters)
     {
         var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(out paramsLength), monitorFile);
-        fileStream.Write(GetDataAttribute(testCase, cResponse));
+        fileStream.Write(GetDataAttribute(testCase, cResponse, method.ParamSignature));
     }
 
     var methodSignature = GetTestMethodSignature(paramsLength, method.ParamSignature);
@@ -122,12 +126,25 @@ static string GetTestMethodSignature(int parameterCount, string[] paramsSignatur
     return sb.ToString();
 }
 
-static Span<byte> GetDataAttribute(string parameter, string cResponse) =>
-    Encoding.UTF8.GetBytes(
+static Span<byte> GetDataAttribute(string parameter, string cResponse, string[] paramSignature)
+{
+    var veriables = "";
+    if (!string.IsNullOrWhiteSpace(parameter))
+    {
+        var parameterSplit =
+            parameter.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (parameterSplit.Length != paramSignature.Length)
+            throw new Exception("Bad parameter");
+
+        for (int i = 0; i < parameterSplit.Length; i++)
+            veriables += $"({paramSignature[i]}){parameterSplit[i]}, ";
+    }
+    return Encoding.UTF8.GetBytes(
 $$"""
-    [InlineData({{(string.IsNullOrWhiteSpace(parameter) ? "" : parameter + ",")}} new byte[] { {{cResponse}} })]
+    [InlineData({{veriables}} new byte[] { {{cResponse}} })]
 
 """);
+}
 
 static string GetCResult(string compiler, string method, string? parameter, string monitorFile)
 {
