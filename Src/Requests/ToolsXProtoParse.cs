@@ -14,7 +14,7 @@ else
     xprotoFilePath = Console.ReadLine()!;
 }
 
-var finalPath = Path.Join(Environment.CurrentDirectory, "ToolsProto.cs");
+var finalPath = Path.Join(Environment.CurrentDirectory, "GeneratedToolsProto.cs");
 Span<byte> scratchBuffer = stackalloc byte[1];
 (long, long) range = new();
 

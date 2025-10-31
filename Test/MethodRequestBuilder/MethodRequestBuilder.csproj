@@ -34,4 +34,16 @@
   <ItemGroup>
     <Compile Remove="**\Tools*.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Generated\" />
+  </ItemGroup>
+
+  <Target Name="GenerateTests" BeforeTargets="Build">
+    <Exec Command="dotnet run ToolsMethodBuilder.cs" WorkingDirectory="./Generated/" />
+    <ItemGroup>
+      <Folder Include="Generated\" />
+    </ItemGroup>
+  </Target>
+    
 </Project>

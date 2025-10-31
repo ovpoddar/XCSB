@@ -10,14 +10,14 @@ var monitorFile = GenerateMonitorFile(compiler);
 
 // No Parameter Methods Set Up
 MethodDetails[] noParamMethod = [
-    new("NoParameter", "GrabServer", [""]),
-    new("NoParameter", "UngrabServer", [""]),
-    new("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"])
+    new("NoParameter", "GrabServer", [""], []),
+    new("NoParameter", "UngrabServer", [""], []),
+    new("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"]),
 ];
 // independentMethod ["UngrabPointer", "UngrabKeyboard", "AllowEvents", "SetFontPath",
 // "ChangeKeyboardControl", "ChangePointerControl", "SetScreenSaver", "ForceScreenSaver", "ChangeHosts", "SetAccessControl",
 // "SetCloseDownMode", "NoOperation"];
-using (var fileStream = File.Open("./VoidMethodsTest.cs", FileMode.OpenOrCreate))
+using (var fileStream = File.Open("./GeneratedVoidMethodsTest.cs", FileMode.OpenOrCreate))
 {
     fileStream.Write(
 """
@@ -26,7 +26,7 @@ using Xcsb;
 
 namespace MethodRequestBuilder.Test.Generated;
 
-public class VoidMethodsTest : IDisposable
+public class GeneratedVoidMethodsTest : IDisposable
 {
     private readonly IXProto _xProto;
     public VoidMethodsTest()
@@ -57,17 +57,17 @@ void WriteCsMethodContent(MethodDetails method, FileStream fileStream)
     [Theory]
 
 """u8);
+    var paramsLength = 0;
     foreach (var testCase in method.Parameters)
     {
-        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(), monitorFile);
+        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(out paramsLength), monitorFile);
         fileStream.Write(GetDataAttribute(testCase, cResponse));
     }
+
+    var methodSignature = GetTestMethodSignature(paramsLength, method.ParamSignature);
     fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
-    public void {{method.Categories.ToSnakeCase()}}_{{method.MethodName.ToSnakeCase()}}_test(
-    // todo:
-    
-    byte[] expectedResult)
+    public void {{method.Categories.ToSnakeCase()}}_{{method.MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
@@ -75,10 +75,7 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 
         // act
-        bufferClient.{{method.MethodName}}(
-        // todo:
-        
-        );
+        bufferClient.{{method.MethodName}}({{FillPassingParameter(paramsLength)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -91,6 +88,38 @@ $$"""
 
 """));
 
+}
+
+static string FillPassingParameter(int parameterCount)
+{
+    if (parameterCount == 0) 
+        return string.Empty;
+    
+    var sb = new StringBuilder();
+    for (var i = 0; i < parameterCount; i++)
+        sb.Append("params")
+            .Append(i)
+            .Append(", ");
+    sb.Remove(sb.Length - 2, 2);
+    return sb.ToString();
+}
+
+static string GetTestMethodSignature(int parameterCount, string[] paramsSignature)
+{
+    if (parameterCount != paramsSignature.Length)
+        throw new ArgumentException("paramsSignature length must match parameterCount", nameof(paramsSignature));
+    
+    if (parameterCount == 0) return string.Empty;
+    
+    var sb = new StringBuilder();
+    
+    for (var i = 0; i < parameterCount; i++)
+        sb.Append(paramsSignature[i])
+            .Append(" params")
+            .Append(i)
+            .Append(", ");
+    
+    return sb.ToString();
 }
 
 static Span<byte> GetDataAttribute(string parameter, string cResponse) =>
@@ -296,11 +325,13 @@ file static class StringHelper
         return result;
     }
 
-    public static string? ToCParams(this string? value)
+    public static string? ToCParams(this string? value, out int length)
     {
+        length = 0;
         if (string.IsNullOrWhiteSpace(value))
             return null;
         var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        length = items.Length;
         var sb = new StringBuilder();
         foreach (var field in items)
         {
@@ -345,5 +376,5 @@ file static class StringHelper
     }
 }
 
-file record MethodDetails(string Categories, string MethodName, string[] Parameters);
+file record MethodDetails(string Categories, string MethodName, string[] Parameters, string[] ParamSignature);
 
