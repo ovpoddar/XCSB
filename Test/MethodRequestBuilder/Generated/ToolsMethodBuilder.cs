@@ -21,7 +21,7 @@ MethodDetails[] noParamMethod = [
 ];
 // independentMethod ["NoOperation"
 // "ChangeKeyboardControl", "ChangePointerControl", "SetScreenSaver", "ForceScreenSaver", "ChangeHosts", "SetAccessControl",
-using (var fileStream = File.Open("./GeneratedVoidMethodsTest.cs", FileMode.OpenOrCreate))
+using (var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.OpenOrCreate))
 {
     fileStream.Write(
 """
@@ -30,10 +30,10 @@ using Xcsb;
 
 namespace MethodRequestBuilder.Test.Generated;
 
-public class GeneratedVoidMethodsTest : IDisposable
+public class VoidMethodsTest : IDisposable
 {
     private readonly IXProto _xProto;
-    public GeneratedVoidMethodsTest()
+    public VoidMethodsTest()
     {
         _xProto = XcsbClient.Initialized();
     }
