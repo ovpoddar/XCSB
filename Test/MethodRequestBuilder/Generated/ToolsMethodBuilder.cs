@@ -18,14 +18,22 @@ MethodDetails[] noParamMethod = [
     new("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"]),
     // new("IndependentMethod", "SetFontPath", [$"\"built-ins\""], ["string[]"]),// figure out how xcb_str_t gets placed again.
     new("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"]),
+    // new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
+    new("IndependentMethod", "ChangeKeyboardControl", [""], ["Xcsb.Masks.KeyboardControlMask", "Span<uint>"]),
+    // new("IndependentMethod", "ChangePointerControl", [""], []),
+    new("IndependentMethod", "SetScreenSaver", [""], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"]),
+    new("IndependentMethod", "ForceScreenSaver", [""], ["Xcsb.Models.ForceScreenSaverMode"]),
+    new("IndependentMethod", "SetAccessControl", [""], ["Xcsb.Models.AccessControlMode"]),
+    new("IndependentMethod", "ChangeHosts", [""], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "Span<byte>"]),
 ];
-// independentMethod ["NoOperation"
-// "ChangeKeyboardControl", "ChangePointerControl", "SetScreenSaver", "ForceScreenSaver", "ChangeHosts", "SetAccessControl",
+
 using (var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.OpenOrCreate))
 {
     fileStream.Write(
 """
-// DO NOT MODIFY THIS
+// DO NOT MODIFY THIS FILE
+// IT WILL BE OVERWRITTEN WHEN GENERATING
+#nullable enable
 using Xcsb;
 
 namespace MethodRequestBuilder.Test.Generated;
@@ -46,6 +54,8 @@ public class VoidMethodsTest : IDisposable
     public void Dispose() => 
         _xProto.Dispose();
 }
+#nullable restore
+
 """u8);
 }
 
