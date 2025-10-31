@@ -29,7 +29,7 @@ namespace MethodRequestBuilder.Test.Generated;
 public class GeneratedVoidMethodsTest : IDisposable
 {
     private readonly IXProto _xProto;
-    public VoidMethodsTest()
+    public GeneratedVoidMethodsTest()
     {
         _xProto = XcsbClient.Initialized();
     }
