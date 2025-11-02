@@ -10,21 +10,21 @@ var monitorFile = GenerateMonitorFile(compiler);
 
 // No Parameter Methods Set Up
 MethodDetails[] noParamMethod = [
-    new("NoParameter", "GrabServer", [""], []),
-    new("NoParameter", "UngrabServer", [""], []),
-    new("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"]),
-    new("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"]),
-    new("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"]),
-    new("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"]),
+    new("NoParameter", "GrabServer", [""], [], false),
+    new("NoParameter", "UngrabServer", [""], [], false),
+    new("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"], false),
+    new("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
+    new("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
+    new("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
     //new("IndependentMethod", "SetFontPath", [$"\"built-ins\""], ["string[]"]),// figure out how xcb_str_t gets placed again.
-    new("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"]),
+    new("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
     // new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
-    new("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"]),
+    new("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false),
     // new("IndependentMethod", "ChangePointerControl", [""], []),
-    // new("IndependentMethod", "SetScreenSaver", [""], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"]),
-    // new("IndependentMethod", "ForceScreenSaver", [""], ["Xcsb.Models.ForceScreenSaverMode"]),
-    // new("IndependentMethod", "SetAccessControl", [""], ["Xcsb.Models.AccessControlMode"]),
-    // new("IndependentMethod", "ChangeHosts", [""], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "Span<byte>"]),
+    new("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
+    new("IndependentMethod", "ForceScreenSaver", ["1", "0"], ["Xcsb.Models.ForceScreenSaverMode"], false),
+    new("IndependentMethod", "SetAccessControl", ["1", "0"], ["Xcsb.Models.AccessControlMode"], false),
+    new("IndependentMethod", "ChangeHosts", ["0, 4, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true),
 ];
 
 using (var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.OpenOrCreate))
@@ -51,6 +51,7 @@ public class VoidMethodsTest : IDisposable
         WriteCsMethodContent(method, fileStream);
     fileStream.Write(
 """
+
     public void Dispose() => 
         _xProto.Dispose();
 }
@@ -73,7 +74,7 @@ void WriteCsMethodContent(MethodDetails method, FileStream fileStream)
 """u8);
     foreach (var testCase in method.Parameters)
     {
-        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(), monitorFile);
+        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(method.AddLenInCCall), monitorFile);
         fileStream.Write(GetDataAttribute(testCase, cResponse, method.ParamSignature));
     }
 
@@ -384,14 +385,28 @@ file static class StringHelper
         return result;
     }
 
-    public static string? ToCParams(this string? value)
+    private static int CalculateLen(Span<string> value)
+    {
+        var result = 0;
+        foreach (var items in value)
+        {
+            if (items.Trim() == "}")
+                break;
+            result++;
+        }
+        return result +1;
+    }
+    
+    public static string? ToCParams(this string? value, bool addLenInCCall)
     {
         if (string.IsNullOrWhiteSpace(value))
             return null;
         var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var sb = new StringBuilder();
+        var index = 0;
         foreach (var field in items)
         {
+            index++;
             if (field.StartsWith('"') && field.EndsWith('"'))
             {
                 sb.Append(" ," + (field.Length - 2));
@@ -400,7 +415,20 @@ file static class StringHelper
             if (field.StartsWith("new "))
             {
                 var fieldStart = field.IndexOf('{');
-                sb.Append(", (uint32_t[])")
+                if (addLenInCCall)
+                {
+                    sb.Append(", ")
+                        .Append(CalculateLen(items[index..]));
+                }
+                sb.Append(", (")
+                    .Append(field.Contains("uint") 
+                        ? "uint32_t" 
+                        : field.Contains("int")
+                        ? "int32_t"
+                        : field.Contains("byte")
+                        ? "uint8_t"
+                            : "uint16_t")
+                    .Append("[])")
                     .Append(field[fieldStart..]);
             }
             else
@@ -440,5 +468,5 @@ file static class StringHelper
     }
 }
 
-file record MethodDetails(string Categories, string MethodName, string[] Parameters, string[] ParamSignature);
+file record MethodDetails(string Categories, string MethodName, string[] Parameters, string[] ParamSignature, bool AddLenInCCall);
 

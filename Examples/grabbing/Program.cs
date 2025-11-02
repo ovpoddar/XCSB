@@ -96,9 +96,8 @@ void demo_change_hosts()
         Console.WriteLine("ablaible hosts: " + s);
     }
 
-    connection.ChangeHostsUnchecked(HostMode.Insert,
-        Family.Internet, [127, 0, 0, 1]);
-
+    connection.ChangeHostsUnchecked(HostMode.Insert, Family.Internet, [127, 0, 0, 1]);
+    
     Console.WriteLine("ChangeHosts: Successfully added localhost to access list\n");
 }
 
