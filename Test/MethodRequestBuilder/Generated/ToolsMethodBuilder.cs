@@ -16,15 +16,15 @@ MethodDetails[] noParamMethod = [
     new("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"]),
     new("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"]),
     new("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"]),
-    // new("IndependentMethod", "SetFontPath", [$"\"built-ins\""], ["string[]"]),// figure out how xcb_str_t gets placed again.
+    //new("IndependentMethod", "SetFontPath", [$"\"built-ins\""], ["string[]"]),// figure out how xcb_str_t gets placed again.
     new("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"]),
     // new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
-    new("IndependentMethod", "ChangeKeyboardControl", [""], ["Xcsb.Masks.KeyboardControlMask", "Span<uint>"]),
+    new("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"]),
     // new("IndependentMethod", "ChangePointerControl", [""], []),
-    new("IndependentMethod", "SetScreenSaver", [""], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"]),
-    new("IndependentMethod", "ForceScreenSaver", [""], ["Xcsb.Models.ForceScreenSaverMode"]),
-    new("IndependentMethod", "SetAccessControl", [""], ["Xcsb.Models.AccessControlMode"]),
-    new("IndependentMethod", "ChangeHosts", [""], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "Span<byte>"]),
+    // new("IndependentMethod", "SetScreenSaver", [""], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"]),
+    // new("IndependentMethod", "ForceScreenSaver", [""], ["Xcsb.Models.ForceScreenSaverMode"]),
+    // new("IndependentMethod", "SetAccessControl", [""], ["Xcsb.Models.AccessControlMode"]),
+    // new("IndependentMethod", "ChangeHosts", [""], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "Span<byte>"]),
 ];
 
 using (var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.OpenOrCreate))
@@ -71,14 +71,13 @@ void WriteCsMethodContent(MethodDetails method, FileStream fileStream)
     [Theory]
 
 """u8);
-    var paramsLength = 0;
     foreach (var testCase in method.Parameters)
     {
-        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(out paramsLength), monitorFile);
+        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(), monitorFile);
         fileStream.Write(GetDataAttribute(testCase, cResponse, method.ParamSignature));
     }
 
-    var methodSignature = GetTestMethodSignature(paramsLength, method.ParamSignature);
+    var methodSignature = GetTestMethodSignature(method.ParamSignature);
     fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{method.Categories.ToSnakeCase()}}_{{method.MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
@@ -89,7 +88,7 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 
         // act
-        bufferClient.{{method.MethodName}}({{FillPassingParameter(paramsLength)}});
+        bufferClient.{{method.MethodName}}({{FillPassingParameter(method.ParamSignature.Length)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -118,16 +117,13 @@ static string FillPassingParameter(int parameterCount)
     return sb.ToString();
 }
 
-static string GetTestMethodSignature(int parameterCount, string[] paramsSignature)
+static string GetTestMethodSignature(string[] paramsSignature)
 {
-    if (parameterCount != paramsSignature.Length)
-        throw new ArgumentException("paramsSignature length must match parameterCount", nameof(paramsSignature));
-    
-    if (parameterCount == 0) return string.Empty;
+    if (paramsSignature.Length == 0) return string.Empty;
     
     var sb = new StringBuilder();
     
-    for (var i = 0; i < parameterCount; i++)
+    for (var i = 0; i < paramsSignature.Length; i++)
         sb.Append(paramsSignature[i])
             .Append(" params")
             .Append(i)
@@ -141,19 +137,55 @@ static Span<byte> GetDataAttribute(string parameter, string cResponse, string[] 
     var veriables = "";
     if (!string.IsNullOrWhiteSpace(parameter))
     {
-        var parameterSplit =
-            parameter.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        if (parameterSplit.Length != paramSignature.Length)
-            throw new Exception("Bad parameter");
-
-        for (int i = 0; i < parameterSplit.Length; i++)
-            veriables += $"({paramSignature[i]}){parameterSplit[i]}, ";
+        foreach (var signature in paramSignature)
+        {
+            parameter = GetField(parameter, out var field);
+            if (field.Trim().StartsWith("new"))
+                veriables += $"{field}, ";
+            else
+                veriables += $"({signature}){field}, ";
+        }
     }
+
     return Encoding.UTF8.GetBytes(
 $$"""
     [InlineData({{veriables}} new byte[] { {{cResponse}} })]
 
 """);
+}
+
+static string GetField(string parameter, out string field)
+{
+    var result = "";
+    var canReturn = true;
+    for (int i = 0; i < parameter.Length; i++)
+    {
+        if (parameter[i] == ',' && canReturn)
+        {
+            field = result;
+            return parameter[(++i)..];
+        }
+
+        if (parameter[i] == '"')
+        {
+            if (canReturn)
+                canReturn = false;
+            else
+                canReturn = true;
+        }
+        
+        if (parameter[i] == '{')
+            canReturn = false;
+        
+        if (parameter[i] == '}')
+            canReturn = true;
+        
+        result += parameter[i];
+    }
+
+    field = result;
+    return "";
+
 }
 
 static string GetCResult(string compiler, string method, string? parameter, string monitorFile)
@@ -352,13 +384,11 @@ file static class StringHelper
         return result;
     }
 
-    public static string? ToCParams(this string? value, out int length)
+    public static string? ToCParams(this string? value)
     {
-        length = 0;
         if (string.IsNullOrWhiteSpace(value))
             return null;
         var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        length = items.Length;
         var sb = new StringBuilder();
         foreach (var field in items)
         {
@@ -367,7 +397,14 @@ file static class StringHelper
                 sb.Append(" ," + (field.Length - 2));
             }
 
-            sb.Append(", " + field);
+            if (field.StartsWith("new "))
+            {
+                var fieldStart = field.IndexOf('{');
+                sb.Append(", (uint32_t[])")
+                    .Append(field[fieldStart..]);
+            }
+            else
+                sb.Append(", ").Append(field);
         }
         return sb.ToString();
     }
