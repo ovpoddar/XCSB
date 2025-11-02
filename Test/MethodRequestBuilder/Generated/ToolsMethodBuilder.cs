@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Text;
+using System.Linq;
+
 // Global Set Up
 var compiler = GetCCompiler();
 var monitorFile = GenerateMonitorFile(compiler);
@@ -16,7 +18,7 @@ MethodDetails[] noParamMethod = [
     new("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
     new("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
     new("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
-    //new("IndependentMethod", "SetFontPath", [$"\"built-ins\""], ["string[]"]),// figure out how xcb_str_t gets placed again.
+    new("IndependentMethod", "SetFontPath", [$"new string[] {{ \"built-ins\" , \"{Environment.CurrentDirectory}\" }}", "new string[] {\"build-ins\"}"], ["string[]"], true, true, true),
     new("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
     // new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
     new("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false),
@@ -74,7 +76,7 @@ void WriteCsMethodContent(MethodDetails method, FileStream fileStream)
 """u8);
     foreach (var testCase in method.Parameters)
     {
-        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(method.AddLenInCCall), monitorFile);
+        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(method), monitorFile);
         fileStream.Write(GetDataAttribute(testCase, cResponse, method.ParamSignature));
     }
 
@@ -212,7 +214,7 @@ static string GetCResult(string compiler, string method, string? parameter, stri
     process.StandardInput.Write(cMainBody);
     process.StandardInput.Close();
     process.WaitForExit();
-
+    
     Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
     Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
     Debug.Assert(File.Exists(execFile));
@@ -245,6 +247,13 @@ $$"""
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdint.h>
+
+#define XS(s)                       \
+    ((const void *)&(const struct { \
+        uint8_t len;                \
+        char data[sizeof(s) - 1];   \
+    }){(uint8_t)(sizeof(s) - 1), s})
 
 int main()
 {
@@ -397,39 +406,42 @@ file static class StringHelper
         return result +1;
     }
     
-    public static string? ToCParams(this string? value, bool addLenInCCall)
+    public static string? ToCParams(this string? value, MethodDetails methodDetails)
     {
         if (string.IsNullOrWhiteSpace(value))
             return null;
+        if (methodDetails.NeedCast)
+        {
+            value = value.Replace('{', '(')
+                .Replace('}', ')');
+        }
         var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var sb = new StringBuilder();
         var index = 0;
         foreach (var field in items)
         {
             index++;
-            if (field.StartsWith('"') && field.EndsWith('"'))
-            {
-                sb.Append(" ," + (field.Length - 2));
-            }
-
             if (field.StartsWith("new "))
             {
-                var fieldStart = field.IndexOf('{');
-                if (addLenInCCall)
+                var f = field
+                    .ReplaceOnece('"', "XS(\"")
+                    .ReplaceAtLast('"', "\")");
+                var fieldStart = f.IndexOf('{');
+                if (fieldStart == -1)
+                    fieldStart = f.IndexOf('(');
+                if (methodDetails.AddLenInCCall)
                 {
                     sb.Append(", ")
                         .Append(CalculateLen(items[index..]));
                 }
                 sb.Append(", (")
-                    .Append(field.Contains("uint") 
-                        ? "uint32_t" 
-                        : field.Contains("int")
-                        ? "int32_t"
-                        : field.Contains("byte")
-                        ? "uint8_t"
-                            : "uint16_t")
-                    .Append("[])")
-                    .Append(field[fieldStart..]);
+                    .Append(GetCType(f, methodDetails.IsXcbStr))
+                    .Append(')')
+                    .Append(f[fieldStart..]);
+            }
+            else if(field.StartsWith('"'))
+            {
+                sb.Append(", XS(").Append(field).Append(')');
             }
             else
                 sb.Append(", ").Append(field);
@@ -437,6 +449,53 @@ file static class StringHelper
         return sb.ToString();
     }
 
+    private static string ReplaceOnece(this string value, char target, string replaced)
+    {
+        var sb = new StringBuilder();
+        var isDone = false;
+        foreach (var item in value)
+        {
+            if (item == target && !isDone)
+            {
+                sb.Append(replaced);
+                isDone = true;
+                continue;
+            }
+
+            sb.Append(item);
+        }
+
+        return sb.ToString();
+    }
+
+    private static string ReplaceAtLast(this string value, char target, string replaced)
+    {
+        var sb = new StringBuilder();
+        var i = value.LastIndexOf(target);
+        for (var index = 0; index < value.Length; index++)
+        {
+            if (index == i)
+                sb.Append(replaced);
+            else
+                sb.Append(value[index]);
+        }
+
+        return sb.ToString();
+    }
+
+    private static string GetCType(string type, bool isXcbStr)
+    {
+        return type.Contains("uint")
+            ? "uint32_t[]"
+            : type.Contains("int")
+                ? "int32_t[]"
+                : type.Contains("byte")
+                    ? "uint8_t[]"
+                    : type.Contains("string") && isXcbStr
+                        ? "xcb_str_t *"
+                        : "int16_t[]";
+    }
+    
     public static string ToSnakeCase(this string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -468,5 +527,5 @@ file static class StringHelper
     }
 }
 
-file record MethodDetails(string Categories, string MethodName, string[] Parameters, string[] ParamSignature, bool AddLenInCCall);
+file record MethodDetails(string Categories, string MethodName, string[] Parameters, string[] ParamSignature, bool AddLenInCCall, bool IsXcbStr = false, bool NeedCast = false);
 
