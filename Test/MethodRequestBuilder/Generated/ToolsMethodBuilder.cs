@@ -9,9 +9,10 @@ using System.Linq;
 // Global Set Up
 var compiler = GetCCompiler();
 var monitorFile = GenerateMonitorFile(compiler);
+using var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.OpenOrCreate);
 
 // No Parameter Methods Set Up
-MethodDetails[] noParamMethod = [
+MethodDetails1[] noParamMethod = [
     new("NoParameter", "GrabServer", [""], [], false),
     new("NoParameter", "UngrabServer", [""], [], false),
     new("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"], false),
@@ -20,18 +21,14 @@ MethodDetails[] noParamMethod = [
     new("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
     new("IndependentMethod", "SetFontPath", [$"new string[] {{ \"built-ins\" , \"{Environment.CurrentDirectory}\" }}", "new string[] {\"build-ins\"}"], ["string[]"], true, true, true),
     new("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
-    // new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
     new("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false),
-    // new("IndependentMethod", "ChangePointerControl", [""], []),
     new("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
     new("IndependentMethod", "ForceScreenSaver", ["1", "0"], ["Xcsb.Models.ForceScreenSaverMode"], false),
     new("IndependentMethod", "SetAccessControl", ["1", "0"], ["Xcsb.Models.AccessControlMode"], false),
     new("IndependentMethod", "ChangeHosts", ["0, 4, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true),
 ];
 
-using (var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.OpenOrCreate))
-{
-    fileStream.Write(
+fileStream.Write(
 """
 // DO NOT MODIFY THIS FILE
 // IT WILL BE OVERWRITTEN WHEN GENERATING
@@ -49,39 +46,26 @@ public class VoidMethodsTest : IDisposable
     }
 
 """u8);
+{
     foreach (var method in noParamMethod)
         WriteCsMethodContent(method, fileStream);
-    fileStream.Write(
-"""
 
-    public void Dispose() => 
-        _xProto.Dispose();
-}
-#nullable restore
-
-"""u8);
-}
-
-// Global Clean Up
-File.Delete(monitorFile);
-return 0;
-
-void WriteCsMethodContent(MethodDetails method, FileStream fileStream)
-{
-    fileStream.Write(
+    void WriteCsMethodContent(MethodDetails1 method, FileStream fileStream)
+    {
+        fileStream.Write(
 """
 
     [Theory]
 
 """u8);
-    foreach (var testCase in method.Parameters)
-    {
-        var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(method), monitorFile);
-        fileStream.Write(GetDataAttribute(testCase, cResponse, method.ParamSignature));
-    }
+        foreach (var testCase in method.Parameters)
+        {
+            var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(method), monitorFile);
+            fileStream.Write(GetDataAttribute(testCase, cResponse, method.ParamSignature));
+        }
 
-    var methodSignature = GetTestMethodSignature(method.ParamSignature);
-    fileStream.Write(Encoding.UTF8.GetBytes(
+        var methodSignature = GetTestMethodSignature(method.ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{method.Categories.ToSnakeCase()}}_{{method.MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
@@ -104,13 +88,56 @@ $$"""
 
 """));
 
+    }
 }
+
+// new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
+// new("IndependentMethod", "ChangePointerControl", ["new Xcsb.Models.Acceleration(1, 1), 4"], ["Xcsb.Models.Acceleration", "ushort"], false), // special case when the params being different
+
+
+MethodDetails2[] windowMethods =
+[
+    new ("DependentOnWindow", "DestroyWindow", ["$"], ["uint"], false),
+    new ("DependentOnWindow", "DestroySubwindows", ["$"], ["uint"], false),
+    new ("DependentOnWindow", "ChangeSaveSet", ["1, $", "0, $"], ["Xcsb.Models.ChangeSaveSetMode", "uint"], false),
+    new ("DependentOnWindow", "MapWindow", ["$"], ["uint"], false),
+    new ("DependentOnWindow", "MapSubwindows", ["$"], ["uint"], false),
+    new ("DependentOnWindow", "UnmapWindow", ["$"], ["uint"], false),
+    new ("DependentOnWindow", "UnmapSubwindows", ["$"], ["uint"], false),
+    new ("DependentOnWindow", "ConfigureWindow", ["$, 1, new uint[] {100}", "$, 2, new uint[] {100}", "$, 4, new uint[] {100}", "$, 1, new uint[] {100}", "$, 32, new uint[] {0}", "$, 111, new uint[] {100, 100, 500, 500, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
+    new ("DependentOnWindow", "CirculateWindow", ["0, $", "1, $" ], ["Xcsb.Masks.Circulate", "uint"], false),
+];
+{
+    foreach (var method in windowMethods)
+        WriteCsMethodContent(method, fileStream);
+
+    void WriteCsMethodContent(MethodDetails2 method, FileStream fileStream)
+    {
+        throw new NotImplementedException();
+    }
+
+}
+
+
+
+
+fileStream.Write(
+"""
+
+    public void Dispose() => 
+        _xProto.Dispose();
+}
+#nullable restore
+
+"""u8);
+File.Delete(monitorFile);
+return 0;
 
 static string FillPassingParameter(int parameterCount)
 {
-    if (parameterCount == 0) 
+    if (parameterCount == 0)
         return string.Empty;
-    
+
     var sb = new StringBuilder();
     for (var i = 0; i < parameterCount; i++)
         sb.Append("params")
@@ -123,15 +150,15 @@ static string FillPassingParameter(int parameterCount)
 static string GetTestMethodSignature(string[] paramsSignature)
 {
     if (paramsSignature.Length == 0) return string.Empty;
-    
+
     var sb = new StringBuilder();
-    
+
     for (var i = 0; i < paramsSignature.Length; i++)
         sb.Append(paramsSignature[i])
             .Append(" params")
             .Append(i)
             .Append(", ");
-    
+
     return sb.ToString();
 }
 
@@ -166,7 +193,7 @@ static string GetField(string parameter, out string field)
         if (parameter[i] == ',' && canReturn)
         {
             field = result;
-            return parameter[(++i)..];
+            return parameter[++i..];
         }
 
         if (parameter[i] == '"')
@@ -176,13 +203,13 @@ static string GetField(string parameter, out string field)
             else
                 canReturn = true;
         }
-        
+
         if (parameter[i] == '{')
             canReturn = false;
-        
+
         if (parameter[i] == '}')
             canReturn = true;
-        
+
         result += parameter[i];
     }
 
@@ -214,7 +241,9 @@ static string GetCResult(string compiler, string method, string? parameter, stri
     process.StandardInput.Write(cMainBody);
     process.StandardInput.Close();
     process.WaitForExit();
-    
+
+    Console.WriteLine(cMainBody);
+
     Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
     Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
     Debug.Assert(File.Exists(execFile));
@@ -403,10 +432,10 @@ file static class StringHelper
                 break;
             result++;
         }
-        return result +1;
+        return result + 1;
     }
-    
-    public static string? ToCParams(this string? value, MethodDetails methodDetails)
+
+    public static string? ToCParams(this string? value, MethodDetails1 methodDetails)
     {
         if (string.IsNullOrWhiteSpace(value))
             return null;
@@ -432,14 +461,14 @@ file static class StringHelper
                 if (methodDetails.AddLenInCCall)
                 {
                     sb.Append(", ")
-                        .Append(CalculateLen(items[index..]));
+                        .Append(CalculateLen(items.AsSpan()[index..]));
                 }
                 sb.Append(", (")
                     .Append(GetCType(f, methodDetails.IsXcbStr))
                     .Append(')')
                     .Append(f[fieldStart..]);
             }
-            else if(field.StartsWith('"'))
+            else if (field.StartsWith('"'))
             {
                 sb.Append(", XS(").Append(field).Append(')');
             }
@@ -485,17 +514,19 @@ file static class StringHelper
 
     private static string GetCType(string type, bool isXcbStr)
     {
-        return type.Contains("uint")
-            ? "uint32_t[]"
-            : type.Contains("int")
-                ? "int32_t[]"
-                : type.Contains("byte")
-                    ? "uint8_t[]"
-                    : type.Contains("string") && isXcbStr
-                        ? "xcb_str_t *"
-                        : "int16_t[]";
+        var typeStartPosition = type.IndexOf("new ") + 4;
+        var arrayStartIndex = type.IndexOf('[');
+
+        return type.AsSpan()[typeStartPosition..arrayStartIndex].Trim() switch
+        {
+            "uint" => "uint32_t[]",
+            "int" => "int32_t[]",
+            "byte" => "uint8_t[]",
+            "string" => isXcbStr ? "xcb_str_t *" : "const char *",
+            _ => "int16_t[]",
+        };
     }
-    
+
     public static string ToSnakeCase(this string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -527,5 +558,5 @@ file static class StringHelper
     }
 }
 
-file record MethodDetails(string Categories, string MethodName, string[] Parameters, string[] ParamSignature, bool AddLenInCCall, bool IsXcbStr = false, bool NeedCast = false);
-
+file record MethodDetails1(string Categories, string MethodName, string[] Parameters, string[] ParamSignature, bool AddLenInCCall, bool IsXcbStr = false, bool NeedCast = false);
+file record MethodDetails2(string Categories, string MethodName, string[] Parameters, string[] ParamSignature, bool AddLenInCCall);
