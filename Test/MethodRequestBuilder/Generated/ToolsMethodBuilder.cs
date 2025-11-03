@@ -12,21 +12,34 @@ var monitorFile = GenerateMonitorFile(compiler);
 using var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.OpenOrCreate);
 
 // No Parameter Methods Set Up
-MethodDetails1[] noParamMethod = [
-    new("NoParameter", "GrabServer", [""], [], false),
-    new("NoParameter", "UngrabServer", [""], [], false),
-    new("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"], false),
-    new("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
-    new("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
-    new("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
-    new("IndependentMethod", "SetFontPath", [$"new string[] {{ \"built-ins\" , \"{Environment.CurrentDirectory}\" }}", "new string[] {\"build-ins\"}"], ["string[]"], true, true, true),
-    new("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
-    new("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false),
-    new("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
-    new("IndependentMethod", "ForceScreenSaver", ["1", "0"], ["Xcsb.Models.ForceScreenSaverMode"], false),
-    new("IndependentMethod", "SetAccessControl", ["1", "0"], ["Xcsb.Models.AccessControlMode"], false),
-    new("IndependentMethod", "ChangeHosts", ["0, 4, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true),
+IBuilder[] noParamMethod = [
+    new MethodDetails1("NoParameter", "GrabServer", [""], [], false),
+    new MethodDetails1("NoParameter", "UngrabServer", [""], [], false),
+    new MethodDetails1("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"], false),
+    new MethodDetails1("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
+    new MethodDetails1("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
+    new MethodDetails1("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
+    new MethodDetails1("IndependentMethod", "SetFontPath", [$"new string[] {{ \"built-ins\" , \"{Environment.CurrentDirectory}\" }}", "new string[] {\"build-ins\"}"], ["string[]"], true, true, true),
+    new MethodDetails1("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
+    new MethodDetails1("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false),
+    new MethodDetails1("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
+    new MethodDetails1("IndependentMethod", "ForceScreenSaver", ["1", "0"], ["Xcsb.Models.ForceScreenSaverMode"], false),
+    new MethodDetails1("IndependentMethod", "SetAccessControl", ["1", "0"], ["Xcsb.Models.AccessControlMode"], false),
+    new MethodDetails1("IndependentMethod", "ChangeHosts", ["0, 4, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true),
+
+    // new MethodDetails2("DependentOnWindow", "DestroyWindow", ["$"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "DestroySubwindows", ["$"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "ChangeSaveSet", ["1, $", "0, $"], ["Xcsb.Models.ChangeSaveSetMode", "uint"], false),
+    // new MethodDetails2("DependentOnWindow", "MapWindow", ["$"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "MapSubwindows", ["$"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "UnmapWindow", ["$"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$, 1, new uint[] {100}", "$, 2, new uint[] {100}", "$, 4, new uint[] {100}", "$, 1, new uint[] {100}", "$, 32, new uint[] {0}", "$, 111, new uint[] {100, 100, 500, 500, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
+    // new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $", "1, $" ], ["Xcsb.Masks.Circulate", "uint"], false)
 ];
+
+// new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
+// new("IndependentMethod", "ChangePointerControl", ["new Xcsb.Models.Acceleration(1, 1), 4"], ["Xcsb.Models.Acceleration", "ushort"], false), // special case when the params being different
 
 fileStream.Write(
 """
@@ -48,77 +61,8 @@ public class VoidMethodsTest : IDisposable
 """u8);
 {
     foreach (var method in noParamMethod)
-        WriteCsMethodContent(method, fileStream);
-
-    void WriteCsMethodContent(MethodDetails1 method, FileStream fileStream)
-    {
-        fileStream.Write(
-"""
-
-    [Theory]
-
-"""u8);
-        foreach (var testCase in method.Parameters)
-        {
-            var cResponse = GetCResult(compiler, method.MethodName, testCase.ToCParams(method), monitorFile);
-            fileStream.Write(GetDataAttribute(testCase, cResponse, method.ParamSignature));
-        }
-
-        var methodSignature = GetTestMethodSignature(method.ParamSignature);
-        fileStream.Write(Encoding.UTF8.GetBytes(
-$$"""
-    public void {{method.Categories.ToSnakeCase()}}_{{method.MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
-    {
-        // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
-            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
-
-        // act
-        bufferClient.{{method.MethodName}}({{FillPassingParameter(method.ParamSignature.Length)}});
-        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
-
-        // assert
-        Assert.NotNull(buffer);
-        Assert.NotNull(expectedResult);
-        Assert.NotEmpty(buffer);
-        Assert.NotEmpty(expectedResult);
-        Assert.True(expectedResult.SequenceEqual(buffer));
-    }
-
-"""));
-
-    }
+        method.WriteCsMethodContent(fileStream, compiler, monitorFile);
 }
-
-// new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
-// new("IndependentMethod", "ChangePointerControl", ["new Xcsb.Models.Acceleration(1, 1), 4"], ["Xcsb.Models.Acceleration", "ushort"], false), // special case when the params being different
-
-
-MethodDetails2[] windowMethods =
-[
-    new ("DependentOnWindow", "DestroyWindow", ["$"], ["uint"], false),
-    new ("DependentOnWindow", "DestroySubwindows", ["$"], ["uint"], false),
-    new ("DependentOnWindow", "ChangeSaveSet", ["1, $", "0, $"], ["Xcsb.Models.ChangeSaveSetMode", "uint"], false),
-    new ("DependentOnWindow", "MapWindow", ["$"], ["uint"], false),
-    new ("DependentOnWindow", "MapSubwindows", ["$"], ["uint"], false),
-    new ("DependentOnWindow", "UnmapWindow", ["$"], ["uint"], false),
-    new ("DependentOnWindow", "UnmapSubwindows", ["$"], ["uint"], false),
-    new ("DependentOnWindow", "ConfigureWindow", ["$, 1, new uint[] {100}", "$, 2, new uint[] {100}", "$, 4, new uint[] {100}", "$, 1, new uint[] {100}", "$, 32, new uint[] {0}", "$, 111, new uint[] {100, 100, 500, 500, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
-    new ("DependentOnWindow", "CirculateWindow", ["0, $", "1, $" ], ["Xcsb.Masks.Circulate", "uint"], false),
-];
-{
-    foreach (var method in windowMethods)
-        WriteCsMethodContent(method, fileStream);
-
-    void WriteCsMethodContent(MethodDetails2 method, FileStream fileStream)
-    {
-        throw new NotImplementedException();
-    }
-
-}
-
-
 
 
 fileStream.Write(
@@ -132,180 +76,6 @@ fileStream.Write(
 """u8);
 File.Delete(monitorFile);
 return 0;
-
-static string FillPassingParameter(int parameterCount)
-{
-    if (parameterCount == 0)
-        return string.Empty;
-
-    var sb = new StringBuilder();
-    for (var i = 0; i < parameterCount; i++)
-        sb.Append("params")
-            .Append(i)
-            .Append(", ");
-    sb.Remove(sb.Length - 2, 2);
-    return sb.ToString();
-}
-
-static string GetTestMethodSignature(string[] paramsSignature)
-{
-    if (paramsSignature.Length == 0) return string.Empty;
-
-    var sb = new StringBuilder();
-
-    for (var i = 0; i < paramsSignature.Length; i++)
-        sb.Append(paramsSignature[i])
-            .Append(" params")
-            .Append(i)
-            .Append(", ");
-
-    return sb.ToString();
-}
-
-static Span<byte> GetDataAttribute(string parameter, string cResponse, string[] paramSignature)
-{
-    var veriables = "";
-    if (!string.IsNullOrWhiteSpace(parameter))
-    {
-        foreach (var signature in paramSignature)
-        {
-            parameter = GetField(parameter, out var field);
-            if (field.Trim().StartsWith("new"))
-                veriables += $"{field}, ";
-            else
-                veriables += $"({signature}){field}, ";
-        }
-    }
-
-    return Encoding.UTF8.GetBytes(
-$$"""
-    [InlineData({{veriables}} new byte[] { {{cResponse}} })]
-
-""");
-}
-
-static string GetField(string parameter, out string field)
-{
-    var result = "";
-    var canReturn = true;
-    for (int i = 0; i < parameter.Length; i++)
-    {
-        if (parameter[i] == ',' && canReturn)
-        {
-            field = result;
-            return parameter[++i..];
-        }
-
-        if (parameter[i] == '"')
-        {
-            if (canReturn)
-                canReturn = false;
-            else
-                canReturn = true;
-        }
-
-        if (parameter[i] == '{')
-            canReturn = false;
-
-        if (parameter[i] == '}')
-            canReturn = true;
-
-        result += parameter[i];
-    }
-
-    field = result;
-    return "";
-
-}
-
-static string GetCResult(string compiler, string method, string? parameter, string monitorFile)
-{
-    const string MARKER = "****************************************************************";
-    var execFile = Path.Join(Environment.CurrentDirectory, "main");
-    var cMainBody = GetCMethodBody(method, parameter, MARKER);
-
-    var process = new Process
-    {
-        StartInfo = new ProcessStartInfo
-        {
-            FileName = compiler,
-            Arguments = $"-x c -o \"{execFile}\" - -lxcb",
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        }
-    };
-    process.Start();
-    process.StandardInput.Write(cMainBody);
-    process.StandardInput.Close();
-    process.WaitForExit();
-
-    Console.WriteLine(cMainBody);
-
-    Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
-    Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
-    Debug.Assert(File.Exists(execFile));
-
-    process = new Process
-    {
-        StartInfo = new ProcessStartInfo
-        {
-            FileName = execFile,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        }
-    };
-    process.StartInfo.EnvironmentVariables["LD_PRELOAD"] = monitorFile;
-    process.Start();
-    var response = process.StandardError.ReadToEnd();
-    var startIndex = response.IndexOf(MARKER) + MARKER.Length + 2;
-    var lastIndex = response.LastIndexOf(MARKER) - 2;
-    File.Delete(execFile);
-    return response[startIndex..lastIndex];
-}
-
-static string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
-{
-    var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
-    return
-$$"""
-#include <xcb/xcb.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdint.h>
-
-#define XS(s)                       \
-    ((const void *)&(const struct { \
-        uint8_t len;                \
-        char data[sizeof(s) - 1];   \
-    }){(uint8_t)(sizeof(s) - 1), s})
-
-int main()
-{
-    xcb_connection_t *connection = xcb_connect(NULL, NULL);
-    if (xcb_connection_has_error(connection))
-    {
-        return -1;
-    }
-    const xcb_setup_t *setup = xcb_get_setup(connection);
-    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-    fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
-    xcb_flush(connection);
-    fprintf(stderr, "{{marker}}\n");
-    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
-    if (!error)
-        return 1;
-
-    free(error);
-    return -1;
-}
-""";
-}
 
 static string GenerateMonitorFile(string compiler)
 {
@@ -435,11 +205,11 @@ file static class StringHelper
         return result + 1;
     }
 
-    public static string? ToCParams(this string? value, MethodDetails1 methodDetails)
+    public static string? ToCParams(this string? value, bool needCast, bool addLenInCCall, bool isXcbStr)
     {
         if (string.IsNullOrWhiteSpace(value))
             return null;
-        if (methodDetails.NeedCast)
+        if (needCast)
         {
             value = value.Replace('{', '(')
                 .Replace('}', ')');
@@ -458,13 +228,13 @@ file static class StringHelper
                 var fieldStart = f.IndexOf('{');
                 if (fieldStart == -1)
                     fieldStart = f.IndexOf('(');
-                if (methodDetails.AddLenInCCall)
+                if (addLenInCCall)
                 {
                     sb.Append(", ")
                         .Append(CalculateLen(items.AsSpan()[index..]));
                 }
                 sb.Append(", (")
-                    .Append(GetCType(f, methodDetails.IsXcbStr))
+                    .Append(GetCType(f, isXcbStr))
                     .Append(')')
                     .Append(f[fieldStart..]);
             }
@@ -558,5 +328,296 @@ file static class StringHelper
     }
 }
 
-file record MethodDetails1(string Categories, string MethodName, string[] Parameters, string[] ParamSignature, bool AddLenInCCall, bool IsXcbStr = false, bool NeedCast = false);
-file record MethodDetails2(string Categories, string MethodName, string[] Parameters, string[] ParamSignature, bool AddLenInCCall);
+file class MethodDetails1 : BaseBuilder, IBuilder
+{
+    public MethodDetails1(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, bool isXcbStr = false, bool needCast = false) : base(categories, methodName, parameters,
+        paramSignature)
+    {
+        AddLenInCCall = addLenInCCall;
+        IsXcbStr = isXcbStr;
+        NeedCast = needCast;
+    }
+
+    public bool AddLenInCCall { get; }
+    public bool IsXcbStr { get; }
+    public bool NeedCast { get; }
+
+    public override string FillPassingParameter(int parameterCount)
+    {
+        if (parameterCount == 0)
+            return string.Empty;
+
+        var sb = new StringBuilder();
+        for (var i = 0; i < parameterCount; i++)
+            sb.Append("params")
+                .Append(i)
+                .Append(", ");
+        sb.Remove(sb.Length - 2, 2);
+        return sb.ToString();
+    }
+
+    public override string GetTestMethodSignature(string[] paramsSignature)
+    {
+        if (paramsSignature.Length == 0) return string.Empty;
+
+        var sb = new StringBuilder();
+
+        for (var i = 0; i < paramsSignature.Length; i++)
+            sb.Append(paramsSignature[i])
+                .Append(" params")
+                .Append(i)
+                .Append(", ");
+
+        return sb.ToString();
+    }
+
+    public override Span<byte> GetDataAttribute(string parameter, string cResponse, string[] paramSignature)
+    {
+        var veriables = "";
+        if (!string.IsNullOrWhiteSpace(parameter))
+        {
+            foreach (var signature in paramSignature)
+            {
+                parameter = GetField(parameter, out var field);
+                if (field.Trim().StartsWith("new"))
+                    veriables += $"{field}, ";
+                else
+                    veriables += $"({signature}){field}, ";
+            }
+        }
+
+        return Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{veriables}} new byte[] { {{cResponse}} })]
+
+""");
+    }
+
+    static string GetField(string parameter, out string field)
+    {
+        var result = "";
+        var canReturn = true;
+        for (int i = 0; i < parameter.Length; i++)
+        {
+            if (parameter[i] == ',' && canReturn)
+            {
+                field = result;
+                return parameter[++i..];
+            }
+
+            if (parameter[i] == '"')
+            {
+                if (canReturn)
+                    canReturn = false;
+                else
+                    canReturn = true;
+            }
+
+            if (parameter[i] == '{')
+                canReturn = false;
+
+            if (parameter[i] == '}')
+                canReturn = true;
+
+            result += parameter[i];
+        }
+
+        field = result;
+        return "";
+
+    }
+
+    public override string GetCResult(string compiler, string method, string? parameter, string monitorFile)
+    {
+        const string MARKER = "****************************************************************";
+        var execFile = Path.Join(Environment.CurrentDirectory, "main");
+        var cMainBody = GetCMethodBody(method, parameter, MARKER);
+
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = compiler,
+                Arguments = $"-x c -o \"{execFile}\" - -lxcb",
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+        process.Start();
+        process.StandardInput.Write(cMainBody);
+        process.StandardInput.Close();
+        process.WaitForExit();
+
+        Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
+        Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
+        Debug.Assert(File.Exists(execFile));
+
+        process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = execFile,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        };
+        process.StartInfo.EnvironmentVariables["LD_PRELOAD"] = monitorFile;
+        process.Start();
+        var response = process.StandardError.ReadToEnd();
+        var startIndex = response.IndexOf(MARKER) + MARKER.Length + 2;
+        var lastIndex = response.LastIndexOf(MARKER) - 2;
+        File.Delete(execFile);
+        return response[startIndex..lastIndex];
+    }
+
+    static string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdint.h>
+
+#define XS(s)                       \
+    ((const void *)&(const struct { \
+        uint8_t len;                \
+        char data[sizeof(s) - 1];   \
+    }){(uint8_t)(sizeof(s) - 1), s})
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    const xcb_setup_t *setup = xcb_get_setup(connection);
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 1;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+    public override string? GetCParams(string parameter) =>
+        parameter.ToCParams(NeedCast, AddLenInCCall, IsXcbStr);
+}
+file class MethodDetails2 : BaseBuilder, IBuilder
+{
+    public MethodDetails2(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall) : base(categories, methodName, parameters, paramSignature)
+    {
+        AddLenInCCall = addLenInCCall;
+    }
+
+    public bool AddLenInCCall { get; }
+
+    public override string FillPassingParameter(int parameterCount)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string? GetCParams(string parameter)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GetCResult(string compiler, string method, string? parameter, string monitorFile)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Span<byte> GetDataAttribute(string parameter, string cResponse, string[] paramSignature)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GetTestMethodSignature(string[] paramsSignature)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+file abstract class BaseBuilder
+{
+    public BaseBuilder(string categories, string methodName, string[] parameters, string[] paramSignature)
+    {
+        Categories = categories;
+        MethodName = methodName;
+        Parameters = parameters;
+        ParamSignature = paramSignature;
+    }
+
+    public string Categories { get; }
+    public string MethodName { get; }
+    public string[] Parameters { get; }
+    public string[] ParamSignature { get; }
+
+    public abstract string FillPassingParameter(int parameterCount);
+    public abstract string GetTestMethodSignature(string[] paramsSignature);
+    public abstract Span<byte> GetDataAttribute(string parameter, string cResponse, string[] paramSignature);
+    public abstract string GetCResult(string compiler, string method, string? parameter, string monitorFile);
+
+    public abstract string? GetCParams(string parameter);
+
+    public void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
+    {
+        fileStream.Write(
+"""
+
+    [Theory]
+
+"""u8);
+        foreach (var testCase in Parameters)
+        {
+            var cResponse = GetCResult(compiler, MethodName, GetCParams(testCase), monitorFile);
+            fileStream.Write(GetDataAttribute(testCase, cResponse, ParamSignature));
+        }
+
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+
+    }
+}
+
+file interface IBuilder
+{
+    void WriteCsMethodContent(FileStream stream, string compiler, string monitorFile);
+}
