@@ -40,10 +40,15 @@
   </ItemGroup>
 
   <Target Name="GenerateTests" BeforeTargets="Build">
-    <Exec Command="dotnet run ToolsMethodBuilder.cs" WorkingDirectory="./Generated/" />
     <ItemGroup>
-      <Folder Include="Generated\" />
+        <GeneratedFiles Include="Generated\**\*Generated.cs" />
+    </ItemGroup>
+
+    <Exec Command="dotnet run ToolsMethodBuilder.cs" WorkingDirectory="./Generated/" 
+          Condition="@(GeneratedFiles->Count()) == 0" />
+
+    <ItemGroup>
+        <Folder Include="Generated\" />
     </ItemGroup>
   </Target>
-    
 </Project>
