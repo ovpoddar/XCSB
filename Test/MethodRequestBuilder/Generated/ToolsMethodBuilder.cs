@@ -39,7 +39,7 @@ IBuilder[] noParamMethod = [
 
 // new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
 // new("IndependentMethod", "ChangePointerControl", ["new Xcsb.Models.Acceleration(1, 1), 4"], ["Xcsb.Models.Acceleration", "ushort"], false), // special case when the params being different
-
+// 
 fileStream.Write(
 """
 // DO NOT MODIFY THIS FILE
@@ -341,29 +341,7 @@ file class MethodDetails1 : BaseBuilder, IBuilder
     public bool AddLenInCCall { get; }
     public bool IsXcbStr { get; }
     public bool NeedCast { get; }
-
-    Span<byte> GetDataAttribute(string parameter, string cResponse, string[] paramSignature)
-    {
-        var veriables = "";
-        if (!string.IsNullOrWhiteSpace(parameter))
-        {
-            foreach (var signature in paramSignature)
-            {
-                parameter = base.GetField(parameter, out var field);
-                if (field.Trim().StartsWith("new"))
-                    veriables += $"{field}, ";
-                else
-                    veriables += $"({signature}){field}, ";
-            }
-        }
-
-        return Encoding.UTF8.GetBytes(
-$$"""
-    [InlineData({{veriables}} new byte[] { {{cResponse}} })]
-
-""");
-    }
-
+    
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
@@ -410,7 +388,7 @@ int main()
         foreach (var testCase in Parameters)
         {
             var cResponse = base.GetCResult(compiler, MethodName, testCase.ToCParams(NeedCast, AddLenInCCall, IsXcbStr), monitorFile);
-            fileStream.Write(GetDataAttribute(testCase, cResponse[0], ParamSignature));
+            fileStream.Write(GetDataAttribute(testCase, cResponse, ParamSignature));
         }
     }
 }
@@ -473,34 +451,8 @@ int main()
         foreach (var testCase in Parameters)
         {
             var cResponse = base.GetCResult(compiler, MethodName, testCase.ToCParams(false, false, false), monitorFile);
-            fileStream.Write(GetDataAttribute(testCase, cResponse, ParamSignature));
+            fileStream.Write(base.GetDataAttribute(testCase, cResponse, ParamSignature));
         }
-    }
-
-    Span<byte> GetDataAttribute(string parameter, string[] cResponse, string[] paramSignature)
-    {
-        var veriables = "";
-        foreach (var signature in paramSignature)
-        {
-            parameter = base.GetField(parameter, out var field);
-            if (field.Trim() == "$")
-            {
-                veriables += $"{cResponse[0]}, ";
-            }
-            else
-            {
-                if (field.Trim().StartsWith("new"))
-                    veriables += $"{field}, ";
-                else
-                    veriables += $"({signature}){field}, ";
-            }
-        }
-
-        return Encoding.UTF8.GetBytes(
-$$"""
-    [InlineData({{veriables}} new byte[] { {{cResponse[^1]}} })]
-
-""");
     }
 
 }
@@ -534,7 +486,7 @@ file abstract class BaseBuilder
         return sb.ToString();
     }
 
-    public string GetField(string parameter, out string field)
+    public static string GetField(string parameter, out string field)
     {
         var result = "";
         var canReturn = true;
@@ -597,6 +549,7 @@ file abstract class BaseBuilder
         WriteTestCases(fileStream, Parameters, compiler, monitorFile);
 
         var methodSignature = GetTestMethodSignature(ParamSignature);
+        var hasWindowPlaceHolder = GetPlaceHolderOfWindow(Parameters[0]);
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
@@ -605,12 +558,14 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
+        {{ (hasWindowPlaceHolder != null ?"var window = _xProto.NewId();" : "" )}}
 
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
+        {{ (hasWindowPlaceHolder != null ? $"Assert.Equal(window, {hasWindowPlaceHolder});" : "" )}}
         Assert.NotNull(buffer);
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
@@ -622,6 +577,19 @@ $$"""
 
     }
 
+    public string? GetPlaceHolderOfWindow(string parameter)
+    {
+        if (parameter.IndexOf('$') == -1)
+            return null;
+        var items = parameter.Split(',');
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i].Trim().Contains('$'))
+                return "params" + i;
+        }
+        return null;
+    }
+    
     public string[] GetCResult(string compiler, string method, string? parameter, string monitorFile)
     {
         const string MARKER = "****************************************************************";
@@ -670,14 +638,38 @@ $$"""
         {
             var startPos = response.IndexOf(MARKER, currentPos, StringComparison.Ordinal);
             if (startPos == -1) break;
-            startPos += MARKER.Length + 2;
+            startPos += MARKER.Length + 1;
             var endPos = response.IndexOf(MARKER, startPos, StringComparison.Ordinal);
 
-            result.Add(response[startPos..(endPos - 2)]);
+            result.Add(response[startPos..(endPos - 1)]);
             currentPos = endPos + MARKER.Length;
 
         }
         return [.. result];
+    }
+    
+    public Span<byte> GetDataAttribute(string parameter, string[] cResponse, string[] paramSignature)
+    {
+        var veriables = "";
+        if (!string.IsNullOrWhiteSpace(parameter))
+        {
+            foreach (var signature in paramSignature)
+            {
+                parameter = GetField(parameter, out var field);
+                if (field.Trim() == "$")
+                    veriables += $"{cResponse[0]}, ";
+                else if (field.Trim().StartsWith("new"))
+                    veriables += $"{field}, ";
+                else
+                    veriables += $"({signature}){field}, ";
+            }
+        }
+
+        return Encoding.UTF8.GetBytes(
+            $$"""
+                  [InlineData({{veriables}} new byte[] { {{cResponse[^1]}} })]
+
+              """);
     }
 }
 
