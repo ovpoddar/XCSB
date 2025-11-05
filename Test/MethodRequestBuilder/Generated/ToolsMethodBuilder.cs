@@ -447,6 +447,9 @@ int main()
     xcb_window_t window = xcb_generate_id(connection);
     xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
                     screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+    
+    xcb_flush(connection);
+
     fprintf(stderr, "{{marker}}\n");
     fprintf(stderr, "%d\n", window);
     fprintf(stderr, "{{marker}}\n");
