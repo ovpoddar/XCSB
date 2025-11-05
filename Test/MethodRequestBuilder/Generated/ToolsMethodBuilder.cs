@@ -5,8 +5,11 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Text;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 // Global Set Up
+if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+    return 0;
 var compiler = GetCCompiler();
 var monitorFile = GenerateMonitorFile(compiler);
 using var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.OpenOrCreate);
