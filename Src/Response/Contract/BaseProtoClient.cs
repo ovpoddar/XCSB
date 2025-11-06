@@ -5,6 +5,7 @@ using Xcsb.Handlers;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Infrastructure.Response;
 using Xcsb.Requests;
 #if !NETSTANDARD
@@ -260,6 +261,9 @@ internal class BaseProtoClient
 
     protected ResponseProto ConfigureWindowBase(uint window, ConfigureValueMask mask, Span<uint> args)
     {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+        
         var request = new ConfigureWindowType(window, mask, args.Length);
         var requiredBuffer = request.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)

@@ -39,7 +39,7 @@
     <Folder Include="Generated\" />
   </ItemGroup>
 
-  <Target Name="GenerateTests" BeforeTargets="Build">
+  <Target Name="GenerateTests" BeforeTargets="Compile">
     <ItemGroup>
         <GeneratedFiles Include="Generated\**\*Generated.cs" />
     </ItemGroup>

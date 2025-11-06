@@ -48,7 +48,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         var request = new ChangeGCType(gc, mask, args.Length);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
-        
+
     }
 
     public void ChangeHosts(HostMode mode, Family family, Span<byte> address)
@@ -57,7 +57,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(address);
         BufferProtoOut.AddRange(new byte[address.Length.Padding()]);
-        
+
     }
 
     public void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args)
@@ -130,6 +130,8 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 
     public void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args)
     {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
         var request = new ConfigureWindowType(window, mask, args.Length);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
@@ -251,14 +253,14 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new ForceScreenSaverType(mode);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void FreeColormap(uint colormapId)
     {
         var request = new FreeColormapType(colormapId);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels)
@@ -266,28 +268,28 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(pixels));
-        
+
     }
 
     public void FreeCursor(uint cursorId)
     {
         var request = new FreeCursorType(cursorId);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void FreeGC(uint gc)
     {
         var request = new FreeGCType(gc);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void FreePixmap(uint pixmapId)
     {
         var request = new FreePixmapType(pixmapId);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void GrabButton(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
@@ -296,7 +298,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void GrabKey(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
@@ -304,7 +306,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void GrabServer()
@@ -319,7 +321,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(Encoding.BigEndianUnicode.GetBytes(text.ToString()));
         BufferProtoOut.AddRange(new byte[text.Length.Padding()]);
-        
+
     }
 
     public void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
@@ -334,28 +336,28 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new InstallColormapType(colormapId);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void KillClient(uint resource)
     {
         var request = new KillClientType(resource);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void MapSubwindows(uint window)
     {
         var request = new MapSubWindowsType(window);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void MapWindow(uint window)
     {
         var request = new MapWindowType(window);
         BufferProtoOut.Add(ref request);
-        
+
     }
 
     public void NoOperation(Span<uint> args)
@@ -501,11 +503,14 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 
     public void SetFontPath(string[] strPaths)
     {
-        var request = new SetFontPathType((ushort)strPaths.Length, strPaths.Sum(a => a.Length).AddPadding());
+        var request = new SetFontPathType((ushort)strPaths.Length, strPaths.Sum(a => a.Length + 1).AddPadding());
         BufferProtoOut.Add(ref request);
-        foreach (var path in strPaths)
+        foreach (var path in strPaths.OrderBy(a => a.Length))
+        {
+            BufferProtoOut.Add((byte)path.Length);
             BufferProtoOut.AddRange(Encoding.ASCII.GetBytes(path));
-        BufferProtoOut.AddRange(new byte[strPaths.Sum(a => a.Length).Padding()]);
+        }
+        BufferProtoOut.AddRange(new byte[strPaths.Sum(a => a.Length + 1).Padding()]);
     }
 
     public void SetInputFocus(InputFocusMode mode, uint focus, uint time)
