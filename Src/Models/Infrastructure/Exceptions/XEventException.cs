@@ -2,7 +2,7 @@
 
 namespace Xcsb.Models.Infrastructure.Exceptions;
 
-public class XEventException : Exception
+public sealed class XEventException : Exception
 {
     internal XEventException(GenericError error, string methodName = "")
         : base(GetErrorMessage(error.ResponseHeader.GetValue())) =>

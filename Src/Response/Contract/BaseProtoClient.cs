@@ -1081,7 +1081,7 @@ internal class BaseProtoClient
 #else
             MemoryMarshal.Write(scratchBuffer[..8], in request);
 #endif
-            foreach (var item in strPaths)
+            foreach (var item in strPaths.OrderBy(a => a.Length))
             {
                 scratchBuffer[writIndex++] = (byte)item.Length;
                 writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
@@ -1098,7 +1098,7 @@ internal class BaseProtoClient
 #else
             MemoryMarshal.Write(scratchBuffer[..8], in request);
 #endif
-            foreach (var item in strPaths)
+            foreach (var item in strPaths.OrderBy(a => a.Length))
             {
                 scratchBuffer[writIndex++] = (byte)item.Length;
                 writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));

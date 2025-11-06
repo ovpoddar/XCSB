@@ -22,7 +22,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails1("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
     new MethodDetails1("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
     new MethodDetails1("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
-    new MethodDetails1("IndependentMethod", "SetFontPath", [$"new string[] {{ \"built-ins\" , \"{Environment.CurrentDirectory}\" }}", "new string[] {\"build-ins\"}"], ["string[]"], true, true, true),
+    new MethodDetails1("IndependentMethod", "SetFontPath", [$"new string[] {{ \"built-ins\" , \"{Environment.CurrentDirectory}\" }}", $"new string[] {{\"{Environment.CurrentDirectory}\", \"/usr/bin\"}}", "new string[] {\"build-ins\"}"], ["string[]"], true, true, true),
     new MethodDetails1("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
     new MethodDetails1("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false),
     new MethodDetails1("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
@@ -37,7 +37,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "UnmapWindow", ["$"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $", "1, $" ], ["Xcsb.Models.Circulate", "uint"], false),
-    new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$, 1, new uint[] {100}", "$, 2, new uint[] {100}", "$, 4, new uint[] {100}", "$, 8, new uint[] {100}", "$, 32, new uint[] {0}", "$, 111, new uint[] {100, 100, 500, 500, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
+    new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$, 1, new uint[] {100}", "$, 2, new uint[] {100}", "$, 4, new uint[] {100}", "$, 8, new uint[] {100}", "$, 16, new uint[] {0}","$, 64, new uint[] {0}", "$, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
 ];
 
 // new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
@@ -344,7 +344,7 @@ file class MethodDetails1 : BaseBuilder, IBuilder
     public bool AddLenInCCall { get; }
     public bool IsXcbStr { get; }
     public bool NeedCast { get; }
-    
+
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
@@ -561,14 +561,14 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        {{ (hasWindowPlaceHolder != null ?"var window = _xProto.NewId();" : "" )}}
+        {{(hasWindowPlaceHolder != null ? "var window = _xProto.NewId();" : "")}}
 
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
-        {{ (hasWindowPlaceHolder != null ? $"Assert.Equal(window, {hasWindowPlaceHolder});" : "" )}}
+        {{(hasWindowPlaceHolder != null ? $"Assert.Equal(window, {hasWindowPlaceHolder});" : "")}}
         Assert.NotNull(buffer);
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
@@ -592,7 +592,7 @@ $$"""
         }
         return null;
     }
-    
+
     public string[] GetCResult(string compiler, string method, string? parameter, string monitorFile)
     {
         const string MARKER = "****************************************************************";
@@ -650,7 +650,7 @@ $$"""
         }
         return [.. result];
     }
-    
+
     public Span<byte> GetDataAttribute(string parameter, string[] cResponse, string[] paramSignature)
     {
         var veriables = "";

@@ -58,6 +58,7 @@ internal static class GenericHelper
 
     internal static T Padding<T>(this T pad) where T :
 #if NETSTANDARD
+// todo: rewrite this with unsafe.as
     struct
     {
         object result;
@@ -148,6 +149,21 @@ internal static class GenericHelper
                 break;
             socket.Poll(-1, SelectMode.SelectRead);
         }
+    }
+
+
+    internal static int CountFlags<T>(this T value) where T : struct, Enum
+    {
+        ulong v = Convert.ToUInt64(value);
+        int count = 0;
+
+        while (v != 0)
+        {
+            count += (int)(v & 1);
+            v >>= 1;
+        }
+
+        return count;
     }
 
 }
