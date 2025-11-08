@@ -1,0 +1,32 @@
+FROM ubuntu:24.04 AS operating-system
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y xvfb libx11-dev libxext-dev libxrender-dev libxrandr-dev libxfixes-dev libxi-dev\
+    libxcursor-dev libxtst-dev && rm -rf /var/lib/apt/lists/*
+
+FROM operating-system AS c-lang
+RUN apt-get update && apt-get install -y build-essential curl vim libxcb1-dev gcc\
+    && rm -rf /var/lib/apt/lists/*
+
+FROM c-lang AS cs-lang
+WORKDIR /temp
+RUN apt-get update && apt-get install -y zlib1g ca-certificates libc6 libgcc-s1 libicu74 liblttng-ust1 libssl3 libstdc++6 \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl --request GET -sSL --url 'https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.100-rc.2.25502.107/dotnet-sdk-10.0.100-rc.2.25502.107-linux-x64.tar.gz'\
+    --output './dotnet-sdk-10.0.100-rc.2.25502.107-linux-x64.tar.gz'
+RUN mkdir -p /usr/share/dotnet && tar zxf dotnet-sdk-10.0.100-rc.2.25502.107-linux-x64.tar.gz -C /usr/share/dotnet\
+    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+RUN rm -rf /temp
+
+FROM cs-lang AS content
+WORKDIR /workspace
+COPY . .
+WORKDIR /workspace/Src/
+RUN dotnet build -c Release
+
+WORKDIR /workspace/Test/MethodRequestBuilder
+COPY main.c main.c
+ENV DISPLAY=:0
+ENV SCREEN_RESOLUTION=1280x720x24
+CMD ["xvfb-run", "-s", "-screen 0 1280x720x24", "bash"]
+
+# RUN dotnet build
