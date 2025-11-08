@@ -687,14 +687,15 @@ $$"""
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = execFile,
+                FileName = "xvfb-run",
+                Arguments = $"-a env LD_PRELOAD={monitorFile} {execFile}",
                 UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
+                CreateNoWindow = true
             }
         };
-        process.StartInfo.EnvironmentVariables["LD_PRELOAD"] = monitorFile;
         process.Start();
+        process.WaitForExit();
         var response = process.StandardError.ReadToEnd();
         File.Delete(execFile);
         var result = new List<string>();
