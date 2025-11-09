@@ -24,7 +24,6 @@ WORKDIR /workspace/Src/
 RUN dotnet build -c Release
 
 WORKDIR /workspace/Test/MethodRequestBuilder
-COPY main.c main.c
 ENV DISPLAY=:0
 ENV SCREEN_RESOLUTION=1280x720x24
 CMD ["xvfb-run", "-s", "-screen 0 1280x720x24", "bash"]

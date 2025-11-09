@@ -691,6 +691,7 @@ $$"""
                 Arguments = $"-a env LD_PRELOAD={monitorFile} {execFile}",
                 UseShellExecute = false,
                 RedirectStandardError = true,
+                RedirectStandardOutput = true,
                 CreateNoWindow = true
             }
         };
