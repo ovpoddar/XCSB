@@ -682,7 +682,7 @@ $$"""
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
-
+#if false // todo add some kind of flag pass down from env
         process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -698,6 +698,25 @@ $$"""
         };
         process.Start();
         var response = process.StandardOutput.ReadToEnd();
+#else
+        process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = execFile,
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                CreateNoWindow = true
+            }
+        };
+        process.StartInfo.Environment["LD_PRELOAD"] = monitorFile;
+
+        process.Start();
+        var response = process.StandardError.ReadToEnd();
+#endif
+
         File.Delete(execFile);
         var result = new List<string>();
         var currentPos = 0;
