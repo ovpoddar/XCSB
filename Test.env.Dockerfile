@@ -11,10 +11,13 @@ FROM c-lang AS cs-lang
 WORKDIR /temp
 RUN apt-get update && apt-get install -y zlib1g ca-certificates libc6 libgcc-s1 libicu74 liblttng-ust1 libssl3 libstdc++6 \
     && rm -rf /var/lib/apt/lists/*
+RUN curl --request GET -sSL --url 'https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.306/dotnet-sdk-9.0.306-linux-x64.tar.gz'\
+    --output 'dotnet-sdk-9.0.306-linux-x64.tar.gz'
+RUN mkdir -p /usr/share/dotnet && tar zxf dotnet-sdk-9.0.306-linux-x64.tar.gz -C /usr/share/dotnet \
+    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 RUN curl --request GET -sSL --url 'https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.100-rc.2.25502.107/dotnet-sdk-10.0.100-rc.2.25502.107-linux-x64.tar.gz'\
     --output './dotnet-sdk-10.0.100-rc.2.25502.107-linux-x64.tar.gz'
-RUN mkdir -p /usr/share/dotnet && tar zxf dotnet-sdk-10.0.100-rc.2.25502.107-linux-x64.tar.gz -C /usr/share/dotnet\
-    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+RUN tar zxf dotnet-sdk-10.0.100-rc.2.25502.107-linux-x64.tar.gz -C /usr/share/dotnet
 RUN rm -rf /temp
 
 FROM cs-lang AS content
@@ -26,6 +29,9 @@ RUN dotnet build -c Release
 WORKDIR /workspace/Test/MethodRequestBuilder
 ENV DISPLAY=:0
 ENV SCREEN_RESOLUTION=1280x720x24
-CMD ["xvfb-run", "-s", "-screen 0 1280x720x24", "bash"]
+ENV TEST_RESULTS_DIR=/workspace/TestResults
 
-# RUN dotnet build
+RUN mkdir -p ${TEST_RESULTS_DIR}
+
+RUN dotnet build
+CMD ["bash", "-c", "xvfb-run -s '-screen 0 1280x720x24' dotnet test --logger 'trx;LogFileName=test_results.trx' --results-directory $TEST_RESULTS_DIR"]

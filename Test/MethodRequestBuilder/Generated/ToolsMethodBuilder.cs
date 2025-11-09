@@ -692,12 +692,12 @@ $$"""
                 UseShellExecute = false,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
+                RedirectStandardInput = true,
                 CreateNoWindow = true
             }
         };
         process.Start();
-        process.WaitForExit();
-        var response = process.StandardError.ReadToEnd();
+        var response = process.StandardOutput.ReadToEnd();
         File.Delete(execFile);
         var result = new List<string>();
         var currentPos = 0;
