@@ -27,6 +27,9 @@ internal class BaseProtoClient
 
     protected ResponseProto ChangeWindowAttributesBase(uint window, ValueMask mask, Span<uint> args)
     {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         var requiredBuffer = request.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)

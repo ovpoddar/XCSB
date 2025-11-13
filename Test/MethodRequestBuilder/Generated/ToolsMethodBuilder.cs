@@ -38,9 +38,15 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $", "1, $" ], ["Xcsb.Models.Circulate", "uint"], false),
     new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$, 1, new uint[] {100}", "$, 2, new uint[] {100}", "$, 4, new uint[] {100}", "$, 8, new uint[] {100}", "$, 16, new uint[] {0}","$, 64, new uint[] {0}", "$, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
+    new MethodDetails2("DependentOnWindow", "ChangeWindowAttributes", ["$, 1, new uint[] {167772}", "$, 2, new uint[] {16777215}", "$, 4, new uint[] {167772}", "$, 8, new uint[] {16777215}", "$, 16, new uint[] {1}", "$, 32, new uint[] {1}", "$, 64, new uint[] {167772}", "$, 128, new uint[] {167772}", "$, 256, new uint[] {167772}", "$, 512, new uint[] {0}", "$, 1024, new uint[] {1}", "$, 2048, new uint[] {32769}", "$, 4096, new uint[] {1}", "$, 8192, new uint[] {167772}", "$, 16384, new uint[] {167772}"], ["uint", "Xcsb.Masks.ValueMask", "uint[]"], false),
+    //new MethodDetails2("DependentOnWindow", "GrabButton", [], [], false);
+    //new MethodDetails2("DependentOnWindow", "UngrabButton", [], [], false);
+    //new MethodDetails2("DependentOnWindow", "GrabKey", [], [], false);
+    //new MethodDetails2("DependentOnWindow", "UngrabKey", [], [], false);
+    //new MethodDetails2("DependentOnWindow", "SetInputFocus", [], [], false);
+    //new MethodDetails2("DependentOnWindow", "KillClient", [], [], false);
 ];
 //CreateWindow
-//ChangeWindowAttributes
 //ReparentWindow
 //ChangeProperty
 //DeleteProperty
@@ -48,13 +54,8 @@ IBuilder[] noParamMethod = [
 //SetSelectionOwner
 //ConvertSelection
 //SendEvent
-//GrabButton
-//UngrabButton
 //ChangeActivePointerGrab
-//GrabKey
-//UngrabKey
 //WarpPointer
-//SetInputFocus
 //OpenFont
 //CloseFont
 //CreatePixmap
@@ -92,9 +93,6 @@ IBuilder[] noParamMethod = [
 //FreeCursor
 //RecolorCursor
 //ChangeKeyboardMapping
-//ChangePointerControl
-//KillClient
-//NoOperation
 //PolyText8
 //PolyText16
 
@@ -447,16 +445,10 @@ int main()
 """;
     }
 
-
-    public override void WriteTestCases(FileStream fileStream, string[] parameters, string compiler, string monitorFile)
-    {
-        foreach (var testCase in Parameters)
-        {
-            var cResponse = base.GetCResult(compiler, MethodName, testCase.ToCParams(NeedCast, AddLenInCCall, IsXcbStr), monitorFile);
-            fileStream.Write(GetDataAttribute(testCase, cResponse, ParamSignature));
-        }
-    }
+    public override string GetCParams(string data) =>
+        data.ToCParams(NeedCast, AddLenInCCall, IsXcbStr);
 }
+
 file class MethodDetails2 : BaseBuilder, IBuilder
 {
     public MethodDetails2(string categories, string methodName, string[] parameters, string[] paramSignature,
@@ -511,15 +503,8 @@ int main()
 """;
     }
 
-    public override void WriteTestCases(FileStream fileStream, string[] parameters, string compiler, string monitorFile)
-    {
-        foreach (var testCase in Parameters)
-        {
-            var cResponse = base.GetCResult(compiler, MethodName, testCase.ToCParams(false, false, false), monitorFile);
-            fileStream.Write(base.GetDataAttribute(testCase, cResponse, ParamSignature));
-        }
-    }
-
+    public override string GetCParams(string data) =>
+        data.ToCParams(false, false, false);
 }
 
 file abstract class BaseBuilder
@@ -601,7 +586,7 @@ file abstract class BaseBuilder
     }
     public abstract string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker);
 
-    public abstract void WriteTestCases(FileStream fileStream, string[] parameters, string compiler, string monitorFile);
+    public abstract string? GetCParams(string data);
 
     public void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
     {
@@ -611,7 +596,11 @@ file abstract class BaseBuilder
     [Theory]
 
 """u8);
-        WriteTestCases(fileStream, Parameters, compiler, monitorFile);
+        foreach (var testCase in Parameters)
+        {
+            var cResponse = base.GetCResult(compiler, MethodName, GetCParams(testCase), monitorFile);
+            fileStream.Write(base.GetDataAttribute(testCase, cResponse, ParamSignature));
+        }
 
         var methodSignature = GetTestMethodSignature(ParamSignature);
         var hasWindowPlaceHolder = GetPlaceHolderOfWindow(Parameters[0]);
@@ -682,7 +671,7 @@ $$"""
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
-#if false // todo add some kind of flag pass down from env
+#if true // todo add some kind of flag pass down from env
         process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -753,7 +742,7 @@ $$"""
 
         return Encoding.UTF8.GetBytes(
             $$"""
-                  [InlineData({{veriables}} new byte[] { {{cResponse[^1]}} })]
+                  [InlineData({{variables}} new byte[] { {{cResponse[^1]}} })]
 
               """);
     }

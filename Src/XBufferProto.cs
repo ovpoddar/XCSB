@@ -105,6 +105,9 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 
     public void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args)
     {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
