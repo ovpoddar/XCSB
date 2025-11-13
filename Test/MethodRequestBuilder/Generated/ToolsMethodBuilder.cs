@@ -445,7 +445,7 @@ int main()
 """;
     }
 
-    public override string GetCParams(string data) =>
+    public override string? GetCParams(string? data) =>
         data.ToCParams(NeedCast, AddLenInCCall, IsXcbStr);
 }
 
@@ -503,7 +503,7 @@ int main()
 """;
     }
 
-    public override string GetCParams(string data) =>
+    public override string? GetCParams(string? data) =>
         data.ToCParams(false, false, false);
 }
 
@@ -598,8 +598,8 @@ file abstract class BaseBuilder
 """u8);
         foreach (var testCase in Parameters)
         {
-            var cResponse = base.GetCResult(compiler, MethodName, GetCParams(testCase), monitorFile);
-            fileStream.Write(base.GetDataAttribute(testCase, cResponse, ParamSignature));
+            var cResponse = GetCResult(compiler, MethodName, GetCParams(testCase), monitorFile);
+            fileStream.Write(GetDataAttribute(testCase, cResponse, ParamSignature));
         }
 
         var methodSignature = GetTestMethodSignature(ParamSignature);
@@ -671,7 +671,7 @@ $$"""
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
-#if true // todo add some kind of flag pass down from env
+#if false // todo add some kind of flag pass down from env
         process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -742,7 +742,7 @@ $$"""
 
         return Encoding.UTF8.GetBytes(
             $$"""
-                  [InlineData({{variables}} new byte[] { {{cResponse[^1]}} })]
+                  [InlineData({{veriables}} new byte[] { {{cResponse[^1]}} })]
 
               """);
     }
