@@ -303,9 +303,9 @@ file static class StringHelper
             else if (field.EndsWith('$'))
                 sb.Append(", window");
             else if (field.Contains("false"))
-                sb.Append("0");
+                sb.Append(", 0");
             else if (field.Contains("true"))
-                sb.Append("1");
+                sb.Append(", 1");
             else if (field.StartsWith('"'))
                 sb.Append(", XS(").Append(field).Append(')');
             else
