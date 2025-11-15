@@ -42,9 +42,9 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "GrabButton", ["false, $, 12, 1, 0, 0, 0, 5, 32768", "true, $, 12, 1, 0, 0, 0, 0, 1"], ["bool", "uint", "ushort", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode", "uint", "uint", "Xcsb.Models.Button", "Xcsb.Masks.ModifierMask"], false),
     new MethodDetails2("DependentOnWindow", "UngrabButton", ["0, $, 0", "5, $, 32768"], ["Xcsb.Models.Button", "uint", "Xcsb.Masks.ModifierMask"], false),
     new MethodDetails2("DependentOnWindow", "GrabKey", ["false, $, 1, 0, 0, 1", "true, $, 32768, 255, 0, 1"], ["bool", "uint", "Xcsb.Masks.ModifierMask", "byte", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode"], false),
-    //new MethodDetails2("DependentOnWindow", "UngrabKey", [], [], false);
-    //new MethodDetails2("DependentOnWindow", "SetInputFocus", [], [], false);
-    //new MethodDetails2("DependentOnWindow", "KillClient", [], [], false);
+    new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $, 0", "255, $, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
+    new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $, 0", "2, $, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
+    new MethodDetails2("DependentOnWindow", "KillClient", ["$"], ["uint"], false)
 ];
 //CreateWindow
 //ReparentWindow
