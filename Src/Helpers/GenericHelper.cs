@@ -154,8 +154,8 @@ internal static class GenericHelper
 
     internal static int CountFlags<T>(this T value) where T : struct, Enum
     {
-        ulong v = Convert.ToUInt64(value);
-        int count = 0;
+        var v = Convert.ToUInt64(value);
+        var count = 0;
 
         while (v != 0)
         {

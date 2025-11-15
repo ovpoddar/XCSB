@@ -104,7 +104,7 @@ xcsb.FreeGCUnchecked(cursor_gc);
 var isRunning = true;
 
 var windowDetails = xcsb.GetWindowAttributes(window);
-if (windowDetails.Value.Class != ClassResponseType.InputOutput)
+if (windowDetails.Class != ClassResponseType.InputOutput)
     return;
 var windowGeometry = xcsb.GetGeometry(window);
 if (windowGeometry is { X: 38, Y: 59 })
@@ -113,7 +113,7 @@ if (windowGeometry is { X: 38, Y: 59 })
         [500, 500]);
 
 var query = xcsb.QueryTree(window);
-if (query.Value.Root != xcsb.HandshakeSuccessResponseBody.Screens[0].Root)
+if (query.Root != xcsb.HandshakeSuccessResponseBody.Screens[0].Root)
     return;
 
 

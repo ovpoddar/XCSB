@@ -20,10 +20,10 @@ x.CreateWindowUnchecked(screen.RootDepth!.DepthValue,
 x.MapWindowUnchecked(win);
 
 var alloc_cookie = x.AllocColor(screen.DefaultColormap, 65535, 0, 0); // Red
-Console.WriteLine("Allocated red color, Pixel value: {0}", alloc_cookie.Value.Pixel);
+Console.WriteLine("Allocated red color, Pixel value: {0}", alloc_cookie.Pixel);
 
 // Free the color
-x.FreeColorsUnchecked(screen.DefaultColormap, 0, [alloc_cookie.Value.Pixel]);
+x.FreeColorsUnchecked(screen.DefaultColormap, 0, [alloc_cookie.Pixel]);
 Console.WriteLine("Color freed successfully");
 
 var grabResult = x.GrabPointer(false,
@@ -32,7 +32,7 @@ var grabResult = x.GrabPointer(false,
     GrabMode.Asynchronous, GrabMode.Asynchronous,
     0, 0, 0);
 
-Console.WriteLine($"Grab status {grabResult.Value.Status}");
+Console.WriteLine($"Grab status {grabResult.Status}");
 
 x.UngrabPointerUnchecked(0);
 Console.WriteLine("Ungrab pointer completed.");
@@ -52,23 +52,23 @@ var atoms = new ATOM[3];
 for (var i = 0; i < colors.Length; i++)
 {
     var reply = x.InternAtom(false, propNames[i]);
-    atoms[i] = reply.Value.Atom;
+    atoms[i] = reply.Atom;
     x.ChangePropertyUnchecked<byte>(PropertyMode.Replace, win, atoms[i], ATOM.String, Encoding.UTF8.GetBytes(colors[i]));
 }
 
 foreach (var atom in atoms)
 {
     var details = x.GetAtomName(atom);
-    Console.WriteLine($"{atom}: {details.Value.Name}");
+    Console.WriteLine($"{atom}: {details.Name}");
 }
 
 
 for (var i = 0; i < 6; i++)
 {
     var reply = x.GetProperty(false, win, atoms[0], ATOM.String, 0, 32);
-    if (reply.Value.Data.Length > 0)
+    if (reply.Data.Length > 0)
     {
-        x.ChangeWindowAttributesUnchecked(win, ValueMask.BackgroundPixel, [(GetNameColor(reply.Value.Data, screen))]);
+        x.ChangeWindowAttributesUnchecked(win, ValueMask.BackgroundPixel, [(GetNameColor(reply.Data, screen))]);
         x.ClearAreaUnchecked(false, win, 0, 0, 0, 0);
     }
 

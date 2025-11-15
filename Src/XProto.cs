@@ -1,20 +1,14 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using Xcsb.Response.Replies.Internals;
-using Xcsb.Response.Contract;
-using Xcsb.Handlers;
-using Xcsb.Response.Replies;
-using Xcsb.Models.Infrastructure.Exceptions;
-using Xcsb.Requests;
-using Xcsb.Helpers;
-using Xcsb.Models;
 using Xcsb.Masks;
-using Xcsb.Response.Event;
+using Xcsb.Models;
 using Xcsb.Models.Handshake;
+using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Infrastructure.Response;
-using System.Diagnostics;
+using Xcsb.Response.Contract;
+using Xcsb.Response.Event;
+using Xcsb.Response.Replies;
+using Xcsb.Response.Replies.Internals;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -43,396 +37,374 @@ internal class XProto : BaseProtoClient, IXProto
     }
 
 
-    public AllocColorReply? AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
+    public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
     {
         var cookie = AllocColorBase(colorMap, red, green, blue);
         var (result, error) = ProtoIn.ReceivedResponse<AllocColorReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : result!.Value;
     }
 
-    public AllocColorCellsReply? AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
+    public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
     {
         var cookie = AllocColorCellsBase(contiguous, colorMap, colors, planes);
         var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorCellsResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new AllocColorCellsReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : new AllocColorCellsReply(result);
     }
 
-    public AllocColorPlanesReply? AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
+    public AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
         ushort greens, ushort blues)
     {
         var cookie = AllocColorPlanesBase(contiguous, colorMap, colors, reds, greens, blues);
         var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorPlanesResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new AllocColorPlanesReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : new AllocColorPlanesReply(result);
     }
 
-    public AllocNamedColorReply? AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name)
+    public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name)
     {
         var cookie = AllocNamedColorBase(colorMap, name);
         var (result, error) = ProtoIn.ReceivedResponse<AllocNamedColorReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : result!.Value;
     }
 
 
-    public GetAtomNameReply? GetAtomName(ATOM atom)
+    public GetAtomNameReply GetAtomName(ATOM atom)
     {
         var cookie = GetAtomNameBase(atom);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetAtomNameResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new GetAtomNameReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : new GetAtomNameReply(result);
     }
 
-    public InternAtomReply? InternAtom(bool onlyIfExist, string atomName)
+    public InternAtomReply InternAtom(bool onlyIfExist, string atomName)
     {
         var cookie = InternAtomBase(onlyIfExist, atomName);
         var (result, error) = ProtoIn.ReceivedResponse<InternAtomReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : result!.Value;
     }
 
-    public GetFontPathReply? GetFontPath()
+    public GetFontPathReply GetFontPath()
     {
         var cookie = GetFontPathBase();
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetFontPathResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new GetFontPathReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : new GetFontPathReply(result);
     }
 
-    public GetGeometryReply? GetGeometry(uint drawable)
+    public GetGeometryReply GetGeometry(uint drawable)
     {
         var cookie = GetGeometryBase(drawable);
         var (result, error) = ProtoIn.ReceivedResponse<GetGeometryReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : result!.Value;
     }
 
-    public GetImageReply? GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
+    public GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
         uint planeMask)
     {
         var cookie = GetImageBase(format, drawable, x, y, width, height, planeMask);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetImageResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new GetImageReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : new GetImageReply(result);
     }
 
-    public GetInputFocusReply? GetInputFocus()
+    public GetInputFocusReply GetInputFocus()
     {
         var cookie = GetInputFocusBase();
         var (result, error) = ProtoIn.ReceivedResponse<GetInputFocusReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue
+            ? throw new XEventException(error.Value) 
+            : result!.Value;
     }
 
-    public GetKeyboardControlReply? GetKeyboardControl()
+    public GetKeyboardControlReply GetKeyboardControl()
     {
         var cookie = GetKeyboardControlBase();
         var (result, error) = ProtoIn.ReceivedResponse<GetKeyboardControlResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new GetKeyboardControlReply(result!.Value);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetKeyboardControlReply(result!.Value);
     }
 
-    public GetKeyboardMappingReply? GetKeyboardMapping(byte firstKeycode, byte count)
+    public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count)
     {
         var cookie = GetKeyboardMappingBase(firstKeycode, count);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetKeyboardMappingResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new GetKeyboardMappingReply(result, count);
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : new GetKeyboardMappingReply(result, count);
     }
 
-    public GetModifierMappingReply? GetModifierMapping()
+    public GetModifierMappingReply GetModifierMapping()
     {
         var cookie = GetModifierMappingBase();
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetModifierMappingResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new GetModifierMappingReply(result);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetModifierMappingReply(result);
     }
 
-    public GetMotionEventsReply? GetMotionEvents(uint window, uint startTime, uint endTime)
+    public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime)
     {
         var cookie = GetMotionEventsBase(window, startTime, endTime);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetMotionEventsResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new GetMotionEventsReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : new GetMotionEventsReply(result);
     }
 
-    public GetPointerControlReply? GetPointerControl()
+    public GetPointerControlReply GetPointerControl()
     {
         var cookie = GetPointerControlBase();
         var (result, error) = ProtoIn.ReceivedResponse<GetPointerControlReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public GetPointerMappingReply? GetPointerMapping()
+    public GetPointerMappingReply GetPointerMapping()
     {
         var cookie = GetPointerMappingBase();
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetPointerMappingResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new GetPointerMappingReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : new GetPointerMappingReply(result);
     }
 
-    public GetPropertyReply? GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
+    public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
     {
         var cookie = GetPropertyBase(delete, window, property, type, offset, length);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetPropertyResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new GetPropertyReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : new GetPropertyReply(result);
     }
 
-    public GetScreenSaverReply? GetScreenSaver()
+    public GetScreenSaverReply GetScreenSaver()
     {
         var cookie = GetScreenSaverBase();
         var (result, error) = ProtoIn.ReceivedResponse<GetScreenSaverReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue
+            ? throw new XEventException(error.Value) 
+            : result!.Value;
     }
 
-    public GetSelectionOwnerReply? GetSelectionOwner(ATOM atom)
+    public GetSelectionOwnerReply GetSelectionOwner(ATOM atom)
     {
         var cookie = GetSelectionOwnerBase(atom);
         var (result, error) = ProtoIn.ReceivedResponse<GetSelectionOwnerReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public GetWindowAttributesReply? GetWindowAttributes(uint window)
+    public GetWindowAttributesReply GetWindowAttributes(uint window)
     {
         var cookie = GetWindowAttributesBase(window);
         var (result, error) = ProtoIn.ReceivedResponse<GetWindowAttributesReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public ListExtensionsReply? ListExtensions()
+    public ListExtensionsReply ListExtensions()
     {
         var cookie = ListExtensionsBase();
         var (result, error) = ProtoIn.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new ListExtensionsReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : new ListExtensionsReply(result);
     }
 
-    public ListFontsReply? ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
+    public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
     {
         var cookie = ListFontsBase(pattern, maxNames);
         var (result, error) = ProtoIn.ReceivedResponseSpan<ListFontsResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new ListFontsReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : new ListFontsReply(result);
     }
 
-    public ListFontsWithInfoReply[]? ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
+    public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
     {
         var cookie = ListFontsWithInfoBase(pattan, maxNames);
         var (result, error) = ProtoIn.ReceivedResponseArray(cookie.Id, maxNames);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : result;
     }
 
-    public ListHostsReply? ListHosts()
+    public ListHostsReply ListHosts()
     {
         var cookie = ListHostsBase();
         var (result, error) = ProtoIn.ReceivedResponseSpan<ListHostsResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new ListHostsReply(result);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new ListHostsReply(result);
     }
 
-    public ListInstalledColormapsReply? ListInstalledColormaps(uint window)
+    public ListInstalledColormapsReply ListInstalledColormaps(uint window)
     {
         var cookie = ListInstalledColormapsBase(window);
         var (result, error) = ProtoIn.ReceivedResponseSpan<ListInstalledColormapsResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new ListInstalledColormapsReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : new ListInstalledColormapsReply(result);
     }
 
-    public ListPropertiesReply? ListProperties(uint window)
+    public ListPropertiesReply ListProperties(uint window)
     {
         var cookie = ListPropertiesBase(window);
         var (result, error) = ProtoIn.ReceivedResponseSpan<ListPropertiesResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new ListPropertiesReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : new ListPropertiesReply(result);
     }
 
-    public LookupColorReply? LookupColor(uint colorMap, ReadOnlySpan<byte> name)
+    public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name)
     {
         var cookie = LookupColorBase(colorMap, name);
         var (result, error) = ProtoIn.ReceivedResponse<LookupColorReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public QueryBestSizeReply? QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height)
+    public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height)
     {
         var cookie = QueryBestSizeBase(shape, drawable, width, height);
         var (result, error) = ProtoIn.ReceivedResponse<QueryBestSizeReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public QueryColorsReply? QueryColors(uint colorMap, Span<uint> pixels)
+    public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels)
     {
         var cookie = QueryColorsBase(colorMap, pixels);
         var (result, error) = ProtoIn.ReceivedResponseSpan<QueryColorsResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new QueryColorsReply(result);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new QueryColorsReply(result);
     }
 
-    public QueryExtensionReply? QueryExtension(ReadOnlySpan<byte> name)
+    public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name)
     {
         if (name.Length > ushort.MaxValue)
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
         var cookie = QueryExtensionBase(name);
         var (result, error) = ProtoIn.ReceivedResponse<QueryExtensionReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public QueryFontReply? QueryFont(uint fontId)
+    public QueryFontReply QueryFont(uint fontId)
     {
         var cookie = QueryFontBase(fontId);
         var (result, error) = ProtoIn.ReceivedResponseSpan<QueryFontResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new QueryFontReply(result);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new QueryFontReply(result);
     }
 
-    public QueryKeymapReply? QueryKeymap()
+    public QueryKeymapReply QueryKeymap()
     {
         var cookie = QueryKeymapBase();
         var (result, error) = ProtoIn.ReceivedResponse<QueryKeymapResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new QueryKeymapReply(result!.Value);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new QueryKeymapReply(result!.Value);
     }
 
-    public QueryPointerReply? QueryPointer(uint window)
+    public QueryPointerReply QueryPointer(uint window)
     {
         var cookie = QueryPointerBase(window);
         var (result, error) = ProtoIn.ReceivedResponse<QueryPointerReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public QueryTextExtentsReply? QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery)
+    public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery)
     {
         var cookie = QueryTextExtentsBase(font, stringForQuery);
         var (result, error) = ProtoIn.ReceivedResponse<QueryTextExtentsReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public QueryTreeReply? QueryTree(uint window)
+    public QueryTreeReply QueryTree(uint window)
     {
         var cookie = QueryTreeBase(window);
         var (result, error) = ProtoIn.ReceivedResponseSpan<QueryTreeResponse>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error!.Value);
-
-        return result == null ? null : new QueryTreeReply(result);
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : new QueryTreeReply(result);
     }
 
 
-    public GrabKeyboardReply? GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+    public GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
         var cookie = GrabKeyboardBase(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
         var (result, error) = ProtoIn.ReceivedResponse<GrabKeyboardReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public GrabPointerReply? GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+    public GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp)
     {
         var cookie = GrabPointerBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
         var (result, error) = ProtoIn.ReceivedResponse<GrabPointerReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public SetModifierMappingReply? SetModifierMapping(Span<ulong> keycodes)
+    public SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes)
     {
         var cookie = SetModifierMappingBase(keycodes);
         var (result, error) = ProtoIn.ReceivedResponse<SetModifierMappingReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value) 
+            : result!.Value;
     }
 
-    public SetPointerMappingReply? SetPointerMapping(Span<byte> maps)
+    public SetPointerMappingReply SetPointerMapping(Span<byte> maps)
     {
         var cookie = SetPointerMappingBase(maps);
         var (result, error) = ProtoIn.ReceivedResponse<SetPointerMappingReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
-    public TranslateCoordinatesReply? TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
+    public TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
         ushort srcY)
     {
         var cookie = TranslateCoordinatesBase(srcWindow, destinationWindow, srcX, srcY);
         var (result, error) = ProtoIn.ReceivedResponse<TranslateCoordinatesReply>(cookie.Id);
-        if (error.HasValue)
-            throw new XEventException(error.Value);
-        return result;
+        return error.HasValue 
+            ? throw new XEventException(error.Value)
+            : result!.Value;
     }
 
 

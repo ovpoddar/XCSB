@@ -67,14 +67,14 @@ x.CreateGCUnchecked(gc, window1, GCMask.Foreground | GCMask.Background, [screen.
 // Track current focused window
 
 var resultGetInputFocus = x.GetInputFocus();
-var currentFocus = resultGetInputFocus.Value.Focus;
+var currentFocus = resultGetInputFocus.Focus;
 
 
 var resultTranslateCoordinates = x.TranslateCoordinates(
     window1,
      window2,
     100, 100);
-Console.WriteLine($"10, 10 trnsalate to  {resultTranslateCoordinates.Value.DestinationX}, {resultTranslateCoordinates.Value.DestinationY}"); ;
+Console.WriteLine($"10, 10 trnsalate to  {resultTranslateCoordinates.DestinationX}, {resultTranslateCoordinates.DestinationY}"); ;
 // Event loop to demonstrate focus changes
 var isRunning = true;
 while (isRunning)

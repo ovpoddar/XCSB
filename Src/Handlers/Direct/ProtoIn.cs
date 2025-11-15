@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Xml.Linq;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure.Exceptions;
@@ -32,20 +30,18 @@ internal class ProtoIn : ProtoBase
 
     public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply
     {
-        var attempts = 3;
-        while (attempts > 0)
+        while (true)
         {
             if (sequence > Sequence)
             {
                 if (Socket.Available == 0)
                     Socket.Poll(timeOut, SelectMode.SelectRead);
                 FlushSocket();
-                attempts--;
                 continue;
             }
 
             if (!ReplyBuffer.Remove(sequence, out var reply))
-                return (null, null);
+                throw new Exception("Should not happen.");
 
             var response = reply.AsSpan().AsStruct<T>();
             return response.Verify(sequence)
@@ -53,8 +49,6 @@ internal class ProtoIn : ProtoBase
                 : (null, reply.AsSpan().ToStruct<GenericError>());
 
         }
-
-        return (null, null);
     }
 
     //todo: update the code so only XEvent gets return;
@@ -118,15 +112,14 @@ internal class ProtoIn : ProtoBase
         Socket.ReceiveExact(result[32..result.Length]);
 
 
-        if (ReplyBuffer.TryRemove(content.Sequence, out var response))
-        {
-            replySize = result.Length + response.Length;
-            using var scratchBuffer = new ArrayPoolUsing<byte>(replySize);
-            response.CopyTo(scratchBuffer);
-            result[0..result.Length].CopyTo(scratchBuffer[response.Length..]);
-            return scratchBuffer;
-        }
-        return result;
+        if (!ReplyBuffer.TryRemove(content.Sequence, out var response)) 
+            return result;
+        
+        replySize = result.Length + response.Length;
+        using var scratchBuffer = new ArrayPoolUsing<byte>(replySize);
+        response.CopyTo(scratchBuffer);
+        result[0..result.Length].CopyTo(scratchBuffer[response.Length..]);
+        return scratchBuffer;
     }
 
 
@@ -147,31 +140,26 @@ internal class ProtoIn : ProtoBase
             throw new XEventException(error, name);
     }
 
-    public (ListFontsWithInfoReply[]?, GenericError?) ReceivedResponseArray(int sequence, int maxNames, int timeOut = 1000)
+    public (ListFontsWithInfoReply[], GenericError?) ReceivedResponseArray(int sequence, int maxNames, int timeOut = 1000)
     {
-        var attempts = 3;
-        while (attempts > 0)
+        while (true)
         {
             if (sequence > Sequence)
             {
                 if (Socket.Available == 0)
                     Socket.Poll(timeOut, SelectMode.SelectRead);
                 FlushSocket();
-                attempts--;
                 continue;
             }
 
             if (!ReplyBuffer.Remove(sequence, out var reply))
-                return (null, null);
+                throw new Exception("Should not happen.");
 
             var response = reply.AsSpan().AsStruct<ListFontsWithInfoResponse>();
             return response.Verify(sequence)
                 ? (GetListFontsReply(reply, sequence, maxNames), null)
-                : (null, reply.AsSpan().ToStruct<GenericError>()); ;
-
+                : ([], reply.AsSpan().ToStruct<GenericError>());
         }
-
-        return (null, null);
     }
 
 
