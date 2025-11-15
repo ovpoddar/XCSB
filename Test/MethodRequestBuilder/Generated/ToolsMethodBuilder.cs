@@ -39,9 +39,9 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $", "1, $" ], ["Xcsb.Models.Circulate", "uint"], false),
     new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$, 1, new uint[] {100}", "$, 2, new uint[] {100}", "$, 4, new uint[] {100}", "$, 8, new uint[] {100}", "$, 16, new uint[] {0}","$, 64, new uint[] {0}", "$, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
     new MethodDetails2("DependentOnWindow", "ChangeWindowAttributes", ["$, 1, new uint[] {167772}", "$, 2, new uint[] {16777215}", "$, 4, new uint[] {167772}", "$, 8, new uint[] {16777215}", "$, 16, new uint[] {1}", "$, 32, new uint[] {1}", "$, 64, new uint[] {167772}", "$, 128, new uint[] {167772}", "$, 256, new uint[] {167772}", "$, 512, new uint[] {0}", "$, 1024, new uint[] {1}", "$, 2048, new uint[] {32769}", "$, 4096, new uint[] {1}", "$, 8192, new uint[] {167772}", "$, 16384, new uint[] {167772}"], ["uint", "Xcsb.Masks.ValueMask", "uint[]"], false),
-    new MethodDetails2("DependentOnWindow", "GrabButton", ["false, $, 12, 1, 0, 0, 0, 5, 32768"], ["bool", "uint", "ushort", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode", "uint", "uint", "Xcsb.Models.Button", "Xcsb.Masks.ModifierMask"], false);
-    //new MethodDetails2("DependentOnWindow", "UngrabButton", [], [], false);
-    //new MethodDetails2("DependentOnWindow", "GrabKey", [], [], false);
+    new MethodDetails2("DependentOnWindow", "GrabButton", ["false, $, 12, 1, 0, 0, 0, 5, 32768", "true, $, 12, 1, 0, 0, 0, 0, 1"], ["bool", "uint", "ushort", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode", "uint", "uint", "Xcsb.Models.Button", "Xcsb.Masks.ModifierMask"], false),
+    new MethodDetails2("DependentOnWindow", "UngrabButton", ["0, $, 0", "5, $, 32768"], ["Xcsb.Models.Button", "uint", "Xcsb.Masks.ModifierMask"], false),
+    new MethodDetails2("DependentOnWindow", "GrabKey", ["false, $, 1, 0, 0, 1", "true, $, 32768, 255, 0, 1"], ["bool", "uint", "Xcsb.Masks.ModifierMask", "byte", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode"], false),
     //new MethodDetails2("DependentOnWindow", "UngrabKey", [], [], false);
     //new MethodDetails2("DependentOnWindow", "SetInputFocus", [], [], false);
     //new MethodDetails2("DependentOnWindow", "KillClient", [], [], false);
