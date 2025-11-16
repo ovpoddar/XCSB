@@ -41,8 +41,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = AllocColorBase(colorMap, red, green, blue);
         var (result, error) = ProtoIn.ReceivedResponse<AllocColorReply>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : result!.Value;
     }
 
@@ -50,8 +50,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = AllocColorCellsBase(contiguous, colorMap, colors, planes);
         var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorCellsResponse>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : new AllocColorCellsReply(result);
     }
 
@@ -60,8 +60,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = AllocColorPlanesBase(contiguous, colorMap, colors, reds, greens, blues);
         var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorPlanesResponse>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : new AllocColorPlanesReply(result);
     }
 
@@ -69,8 +69,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = AllocNamedColorBase(colorMap, name);
         var (result, error) = ProtoIn.ReceivedResponse<AllocNamedColorReply>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : result!.Value;
     }
 
@@ -79,8 +79,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetAtomNameBase(atom);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetAtomNameResponse>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : new GetAtomNameReply(result);
     }
 
@@ -88,8 +88,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = InternAtomBase(onlyIfExist, atomName);
         var (result, error) = ProtoIn.ReceivedResponse<InternAtomReply>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : result!.Value;
     }
 
@@ -97,7 +97,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetFontPathBase();
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetFontPathResponse>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetFontPathReply(result);
     }
@@ -106,8 +106,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetGeometryBase(drawable);
         var (result, error) = ProtoIn.ReceivedResponse<GetGeometryReply>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : result!.Value;
     }
 
@@ -116,7 +116,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetImageBase(format, drawable, x, y, width, height, planeMask);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetImageResponse>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetImageReply(result);
     }
@@ -126,7 +126,7 @@ internal class XProto : BaseProtoClient, IXProto
         var cookie = GetInputFocusBase();
         var (result, error) = ProtoIn.ReceivedResponse<GetInputFocusReply>(cookie.Id);
         return error.HasValue
-            ? throw new XEventException(error.Value) 
+            ? throw new XEventException(error.Value)
             : result!.Value;
     }
 
@@ -143,8 +143,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetKeyboardMappingBase(firstKeycode, count);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetKeyboardMappingResponse>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : new GetKeyboardMappingReply(result, count);
     }
 
@@ -161,8 +161,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetMotionEventsBase(window, startTime, endTime);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetMotionEventsResponse>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : new GetMotionEventsReply(result);
     }
 
@@ -170,7 +170,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetPointerControlBase();
         var (result, error) = ProtoIn.ReceivedResponse<GetPointerControlReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -179,7 +179,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetPointerMappingBase();
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetPointerMappingResponse>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetPointerMappingReply(result);
     }
@@ -188,7 +188,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetPropertyBase(delete, window, property, type, offset, length);
         var (result, error) = ProtoIn.ReceivedResponseSpan<GetPropertyResponse>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetPropertyReply(result);
     }
@@ -198,7 +198,7 @@ internal class XProto : BaseProtoClient, IXProto
         var cookie = GetScreenSaverBase();
         var (result, error) = ProtoIn.ReceivedResponse<GetScreenSaverReply>(cookie.Id);
         return error.HasValue
-            ? throw new XEventException(error.Value) 
+            ? throw new XEventException(error.Value)
             : result!.Value;
     }
 
@@ -206,7 +206,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetSelectionOwnerBase(atom);
         var (result, error) = ProtoIn.ReceivedResponse<GetSelectionOwnerReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -215,7 +215,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GetWindowAttributesBase(window);
         var (result, error) = ProtoIn.ReceivedResponse<GetWindowAttributesReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -224,8 +224,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = ListExtensionsBase();
         var (result, error) = ProtoIn.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : new ListExtensionsReply(result);
     }
 
@@ -233,7 +233,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = ListFontsBase(pattern, maxNames);
         var (result, error) = ProtoIn.ReceivedResponseSpan<ListFontsResponse>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListFontsReply(result);
     }
@@ -242,8 +242,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = ListFontsWithInfoBase(pattan, maxNames);
         var (result, error) = ProtoIn.ReceivedResponseArray(cookie.Id, maxNames);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : result;
     }
 
@@ -260,7 +260,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = ListInstalledColormapsBase(window);
         var (result, error) = ProtoIn.ReceivedResponseSpan<ListInstalledColormapsResponse>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListInstalledColormapsReply(result);
     }
@@ -269,8 +269,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = ListPropertiesBase(window);
         var (result, error) = ProtoIn.ReceivedResponseSpan<ListPropertiesResponse>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : new ListPropertiesReply(result);
     }
 
@@ -278,7 +278,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = LookupColorBase(colorMap, name);
         var (result, error) = ProtoIn.ReceivedResponse<LookupColorReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -287,7 +287,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = QueryBestSizeBase(shape, drawable, width, height);
         var (result, error) = ProtoIn.ReceivedResponse<QueryBestSizeReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -307,7 +307,7 @@ internal class XProto : BaseProtoClient, IXProto
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
         var cookie = QueryExtensionBase(name);
         var (result, error) = ProtoIn.ReceivedResponse<QueryExtensionReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -334,7 +334,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = QueryPointerBase(window);
         var (result, error) = ProtoIn.ReceivedResponse<QueryPointerReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -352,7 +352,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = QueryTreeBase(window);
         var (result, error) = ProtoIn.ReceivedResponseSpan<QueryTreeResponse>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryTreeReply(result);
     }
@@ -363,7 +363,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = GrabKeyboardBase(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
         var (result, error) = ProtoIn.ReceivedResponse<GrabKeyboardReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -374,7 +374,7 @@ internal class XProto : BaseProtoClient, IXProto
         var cookie = GrabPointerBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
         var (result, error) = ProtoIn.ReceivedResponse<GrabPointerReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -383,8 +383,8 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = SetModifierMappingBase(keycodes);
         var (result, error) = ProtoIn.ReceivedResponse<SetModifierMappingReply>(cookie.Id);
-        return error.HasValue 
-            ? throw new XEventException(error.Value) 
+        return error.HasValue
+            ? throw new XEventException(error.Value)
             : result!.Value;
     }
 
@@ -402,7 +402,7 @@ internal class XProto : BaseProtoClient, IXProto
     {
         var cookie = TranslateCoordinatesBase(srcWindow, destinationWindow, srcX, srcY);
         var (result, error) = ProtoIn.ReceivedResponse<TranslateCoordinatesReply>(cookie.Id);
-        return error.HasValue 
+        return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
     }
@@ -441,8 +441,7 @@ internal class XProto : BaseProtoClient, IXProto
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
         ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
-        this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask,
-            args);
+        CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args);
 
     public ResponseProto ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args) =>
         ChangeWindowAttributesBase(window, mask, args);
@@ -1100,8 +1099,8 @@ internal class XProto : BaseProtoClient, IXProto
     public void CreateCursorUnchecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
         ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
-        var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
-            backBlue, x, y);
+        var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed,
+            backGreen, backBlue, x, y);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
