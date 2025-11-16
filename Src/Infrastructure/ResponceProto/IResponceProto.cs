@@ -2,8 +2,7 @@
 using Xcsb.Response.Replies;
 
 namespace Xcsb.Infrastructure;
-// todo: nullable context may not applied for eyery context which may change
-// so for now i m happy with it
+
 public interface IResponseProto
 {
     AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue);
