@@ -32,22 +32,19 @@ internal static class GenericHelper
 
     internal static T AddPadding<T>(this T pad) where T :
 #if NETSTANDARD
-    struct
+        unmanaged
     {
-        object result;
-        if (typeof(T) == typeof(byte))
-            result = (byte)((byte)(object)pad + (4 - ((byte)(object)pad & 3) & 3));
-        else if (typeof(T) == typeof(ushort))
-            result = (ushort)((ushort)(object)pad + (4 - ((ushort)(object)pad & 3) & 3));
-        else if (typeof(T) == typeof(short))
-            result = (short)((short)(object)pad + (4 - ((short)(object)pad & 3) & 3));
-        else if (typeof(T) == typeof(int))
-            result = (int)(object)pad + (4 - ((int)(object)pad & 3) & 3);
-        else if (typeof(T) == typeof(uint))
-            result = (uint)(object)pad + (4 - ((uint)(object)pad & 3) & 3);
-        else
-            throw new ArgumentException($"Padding not implemented for type {typeof(T)}");
-        return (T)result;
+        var value = Marshal.SizeOf<T>() switch
+        {
+            1 => Unsafe.As<T, byte>(ref pad),
+            2 => Unsafe.As<T, ushort>(ref pad),
+            4 => Unsafe.As<T, int>(ref pad),
+            _ => throw new ArgumentException($"Padding not implemented for type {nameof(T)}")
+        };
+
+        T result = default;
+        Unsafe.As<T, int>(ref result) = value + ((4 - (value & 3)) & 3);
+        return result;
 #else
         INumber<T>
     {
@@ -58,25 +55,45 @@ internal static class GenericHelper
 
     internal static T Padding<T>(this T pad) where T :
 #if NETSTANDARD
-// todo: rewrite this with unsafe.as
-    struct
+        unmanaged
     {
-        object result;
-
         if (typeof(T) == typeof(byte))
-            result = (byte)((4 - ((byte)(object)pad & 3)) & 3);
-        else if (typeof(T) == typeof(ushort))
-            result = (ushort)((4 - ((ushort)(object)pad & 3)) & 3);
-        else if (typeof(T) == typeof(short))
-            result = (short)((4 - ((short)(object)pad & 3)) & 3);
-        else if (typeof(T) == typeof(int))
-            result = (4 - ((int)(object)pad & 3)) & 3;
-        else if (typeof(T) == typeof(uint))
-            result = (4 - ((uint)(object)pad & 3)) & 3;
-        else
-            throw new ArgumentException($"Padding not implemented for type {typeof(T)}");
+        {
+            ref var padByte = ref Unsafe.As<T, byte>(ref pad);
+            var result = (byte)(padByte + ((4 - (padByte & 3u)) & 3u));
+            return Unsafe.As<byte, T>(ref result);
+        }
 
-        return (T)result;
+        if (typeof(T) == typeof(ushort))
+        {
+            ref var padUShort = ref Unsafe.As<T, ushort>(ref pad);
+            var result = (ushort)(padUShort + ((4 - (padUShort & 3u)) & 3u));
+            return Unsafe.As<ushort, T>(ref result);
+        }
+
+        if (typeof(T) == typeof(short))
+        {
+            ref var padShort = ref Unsafe.As<T, short>(ref pad);
+            var result = (short)(padShort + ((4 - (padShort & 3u)) & 3u));
+            return Unsafe.As<short, T>(ref result);
+        }
+
+        if (typeof(T) == typeof(int))
+        {
+            ref var padInt = ref Unsafe.As<T, int>(ref pad);
+            var result = padInt + (int)((4 - (padInt & 3u)) & 3u);
+            return Unsafe.As<int, T>(ref result);
+        }
+
+        if (typeof(T) == typeof(uint))
+        {
+            ref var padUInt = ref Unsafe.As<T, uint>(ref pad);
+            var result = padUInt + ((4 - (padUInt & 3u)) & 3u);
+            return Unsafe.As<uint, T>(ref result);
+        }
+
+        throw new ArgumentException($"Padding not implemented for type {nameof(T)}");
+
 #else
         INumber<T>
     {
@@ -165,5 +182,4 @@ internal static class GenericHelper
 
         return count;
     }
-
 }

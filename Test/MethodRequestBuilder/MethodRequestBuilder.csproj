@@ -21,16 +21,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <Using Include="Xunit"/>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Src\Xcsb.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <Compile Remove="**\Tools*.cs" />
   </ItemGroup>
