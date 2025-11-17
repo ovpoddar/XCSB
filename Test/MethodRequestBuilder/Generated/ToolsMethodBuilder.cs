@@ -46,55 +46,56 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $, 0", "2, $, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "KillClient", ["$"], ["uint"], false)
 ];
-//CreateWindow
-//ReparentWindow
-//ChangeProperty
-//DeleteProperty
-//RotateProperties
-//SetSelectionOwner
-//ConvertSelection
-//SendEvent
-//ChangeActivePointerGrab
-//WarpPointer
-//OpenFont
-//CloseFont
-//CreatePixmap
-//FreePixmap
-//CreateGC
-//ChangeGC
-//CopyGC
-//SetDashes
-//SetClipRectangles
-//FreeGC
-//ClearArea
-//CopyArea
-//CopyPlane
-//PolyPoint
-//PolyLine
-//PolySegment
-//PolyRectangle
-//PolyArc
-//FillPoly
-//PolyFillRectangle
-//PolyFillArc
-//PutImage
-//ImageText8
-//ImageText16
-//CreateColormap
-//FreeColormap
-//CopyColormapAndFree
-//InstallColormap
-//UninstallColormap
-//FreeColors
-//StoreColors
-//StoreNamedColor
-//CreateCursor
-//CreateGlyphCursor
-//FreeCursor
-//RecolorCursor
-//ChangeKeyboardMapping
-//PolyText8
-//PolyText16
+//CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+//CreatePixmap                      (byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
+//CreateGC                          (uint gc, uint drawable, GCMask mask, Span<uint> args)
+//CreateColormap                    (ColormapAlloc alloc, uint colormapId, uint window, uint visual)
+//CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
+//CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+
+//ReparentWindow                    (uint window, uint parent, short x, short y)
+//ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+//DeleteProperty                    (uint window, ATOM atom)
+//RotateProperties                  (uint window, ushort delta, Span<ATOM> properties)
+//SetSelectionOwner                 (uint owner, ATOM atom, uint timestamp)
+//ConvertSelection                  (uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
+//SendEvent                         (bool propagate, uint destination, uint eventMask, XEvent evnt)
+//ChangeActivePointerGrab           (uint cursor, uint time, ushort mask)
+//WarpPointer                       (uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destinationX, short destinationY)
+//OpenFont                          (string fontName, uint fontId)
+//CloseFont                         (uint fontId)
+//FreePixmap                        (uint pixmapId)
+//ChangeGC                          (uint gc, GCMask mask, Span<uint> args)
+//CopyGC                            (uint srcGc, uint dstGc, GCMask mask)
+//SetDashes                         (uint gc, ushort dashOffset, Span<byte> dashes)
+//SetClipRectangles                 (ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles)
+//FreeGC                            (uint gc)
+//ClearArea                         (bool exposures, uint window, short x, short y, ushort width, ushort height)
+//CopyArea                          (uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX, ushort destinationY, ushort width, ushort height)
+//CopyPlane                         (uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
+//PolyPoint                         (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+//PolyLine                          (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+//PolySegment                       (uint drawable, uint gc, Span<Segment> segments)
+//PolyRectangle                     (uint drawable, uint gc, Span<Rectangle> rectangles)
+//PolyArc                           (uint drawable, uint gc, Span<Arc> arcs)
+//FillPoly                          (uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
+//PolyFillRectangle                 (uint drawable, uint gc, Span<Rectangle> rectangles)
+//PolyFillArc                       (uint drawable, uint gc, Span<Arc> arcs)
+//PutImage                          (ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y, byte leftPad, byte depth, Span<byte> data)
+//ImageText8                        (uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
+//ImageText16                       (uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
+//FreeColormap                      (uint colormapId)
+//CopyColormapAndFree               (uint colormapId, uint srcColormapId)
+//InstallColormap                   (uint colormapId)
+//UninstallColormap                 (uint colormapId)
+//FreeColors                        (uint colormapId, uint planeMask, Span<uint> pixels)
+//StoreColors                       (uint colormapId, Span<ColorItem> item)
+//StoreNamedColor                   (ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
+//FreeCursor                        (uint cursorId)
+//RecolorCursor                     (uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+//ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
+//PolyText8                         (uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+//PolyText16                        (uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
 
 
 
@@ -745,10 +746,10 @@ $$"""
         }
 
         return Encoding.UTF8.GetBytes(
-            $$"""
-                  [InlineData({{veriables}} new byte[] { {{cResponse[^1]}} })]
+$$"""
+    [InlineData({{veriables}} new byte[] { {{cResponse[^1]}} })]
 
-              """);
+""");
     }
 }
 
