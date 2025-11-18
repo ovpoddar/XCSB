@@ -399,16 +399,8 @@ file class MethodDetails1 : BaseBuilder, IBuilder
 {
     public MethodDetails1(string categories, string methodName, string[] parameters, string[] paramSignature,
         bool addLenInCCall, bool isXcbStr = false, bool needCast = false) : base(categories, methodName, parameters,
-        paramSignature)
-    {
-        AddLenInCCall = addLenInCCall;
-        IsXcbStr = isXcbStr;
-        NeedCast = needCast;
-    }
-
-    public bool AddLenInCCall { get; }
-    public bool IsXcbStr { get; }
-    public bool NeedCast { get; }
+        paramSignature, addLenInCCall, isXcbStr, needCast)
+    { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
@@ -449,20 +441,13 @@ int main()
 }
 """;
     }
-
-    public override string? GetCParams(string? data) =>
-        data.ToCParams(NeedCast, AddLenInCCall, IsXcbStr);
 }
 
 file class MethodDetails2 : BaseBuilder, IBuilder
 {
     public MethodDetails2(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall) : base(categories, methodName, parameters, paramSignature)
-    {
-        AddLenInCCall = addLenInCCall;
-    }
-
-    public bool AddLenInCCall { get; }
+        bool addLenInCCall) : base(categories, methodName, parameters, paramSignature, addLenInCCall, false, false)
+    { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
@@ -507,25 +492,89 @@ int main()
 }
 """;
     }
+}
 
-    public override string? GetCParams(string? data) =>
-        data.ToCParams(false, false, false);
+file class MethodDetails3 : BaseBuilder
+{
+    public MethodDetails3(string categories, string methodName, string[] parameters, string[] paramSignature)
+        : base(categories, methodName, parameters, paramSignature, false, false, false)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+       $$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    const xcb_setup_t *setup = xcb_get_setup(connection);
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+
+    xcb_window_t window = xcb_generate_id(connection);
+    xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+    
+    xcb_flush(connection);
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", screen->root);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", window);
+    fprintf(stderr, "{{marker}}\n");
+    
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 1;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+    public override void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
+    {
+        throw new Exception("handle the situation.");
+    }
 }
 
 file abstract class BaseBuilder
 {
-    public BaseBuilder(string categories, string methodName, string[] parameters, string[] paramSignature)
+    public BaseBuilder(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, bool isXcbStr, bool needCast)
     {
         Categories = categories;
         MethodName = methodName;
         Parameters = parameters;
         ParamSignature = paramSignature;
+        AddLenInCCall = addLenInCCall;
+        IsXcbStr = isXcbStr;
+        NeedCast = needCast;
     }
 
     public string Categories { get; }
     public string MethodName { get; }
     public string[] Parameters { get; }
     public string[] ParamSignature { get; }
+    public bool AddLenInCCall { get; }
+    public bool IsXcbStr { get; }
+    public bool NeedCast { get; }
 
     public static string FillPassingParameter(int parameterCount)
     {
@@ -591,9 +640,7 @@ file abstract class BaseBuilder
     }
     public abstract string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker);
 
-    public abstract string? GetCParams(string data);
-
-    public void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
+    public virtual void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
     {
         fileStream.Write(
 """
@@ -603,7 +650,8 @@ file abstract class BaseBuilder
 """u8);
         foreach (var testCase in Parameters)
         {
-            var cResponse = GetCResult(compiler, MethodName, GetCParams(testCase), monitorFile);
+            var cResponse = GetCResult(compiler, MethodName, testCase.ToCParams(NeedCast, AddLenInCCall, IsXcbStr),
+                monitorFile);
             fileStream.Write(GetDataAttribute(testCase, cResponse, ParamSignature));
         }
 
