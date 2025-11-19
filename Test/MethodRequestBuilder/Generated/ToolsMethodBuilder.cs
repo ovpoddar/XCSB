@@ -44,15 +44,16 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "GrabKey", ["false, $, 1, 0, 0, 1", "true, $, 32768, 255, 0, 1"], ["bool", "uint", "Xcsb.Masks.ModifierMask", "byte", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode"], false),
     new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $, 0", "255, $, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $, 0", "2, $, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
-    new MethodDetails2("DependentOnWindow", "KillClient", ["$"], ["uint"], false)
+    new MethodDetails2("DependentOnWindow", "KillClient", ["$"], ["uint"], false),
+    new MethodDetails3("SpecialMethod", "NoOperation"),
 ];
-//CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
 //CreatePixmap                      (byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
 //CreateGC                          (uint gc, uint drawable, GCMask mask, Span<uint> args)
 //CreateColormap                    (ColormapAlloc alloc, uint colormapId, uint window, uint visual)
 //CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
 //CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
 
+//CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
 //ReparentWindow                    (uint window, uint parent, short x, short y)
 //ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
 //DeleteProperty                    (uint window, ATOM atom)
@@ -98,12 +99,9 @@ IBuilder[] noParamMethod = [
 //PolyText16                        (uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
 
 
-
-
-
-// new("IndependentMethod", "NoOperation", [""], []), // this is a special case official method, doesnt take any parameters but their is a 4n in x11 protocol
 // new("IndependentMethod", "ChangePointerControl", ["new Xcsb.Models.Acceleration(1, 1), 4"], ["Xcsb.Models.Acceleration", "ushort"], false), // special case when the params being different
-// 
+
+
 fileStream.Write(
 """
 // DO NOT MODIFY THIS FILE
@@ -395,7 +393,7 @@ file static class StringHelper
     }
 }
 
-file class MethodDetails1 : BaseBuilder, IBuilder
+file class MethodDetails1 : BaseBuilder
 {
     public MethodDetails1(string categories, string methodName, string[] parameters, string[] paramSignature,
         bool addLenInCCall, bool isXcbStr = false, bool needCast = false) : base(categories, methodName, parameters,
@@ -443,7 +441,7 @@ int main()
     }
 }
 
-file class MethodDetails2 : BaseBuilder, IBuilder
+file class MethodDetails2 : BaseBuilder
 {
     public MethodDetails2(string categories, string methodName, string[] parameters, string[] paramSignature,
         bool addLenInCCall) : base(categories, methodName, parameters, paramSignature, addLenInCCall, false, false)
@@ -540,15 +538,16 @@ $$"""
 
 file class MethodDetails3 : BaseBuilder
 {
-    public MethodDetails3(string categories, string methodName, string[] parameters, string[] paramSignature)
-        : base(categories, methodName, parameters, paramSignature, false, false, false)
+    public MethodDetails3(string categories, string methodName) : base(categories, methodName, ["new uint[] {}"], ["uint[]"], false, false,
+        false)
     { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
+
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
-       $$"""
+$$"""
 #include <xcb/xcb.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -561,25 +560,9 @@ int main()
     {
         return -1;
     }
-    const xcb_setup_t *setup = xcb_get_setup(connection);
-    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-
-    xcb_window_t window = xcb_generate_id(connection);
-    xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
-    
     xcb_flush(connection);
-
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", screen->root);
-    fprintf(stderr, "{{marker}}\n");
-
-    fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", window);
-    fprintf(stderr, "{{marker}}\n");
-    
-    fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_void_cookie_t cookie = {{functionName}}(connection);
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -591,13 +574,9 @@ int main()
 }
 """;
     }
-
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
-    {
-    }
 }
 
-file abstract class BaseBuilder
+file abstract class BaseBuilder : IBuilder
 {
     public BaseBuilder(string categories, string methodName, string[] parameters, string[] paramSignature,
         bool addLenInCCall, bool isXcbStr, bool needCast)
@@ -619,7 +598,7 @@ file abstract class BaseBuilder
     public bool IsXcbStr { get; }
     public bool NeedCast { get; }
 
-    public static string FillPassingParameter(int parameterCount)
+    protected static string FillPassingParameter(int parameterCount)
     {
         if (parameterCount == 0)
             return string.Empty;
@@ -633,7 +612,8 @@ file abstract class BaseBuilder
         return sb.ToString();
     }
 
-    public static string GetField(string parameter, out string field)
+    //todo: remove the string shit.
+    private static string GetField(string parameter, out string field)
     {
         var result = "";
         var canReturn = true;
@@ -667,7 +647,7 @@ file abstract class BaseBuilder
 
     }
 
-    public static string GetTestMethodSignature(string[] paramsSignature)
+    private static string GetTestMethodSignature(string[] paramsSignature)
     {
         if (paramsSignature.Length == 0) return string.Empty;
 
@@ -716,7 +696,30 @@ $$"""
         {
             var cResponse = GetCResult(compiler, MethodName, testCase.ToCParams(NeedCast, AddLenInCCall, IsXcbStr),
                 monitorFile);
-            fileStream.Write(GetDataAttribute(testCase, cResponse, paramSignature));
+
+            var veriables = "";
+            if (!string.IsNullOrWhiteSpace(testCase))
+            {
+                var tempStr = testCase;
+                var dynamicIndex = 0;
+                foreach (var signature in paramSignature)
+                {
+                    tempStr = GetField(tempStr, out var field);
+                    if (field.Trim() == "$")
+                        veriables += $"{cResponse[dynamicIndex++]}, ";
+                    else if (field.Trim().StartsWith("new"))
+                        veriables += $"{field}, ";
+                    else
+                        veriables += $"({signature}){field}, ";
+                }
+            }
+
+            fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{veriables}}new byte[] {{{cResponse[^1]}} })]
+
+"""));
+
         }
     }
 
@@ -761,7 +764,7 @@ $$"""
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
-#if true // todo add some kind of flag pass down from env
+#if false // todo add some kind of flag pass down from env
         process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -813,29 +816,6 @@ $$"""
         return [.. result];
     }
 
-    private static Span<byte> GetDataAttribute(string parameter, string[] cResponse, string[] paramSignature)
-    {
-        var veriables = "";
-        if (!string.IsNullOrWhiteSpace(parameter))
-        {
-            foreach (var signature in paramSignature)
-            {
-                parameter = GetField(parameter, out var field);
-                if (field.Trim() == "$")
-                    veriables += $"{cResponse[0]}, ";
-                else if (field.Trim().StartsWith("new"))
-                    veriables += $"{field}, ";
-                else
-                    veriables += $"({signature}){field}, ";
-            }
-        }
-
-        return Encoding.UTF8.GetBytes(
-$$"""
-    [InlineData({{veriables}} new byte[] { {{cResponse[^1]}} })]
-
-""");
-    }
 }
 
 file interface IBuilder
