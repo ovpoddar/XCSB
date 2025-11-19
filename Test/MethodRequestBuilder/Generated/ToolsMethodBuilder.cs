@@ -492,6 +492,50 @@ int main()
 }
 """;
     }
+
+
+    private static string GetPlaceHolderOfWindow(string parameter)
+    {
+        if (!parameter.Contains('$'))
+            throw new UnreachableException();
+        var items = parameter.Split(',');
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i].Trim().Contains('$'))
+                return "params" + i;
+        }
+        throw new UnreachableException();
+    }
+
+
+    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
+    {
+        var hasWindowPlaceHolder = GetPlaceHolderOfWindow(Parameters[0]);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var window = _xProto.NewId();
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.Equal(window, {{hasWindowPlaceHolder}});
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
 }
 
 file class MethodDetails3 : BaseBuilder
@@ -548,9 +592,8 @@ int main()
 """;
     }
 
-    public override void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
+    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
     {
-        throw new Exception("handle the situation.");
     }
 }
 
@@ -640,23 +683,8 @@ file abstract class BaseBuilder
     }
     public abstract string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker);
 
-    public virtual void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
+    public virtual void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
     {
-        fileStream.Write(
-"""
-
-    [Theory]
-
-"""u8);
-        foreach (var testCase in Parameters)
-        {
-            var cResponse = GetCResult(compiler, MethodName, testCase.ToCParams(NeedCast, AddLenInCCall, IsXcbStr),
-                monitorFile);
-            fileStream.Write(GetDataAttribute(testCase, cResponse, ParamSignature));
-        }
-
-        var methodSignature = GetTestMethodSignature(ParamSignature);
-        var hasWindowPlaceHolder = GetPlaceHolderOfWindow(Parameters[0]);
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
@@ -665,14 +693,12 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        {{(hasWindowPlaceHolder != null ? "var window = _xProto.NewId();" : "")}}
 
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
-        {{(hasWindowPlaceHolder != null ? $"Assert.Equal(window, {hasWindowPlaceHolder});" : "")}}
         Assert.NotNull(buffer);
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
@@ -681,20 +707,31 @@ $$"""
     }
 
 """));
-
     }
 
-    public string? GetPlaceHolderOfWindow(string parameter)
+    public virtual void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters,
+        string MethodName, string[] paramSignature)
     {
-        if (parameter.IndexOf('$') == -1)
-            return null;
-        var items = parameter.Split(',');
-        for (int i = 0; i < items.Length; i++)
+        foreach (var testCase in parameters)
         {
-            if (items[i].Trim().Contains('$'))
-                return "params" + i;
+            var cResponse = GetCResult(compiler, MethodName, testCase.ToCParams(NeedCast, AddLenInCCall, IsXcbStr),
+                monitorFile);
+            fileStream.Write(GetDataAttribute(testCase, cResponse, paramSignature));
         }
-        return null;
+    }
+
+    public void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
+    {
+        fileStream.Write(
+"""
+
+    [Theory]
+
+"""u8);
+
+        WriteCsTestCases(fileStream, compiler, monitorFile, Parameters, MethodName, ParamSignature);
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        WriteCsMethodBody(fileStream, methodSignature);
     }
 
     public string[] GetCResult(string compiler, string method, string? parameter, string monitorFile)
@@ -776,7 +813,7 @@ $$"""
         return [.. result];
     }
 
-    public Span<byte> GetDataAttribute(string parameter, string[] cResponse, string[] paramSignature)
+    private static Span<byte> GetDataAttribute(string parameter, string[] cResponse, string[] paramSignature)
     {
         var veriables = "";
         if (!string.IsNullOrWhiteSpace(parameter))
