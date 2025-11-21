@@ -29,22 +29,22 @@ IBuilder[] noParamMethod = [
     new MethodDetails1("IndependentMethod", "ForceScreenSaver", ["1", "0"], ["Xcsb.Models.ForceScreenSaverMode"], false),
     new MethodDetails1("IndependentMethod", "SetAccessControl", ["1", "0"], ["Xcsb.Models.AccessControlMode"], false),
     new MethodDetails1("IndependentMethod", "ChangeHosts", ["0, 4, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true),
-    new MethodDetails2("DependentOnWindow", "DestroyWindow", ["$"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "DestroySubwindows", ["$"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "ChangeSaveSet", ["1, $", "0, $"], ["Xcsb.Models.ChangeSaveSetMode", "uint"], false),
-    new MethodDetails2("DependentOnWindow", "MapWindow", ["$"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "MapSubwindows", ["$"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "UnmapWindow", ["$"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $", "1, $" ], ["Xcsb.Models.Circulate", "uint"], false),
-    new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$, 1, new uint[] {100}", "$, 2, new uint[] {100}", "$, 4, new uint[] {100}", "$, 8, new uint[] {100}", "$, 16, new uint[] {0}","$, 64, new uint[] {0}", "$, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
-    new MethodDetails2("DependentOnWindow", "ChangeWindowAttributes", ["$, 1, new uint[] {167772}", "$, 2, new uint[] {16777215}", "$, 4, new uint[] {167772}", "$, 8, new uint[] {16777215}", "$, 16, new uint[] {1}", "$, 32, new uint[] {1}", "$, 64, new uint[] {167772}", "$, 128, new uint[] {167772}", "$, 256, new uint[] {167772}", "$, 512, new uint[] {0}", "$, 1024, new uint[] {1}", "$, 2048, new uint[] {32769}", "$, 4096, new uint[] {1}", "$, 8192, new uint[] {167772}", "$, 16384, new uint[] {167772}"], ["uint", "Xcsb.Masks.ValueMask", "uint[]"], false),
-    new MethodDetails2("DependentOnWindow", "GrabButton", ["false, $, 12, 1, 0, 0, 0, 5, 32768", "true, $, 12, 1, 0, 0, 0, 0, 1"], ["bool", "uint", "ushort", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode", "uint", "uint", "Xcsb.Models.Button", "Xcsb.Masks.ModifierMask"], false),
-    new MethodDetails2("DependentOnWindow", "UngrabButton", ["0, $, 0", "5, $, 32768"], ["Xcsb.Models.Button", "uint", "Xcsb.Masks.ModifierMask"], false),
-    new MethodDetails2("DependentOnWindow", "GrabKey", ["false, $, 1, 0, 0, 1", "true, $, 32768, 255, 0, 1"], ["bool", "uint", "Xcsb.Masks.ModifierMask", "byte", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode"], false),
-    new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $, 0", "255, $, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
-    new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $, 0", "2, $, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
-    new MethodDetails2("DependentOnWindow", "KillClient", ["$"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "DestroyWindow", ["$0"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "DestroySubwindows", ["$0"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "ChangeSaveSet", ["1, $0", "0, $0"], ["Xcsb.Models.ChangeSaveSetMode", "uint"], false),
+    new MethodDetails2("DependentOnWindow", "MapWindow", ["$0"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "MapSubwindows", ["$0"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "UnmapWindow", ["$0"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$0"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $0", "1, $0" ], ["Xcsb.Models.Circulate", "uint"], false),
+    new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$0, 1, new uint[] {100}", "$0, 2, new uint[] {100}", "$0, 4, new uint[] {100}", "$0, 8, new uint[] {100}", "$0, 16, new uint[] {0}", "$0, 64, new uint[] {0}", "$0, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
+    new MethodDetails2("DependentOnWindow", "ChangeWindowAttributes", ["$0, 1, new uint[] {167772}", "$0, 2, new uint[] {16777215}", "$0, 4, new uint[] {167772}", "$0, 8, new uint[] {16777215}", "$0, 16, new uint[] {1}", "$0, 32, new uint[] {1}", "$0, 64, new uint[] {167772}", "$0, 128, new uint[] {167772}", "$0, 256, new uint[] {167772}", "$0, 512, new uint[] {0}", "$0, 1024, new uint[] {1}", "$0, 2048, new uint[] {32769}", "$0, 4096, new uint[] {1}", "$0, 8192, new uint[] {167772}", "$0, 16384, new uint[] {167772}"], ["uint", "Xcsb.Masks.ValueMask", "uint[]"], false),
+    new MethodDetails2("DependentOnWindow", "GrabButton", ["false, $0, 12, 1, 0, 0, 0, 5, 32768", "true, $0, 12, 1, 0, 0, 0, 0, 1"], ["bool", "uint", "ushort", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode", "uint", "uint", "Xcsb.Models.Button", "Xcsb.Masks.ModifierMask"], false),
+    new MethodDetails2("DependentOnWindow", "UngrabButton", ["0, $0, 0", "5, $0, 32768"], ["Xcsb.Models.Button", "uint", "Xcsb.Masks.ModifierMask"], false),
+    new MethodDetails2("DependentOnWindow", "GrabKey", ["false, $0, 1, 0, 0, 1", "true, $0, 32768, 255, 0, 1"], ["bool", "uint", "Xcsb.Masks.ModifierMask", "byte", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode"], false),
+    new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
+    new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
+    new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
     new MethodDetails3("SpecialMethod", "NoOperation"),
 ];
 //CreatePixmap                      (byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
@@ -299,7 +299,7 @@ file static class StringHelper
                     .Append(')')
                     .Append(f[fieldStart..]);
             }
-            else if (field.EndsWith('$'))
+            else if (field.Contains('$'))
                 sb.Append(", window");
             else if (field.Contains("false"))
                 sb.Append(", 0");
@@ -538,8 +538,8 @@ $$"""
 
 file class MethodDetails3 : BaseBuilder
 {
-    public MethodDetails3(string categories, string methodName) : base(categories, methodName, ["new uint[] {}"], ["uint[]"], false, false,
-        false)
+    public MethodDetails3(string categories, string methodName) : base(categories, methodName, ["new uint[] {}"],
+        ["uint[]"], false, false, false)
     { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
@@ -701,12 +701,11 @@ $$"""
             if (!string.IsNullOrWhiteSpace(testCase))
             {
                 var tempStr = testCase;
-                var dynamicIndex = 0;
                 foreach (var signature in paramSignature)
                 {
                     tempStr = GetField(tempStr, out var field);
-                    if (field.Trim() == "$")
-                        veriables += $"{cResponse[dynamicIndex++]}, ";
+                    if (field.Trim().Contains('$'))
+                        veriables += $"{cResponse[int.Parse(field.Trim().Replace("$", ""))]}, ";
                     else if (field.Trim().StartsWith("new"))
                         veriables += $"{field}, ";
                     else
