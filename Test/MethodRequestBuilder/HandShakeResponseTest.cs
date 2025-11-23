@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Xcsb;
@@ -93,6 +96,145 @@ public class HandShakeResponseTest
         return 0;
     }
     """;
+    private const string FormatResponseCBody =
+    """
+    #include <xcb/xcb.h>
+    #include <stdio.h>
+
+    int main()
+    {
+        xcb_connection_t *connection = xcb_connect(NULL, NULL);
+        if (xcb_connection_has_error(connection))
+        {
+            fprintf(stderr, "Cannot open display\n");
+            return 1;
+        }
+        const xcb_setup_t *setup = xcb_get_setup(connection);
+        xcb_format_iterator_t format_iter = xcb_setup_pixmap_formats_iterator(setup);
+        xcb_format_t *format;
+        printf("[\n");
+        while (format_iter.rem != 0)
+        {
+            format = format_iter.data;
+            printf("\t{\n");
+            printf("\t\t\"depth\": %d,\n", format->depth);
+            printf("\t\t\"bits_per_pixel\": %d,\n", format->bits_per_pixel);
+            printf("\t\t\"scanline_pad\": %d\n", format->scanline_pad);
+            xcb_format_next(&format_iter);
+            if (format_iter.rem == 0)
+                printf("\t}\n");
+            else
+                printf("\t},\n");
+        }
+        printf("]\n");
+        return 0;
+    }
+    """;
+    private const string DepthResponseCBody =
+    """
+    #include <xcb/xcb.h>
+    #include <stdio.h>
+
+    int main()
+    {
+        xcb_connection_t *connection = xcb_connect(NULL, NULL);
+        if (xcb_connection_has_error(connection))
+        {
+            fprintf(stderr, "Cannot open display\n");
+            return 1;
+        }
+        const xcb_setup_t *setup = xcb_get_setup(connection);
+        xcb_screen_t *screen;
+        xcb_depth_t *depth;
+        printf("[\n");
+        xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(setup);
+        while (screen_iter.rem != 0)
+        {
+            screen = screen_iter.data;
+            xcb_depth_iterator_t depth_iter = xcb_screen_allowed_depths_iterator(screen);
+            while (depth_iter.rem != 0)
+            {
+                depth = depth_iter.data;
+                printf("{\n");
+                printf("\t\"depth\": %d,\n", depth->depth);
+                printf("\t\"visuals_len\": %d\n", depth->visuals_len);
+                xcb_depth_next(&depth_iter);
+                if (depth_iter.rem == 0)
+                    printf("}\n");
+                else
+                    printf("},\n");
+            }
+            xcb_screen_next(&screen_iter);
+            if (depth_iter.rem != 0)
+                printf(",");
+        }
+
+        printf("]\n");
+        return 0;
+    }
+    """;
+    private const string VisualResponseCBody =
+    """
+    #include <xcb/xcb.h>
+    #include <stdio.h>
+
+    int main()
+    {
+        xcb_connection_t *connection = xcb_connect(NULL, NULL);
+        if (xcb_connection_has_error(connection))
+        {
+            fprintf(stderr, "Cannot open display\n");
+            return 1;
+        }
+        const xcb_setup_t *setup = xcb_get_setup(connection);
+        xcb_screen_t *screen;
+        xcb_depth_t *depth;
+        xcb_visualtype_t *visual;
+        printf("[\n");
+        xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(setup);
+        while (screen_iter.rem != 0)
+        {
+            screen = screen_iter.data;
+            xcb_depth_iterator_t depth_iter = xcb_screen_allowed_depths_iterator(screen);
+            while (depth_iter.rem != 0)
+            {
+                depth = depth_iter.data;
+                xcb_visualtype_iterator_t visual_iter = xcb_depth_visuals_iterator(depth);
+
+                while (visual_iter.rem != 0)
+                {
+                    visual = visual_iter.data;
+
+                    printf("{\n");
+                    printf("\t\"visual_id\": %d,\n", visual->visual_id);
+                    printf("\t\"_class\": %d,\n", visual->_class);
+                    printf("\t\"bits_per_rgb_value\": %d,\n", visual->bits_per_rgb_value);
+                    printf("\t\"colormap_entries\": %d,\n", visual->colormap_entries);
+                    printf("\t\"red_mask\": %d,\n", visual->red_mask);
+                    printf("\t\"green_mask\": %d,\n", visual->green_mask);
+                    printf("\t\"blue_mask\": %d\n", visual->blue_mask);
+                    xcb_visualtype_next(&visual_iter);
+                    if (visual_iter.rem == 0)
+                        printf("}\n");
+                    else
+                        printf("},\n");
+                }
+
+                xcb_depth_next(&depth_iter);
+
+                if (depth_iter.rem != 0)
+                    printf(",");
+            }
+            xcb_screen_next(&screen_iter);
+
+            if (screen_iter.rem != 0)
+                printf(",");
+        }
+
+        printf("]\n");
+        return 0;
+    }
+    """;
 
     static string GetCCompiler()
     {
@@ -163,8 +305,21 @@ public class HandShakeResponseTest
         };
 
         process.Start();
-        var response = process.StandardOutput.ReadToEnd();
-        return JsonSerializer.Deserialize<T>(response);
+        var stream = process.StandardOutput;
+        var sb = new StringBuilder();
+        Span<char> current = stackalloc char[1];
+        Span<char> pre = stackalloc char[1];
+        while (!stream.EndOfStream)
+        {
+            stream.Read(current);
+            if (pre[0] == ',' && current[0] == ',')
+                continue;
+
+            sb.Append(current);
+            pre[0] = current[0];
+        }
+        File.Delete(execFile);
+        return JsonSerializer.Deserialize<T>(sb.ToString());
     }
 
     [Fact]
@@ -200,16 +355,16 @@ public class HandShakeResponseTest
         var xcb = GetCResponse<List<XCBScreenT>>(ScreenResponseCBody);
         using var xcsb = XcsbClient.Initialized();
         /// Act
-        var screen = xcsb.HandshakeSuccessResponseBody.Screens;
+        var screens = xcsb.HandshakeSuccessResponseBody.Screens;
         /// Assert
         if (xcb == null)
-            Assert.Empty(screen);
+            Assert.Empty(screens);
         else
         {
-            Assert.Equal(xcb.Count, screen.Length);
+            Assert.Equal(xcb.Count, screens.Length);
             for (int i = 0; i < xcb.Count; i++)
             {
-                var csItem = screen[i];
+                var csItem = screens[i];
                 var cItem = xcb[i];
                 Assert.Equal((int)csItem.Root, cItem.Root);
                 Assert.Equal((int)csItem.DefaultColormap, cItem.DefaultColormap);
@@ -231,6 +386,68 @@ public class HandShakeResponseTest
                     Assert.Equal(csItem.RootDepth.DepthValue, cItem.RootDepth);
                 Assert.Equal(csItem.Depths.Length, cItem.AllowedDepthsLen);
             }
+        }
+    }
+
+    [Fact]
+    public void HandshakeResponseFormat()
+    {
+        /// Arrange
+        var xcb = GetCResponse<List<XCBFormatT>>(FormatResponseCBody);
+        using var xcsb = XcsbClient.Initialized();
+        /// Act
+        var formats = xcsb.HandshakeSuccessResponseBody.Formats;
+        /// Assert
+        Assert.Equal(xcb.Count, formats.Length);
+        for (int i = 0; i < xcb.Count; i++)
+        {
+            var csItem = formats[i];
+            var cItem = xcb[i];
+            Assert.Equal(csItem.Depth, cItem.Depth);
+            Assert.Equal(csItem.BitsPerPixel, cItem.BitsPerPixel);
+            Assert.Equal(csItem.ScanLinePad, cItem.ScanlinePad);
+        }
+    }
+
+    [Fact]
+    public void HandshakeResponseDepth()
+    {
+        /// Arrange
+        var xcb = GetCResponse<List<XCBDepthT>>(DepthResponseCBody);
+        using var xcsb = XcsbClient.Initialized();
+        /// Act
+        var depthes = xcsb.HandshakeSuccessResponseBody.Screens.SelectMany(a => a.Depths).ToList();
+        /// Assert
+        for (var i = 0; i < depthes.Count; i++)
+        {
+            var csItem = depthes[i];
+            var cItem = xcb[i];
+
+            Assert.Equal(csItem.DepthValue, cItem.Depth);
+            Assert.Equal(csItem.Visuals.Length, cItem.VisualsLen);
+        }
+    }
+
+    [Fact]
+    public void HandshakeResponseVisual()
+    {
+        /// Arrange
+        var xcb = GetCResponse<List<XCBVisualtypeT>>(VisualResponseCBody);
+        using var xcsb = XcsbClient.Initialized();
+        /// Act
+        var depthes = xcsb.HandshakeSuccessResponseBody.Screens.SelectMany(a => a.Depths.SelectMany(a => a.Visuals)).ToList();
+        /// Assert
+        Assert.Equal(depthes.Count, xcb.Count);
+        foreach (var item in depthes)
+        {
+            var foundItem = xcb.FirstOrDefault(a => a.VisualId == item.VisualId
+                && a.Class == (int)item.Class
+                && a.BitsPerRgbValue == item.BitsPerRgb
+                && a.ColormapEntries == item.MapEntries
+                && a.RedMask == item.RedMask
+                && a.GreenMask == item.GreenMask
+                && a.BlueMask == item.BlueMask);
+            Assert.NotNull(foundItem);
         }
     }
 }
@@ -309,4 +526,40 @@ file class XCBScreenT
     public int RootDepth { get; set; }
     [JsonPropertyName("allowed_depths_len")]
     public int AllowedDepthsLen { get; set; }
+}
+
+file class XCBFormatT
+{
+    [JsonPropertyName("depth")]
+    public int Depth { get; set; }
+    [JsonPropertyName("bits_per_pixel")]
+    public int BitsPerPixel { get; set; }
+    [JsonPropertyName("scanline_pad")]
+    public int ScanlinePad { get; set; }
+}
+
+file class XCBDepthT
+{
+    [JsonPropertyName("depth")]
+    public int Depth { get; set; }
+    [JsonPropertyName("visuals_len")]
+    public int VisualsLen { get; set; }
+}
+
+file class XCBVisualtypeT
+{
+    [JsonPropertyName("visual_id")]
+    public int VisualId { get; set; }
+    [JsonPropertyName("_class")]
+    public int Class { get; set; }
+    [JsonPropertyName("bits_per_rgb_value")]
+    public int BitsPerRgbValue { get; set; }
+    [JsonPropertyName("colormap_entries")]
+    public int ColormapEntries { get; set; }
+    [JsonPropertyName("red_mask")]
+    public int RedMask { get; set; }
+    [JsonPropertyName("green_mask")]
+    public int GreenMask { get; set; }
+    [JsonPropertyName("blue_mask")]
+    public int BlueMask { get; set; }
 }
