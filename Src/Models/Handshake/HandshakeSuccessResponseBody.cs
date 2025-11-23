@@ -51,7 +51,7 @@ public class HandshakeSuccessResponseBody
             Formats = new Format[successResponseBody.FormatsNumber],
             Screens = new Screen[successResponseBody.ScreensNumber]
         };
-        readIndex += SetVendorName(result, socket, successResponseBody.VendorLength.AddPadding());
+        readIndex += SetVendorName(result, socket, successResponseBody.VendorLength);
         readIndex += SettFormats(result, socket);
         for (var i = 0; i < result.Screens.Length; i++)
             result.Screens[i] = Screen.Read(socket, ref readIndex);
@@ -80,19 +80,20 @@ public class HandshakeSuccessResponseBody
         return requireByte;
     }
 
-    private static int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int length)
+    private static int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int contentLength)
     {
+        var length = contentLength.AddPadding();
         if (length < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[length];
             socket.ReceiveExact(scratchBuffer);
-            result.VendorName = Encoding.ASCII.GetString(scratchBuffer).TrimEnd();
+            result.VendorName = Encoding.ASCII.GetString(scratchBuffer[..contentLength]).TrimEnd();
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(length);
             socket.ReceiveExact(scratchBuffer[..length]);
-            result.VendorName = Encoding.ASCII.GetString(scratchBuffer).TrimEnd();
+            result.VendorName = Encoding.ASCII.GetString(scratchBuffer, 0, contentLength).TrimEnd();
         }
 
         return length;

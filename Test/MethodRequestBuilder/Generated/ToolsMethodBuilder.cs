@@ -46,8 +46,8 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
     new MethodDetails3("SpecialMethod", "NoOperation"),
+    new MethodDetails4("DependentOnPixmapRootDepth", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"] , ["byte", "uint", "uint", "ushort", "ushort"])
 ];
-//CreatePixmap                      (byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
 //CreateGC                          (uint gc, uint drawable, GCMask mask, Span<uint> args)
 //CreateColormap                    (ColormapAlloc alloc, uint colormapId, uint window, uint visual)
 //CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
@@ -300,7 +300,7 @@ file static class StringHelper
                     .Append(f[fieldStart..]);
             }
             else if (field.Contains('$'))
-                sb.Append(", window");
+                sb.Append($", ").Append(field.Replace("$", "params").Trim());
             else if (field.Contains("false"))
                 sb.Append(", 0");
             else if (field.Contains("true"))
@@ -424,8 +424,6 @@ int main()
     {
         return -1;
     }
-    const xcb_setup_t *setup = xcb_get_setup(connection);
-    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
     fprintf(stderr, "{{marker}}\n");
     xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
     xcb_flush(connection);
@@ -467,14 +465,14 @@ int main()
     const xcb_setup_t *setup = xcb_get_setup(connection);
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
 
-    xcb_window_t window = xcb_generate_id(connection);
-    xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+    xcb_window_t params0 = xcb_generate_id(connection);
+    xcb_create_window(connection, 0, params0, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
                     screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
     
     xcb_flush(connection);
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", window);
+    fprintf(stderr, "%d\n", params0);
     fprintf(stderr, "{{marker}}\n");
     
     fprintf(stderr, "{{marker}}\n");
@@ -573,6 +571,94 @@ int main()
     return -1;
 }
 """;
+    }
+}
+
+file class MethodDetails4 : BaseBuilder
+{
+    public MethodDetails4(string categories, string methodName, string[] parameters, string[] parameterSignature) : base
+        (categories, methodName, parameters, parameterSignature, false, false, false)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    const xcb_setup_t *setup = xcb_get_setup(connection);
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+
+    uint8_t params0 = screen->root_depth;
+    xcb_window_t params1 = xcb_generate_id(connection);
+    uint8_t params2 = screen->root;
+    xcb_flush(connection);
+
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", params0);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", params1);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", params2);
+    fprintf(stderr, "{{marker}}\n");
+    
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 1;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
+    {
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params0, _xProto.HandshakeSuccessResponseBody.Screens[0].RootDepth!.DepthValue);
+        Assert.Equal(params1, _xProto.NewId());
+        Assert.Equal(params2, _xProto.HandshakeSuccessResponseBody.Screens[0].Root);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
     }
 }
 
@@ -694,8 +780,7 @@ $$"""
     {
         foreach (var testCase in parameters)
         {
-            var cResponse = GetCResult(compiler, MethodName, testCase.ToCParams(NeedCast, AddLenInCCall, IsXcbStr),
-                monitorFile);
+            var cResponse = GetCResult(compiler, MethodName, testCase, monitorFile);
 
             var veriables = "";
             if (!string.IsNullOrWhiteSpace(testCase))
@@ -740,8 +825,8 @@ $$"""
     {
         const string MARKER = "****************************************************************";
         var execFile = Path.Join(Environment.CurrentDirectory, "main");
-        var cMainBody = GetCMethodBody(method, parameter, MARKER);
-
+        var cMainBody = GetCMethodBody(method, parameter.ToCParams(NeedCast, AddLenInCCall, IsXcbStr), MARKER);
+        Console.WriteLine(cMainBody);
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -793,6 +878,7 @@ $$"""
             }
         };
         process.StartInfo.Environment["LD_PRELOAD"] = monitorFile;
+        
 
         process.Start();
         var response = process.StandardError.ReadToEnd();
