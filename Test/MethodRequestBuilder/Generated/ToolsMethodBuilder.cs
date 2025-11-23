@@ -602,7 +602,7 @@ int main()
 
     uint8_t params0 = screen->root_depth;
     xcb_window_t params1 = xcb_generate_id(connection);
-    uint8_t params2 = screen->root;
+    xcb_window_t params2 = screen->root;
     xcb_flush(connection);
 
 
@@ -826,7 +826,6 @@ $$"""
         const string MARKER = "****************************************************************";
         var execFile = Path.Join(Environment.CurrentDirectory, "main");
         var cMainBody = GetCMethodBody(method, parameter.ToCParams(NeedCast, AddLenInCCall, IsXcbStr), MARKER);
-        Console.WriteLine(cMainBody);
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -878,7 +877,6 @@ $$"""
             }
         };
         process.StartInfo.Environment["LD_PRELOAD"] = monitorFile;
-        
 
         process.Start();
         var response = process.StandardError.ReadToEnd();

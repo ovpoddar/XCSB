@@ -325,6 +325,8 @@ public class HandShakeResponseTest
     [Fact]
     public void HandshakeResponseSetupCheck()
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            return;
         /// Arrange
         var xcb = GetCResponse<XCBSetupT>(SetUpResponseCBody); //Goes First
         using var xcsb = XcsbClient.Initialized();
@@ -351,6 +353,8 @@ public class HandShakeResponseTest
     [Fact]
     public void HandshakeResponseScreenCheck()
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            return;
         /// Arrange
         var xcb = GetCResponse<List<XCBScreenT>>(ScreenResponseCBody);
         using var xcsb = XcsbClient.Initialized();
@@ -392,6 +396,8 @@ public class HandShakeResponseTest
     [Fact]
     public void HandshakeResponseFormat()
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            return;
         /// Arrange
         var xcb = GetCResponse<List<XCBFormatT>>(FormatResponseCBody);
         using var xcsb = XcsbClient.Initialized();
@@ -412,6 +418,8 @@ public class HandShakeResponseTest
     [Fact]
     public void HandshakeResponseDepth()
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            return;
         /// Arrange
         var xcb = GetCResponse<List<XCBDepthT>>(DepthResponseCBody);
         using var xcsb = XcsbClient.Initialized();
@@ -431,6 +439,8 @@ public class HandShakeResponseTest
     [Fact]
     public void HandshakeResponseVisual()
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            return;
         /// Arrange
         var xcb = GetCResponse<List<XCBVisualtypeT>>(VisualResponseCBody);
         using var xcsb = XcsbClient.Initialized();
