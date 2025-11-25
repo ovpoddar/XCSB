@@ -847,40 +847,46 @@ $$"""
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
-#if false // todo add some kind of flag pass down from env
-        process = new Process
+        var value = Environment.GetEnvironmentVariable("CURRENTENV");
+        Console.Write(value);
+        string response;
+        if (false) // todo add some kind of flag pass down from env
         {
-            StartInfo = new ProcessStartInfo
+            process = new Process
             {
-                FileName = "xvfb-run",
-                Arguments = $"-a env LD_PRELOAD={monitorFile} {execFile}",
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                RedirectStandardInput = true,
-                CreateNoWindow = true
-            }
-        };
-        process.Start();
-        var response = process.StandardOutput.ReadToEnd();
-#else
-        process = new Process
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "xvfb-run",
+                    Arguments = $"-a env LD_PRELOAD={monitorFile} {execFile}",
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    CreateNoWindow = true
+                }
+            };
+            process.Start();
+            response = process.StandardOutput.ReadToEnd();
+        }
+        else
         {
-            StartInfo = new ProcessStartInfo
+            process = new Process
             {
-                FileName = execFile,
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                RedirectStandardInput = true,
-                CreateNoWindow = true
-            }
-        };
-        process.StartInfo.Environment["LD_PRELOAD"] = monitorFile;
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = execFile,
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    CreateNoWindow = true
+                }
+            };
+            process.StartInfo.Environment["LD_PRELOAD"] = monitorFile;
 
-        process.Start();
-        var response = process.StandardError.ReadToEnd();
-#endif
+            process.Start();
+            response = process.StandardError.ReadToEnd();
+        }
 
         File.Delete(execFile);
         var result = new List<string>();
