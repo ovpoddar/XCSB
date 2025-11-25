@@ -8,8 +8,8 @@
     <RootNamespace>MethodRequestBuilder.Test</RootNamespace>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <Extra Condition="$(DOCKER) != ''"> -p:DefineConstants=DOCKERENV</Extra>
     <GenerateCmd>dotnet run ToolsMethodBuilder.cs$(Extra)</GenerateCmd>
-    <Extra Condition="'$(DOCKER)' != ''"> -p:DefineConstants=DOCKERENV</Extra>
   </PropertyGroup>
 
   <ItemGroup>
