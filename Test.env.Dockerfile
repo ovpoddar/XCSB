@@ -33,5 +33,5 @@ ENV TEST_RESULTS_DIR=/workspace/TestResults
 
 RUN mkdir -p ${TEST_RESULTS_DIR}
 
-RUN dotnet build
+RUN dotnet build -p:DOCKER=true
 ENTRYPOINT ["bash", "-c", "xvfb-run -s '-screen 0 1280x720x24' dotnet test --logger 'trx;LogFileName=test_results.trx' --results-directory $TEST_RESULTS_DIR; exit 0"]

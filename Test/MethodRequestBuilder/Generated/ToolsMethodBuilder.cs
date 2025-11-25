@@ -847,11 +847,8 @@ $$"""
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
-        var value = Environment.GetEnvironmentVariable("CURRENTENV");
-        Console.Write(value);
-        string response;
-        if (false) // todo add some kind of flag pass down from env
-        {
+
+#if DOCKERENV
             process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -866,27 +863,25 @@ $$"""
                 }
             };
             process.Start();
-            response = process.StandardOutput.ReadToEnd();
-        }
-        else
+            var response = process.StandardOutput.ReadToEnd();
+#else
+        process = new Process
         {
-            process = new Process
+            StartInfo = new ProcessStartInfo
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = execFile,
-                    UseShellExecute = false,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardInput = true,
-                    CreateNoWindow = true
-                }
-            };
-            process.StartInfo.Environment["LD_PRELOAD"] = monitorFile;
+                FileName = execFile,
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                CreateNoWindow = true
+            }
+        };
+        process.StartInfo.Environment["LD_PRELOAD"] = monitorFile;
 
-            process.Start();
-            response = process.StandardError.ReadToEnd();
-        }
+        process.Start();
+        var response = process.StandardError.ReadToEnd();
+#endif
 
         File.Delete(execFile);
         var result = new List<string>();

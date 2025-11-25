@@ -8,6 +8,8 @@
     <RootNamespace>MethodRequestBuilder.Test</RootNamespace>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <GenerateCmd>dotnet run ToolsMethodBuilder.cs$(Extra)</GenerateCmd>
+    <Extra Condition="'$(DOCKER)' != ''"> -p:DefineConstants=DOCKERENV</Extra>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,13 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Src\Xcsb.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <Compile Remove="**\Tools*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Generated\" />
   </ItemGroup>
 
@@ -40,10 +36,7 @@
     <ItemGroup>
         <GeneratedFiles Include="Generated\**\*Generated.cs" />
     </ItemGroup>
-
-    <Exec Command="dotnet run ToolsMethodBuilder.cs" WorkingDirectory="./Generated/" 
-          Condition="@(GeneratedFiles->Count()) == 0" />
-
+    <Exec Condition="@(GeneratedFiles->Count()) == 0" Command="$(GenerateCmd)" WorkingDirectory="Generated" />
     <ItemGroup>
         <Folder Include="Generated\" />
     </ItemGroup>
