@@ -266,7 +266,7 @@ internal class BaseProtoClient
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
-        
+
         var request = new ConfigureWindowType(window, mask, args.Length);
         var requiredBuffer = request.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -350,6 +350,10 @@ internal class BaseProtoClient
 
     protected ResponseProto CreateGCBase(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
+
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         var requiredBuffer = request.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)

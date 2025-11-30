@@ -193,6 +193,9 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 
     public void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
