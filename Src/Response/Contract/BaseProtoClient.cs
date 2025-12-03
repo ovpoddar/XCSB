@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
+using Src.Models.String;
 using Xcsb.Handlers;
 using Xcsb.Helpers;
 using Xcsb.Masks;
@@ -882,53 +883,75 @@ internal class BaseProtoClient
         return new ResponseProto(ProtoOut.Sequence);
     }
 
-    protected ResponseProto PolyText16Base(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    protected ResponseProto PolyText16Base(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
-        var request = new PolyText16Type(drawable, gc, x, y, data.Length);
+        var request = new PolyText16Type(drawable, gc, x, y, data.Sum(a => a.Count));
         var requiredBuffer = request.Length * 4;
+        var writIndex = 16;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                16,
-                data);
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+#endif
+            foreach (var item in data)
+                writIndex += item.CopyTo(scratchBuffer.Slice(writIndex, item.Count));
+
+            scratchBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
             ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
             var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                16,
-                data);
+#if NETSTANDARD
+            MemoryMarshal.Write(workingBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(workingBuffer[..16], in request);
+#endif
+            foreach (var item in data)
+                writIndex += item.CopyTo(workingBuffer.Slice(writIndex, item.Count));
+
+            workingBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            ProtoOut.SendExact(workingBuffer);
         }
 
         return new ResponseProto(ProtoOut.Sequence);
     }
 
-    protected ResponseProto PolyText8Base(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    protected ResponseProto PolyText8Base(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
-        var request = new PolyText8Type(drawable, gc, x, y, data.Length);
+        var request = new PolyText8Type(drawable, gc, x, y, data.Sum(a => a.Count));
         var requiredBuffer = request.Length * 4;
+        var writIndex = 16;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                16,
-                data);
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+#endif
+            foreach (var item in data)
+                writIndex += item.CopyTo(scratchBuffer.Slice(writIndex, item.Count));
+            scratchBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
             ProtoOut.SendExact(scratchBuffer);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
             var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                16,
-                data);
+#if NETSTANDARD
+            MemoryMarshal.Write(workingBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(workingBuffer[..16], in request);
+#endif
+            foreach (var item in data)
+                writIndex += item.CopyTo(workingBuffer.Slice(writIndex, item.Count));
+            workingBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            ProtoOut.SendExact(workingBuffer);
         }
 
         return new ResponseProto(ProtoOut.Sequence);

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using Src.Models.String;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
@@ -431,18 +432,22 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         BufferProtoOut.AddRange(MemoryMarshal.Cast<Segment, byte>(segments));
     }
 
-    public void PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    public void PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
-        var request = new PolyText16Type(drawable, gc, x, y, data.Length);
+        var request = new PolyText16Type(drawable, gc, x, y, data.Sum(a => a.Count));
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(data);
+        foreach (var item in data)
+            BufferProtoOut.AddRange(item.ToArray());
+        BufferProtoOut.AddRange(new byte[data.Sum(a => a.Count).Padding()]);
     }
 
-    public void PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    public void PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
-        var request = new PolyText8Type(drawable, gc, x, y, data.Length);
+        var request = new PolyText8Type(drawable, gc, x, y, data.Sum(a => a.Count));
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(data);
+        foreach (var item in data)
+            BufferProtoOut.AddRange(item.ToArray());
+        BufferProtoOut.AddRange(new byte[data.Sum(a => a.Count).Padding()]);
     }
 
     public void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,

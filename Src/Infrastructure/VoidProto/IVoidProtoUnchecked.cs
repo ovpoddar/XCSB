@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Src.Models.String;
 using Xcsb.Masks;
 using Xcsb.Models;
 
@@ -9,6 +10,7 @@ using System.Numerics;
 #endif
 
 namespace Xcsb.Infrastructure.VoidProto;
+
 public interface IVoidProtoUnchecked
 {
     void CreateWindowUnchecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
@@ -174,7 +176,6 @@ public interface IVoidProtoUnchecked
 
     void NoOperationUnchecked(Span<uint> args);
 
-    // todo: need a writer for the TEXTITEM16, TEXTITEM8
-    void PolyText8Unchecked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
-    void PolyText16Unchecked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
+    void PolyText8Unchecked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
+    void PolyText16Unchecked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);
 }

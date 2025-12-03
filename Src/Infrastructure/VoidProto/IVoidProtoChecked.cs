@@ -1,4 +1,5 @@
-﻿using Xcsb.Masks;
+﻿using Src.Models.String;
+using Xcsb.Masks;
 using Xcsb.Models;
 
 
@@ -173,7 +174,6 @@ public interface IVoidProtoChecked
 
     void NoOperationChecked(Span<uint> args);
 
-    // todo: need a writer for the TEXTITEM16, TEXTITEM8
-    void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
-    void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
+    void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
+    void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);
 }

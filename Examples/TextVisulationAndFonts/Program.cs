@@ -80,20 +80,8 @@ while (isRunning)
 
             c.ImageText16Checked(window, gc, 10, 15, "this is a utf 16 string");
             c.ImageText8Checked(window, gc, 10, 40, "this is a utf 8 string"u8);
-            var data = Encoding.UTF8.GetBytes("Helloworld");
-            c.PolyText8Checked(window, gc, 10, 80, [(byte)data.Length, 0, .. data]);
-            c.PolyText16Checked(window, gc, 10, 100, [11, 0,
-                0, (byte)'H',
-                0, (byte)'e',
-                0, (byte)'l',
-                0, (byte)'l',
-                0, (byte)'o',
-                0, (byte)' ',
-                0, (byte)'w',
-                0, (byte)'o',
-                0, (byte)'r',
-                0, (byte)'l',
-                0, (byte)'d']);
+            c.PolyText8Checked(window, gc, 10, 80, ["Helloworld with polytext"u8, "polytext2"u8]);
+            c.PolyText16Checked(window, gc, 10, 100, ["Hello world"]);
             c.FreeGCChecked(gc);
             c.FreeGCChecked(gc1);
 

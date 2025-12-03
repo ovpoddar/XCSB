@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using Src.Models.String;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
@@ -693,10 +694,10 @@ internal class XProto : BaseProtoClient, IXProto
     public ResponseProto NoOperation(Span<uint> args) =>
         NoOperationBase(args);
 
-    public ResponseProto PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
+    public ResponseProto PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data) =>
         PolyText8Base(drawable, gc, x, y, data);
 
-    public ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data) =>
+    public ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data) =>
         PolyText16Base(drawable, gc, x, y, data);
 
     public void CreateWindowUnchecked(byte depth, uint window, uint parent, short x, short y, ushort width,
@@ -1193,13 +1194,13 @@ internal class XProto : BaseProtoClient, IXProto
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void PolyText8Unchecked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    public void PolyText8Unchecked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
         var cookie = this.PolyText8Base(drawable, gc, x, y, data);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void PolyText16Unchecked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    public void PolyText16Unchecked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
         var cookie = this.PolyText16Base(drawable, gc, x, y, data);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
@@ -1697,13 +1698,13 @@ internal class XProto : BaseProtoClient, IXProto
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    public void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
         var cookie = this.PolyText8Base(drawable, gc, x, y, data);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data)
+    public void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
         var cookie = this.PolyText16Base(drawable, gc, x, y, data);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);

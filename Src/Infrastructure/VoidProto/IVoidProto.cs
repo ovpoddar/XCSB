@@ -1,4 +1,5 @@
-﻿using Xcsb.Masks;
+﻿using Src.Models.String;
+using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure.Response;
 
@@ -173,7 +174,6 @@ public interface IVoidProto
 
     ResponseProto NoOperation(Span<uint> args);
 
-    // todo: need a writer for the TEXTITEM16, TEXTITEM8
-    ResponseProto PolyText8(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
-    ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
+    ResponseProto PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
+    ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);
 }
