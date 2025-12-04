@@ -16,52 +16,52 @@ using var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.Open
 
 // No Parameter Methods Set Up
 IBuilder[] noParamMethod = [
-    new MethodDetails1("NoParameter", "GrabServer", [""], [], false),
-    new MethodDetails1("NoParameter", "UngrabServer", [""], [], false),
-    new MethodDetails1("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"], false),
-    new MethodDetails1("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
-    new MethodDetails1("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
-    new MethodDetails1("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
-    new MethodDetails1("IndependentMethod", "SetFontPath", [$"new string[] {{ \"built-ins\" , \"{Environment.CurrentDirectory}\" }}", $"new string[] {{\"{Environment.CurrentDirectory}\", \"/usr/bin\"}}", "new string[] {\"build-ins\"}"], ["string[]"], true, true, true),
-    new MethodDetails1("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
-    new MethodDetails1("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false),
-    new MethodDetails1("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
-    new MethodDetails1("IndependentMethod", "ForceScreenSaver", ["1", "0"], ["Xcsb.Models.ForceScreenSaverMode"], false),
-    new MethodDetails1("IndependentMethod", "SetAccessControl", ["1", "0"], ["Xcsb.Models.AccessControlMode"], false),
-    new MethodDetails1("IndependentMethod", "ChangeHosts", ["0, 4, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true),
-    new MethodDetails2("DependentOnWindow", "DestroyWindow", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "DestroySubwindows", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "ChangeSaveSet", ["1, $0", "0, $0"], ["Xcsb.Models.ChangeSaveSetMode", "uint"], false),
-    new MethodDetails2("DependentOnWindow", "MapWindow", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "MapSubwindows", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "UnmapWindow", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $0", "1, $0" ], ["Xcsb.Models.Circulate", "uint"], false),
-    new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$0, 1, new uint[] {100}", "$0, 2, new uint[] {100}", "$0, 4, new uint[] {100}", "$0, 8, new uint[] {100}", "$0, 16, new uint[] {0}", "$0, 64, new uint[] {0}", "$0, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
-    new MethodDetails2("DependentOnWindow", "ChangeWindowAttributes", ["$0, 1, new uint[] {167772}", "$0, 2, new uint[] {16777215}", "$0, 4, new uint[] {167772}", "$0, 8, new uint[] {16777215}", "$0, 16, new uint[] {1}", "$0, 32, new uint[] {1}", "$0, 64, new uint[] {167772}", "$0, 128, new uint[] {167772}", "$0, 256, new uint[] {167772}", "$0, 512, new uint[] {0}", "$0, 1024, new uint[] {1}", "$0, 2048, new uint[] {32769}", "$0, 4096, new uint[] {1}", "$0, 8192, new uint[] {167772}", "$0, 16384, new uint[] {167772}"], ["uint", "Xcsb.Masks.ValueMask", "uint[]"], false),
-    new MethodDetails2("DependentOnWindow", "GrabButton", ["false, $0, 12, 1, 0, 0, 0, 5, 32768", "true, $0, 12, 1, 0, 0, 0, 0, 1"], ["bool", "uint", "ushort", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode", "uint", "uint", "Xcsb.Models.Button", "Xcsb.Masks.ModifierMask"], false),
-    new MethodDetails2("DependentOnWindow", "UngrabButton", ["0, $0, 0", "5, $0, 32768"], ["Xcsb.Models.Button", "uint", "Xcsb.Masks.ModifierMask"], false),
-    new MethodDetails2("DependentOnWindow", "GrabKey", ["false, $0, 1, 0, 0, 1", "true, $0, 32768, 255, 0, 1"], ["bool", "uint", "Xcsb.Masks.ModifierMask", "byte", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode"], false),
-    new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
-    new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
-    new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
-    new MethodDetails3("SpecialMethod", "NoOperation"),
-    new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"] , ["byte", "uint", "uint", "ushort", "ushort"]),
-    new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
-    new MethodDetails6("DependentOnWindowId", "CreateColormap", ["0, $0, $1, $2", "1, $0, $1, $2"], ["Xcsb.Models.ColormapAlloc", "uint", "uint", "uint"]),
-    new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
-    new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
-    new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
- new MethodDetails8("DependentOnDrawableGc" "PolyText8", [], ["uint", "uint", "ushort", "ushort", "byte[]" ]),
- new MethodDetails8("DependentOnDrawableGc" "PolyText16", [], ["uint", "uint", "ushort", "ushort", "byte[]" ]),
- new MethodDetails8("DependentOnDrawableGc" "PolySegment", [], ["uint", "uint", "Segment[]"]),
- new MethodDetails8("DependentOnDrawableGc" "PolyRectangle", [], ["uint", "uint", "Rectangle[]"]),
- new MethodDetails8("DependentOnDrawableGc" "PolyArc", [], ["uint", "uint", "Arc[]"]),
- new MethodDetails8("DependentOnDrawableGc" "FillPoly", [], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
- new MethodDetails8("DependentOnDrawableGc" "PolyFillRectangle", [], ["uint", "uint", "Rectangle[]"]),
- new MethodDetails8("DependentOnDrawableGc" "PolyFillArc", [], ["uint", "uint", "Arc[]"]),
- new MethodDetails8("DependentOnDrawableGc" "ImageText8", [], ["uint", "uint", "short", "short", "byte[]"]),
- new MethodDetails8("DependentOnDrawableGc" "ImageText16", [], ["uint", "uint", "short", "short", "char[]"]),
+    // new MethodDetails1("NoParameter", "GrabServer", [""], [], false),
+    // new MethodDetails1("NoParameter", "UngrabServer", [""], [], false),
+    // new MethodDetails1("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"], false),
+    // new MethodDetails1("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
+    // new MethodDetails1("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
+    // new MethodDetails1("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
+    // new MethodDetails1("IndependentMethod", "SetFontPath", [$"new string[] {{ \"built-ins\" , \"{Environment.CurrentDirectory}\" }}", $"new string[] {{\"{Environment.CurrentDirectory}\", \"/usr/bin\"}}", "new string[] {\"build-ins\"}"], ["string[]"], true, STRType.XcbStr),
+    // new MethodDetails1("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
+    // new MethodDetails1("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false),
+    // new MethodDetails1("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
+    // new MethodDetails1("IndependentMethod", "ForceScreenSaver", ["1", "0"], ["Xcsb.Models.ForceScreenSaverMode"], false),
+    // new MethodDetails1("IndependentMethod", "SetAccessControl", ["1", "0"], ["Xcsb.Models.AccessControlMode"], false),
+    // new MethodDetails1("IndependentMethod", "ChangeHosts", ["0, 4, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true),
+    // new MethodDetails2("DependentOnWindow", "DestroyWindow", ["$0"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "DestroySubwindows", ["$0"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "ChangeSaveSet", ["1, $0", "0, $0"], ["Xcsb.Models.ChangeSaveSetMode", "uint"], false),
+    // new MethodDetails2("DependentOnWindow", "MapWindow", ["$0"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "MapSubwindows", ["$0"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "UnmapWindow", ["$0"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$0"], ["uint"], false),
+    // new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $0", "1, $0" ], ["Xcsb.Models.Circulate", "uint"], false),
+    // new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$0, 1, new uint[] {100}", "$0, 2, new uint[] {100}", "$0, 4, new uint[] {100}", "$0, 8, new uint[] {100}", "$0, 16, new uint[] {0}", "$0, 64, new uint[] {0}", "$0, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
+    // new MethodDetails2("DependentOnWindow", "ChangeWindowAttributes", ["$0, 1, new uint[] {167772}", "$0, 2, new uint[] {16777215}", "$0, 4, new uint[] {167772}", "$0, 8, new uint[] {16777215}", "$0, 16, new uint[] {1}", "$0, 32, new uint[] {1}", "$0, 64, new uint[] {167772}", "$0, 128, new uint[] {167772}", "$0, 256, new uint[] {167772}", "$0, 512, new uint[] {0}", "$0, 1024, new uint[] {1}", "$0, 2048, new uint[] {32769}", "$0, 4096, new uint[] {1}", "$0, 8192, new uint[] {167772}", "$0, 16384, new uint[] {167772}"], ["uint", "Xcsb.Masks.ValueMask", "uint[]"], false),
+    // new MethodDetails2("DependentOnWindow", "GrabButton", ["false, $0, 12, 1, 0, 0, 0, 5, 32768", "true, $0, 12, 1, 0, 0, 0, 0, 1"], ["bool", "uint", "ushort", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode", "uint", "uint", "Xcsb.Models.Button", "Xcsb.Masks.ModifierMask"], false),
+    // new MethodDetails2("DependentOnWindow", "UngrabButton", ["0, $0, 0", "5, $0, 32768"], ["Xcsb.Models.Button", "uint", "Xcsb.Masks.ModifierMask"], false),
+    // new MethodDetails2("DependentOnWindow", "GrabKey", ["false, $0, 1, 0, 0, 1", "true, $0, 32768, 255, 0, 1"], ["bool", "uint", "Xcsb.Masks.ModifierMask", "byte", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode"], false),
+    // new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
+    // new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
+    // new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
+    // new MethodDetails3("SpecialMethod", "NoOperation"),
+    // new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"] , ["byte", "uint", "uint", "ushort", "ushort"]),
+    // new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
+    // new MethodDetails6("DependentOnWindowId", "CreateColormap", ["0, $0, $1, $2", "1, $0, $1, $2"], ["Xcsb.Models.ColormapAlloc", "uint", "uint", "uint"]),
+    // new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
+    // new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
+    // new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb8),
+    // new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1,0, 0, \"Hellow World\""], ["uint", "uint", "ushort", "ushort", "string" ]),
+    // new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1,"], ["uint", "uint", "Segment[]"]),
+    // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
+    // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
+    // new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
+    // new MethodDetails8("DependentOnDrawableGc", "PolyFillRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
+    // new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
+    // new MethodDetails8("DependentOnDrawableGc", "ImageText8", ["$0, $1,"], ["uint", "uint", "short", "short", "byte[]"]),
+    // new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1,"], ["uint", "uint", "short", "short", "char[]"]),
 ];
 // CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
 // CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
@@ -264,11 +264,11 @@ file static class StringHelper
         return result + 1;
     }
 
-    public static string? ToCParams(this string? value, bool needCast, bool addLenInCCall, bool isXcbStr)
+    public static string? ToCParams(this string? value, bool addLenInCCall, STRType isXcbStr)
     {
         if (string.IsNullOrWhiteSpace(value))
             return null;
-        if (needCast)
+        if (isXcbStr == STRType.XcbStr)
         {
             value = value.Replace('{', '(')
                 .Replace('}', ')');
@@ -304,7 +304,11 @@ file static class StringHelper
             else if (field.Contains("true"))
                 sb.Append(", 1");
             else if (field.StartsWith('"'))
+            {
+                if (addLenInCCall)
+                    sb.Append(", ").Append(field.Length - 2);
                 sb.Append(", XS(").Append(field).Append(')');
+            }
             else
                 sb.Append(", ").Append(field);
         }
@@ -345,7 +349,7 @@ file static class StringHelper
         return sb.ToString();
     }
 
-    private static string GetCType(string type, bool isXcbStr)
+    private static string GetCType(string type, STRType isXcbStr)
     {
         var typeStartPosition = type.IndexOf("new ") + 4;
         var arrayStartIndex = type.IndexOf('[');
@@ -355,10 +359,19 @@ file static class StringHelper
             "uint" => "uint32_t[]",
             "int" => "int32_t[]",
             "byte" => "uint8_t[]",
-            "string" => isXcbStr ? "xcb_str_t *" : "const char *",
+            "string" => GetStrType(isXcbStr),
             _ => "int16_t[]",
         };
     }
+
+    private static string GetStrType(STRType isXcbStr) => isXcbStr switch
+    {
+        STRType.RawBuffer => "const char *",
+        STRType.XcbStr => "xcb_str_t *",
+        STRType.Xcb8 => "const uint8_t *",
+        STRType.Xcb16 => "const uint16_t *",
+        _ => throw new UnreachableException()
+    };
 
     public static string ToSnakeCase(this string value)
     {
@@ -379,7 +392,7 @@ file static class StringHelper
         {
             var chr = value[i];
             var isUpper = char.IsUpper(chr);
-            if (isUpper && i != 0)
+            if (isUpper && i != 0 || char.IsNumber(chr))
                 buffer[pos++] = '_';
 
             buffer[pos++] = isUpper
@@ -407,8 +420,8 @@ file static class StringHelper
 file class MethodDetails1 : BaseBuilder
 {
     public MethodDetails1(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall, bool isXcbStr = false, bool needCast = false) : base(categories, methodName, parameters,
-        paramSignature, addLenInCCall, isXcbStr, needCast)
+        bool addLenInCCall, STRType isXcbStr = STRType.RawBuffer) : base(categories, methodName, parameters,
+        paramSignature, addLenInCCall, isXcbStr)
     { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
@@ -453,7 +466,7 @@ int main()
 file class MethodDetails2 : BaseBuilder
 {
     public MethodDetails2(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall) : base(categories, methodName, parameters, paramSignature, addLenInCCall, false, false)
+        bool addLenInCCall) : base(categories, methodName, parameters, paramSignature, addLenInCCall, STRType.RawBuffer)
     { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
@@ -548,7 +561,7 @@ $$"""
 file class MethodDetails3 : BaseBuilder
 {
     public MethodDetails3(string categories, string methodName) : base(categories, methodName, ["new uint[] {}"],
-        ["uint[]"], false, false, false)
+        ["uint[]"], false, STRType.RawBuffer)
     { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
@@ -588,7 +601,7 @@ int main()
 file class MethodDetails4 : BaseBuilder
 {
     public MethodDetails4(string categories, string methodName, string[] parameters, string[] parameterSignature)
-        : base(categories, methodName, parameters, parameterSignature, false, false, false) { }
+        : base(categories, methodName, parameters, parameterSignature, false, STRType.RawBuffer) { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
@@ -675,7 +688,7 @@ $$"""
 file class MethodDetails5 : BaseBuilder
 {
     public MethodDetails5(string categories, string methodName, string[] parameters, string[] paramSignature)
-        : base(categories, methodName, parameters, paramSignature, false, false, false) { }
+        : base(categories, methodName, parameters, paramSignature, false, STRType.RawBuffer) { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
@@ -756,7 +769,7 @@ $$"""
 file class MethodDetails6 : BaseBuilder
 {
     public MethodDetails6(string categories, string methodName, string[] parameters, string[] paramSignature)
-            : base(categories, methodName, parameters, paramSignature, false, false, false) { }
+            : base(categories, methodName, parameters, paramSignature, false, STRType.RawBuffer) { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
@@ -843,9 +856,9 @@ $$"""
 file class MethodDetails7 : BaseBuilder
 {
     public MethodDetails7(string categories, string methodName, string[] parameters, string[] paramSignature)
-        : base(categories, methodName, parameters, paramSignature, false, false, false) { }
+        : base(categories, methodName, parameters, paramSignature, false, STRType.RawBuffer) { }
 
-    public override string GetCMethodBody(string method, string parameter, ReadOnlySpan<char> marker)
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
@@ -919,10 +932,72 @@ $$"""
 
 }
 
+file class MethodDetails8 : BaseBuilder
+{
+    public MethodDetails8(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType isXcbStr) : base(categories, methodName, parameters, paramSignature, addLenInCCall,
+        isXcbStr)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+
+#define XS(s)                       \
+    ((const void *)&(const struct { \
+        uint8_t len;                \
+        char data[sizeof(s) - 1];   \
+    }){(uint8_t)(sizeof(s) - 1), s})
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    xcb_window_t params0 = xcb_generate_id(connection);
+    xcb_create_gc_checked(connection, params0, screen->root, 4, (u_int32_t[]){screen->black_pixel});
+    xcb_flush(connection);
+
+    xcb_window_t params1 = screen->root;
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", params0);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", params1);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 1;
+
+    free(error);
+    return -1;
+} 
+""";
+    }
+}
+
 file abstract class BaseBuilder : IBuilder
 {
     public BaseBuilder(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall, bool isXcbStr, bool needCast)
+        bool addLenInCCall, STRType isXcbStr)
     {
         Categories = categories;
         MethodName = methodName;
@@ -930,7 +1005,6 @@ file abstract class BaseBuilder : IBuilder
         ParamSignature = paramSignature;
         AddLenInCCall = addLenInCCall;
         IsXcbStr = isXcbStr;
-        NeedCast = needCast;
     }
 
     public string Categories { get; }
@@ -938,8 +1012,7 @@ file abstract class BaseBuilder : IBuilder
     public string[] Parameters { get; }
     public string[] ParamSignature { get; }
     public bool AddLenInCCall { get; }
-    public bool IsXcbStr { get; }
-    public bool NeedCast { get; }
+    public STRType IsXcbStr { get; }
 
     protected static string FillPassingParameter(int parameterCount)
     {
@@ -1082,7 +1155,7 @@ $$"""
     {
         const string MARKER = "****************************************************************";
         var execFile = Path.Join(Environment.CurrentDirectory, "main");
-        var cMainBody = GetCMethodBody(method, parameter.ToCParams(NeedCast, AddLenInCCall, IsXcbStr), MARKER);
+        var cMainBody = GetCMethodBody(method, parameter.ToCParams(AddLenInCCall, IsXcbStr), MARKER);
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -1100,6 +1173,8 @@ $$"""
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
+
+        Console.Write(cMainBody);
 
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
@@ -1162,4 +1237,12 @@ $$"""
 file interface IBuilder
 {
     void WriteCsMethodContent(FileStream stream, string compiler, string monitorFile);
+}
+
+file enum STRType
+{
+    RawBuffer,
+    XcbStr,
+    Xcb8,
+    Xcb16
 }

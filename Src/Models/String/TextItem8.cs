@@ -15,6 +15,11 @@ namespace Src.Models.String
             _content = str.ToArray();
             Count = str.Length + 2;
         }
+        public TextItem8(string str)
+        {
+            _content = Encoding.UTF8.GetBytes(str);
+            Count = str.Length + 2;
+        }
 
         public static implicit operator TextItem8(ReadOnlySpan<byte> text) => new(text);
 
