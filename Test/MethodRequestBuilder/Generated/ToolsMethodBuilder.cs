@@ -52,7 +52,7 @@ IBuilder[] noParamMethod = [
     // new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
     // new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     // new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb8),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb8),
     // new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1,0, 0, \"Hellow World\""], ["uint", "uint", "ushort", "ushort", "string" ]),
     // new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1,"], ["uint", "uint", "Segment[]"]),
     // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
@@ -252,14 +252,18 @@ file static class StringHelper
         return result;
     }
 
-    private static int CalculateLen(Span<string> value)
+    private static int CalculateLen(Span<string> value, STRType isXcbStr)
     {
         var result = 0;
         foreach (var items in value)
         {
             if (items.Trim() == "}")
                 break;
-            result++;
+            if (isXcbStr is STRType.Xcb8)
+                result += items.Length + 2;
+            else
+                result++;
+
         }
         return result + 1;
     }
@@ -268,7 +272,7 @@ file static class StringHelper
     {
         if (string.IsNullOrWhiteSpace(value))
             return null;
-        if (isXcbStr == STRType.XcbStr)
+        if (isXcbStr is STRType.XcbStr)
         {
             value = value.Replace('{', '(')
                 .Replace('}', ')');
@@ -290,7 +294,7 @@ file static class StringHelper
                 if (addLenInCCall)
                 {
                     sb.Append(", ")
-                        .Append(CalculateLen(items.AsSpan()[index..]));
+                        .Append(CalculateLen(items.AsSpan()[index..], isXcbStr));
                 }
                 sb.Append(", (")
                     .Append(GetCType(f, isXcbStr))
@@ -305,9 +309,9 @@ file static class StringHelper
                 sb.Append(", 1");
             else if (field.StartsWith('"'))
             {
-                if (addLenInCCall)
-                    sb.Append(", ").Append(field.Length - 2);
-                sb.Append(", XS(").Append(field).Append(')');
+                sb.Append(", XS(");
+                sb.Append(field.EndsWith('}') ? field.ReplaceAtLast('}', ")}") : field + ')');
+
             }
             else
                 sb.Append(", ").Append(field);
@@ -368,8 +372,8 @@ file static class StringHelper
     {
         STRType.RawBuffer => "const char *",
         STRType.XcbStr => "xcb_str_t *",
-        STRType.Xcb8 => "const uint8_t *",
-        STRType.Xcb16 => "const uint16_t *",
+        STRType.Xcb8 => "const uint8_t[]",
+        STRType.Xcb16 => "const uint16_t[]",
         _ => throw new UnreachableException()
     };
 
@@ -435,11 +439,7 @@ $$"""
 #include <unistd.h>
 #include <stdint.h>
 
-#define XS(s)                       \
-    ((const void *)&(const struct { \
-        uint8_t len;                \
-        char data[sizeof(s) - 1];   \
-    }){(uint8_t)(sizeof(s) - 1), s})
+{{GetCStringMacro()}}
 
 int main()
 {
@@ -939,6 +939,11 @@ file class MethodDetails8 : BaseBuilder
         isXcbStr)
     { }
 
+    public override void WriteCsTestCases(FileStream fileStream, global::System.String compiler, global::System.String monitorFile, global::System.String[] parameters, global::System.String MethodName, global::System.String[] paramSignature)
+    {
+        base.WriteCsTestCases(fileStream, compiler, monitorFile, parameters, MethodName, paramSignature);
+    }
+
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
@@ -949,12 +954,7 @@ $$"""
 #include <stdio.h>
 #include <unistd.h>
 
-
-#define XS(s)                       \
-    ((const void *)&(const struct { \
-        uint8_t len;                \
-        char data[sizeof(s) - 1];   \
-    }){(uint8_t)(sizeof(s) - 1), s})
+{{GetCStringMacro()}}
 
 int main()
 {
@@ -964,11 +964,14 @@ int main()
         return -1;
     }
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-    xcb_window_t params0 = xcb_generate_id(connection);
-    xcb_create_gc_checked(connection, params0, screen->root, 4, (u_int32_t[]){screen->black_pixel});
+    xcb_window_t params0 = screen->root;
+    xcb_gcontext_t params1 = xcb_generate_id(connection);
+    xcb_void_cookie_t cookie = xcb_create_gc_checked(connection, params1, screen->root, 4, (u_int32_t[]){screen->black_pixel});
     xcb_flush(connection);
 
-    xcb_window_t params1 = screen->root;
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (error)
+        return -1;
 
     fprintf(stderr, "{{marker}}\n");
     fprintf(stderr, "%d\n", params0);
@@ -979,11 +982,11 @@ int main()
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
 
-    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    error = xcb_request_check(connection, cookie);
     if (!error)
         return 1;
 
@@ -1232,6 +1235,30 @@ $$"""
         return [.. result];
     }
 
+    public string GetCStringMacro() => IsXcbStr switch
+    {
+        STRType.RawBuffer => "",
+        STRType.XcbStr => """
+#define XS(s)                       \
+    ((const void *)&(const struct { \
+        uint8_t len;                \
+        char data[sizeof(s) - 1];   \
+    }){(uint8_t)(sizeof(s) - 1), s})
+""",
+        STRType.Xcb8 =>
+"""
+#define _XS_I(i, s) ((i < sizeof(s)-1) ? s[i] : 0)
+
+#define XS(s) \
+    sizeof(s) - 1, 0, \
+    _XS_I(0, s), _XS_I(1, s), _XS_I(2, s), _XS_I(3, s), \
+    _XS_I(4, s), _XS_I(5, s), _XS_I(6, s), _XS_I(7, s), \
+    _XS_I(8, s), _XS_I(9, s), _XS_I(10, s), _XS_I(11, s), \
+    _XS_I(12, s), _XS_I(13, s), _XS_I(14, s), _XS_I(15, s)
+
+""",
+        _ => throw new Exception(),
+    };
 }
 
 file interface IBuilder
