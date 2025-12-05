@@ -22,6 +22,7 @@ namespace Src.Models.String
         }
 
         public static implicit operator TextItem8(ReadOnlySpan<byte> text) => new(text);
+        public static implicit operator TextItem8(string text) => new(text);
 
         public readonly int CopyTo(Span<byte> destination)
         {
