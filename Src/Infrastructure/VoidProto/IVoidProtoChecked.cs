@@ -1,6 +1,6 @@
-﻿using Src.Models.String;
-using Xcsb.Masks;
+﻿using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Models.String;
 
 
 #if !NETSTANDARD

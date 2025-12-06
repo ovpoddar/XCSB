@@ -53,7 +53,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
     new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new Src.Models.String.TextItem8[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "Src.Models.String.TextItem8[]"], true, STRType.Xcb8),
-    // new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1,0, 0, \"Hellow World\""], ["uint", "uint", "ushort", "ushort", "string" ]),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1,0, 0, \"Hellow World\""], ["uint", "uint", "ushort", "ushort", "string" ]),
     // new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1,"], ["uint", "uint", "Segment[]"]),
     // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
     // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
@@ -727,7 +727,7 @@ int main()
 """;
     }
 
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<global::System.Char> methodSignature)
+    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
     {
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
@@ -813,7 +813,7 @@ int main()
 """;
     }
 
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<global::System.Char> methodSignature)
+    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
     {
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
@@ -892,7 +892,7 @@ int main()
     }
 
 
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<global::System.Char> methodSignature)
+    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
     {
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
@@ -925,14 +925,43 @@ $$"""
 
 file class MethodDetails8 : BaseBuilder
 {
+    private string? _castType;
     public MethodDetails8(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall, STRType isXcbStr) : base(categories, methodName, parameters, paramSignature, addLenInCCall,
-        isXcbStr)
-    { }
-
-    public override void WriteCsTestCases(FileStream fileStream, global::System.String compiler, global::System.String monitorFile, global::System.String[] parameters, global::System.String MethodName, global::System.String[] paramSignature)
+        bool addLenInCCall, STRType isXcbStr, string? castType) : base(categories, methodName, parameters, paramSignature,
+        addLenInCCall, isXcbStr)
     {
-        base.WriteCsTestCases(fileStream, compiler, monitorFile, parameters, MethodName, paramSignature);
+        _castType = castType;
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
+    {
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
+        var gc = _xProto.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+        var items = Array.ConvertAll(params{{ParamSignature.Length - 1}}, a => ({{_castType}})a);
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, "items")}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(root, params0);
+        Assert.Equal(gc, params1);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
     }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
@@ -1008,16 +1037,21 @@ file abstract class BaseBuilder : IBuilder
     public bool AddLenInCCall { get; }
     public STRType IsXcbStr { get; }
 
-    protected static string FillPassingParameter(int parameterCount)
+    protected static string FillPassingParameter(int parameterCount, string? lastItemName = null)
     {
         if (parameterCount == 0)
             return string.Empty;
 
         var sb = new StringBuilder();
         for (var i = 0; i < parameterCount; i++)
-            sb.Append("params")
-                .Append(i)
-                .Append(", ");
+        {
+            if (i == (parameterCount - 1))
+                sb.Append(lastItemName);
+            else
+                sb.Append("params")
+                    .Append(i);
+            sb.Append(", ");
+        }
         sb.Remove(sb.Length - 2, 2);
         return sb.ToString();
     }

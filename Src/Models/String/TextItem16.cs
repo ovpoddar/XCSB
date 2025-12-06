@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Src.Models.String
+namespace Xcsb.Models.String
 {
     public struct TextItem16
     {

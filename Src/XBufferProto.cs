@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
-using Src.Models.String;
+using Xcsb.Models.String;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
