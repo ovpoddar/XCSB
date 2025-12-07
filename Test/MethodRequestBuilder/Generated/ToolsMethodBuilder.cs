@@ -52,9 +52,9 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new Src.Models.String.TextItem8[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "Src.Models.String.TextItem8[]"], true, STRType.Xcb8),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1,0, 0, \"Hellow World\""], ["uint", "uint", "ushort", "ushort", "string" ]),
-    // new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1,"], ["uint", "uint", "Segment[]"]),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new object[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "object[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new object[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "object[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
+    new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, new object[] {new Segment { X1 = 8, Y1 = 0, X2 = 8, Y2 = 15 }, new Segment { X1 = 0, Y1 = 8, X2 = 15, Y2 = 8 }}"], ["uint", "uint", "Segment[]"], true, STRType.XcbSegment, "Xcsb.Models.Segment"),
     // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
     // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
     // new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
@@ -244,14 +244,6 @@ static string GetCCompiler()
 
 file static class StringHelper
 {
-    private static int CountUpperCaseLetter(ReadOnlySpan<char> value)
-    {
-        var result = 0;
-        foreach (var c in value)
-            if (char.IsUpper(c)) result++;
-        return result;
-    }
-
     private static int CalculateLen(Span<string> value, STRType isXcbStr)
     {
         var result = 0;
@@ -259,13 +251,18 @@ file static class StringHelper
         {
             if (items.Trim() == "}")
                 break;
-            if (isXcbStr is STRType.Xcb8)
+            if (isXcbStr is STRType.Xcb8 or STRType.Xcb16)
                 result += items.Length + 2;
             else
                 result++;
 
         }
         return result + 1;
+    }
+
+    private static void GetCType()
+    {
+
     }
 
     public static string? ToCParams(this string? value, bool addLenInCCall, STRType isXcbStr)
@@ -285,6 +282,7 @@ file static class StringHelper
             index++;
             if (field.StartsWith("new "))
             {
+                Console.WriteLine(field);
                 var f = field
                     .ReplaceOnece('"', "XS(\"")
                     .ReplaceAtLast('"', "\")");
@@ -362,8 +360,8 @@ file static class StringHelper
             STRType.XcbInt => "int32_t[]",
             STRType.XcbUint => "uint32_t[]",
             STRType.XcbStr => "xcb_str_t *",
-            STRType.Xcb8 => "const uint8_t[]",
-            STRType.Xcb16 => "const uint16_t[]",
+            STRType.Xcb8 or STRType.Xcb16 => "const uint8_t[]",
+            STRType.XcbSegment => "xcb_segment_t[]",
             _ => throw new Exception(isXcbStr.ToString()),
         };
     }
@@ -372,30 +370,20 @@ file static class StringHelper
     {
         if (string.IsNullOrEmpty(value))
             return value;
-
-        var upperCount = CountUpperCaseLetter(value);
-        if (upperCount == 0)
-            return value;
-
-        var length = value.Length + upperCount;
-        Span<char> buffer = length <= 256
-            ? stackalloc char[length]
-            : new char[length];
-
-        var pos = 0;
+        var sb = new StringBuilder();
+        var foundNumber = false;
         for (var i = 0; i < value.Length; i++)
         {
             var chr = value[i];
-            var isUpper = char.IsUpper(chr);
-            if (isUpper && i != 0 || char.IsNumber(chr))
-                buffer[pos++] = '_';
+            if (char.IsUpper(chr) && i != 0 || char.IsNumber(chr) && !foundNumber)
+                sb.Append('_');
+            if (char.IsNumber(chr))
+                foundNumber = true;
 
-            buffer[pos++] = isUpper
-                ? (char)(chr | 32)
-                : chr;
+            sb.Append((char)(chr | 32));
         }
 
-        return new string(buffer[..pos]);
+        return sb.ToString();
     }
 
     public static string Fix(this string name)
@@ -1202,7 +1190,6 @@ $$"""
         process.StandardInput.Close();
         process.WaitForExit();
 
-        Console.Write(cMainBody);
 
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
@@ -1262,10 +1249,7 @@ $$"""
 
     public string GetCStringMacro() => IsXcbStr switch
     {
-        STRType.RawBuffer => "",
-        STRType.XcbUint => "",
-        STRType.XcbByte => "",
-        STRType.XcbInt => "",
+        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbSegment => "",
         STRType.XcbStr => """
 #define XS(s)                       \
     ((const void *)&(const struct { \
@@ -1285,6 +1269,17 @@ $$"""
     _XS_I(12, s), _XS_I(13, s), _XS_I(14, s), _XS_I(15, s)
 
 """,
+        STRType.Xcb16 =>
+"""
+#define _XSI(i, s) ((i < sizeof(s) - 1) ? 0 : 0), ((i < sizeof(s) - 1) ? s[i] : 0)
+
+#define XS(s)                                             \
+    sizeof(s) - 1, 0,                                     \
+        _XSI(0, s), _XSI(1, s), _XSI(2, s), _XSI(3, s),   \
+        _XSI(4, s), _XSI(5, s), _XSI(6, s), _XSI(7, s),   \
+        _XSI(8, s), _XSI(9, s), _XSI(10, s), _XSI(11, s), \
+        _XSI(12, s), _XSI(13, s), _XSI(14, s), _XSI(15, s)
+""",
         _ => throw new Exception(),
     };
 }
@@ -1302,5 +1297,6 @@ file enum STRType
     Xcb16,
     XcbUint,
     XcbInt,
-    XcbByte
+    XcbByte,
+    XcbSegment
 }
