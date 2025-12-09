@@ -54,14 +54,8 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
     new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
     new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
-    // new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, new object[] {new Segment { X1 = 8, Y1 = 0, X2 = 8, Y2 = 15 }, new Segment { X1 = 0, Y1 = 8, X2 = 15, Y2 = 8 } }"], ["uint", "uint", "Segment[]"], true, STRType.XcbSegment, "Xcsb.Models.Segment"),
-    // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
-    // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
-    // new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
-    // new MethodDetails8("DependentOnDrawableGc", "PolyFillRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
-    // new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
-    // new MethodDetails8("DependentOnDrawableGc", "ImageText8", ["$0, $1,"], ["uint", "uint", "short", "short", "byte[]"]),
-    // new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1,"], ["uint", "uint", "short", "short", "char[]"]),
+    // new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, {string.Join(", ", Encoding.UTF8.GetBytes("XCB System Control Demo"))} "], ["uint", "uint", "short", "short", "byte[]"], false, STRType.XcbStr8),
+    new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
 ];
 // CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
 // CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
@@ -277,14 +271,10 @@ file static class StringHelper
         }
         return (addComma ? ", " : "") + isXcbStr switch
         {
-            STRType.XcbStr or STRType.Xcb8 or STRType.Xcb16 => field
+            STRType.XcbStr or STRType.Xcb8 or STRType.Xcb16 or STRType.XcbStr16 => field
                             .ReplaceOnece('"', "XS(\"")
                             .ReplaceAtLast('"', "\")"),
-            STRType.XcbUint or STRType.XcbByte or STRType.RawBuffer => field,
-            STRType.XcbSegment => field
-                .Replace("new Segment", "(xcb_segment_t)")
-                .ReplaceAtLast('{', "{ .")
-                .ToLower(),
+            STRType.XcbStr8 or STRType.XcbUint or STRType.XcbByte or STRType.RawBuffer => field,
             _ => throw new Exception($"{field} {isXcbStr}"),
         };
     }
@@ -293,6 +283,7 @@ file static class StringHelper
     {
         if (string.IsNullOrWhiteSpace(value))
             return null;
+
         if (isXcbStr is STRType.XcbStr)
         {
             value = value.Replace('{', '(')
@@ -300,15 +291,18 @@ file static class StringHelper
         }
         var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var sb = new StringBuilder();
+        if (isXcbStr is STRType.XcbStr8 or STRType.XcbStr16)
+            sb.Append(',').Append(items[^1].Length);
+
         var index = 0;
         bool canCome = false;
         foreach (var field in items)
         {
             index++;
-            if (field.StartsWith("new ") || canCome)
+            if (field.StartsWith("new ") || canCome || field.StartsWith("\""))
             {
                 canCome = true;
-                if (field.Contains("[]"))
+                if (field.Contains("[]") || isXcbStr is STRType.XcbStr16)
                 {
                     if (addLenInCCall)
                     {
@@ -373,13 +367,13 @@ file static class StringHelper
 
     private static string GetCType(STRType isXcbStr) => isXcbStr switch
     {
-        STRType.RawBuffer => "const char *",
+        STRType.XcbStr8 or STRType.RawBuffer => "const char *",
         STRType.XcbByte => "uint8_t[]",
         STRType.XcbInt => "int32_t[]",
         STRType.XcbUint => "uint32_t[]",
         STRType.XcbStr => "xcb_str_t *",
         STRType.Xcb8 or STRType.Xcb16 => "const uint8_t[]",
-        STRType.XcbSegment => "xcb_segment_t[]",
+        STRType.XcbStr16 => "const xcb_char2b_t[]",
         _ => throw new Exception(isXcbStr.ToString()),
     };
 
@@ -932,8 +926,8 @@ file class MethodDetails8 : BaseBuilder
 {
     private string? _castType;
     public MethodDetails8(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall, STRType isXcbStr, string? castType) : base(categories, methodName, parameters, paramSignature,
-        addLenInCCall, isXcbStr)
+        bool addLenInCCall, STRType isXcbStr, string? castType = null) : base(categories, methodName, parameters,
+        paramSignature, addLenInCCall, isXcbStr)
     {
         _castType = castType;
     }
@@ -951,9 +945,13 @@ $$"""
         var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
         var gc = _xProto.NewId();
         _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
-        var items = Array.ConvertAll(params{{ParamSignature.Length - 1}}, a => ({{_castType}})a);
+        {{(string.IsNullOrWhiteSpace(_castType)
+            ? ""
+            : $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);")}}
+
+
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, "items")}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (string.IsNullOrWhiteSpace(_castType) ? null : "items"))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1265,7 +1263,7 @@ $$"""
 
     public string GetCStringMacro() => IsXcbStr switch
     {
-        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbSegment => "",
+        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 => "",
         STRType.XcbStr => """
 #define XS(s)                       \
     ((const void *)&(const struct { \
@@ -1296,6 +1294,26 @@ $$"""
         _XSI(8, s), _XSI(9, s), _XSI(10, s), _XSI(11, s), \
         _XSI(12, s), _XSI(13, s), _XSI(14, s), _XSI(15, s)
 """,
+        STRType.XcbStr16 =>
+"""
+
+#define _XS_I(str, i) \
+    { 0, (i < sizeof(str)-1 ? str[i] : 0) }
+
+#define XS(str)        \
+    {                  \
+        _XS_I(str, 0), \
+        _XS_I(str, 1), \
+        _XS_I(str, 2), \
+        _XS_I(str, 3), \
+        _XS_I(str, 4), \
+        _XS_I(str, 5), \
+        _XS_I(str, 6), \
+        _XS_I(str, 7), \
+        _XS_I(str, 8), \
+        _XS_I(str, 9) \
+    }
+""",
         _ => throw new Exception(),
     };
 }
@@ -1311,8 +1329,10 @@ file enum STRType
     XcbStr,
     Xcb8,
     Xcb16,
+
+    XcbStr8,
+    XcbStr16,
     XcbUint,
     XcbInt,
-    XcbByte,
-    XcbSegment
+    XcbByte
 }
