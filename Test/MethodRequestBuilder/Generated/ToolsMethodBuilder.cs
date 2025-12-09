@@ -260,9 +260,33 @@ file static class StringHelper
         return result + 1;
     }
 
-    private static void GetCType()
+    private static string GetCItem(string field, STRType isXcbStr, bool addComma)
     {
-
+        var fieldStart = field.IndexOf('{');
+        if (fieldStart == -1)
+            fieldStart = field.IndexOf('(');
+        if (fieldStart != -1)
+        {
+            field = field[fieldStart..];
+        }
+        else
+        {
+            if (field.Contains("="))
+                return ", ." + field
+                .ToLower();
+        }
+        return (addComma ? ", " : "") + isXcbStr switch
+        {
+            STRType.XcbStr or STRType.Xcb8 or STRType.Xcb16 => field
+                            .ReplaceOnece('"', "XS(\"")
+                            .ReplaceAtLast('"', "\")"),
+            STRType.XcbUint or STRType.XcbByte or STRType.RawBuffer => field,
+            STRType.XcbSegment => field
+                .Replace("new Segment", "(xcb_segment_t)")
+                .ReplaceAtLast('{', "{ .")
+                .ToLower(),
+            _ => throw new Exception($"{field} {isXcbStr}"),
+        };
     }
 
     public static string? ToCParams(this string? value, bool addLenInCCall, STRType isXcbStr)
@@ -277,27 +301,29 @@ file static class StringHelper
         var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var sb = new StringBuilder();
         var index = 0;
+        bool canCome = false;
         foreach (var field in items)
         {
             index++;
-            if (field.StartsWith("new "))
+            if (field.StartsWith("new ") || canCome)
             {
-                Console.WriteLine(field);
-                var f = field
-                    .ReplaceOnece('"', "XS(\"")
-                    .ReplaceAtLast('"', "\")");
-                var fieldStart = f.IndexOf('{');
-                if (fieldStart == -1)
-                    fieldStart = f.IndexOf('(');
-                if (addLenInCCall)
+                canCome = true;
+                if (field.Contains("[]"))
                 {
-                    sb.Append(", ")
-                        .Append(CalculateLen(items.AsSpan()[index..], isXcbStr));
+                    if (addLenInCCall)
+                    {
+                        sb.Append(", ")
+                            .Append(CalculateLen(items.AsSpan()[index..], isXcbStr));
+                    }
+                    sb.Append(", (")
+                        .Append(GetCType(isXcbStr))
+                        .Append(')')
+                        .Append(GetCItem(field, isXcbStr, false));
                 }
-                sb.Append(", (")
-                    .Append(GetCType(isXcbStr))
-                    .Append(')')
-                    .Append(f[fieldStart..]);
+                else
+                {
+                    sb.Append(GetCItem(field, isXcbStr, true));
+                }
             }
             else if (field.Contains('$'))
                 sb.Append($", ").Append(field.Replace("$", "params").Trim());
@@ -305,12 +331,6 @@ file static class StringHelper
                 sb.Append(", 0");
             else if (field.Contains("true"))
                 sb.Append(", 1");
-            else if (field.StartsWith('"'))
-            {
-                sb.Append(", XS(");
-                sb.Append(field.EndsWith('}') ? field.ReplaceAtLast('}', ")}") : field + ')');
-
-            }
             else
                 sb.Append(", ").Append(field);
         }
@@ -351,20 +371,17 @@ file static class StringHelper
         return sb.ToString();
     }
 
-    private static string GetCType(STRType isXcbStr)
+    private static string GetCType(STRType isXcbStr) => isXcbStr switch
     {
-        return isXcbStr switch
-        {
-            STRType.RawBuffer => "const char *",
-            STRType.XcbByte => "uint8_t[]",
-            STRType.XcbInt => "int32_t[]",
-            STRType.XcbUint => "uint32_t[]",
-            STRType.XcbStr => "xcb_str_t *",
-            STRType.Xcb8 or STRType.Xcb16 => "const uint8_t[]",
-            STRType.XcbSegment => "xcb_segment_t[]",
-            _ => throw new Exception(isXcbStr.ToString()),
-        };
-    }
+        STRType.RawBuffer => "const char *",
+        STRType.XcbByte => "uint8_t[]",
+        STRType.XcbInt => "int32_t[]",
+        STRType.XcbUint => "uint32_t[]",
+        STRType.XcbStr => "xcb_str_t *",
+        STRType.Xcb8 or STRType.Xcb16 => "const uint8_t[]",
+        STRType.XcbSegment => "xcb_segment_t[]",
+        _ => throw new Exception(isXcbStr.ToString()),
+    };
 
     public static string ToSnakeCase(this string value)
     {
@@ -934,7 +951,7 @@ $$"""
         var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
         var gc = _xProto.NewId();
         _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
-        var items = Array.ConvertAll(params{{ParamSignature.Length - 1}}, a => ({{_castType}})a);
+        var items = Array.ConvertAll(params{{ParamSignature.Length - 1}}, a => ({{_castType}})a!.ToString());
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, "items")}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
@@ -1033,7 +1050,7 @@ file abstract class BaseBuilder : IBuilder
         var sb = new StringBuilder();
         for (var i = 0; i < parameterCount; i++)
         {
-            if (i == (parameterCount - 1))
+            if (i == (parameterCount - 1) && lastItemName != null)
                 sb.Append(lastItemName);
             else
                 sb.Append("params")
