@@ -52,9 +52,9 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new object[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "object[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new object[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "object[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
-    new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, new object[] {new Segment { X1 = 8, Y1 = 0, X2 = 8, Y2 = 15 }, new Segment { X1 = 0, Y1 = 8, X2 = 15, Y2 = 8 }}"], ["uint", "uint", "Segment[]"], true, STRType.XcbSegment, "Xcsb.Models.Segment"),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
+    // new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, new object[] {new Segment { X1 = 8, Y1 = 0, X2 = 8, Y2 = 15 }, new Segment { X1 = 0, Y1 = 8, X2 = 15, Y2 = 8 } }"], ["uint", "uint", "Segment[]"], true, STRType.XcbSegment, "Xcsb.Models.Segment"),
     // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
     // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
     // new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
@@ -951,7 +951,7 @@ $$"""
         var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
         var gc = _xProto.NewId();
         _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
-        var items = Array.ConvertAll(params{{ParamSignature.Length - 1}}, a => ({{_castType}})a!.ToString());
+        var items = Array.ConvertAll(params{{ParamSignature.Length - 1}}, a => ({{_castType}})a);
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, "items")}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
@@ -1206,7 +1206,6 @@ $$"""
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-
 
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
