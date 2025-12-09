@@ -54,7 +54,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
     new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
     new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
-    // new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, {string.Join(", ", Encoding.UTF8.GetBytes("XCB System Control Demo"))} "], ["uint", "uint", "short", "short", "byte[]"], false, STRType.XcbStr8),
+    new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, "items"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
 ];
 // CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
@@ -932,6 +932,15 @@ file class MethodDetails8 : BaseBuilder
         _castType = castType;
     }
 
+    private string GetItems()
+    {
+        if (base.IsXcbStr == STRType.XcbStr8)
+        {
+            return $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});";
+        }
+        return $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);";
+    }
+
     public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
     {
         fileStream.Write(Encoding.UTF8.GetBytes(
@@ -947,8 +956,7 @@ $$"""
         _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
         {{(string.IsNullOrWhiteSpace(_castType)
             ? ""
-            : $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);")}}
-
+            : GetItems())}}
 
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (string.IsNullOrWhiteSpace(_castType) ? null : "items"))}});
