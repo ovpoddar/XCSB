@@ -12,7 +12,7 @@ if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
     return 0;
 var compiler = GetCCompiler();
 var monitorFile = GenerateMonitorFile(compiler);
-using var fileStream = File.Open("./VoidMethodsTest.Generated.cs", FileMode.OpenOrCreate);
+using var fileStream = File.Open("./BufferVoidMethodsTest.Generated.cs", FileMode.OpenOrCreate);
 
 // No Parameter Methods Set Up
 IBuilder[] noParamMethod = [
@@ -56,6 +56,12 @@ IBuilder[] noParamMethod = [
     new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, "items"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
+    new MethodDetails8_1("DependentOnDrawableGc", "PolySegment", ["$0, $1, new object[] {new Segment { X1 = 8, Y1 = 0, X2 = 8, Y2 = 15 }, new Segment { X1 = 0, Y1 = 8, X2 = 15, Y2 = 8 } }"], ["uint", "uint", "Segment[]"], true, "Xcsb.Models.Segment"),
+// new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
+// new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
+// new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
+// new MethodDetails8("DependentOnDrawableGc", "PolyFillRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
+// new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1,"], ["uint", "uint", "Arc[]"])
 ];
 // CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
 // CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
@@ -271,7 +277,12 @@ file static class StringHelper
         }
         return (addComma ? ", " : "") + isXcbStr switch
         {
-            STRType.XcbStr or STRType.Xcb8 or STRType.Xcb16 or STRType.XcbStr16 => field
+            STRType.XcbStr => field
+                            .ReplaceOnece('"', "XS(\"")
+                            .ReplaceAtLast('"', "\")")
+                            .Replace('{', '(')
+                            .Replace('}', ')'),
+            STRType.Xcb8 or STRType.Xcb16 or STRType.XcbStr16 => field
                             .ReplaceOnece('"', "XS(\"")
                             .ReplaceAtLast('"', "\")"),
             STRType.XcbStr8 or STRType.XcbUint or STRType.XcbByte or STRType.RawBuffer => field,
@@ -284,15 +295,11 @@ file static class StringHelper
         if (string.IsNullOrWhiteSpace(value))
             return null;
 
-        if (isXcbStr is STRType.XcbStr)
-        {
-            value = value.Replace('{', '(')
-                .Replace('}', ')');
-        }
         var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var sb = new StringBuilder();
         if (isXcbStr is STRType.XcbStr8 or STRType.XcbStr16)
-            sb.Append(',').Append(items[^1].Length);
+            sb.Append(',')
+                .Append(items[^1].Length);
 
         var index = 0;
         bool canCome = false;
@@ -1337,7 +1344,6 @@ file enum STRType
     XcbStr,
     Xcb8,
     Xcb16,
-
     XcbStr8,
     XcbStr16,
     XcbUint,
