@@ -404,6 +404,12 @@ file static class StringHelper
         return sb.ToString();
     }
 
+    public static string Format(this string value, string[] values)
+    {
+        //todo: impl
+        return value;
+    }
+
     public static string Fix(this string name)
     {
         var sb = new StringBuilder();
@@ -418,7 +424,7 @@ file static class StringHelper
     }
 }
 
-file class MethodDetails1 : BaseBuilder
+file class MethodDetails1 : StaticBuilder
 {
     public MethodDetails1(string categories, string methodName, string[] parameters, string[] paramSignature,
         bool addLenInCCall, STRType isXcbStr = STRType.RawBuffer) : base(categories, methodName, parameters,
@@ -427,6 +433,7 @@ file class MethodDetails1 : BaseBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
+        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -460,7 +467,7 @@ int main()
     }
 }
 
-file class MethodDetails2 : BaseBuilder
+file class MethodDetails2 : StaticBuilder
 {
     public MethodDetails2(string categories, string methodName, string[] parameters, string[] paramSignature,
         bool addLenInCCall) : base(categories, methodName, parameters, paramSignature, addLenInCCall, STRType.XcbUint)
@@ -468,6 +475,7 @@ file class MethodDetails2 : BaseBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
+        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -525,8 +533,9 @@ int main()
     }
 
 
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
+    public override void WriteCsMethodBody(FileStream fileStream)
     {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
         var hasWindowPlaceHolder = GetPlaceHolderOfWindow(Parameters[0]);
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
@@ -555,7 +564,7 @@ $$"""
     }
 }
 
-file class MethodDetails3 : BaseBuilder
+file class MethodDetails3 : StaticBuilder
 {
     public MethodDetails3(string categories, string methodName) : base(categories, methodName, ["new uint[] {}"],
         ["uint[]"], false, STRType.RawBuffer)
@@ -563,7 +572,7 @@ file class MethodDetails3 : BaseBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-
+        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -595,13 +604,14 @@ int main()
     }
 }
 
-file class MethodDetails4 : BaseBuilder
+file class MethodDetails4 : StaticBuilder
 {
     public MethodDetails4(string categories, string methodName, string[] parameters, string[] parameterSignature)
         : base(categories, methodName, parameters, parameterSignature, false, STRType.RawBuffer) { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
+        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -652,8 +662,9 @@ int main()
 """;
     }
 
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
+    public override void WriteCsMethodBody(FileStream fileStream)
     {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
@@ -682,13 +693,14 @@ $$"""
     }
 }
 
-file class MethodDetails5 : BaseBuilder
+file class MethodDetails5 : StaticBuilder
 {
     public MethodDetails5(string categories, string methodName, string[] parameters, string[] paramSignature)
         : base(categories, methodName, parameters, paramSignature, false, STRType.XcbUint) { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
+        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -733,8 +745,9 @@ int main()
 """;
     }
 
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
+    public override void WriteCsMethodBody(FileStream fileStream)
     {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
@@ -763,13 +776,14 @@ $$"""
     }
 }
 
-file class MethodDetails6 : BaseBuilder
+file class MethodDetails6 : StaticBuilder
 {
     public MethodDetails6(string categories, string methodName, string[] parameters, string[] paramSignature)
             : base(categories, methodName, parameters, paramSignature, false, STRType.RawBuffer) { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
+        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -819,8 +833,9 @@ int main()
 """;
     }
 
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
+    public override void WriteCsMethodBody(FileStream fileStream)
     {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
@@ -850,13 +865,14 @@ $$"""
 
 }
 
-file class MethodDetails7 : BaseBuilder
+file class MethodDetails7 : StaticBuilder
 {
     public MethodDetails7(string categories, string methodName, string[] parameters, string[] paramSignature)
         : base(categories, methodName, parameters, paramSignature, false, STRType.RawBuffer) { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
+        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -898,8 +914,9 @@ int main()
     }
 
 
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
+    public override void WriteCsMethodBody(FileStream fileStream)
     {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
@@ -929,7 +946,7 @@ $$"""
 
 }
 
-file class MethodDetails8 : BaseBuilder
+file class MethodDetails8 : StaticBuilder
 {
     private string? _castType;
     public MethodDetails8(string categories, string methodName, string[] parameters, string[] paramSignature,
@@ -948,8 +965,9 @@ file class MethodDetails8 : BaseBuilder
         return $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);";
     }
 
-    public override void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
+    public override void WriteCsMethodBody(FileStream fileStream)
     {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
@@ -984,6 +1002,7 @@ $$"""
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
+        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -1035,44 +1054,19 @@ int main()
     }
 }
 
-file abstract class BaseBuilder : IBuilder
+file abstract class StaticBuilder : BaseBuilder
 {
-    public BaseBuilder(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall, STRType isXcbStr)
+    public StaticBuilder(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType isXcbStr) : base(parameters, methodName, paramSignature)
     {
         Categories = categories;
-        MethodName = methodName;
-        Parameters = parameters;
-        ParamSignature = paramSignature;
         AddLenInCCall = addLenInCCall;
         IsXcbStr = isXcbStr;
     }
 
     public string Categories { get; }
-    public string MethodName { get; }
-    public string[] Parameters { get; }
-    public string[] ParamSignature { get; }
     public bool AddLenInCCall { get; }
     public STRType IsXcbStr { get; }
-
-    protected static string FillPassingParameter(int parameterCount, string? lastItemName = null)
-    {
-        if (parameterCount == 0)
-            return string.Empty;
-
-        var sb = new StringBuilder();
-        for (var i = 0; i < parameterCount; i++)
-        {
-            if (i == (parameterCount - 1) && lastItemName != null)
-                sb.Append(lastItemName);
-            else
-                sb.Append("params")
-                    .Append(i);
-            sb.Append(", ");
-        }
-        sb.Remove(sb.Length - 2, 2);
-        return sb.ToString();
-    }
 
     //todo: remove the string shit.
     private static string GetField(string parameter, out string field)
@@ -1109,24 +1103,9 @@ file abstract class BaseBuilder : IBuilder
 
     }
 
-    private static string GetTestMethodSignature(string[] paramsSignature)
+    public override void WriteCsMethodBody(FileStream fileStream)
     {
-        if (paramsSignature.Length == 0) return string.Empty;
-
-        var sb = new StringBuilder();
-
-        for (var i = 0; i < paramsSignature.Length; i++)
-            sb.Append(paramsSignature[i])
-                .Append(" params")
-                .Append(i)
-                .Append(", ");
-
-        return sb.ToString();
-    }
-    public abstract string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker);
-
-    public virtual void WriteCsMethodBody(FileStream fileStream, ReadOnlySpan<char> methodSignature)
-    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
@@ -1151,8 +1130,8 @@ $$"""
 """));
     }
 
-    public virtual void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters,
-        string MethodName, string[] paramSignature)
+    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile,
+        string[] parameters, string MethodName, string[] paramSignature)
     {
         foreach (var testCase in parameters)
         {
@@ -1181,7 +1160,212 @@ $$"""
 """));
 
         }
+
     }
+
+    public string GetCStringMacro() => IsXcbStr switch
+    {
+        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 => "",
+        STRType.XcbStr =>
+"""
+#define XS(s)                       \
+    ((const void *)&(const struct { \
+        uint8_t len;                \
+        char data[sizeof(s) - 1];   \
+    }){(uint8_t)(sizeof(s) - 1), s})
+""",
+        STRType.Xcb8 =>
+"""
+#define _XS_I(i, s) ((i < sizeof(s)-1) ? s[i] : 0)
+
+#define XS(s) \
+    sizeof(s) - 1, 0, \
+    _XS_I(0, s), _XS_I(1, s), _XS_I(2, s), _XS_I(3, s), \
+    _XS_I(4, s), _XS_I(5, s), _XS_I(6, s), _XS_I(7, s), \
+    _XS_I(8, s), _XS_I(9, s), _XS_I(10, s), _XS_I(11, s), \
+    _XS_I(12, s), _XS_I(13, s), _XS_I(14, s), _XS_I(15, s)
+
+""",
+        STRType.Xcb16 =>
+"""
+#define _XSI(i, s) ((i < sizeof(s) - 1) ? 0 : 0), ((i < sizeof(s) - 1) ? s[i] : 0)
+
+#define XS(s)                                             \
+    sizeof(s) - 1, 0,                                     \
+        _XSI(0, s), _XSI(1, s), _XSI(2, s), _XSI(3, s),   \
+        _XSI(4, s), _XSI(5, s), _XSI(6, s), _XSI(7, s),   \
+        _XSI(8, s), _XSI(9, s), _XSI(10, s), _XSI(11, s), \
+        _XSI(12, s), _XSI(13, s), _XSI(14, s), _XSI(15, s)
+""",
+        STRType.XcbStr16 =>
+"""
+#define _XS_I(str, i) \
+    { 0, (i < sizeof(str)-1 ? str[i] : 0) }
+
+#define XS(str)        \
+    {                  \
+        _XS_I(str, 0), \
+        _XS_I(str, 1), \
+        _XS_I(str, 2), \
+        _XS_I(str, 3), \
+        _XS_I(str, 4), \
+        _XS_I(str, 5), \
+        _XS_I(str, 6), \
+        _XS_I(str, 7), \
+        _XS_I(str, 8), \
+        _XS_I(str, 9) \
+    }
+""",
+        _ => throw new Exception(),
+    };
+
+    protected static string GetTestMethodSignature(string[] paramsSignature)
+    {
+        if (paramsSignature.Length == 0) return string.Empty;
+
+        var sb = new StringBuilder();
+
+        for (var i = 0; i < paramsSignature.Length; i++)
+            sb.Append(paramsSignature[i])
+                .Append(" params")
+                .Append(i)
+                .Append(", ");
+
+        return sb.ToString();
+    }
+}
+
+file abstract class DynamicBuilder : BaseBuilder
+{
+    private readonly string Categories;
+    public DynamicBuilder(string categories, string methodName, string[] parameters, string[] paramSignature)
+        : base(parameters, methodName, paramSignature)
+    {
+        this.Categories = categories;
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test(string parameter, byte[] expectedResult)
+    {
+       // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
+        var gc = _xProto.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+
+
+        // act
+        bufferClient.{{MethodName}}({{base.FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+
+    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile,
+        string[] parameters, string methodName, string[] paramSignature)
+    {
+        foreach (var parameter in parameters)
+        {
+            var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
+            fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{parameter.Replace("\"", "\\\"").Format(cResponse)}}, new byte[] { 12, 23 })]
+
+"""));
+        }
+    }
+}
+
+file class MethodDetails8_1 : DynamicBuilder
+{
+    public MethodDetails8_1(string categories, string methodName, string[] parameters, string[] paramSignature)
+        : base(categories, methodName, parameters, paramSignature)
+    {
+
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    xcb_window_t params0 = screen->root;
+    xcb_gcontext_t params1 = xcb_generate_id(connection);
+    xcb_void_cookie_t cookie = xcb_create_gc_checked(connection, params1, screen->root, 4, (u_int32_t[]){screen->black_pixel});
+    xcb_flush(connection);
+
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (error)
+        return -1;
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", params0);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", params1);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    cookie = {{functionName}}(connection, 0, 0, 10, (xcb_segment_t[])((xcb_segment_t){.x1=10, .x2=2, .y1=10, .y2=1}));
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+
+    error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 1;
+
+    free(error);
+    return -1;
+} 
+""";
+    }
+}
+
+file abstract class BaseBuilder : IBuilder
+{
+    protected readonly string[] Parameters;
+    protected readonly string MethodName;
+    protected readonly string[] ParamSignature;
+
+    public BaseBuilder(string[] parameters, string methodName, string[] paramSignature)
+    {
+        this.ParamSignature = paramSignature;
+        this.MethodName = methodName;
+        this.Parameters = parameters;
+
+    }
+    public abstract void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters,
+        string MethodName, string[] paramSignature);
+    public abstract string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker);
+
+    public abstract void WriteCsMethodBody(FileStream fileStream);
 
     public void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
     {
@@ -1191,17 +1375,34 @@ $$"""
     [Theory]
 
 """u8);
-
         WriteCsTestCases(fileStream, compiler, monitorFile, Parameters, MethodName, ParamSignature);
-        var methodSignature = GetTestMethodSignature(ParamSignature);
-        WriteCsMethodBody(fileStream, methodSignature);
+        WriteCsMethodBody(fileStream);
+    }
+
+    public string FillPassingParameter(int parameterCount, string? lastItemName = null)
+    {
+        if (parameterCount == 0)
+            return string.Empty;
+
+        var sb = new StringBuilder();
+        for (var i = 0; i < parameterCount; i++)
+        {
+            if (i == (parameterCount - 1) && lastItemName != null)
+                sb.Append(lastItemName);
+            else
+                sb.Append("params")
+                    .Append(i);
+            sb.Append(", ");
+        }
+        sb.Remove(sb.Length - 2, 2);
+        return sb.ToString();
     }
 
     public string[] GetCResult(string compiler, string method, string? parameter, string monitorFile)
     {
         const string MARKER = "****************************************************************";
         var execFile = Path.Join(Environment.CurrentDirectory, "main");
-        var cMainBody = GetCMethodBody(method, parameter.ToCParams(AddLenInCCall, IsXcbStr), MARKER);
+        var cMainBody = GetCMethodBody(method, parameter, MARKER);
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -1275,62 +1476,6 @@ $$"""
         }
         return [.. result];
     }
-
-    public string GetCStringMacro() => IsXcbStr switch
-    {
-        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 => "",
-        STRType.XcbStr => """
-#define XS(s)                       \
-    ((const void *)&(const struct { \
-        uint8_t len;                \
-        char data[sizeof(s) - 1];   \
-    }){(uint8_t)(sizeof(s) - 1), s})
-""",
-        STRType.Xcb8 =>
-"""
-#define _XS_I(i, s) ((i < sizeof(s)-1) ? s[i] : 0)
-
-#define XS(s) \
-    sizeof(s) - 1, 0, \
-    _XS_I(0, s), _XS_I(1, s), _XS_I(2, s), _XS_I(3, s), \
-    _XS_I(4, s), _XS_I(5, s), _XS_I(6, s), _XS_I(7, s), \
-    _XS_I(8, s), _XS_I(9, s), _XS_I(10, s), _XS_I(11, s), \
-    _XS_I(12, s), _XS_I(13, s), _XS_I(14, s), _XS_I(15, s)
-
-""",
-        STRType.Xcb16 =>
-"""
-#define _XSI(i, s) ((i < sizeof(s) - 1) ? 0 : 0), ((i < sizeof(s) - 1) ? s[i] : 0)
-
-#define XS(s)                                             \
-    sizeof(s) - 1, 0,                                     \
-        _XSI(0, s), _XSI(1, s), _XSI(2, s), _XSI(3, s),   \
-        _XSI(4, s), _XSI(5, s), _XSI(6, s), _XSI(7, s),   \
-        _XSI(8, s), _XSI(9, s), _XSI(10, s), _XSI(11, s), \
-        _XSI(12, s), _XSI(13, s), _XSI(14, s), _XSI(15, s)
-""",
-        STRType.XcbStr16 =>
-"""
-
-#define _XS_I(str, i) \
-    { 0, (i < sizeof(str)-1 ? str[i] : 0) }
-
-#define XS(str)        \
-    {                  \
-        _XS_I(str, 0), \
-        _XS_I(str, 1), \
-        _XS_I(str, 2), \
-        _XS_I(str, 3), \
-        _XS_I(str, 4), \
-        _XS_I(str, 5), \
-        _XS_I(str, 6), \
-        _XS_I(str, 7), \
-        _XS_I(str, 8), \
-        _XS_I(str, 9) \
-    }
-""",
-        _ => throw new Exception(),
-    };
 }
 
 file interface IBuilder
