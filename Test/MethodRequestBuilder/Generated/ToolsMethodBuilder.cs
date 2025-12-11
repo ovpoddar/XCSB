@@ -56,7 +56,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, "items"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
-    new MethodDetails8_1("DependentOnDrawableGc", "PolySegment", ["$0, $1, new object[] {new Segment { X1 = 8, Y1 = 0, X2 = 8, Y2 = 15 }, new Segment { X1 = 0, Y1 = 8, X2 = 15, Y2 = 8 } }"], ["uint", "uint", "Segment[]"], true, "Xcsb.Models.Segment"),
+    new MethodDetails8_1("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
@@ -402,12 +402,6 @@ file static class StringHelper
         }
 
         return sb.ToString();
-    }
-
-    public static string Format(this string value, string[] values)
-    {
-        //todo: impl
-        return value;
     }
 
     public static string Fix(this string name)
@@ -1273,6 +1267,51 @@ $$"""
 
 """));
     }
+    public string Format(string value, string[] values)
+    {
+        var sb = new StringBuilder();
+        var content = value.AsSpan();
+        for (var i = 0; i < values.Length; i++)
+        {
+            var context = GetCsField(content, out var field);
+            content = content[context..];
+
+            if (field.Trim().Contains('$'))
+            {
+                sb.Append(values[i])
+                    .Append(", ");
+            }
+            else if (field.Trim().StartsWith('[') && field.Trim().EndsWith(']'))
+            {
+                sb.Append("\"")
+                    .Append(field.Trim().ToString().Replace("\"", "\\\""))
+                    .Append("\", ");
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+        return sb.ToString();
+    }
+
+    public int GetCsField(ReadOnlySpan<char> content, out ReadOnlySpan<char> field)
+    {
+        var comaIndex = content.IndexOf(',');
+        var objectStart = content.IndexOf('[');
+
+        if (objectStart > comaIndex)
+        {
+            field = content[..comaIndex];
+            return ++comaIndex;
+        }
+        else
+        {
+            var objectEnd = content.IndexOf(']');
+            field = content[..++objectEnd];
+            return objectEnd;
+        }
+    }
 
     public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile,
         string[] parameters, string methodName, string[] paramSignature)
@@ -1282,7 +1321,7 @@ $$"""
             var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
             fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
-    [InlineData({{parameter.Replace("\"", "\\\"").Format(cResponse)}}, new byte[] { 12, 23 })]
+    [InlineData({{Format(parameter, cResponse)}}new byte[] { {{cResponse[^1]}} })]
 
 """));
         }
@@ -1300,6 +1339,7 @@ file class MethodDetails8_1 : DynamicBuilder
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        // todo: parameter need to c type
         return
 $$"""
 #include <xcb/xcb.h>
@@ -1333,7 +1373,7 @@ int main()
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    cookie = {{functionName}}(connection, 0, 0, 10, (xcb_segment_t[])((xcb_segment_t){.x1=10, .x2=2, .y1=10, .y2=1}));
+    cookie = {{functionName}}(connection, 0, 0, 10, (xcb_segment_t[]){ {.x1 = 10, .x2 = 2, .y1 = 10, .y2 = 1}, {.x1 = 10, .x2 = 2, .y1 = 10, .y2 = 1 } });
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
 
