@@ -6,6 +6,7 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 // Global Set Up
 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -56,7 +57,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, "items"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
-    new MethodDetails8_1("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"]),
+    new MethodDetails8_1("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true),
 // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
@@ -1212,21 +1213,6 @@ $$"""
 """,
         _ => throw new Exception(),
     };
-
-    protected static string GetTestMethodSignature(string[] paramsSignature)
-    {
-        if (paramsSignature.Length == 0) return string.Empty;
-
-        var sb = new StringBuilder();
-
-        for (var i = 0; i < paramsSignature.Length; i++)
-            sb.Append(paramsSignature[i])
-                .Append(" params")
-                .Append(i)
-                .Append(", ");
-
-        return sb.ToString();
-    }
 }
 
 file abstract class DynamicBuilder : BaseBuilder
@@ -1242,7 +1228,7 @@ file abstract class DynamicBuilder : BaseBuilder
     {
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
-    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test(string parameter, byte[] expectedResult)
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}} byte[] expectedResult)
     {
        // arrange
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
@@ -1251,10 +1237,10 @@ $$"""
         var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
         var gc = _xProto.NewId();
         _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
-
+        var item = System.Text.Json.JsonSerializer.Deserialize<{{base.ParamSignature[^1]}}>(parameter);
 
         // act
-        bufferClient.{{MethodName}}({{base.FillPassingParameter(ParamSignature.Length)}});
+        bufferClient.{{MethodName}}({{base.FillPassingParameter(ParamSignature.Length, "item")}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1267,6 +1253,7 @@ $$"""
 
 """));
     }
+
     public string Format(string value, string[] values)
     {
         var sb = new StringBuilder();
@@ -1330,16 +1317,89 @@ $$"""
 
 file class MethodDetails8_1 : DynamicBuilder
 {
-    public MethodDetails8_1(string categories, string methodName, string[] parameters, string[] paramSignature)
-        : base(categories, methodName, parameters, paramSignature)
-    {
+    private readonly bool AddLen;
 
+    public MethodDetails8_1(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLen) : base(categories, methodName, parameters, paramSignature)
+    {
+        this.AddLen = addLen;
+    }
+
+    public string ToCParams(string? parameter, params string[] items)
+    {
+        var sb = new StringBuilder();
+        sb.Append("connection");
+        if (parameter == null)
+            return sb.ToString();
+
+        var content = parameter.AsSpan();
+        while (true)
+        {
+            var context = base.GetCsField(content, out var item);
+            content = content[context..];
+            sb.Append(", ");
+            var field = item.Trim();
+            var dollerIndex = field.IndexOf('$');
+            if (dollerIndex != -1)
+            {
+                var index = int.Parse(field[++dollerIndex..]);
+                sb.Append(items[index]);
+            }
+            var objectIndex = field.IndexOf('[');
+            if (objectIndex != -1)
+            {
+                var endObjectIndex = field.IndexOf(']');
+                if (endObjectIndex == -1) throw new InvalidFilterCriteriaException();
+                if (AddLen) sb.Append(CalculateLen(field[++objectIndex..endObjectIndex])).Append(", ");
+                sb.Append(CType()).Append('{');
+                WriteObject(sb, field[objectIndex..endObjectIndex]);
+                sb.Append('}');
+            }
+
+            if (content.Length == 0) break;
+        }
+        return sb.ToString();
+    }
+
+    private void WriteObject(StringBuilder sb, ReadOnlySpan<char> data)
+    {
+        var isStartCort = false;
+        foreach (var item in data)
+        {
+            if (item == '"')
+            {
+                isStartCort = !isStartCort;
+                if (isStartCort)
+                    sb.Append('.');
+                continue;
+            }
+            sb.Append(char.ToLower(item));
+        }
+    }
+
+    private string CType()
+    {
+        return base.ParamSignature[^1] == "Xcsb.Models.Segment[]"
+            ? "(xcb_segment_t[])"
+            : "";
+    }
+
+
+    public static int CalculateLen(ReadOnlySpan<char> content)
+    {
+        var result = 0;
+        foreach (var item in content)
+        {
+            if (item == '}')
+                result++;
+        }
+        return result;
     }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
-        // todo: parameter need to c type
+        var item = ToCParams(parameter, "params1", "params0");
         return
 $$"""
 #include <xcb/xcb.h>
@@ -1373,7 +1433,7 @@ int main()
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    cookie = {{functionName}}(connection, 0, 0, 10, (xcb_segment_t[]){ {.x1 = 10, .x2 = 2, .y1 = 10, .y2 = 1}, {.x1 = 10, .x2 = 2, .y1 = 10, .y2 = 1 } });
+    cookie = {{functionName}}({{item}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
 
@@ -1437,6 +1497,29 @@ file abstract class BaseBuilder : IBuilder
         sb.Remove(sb.Length - 2, 2);
         return sb.ToString();
     }
+
+
+    protected static string GetTestMethodSignature(string[] paramsSignature)
+    {
+        if (paramsSignature.Length == 0) return string.Empty;
+
+        var sb = new StringBuilder();
+
+        for (var i = 0; i < paramsSignature.Length; i++)
+            sb.Append(UpdateParameter(paramsSignature[i]))
+                .Append(" params")
+                .Append(i)
+                .Append(", ");
+
+        return sb.ToString();
+    }
+
+    private static ReadOnlySpan<char> UpdateParameter(ReadOnlySpan<char> value) =>
+        value switch
+        {
+            "Xcsb.Models.Segment[]" => "string",
+            _ => value
+        };
 
     public string[] GetCResult(string compiler, string method, string? parameter, string monitorFile)
     {
