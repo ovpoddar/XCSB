@@ -57,7 +57,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, "items"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
-    new MethodDetails8_1("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true),
+    new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment),
 // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
@@ -245,20 +245,45 @@ static string GetCCompiler()
 
 file static class StringHelper
 {
-    private static int CalculateLen(Span<string> value, STRType isXcbStr)
+    // private static int CalculateLen(Span<string> value, STRType isXcbStr)
+    // {
+    //     var result = 0;
+    //     foreach (var items in value)
+    //     {
+    //         if (items.Trim() == "}")
+    //             break;
+    //         if (isXcbStr is STRType.Xcb8 or STRType.Xcb16)
+    //             result += items.Length + 2;
+    //         else
+    //             result++;
+
+    //     }
+    //     return result + 1;
+    // }
+
+
+    public static int CalculateLen(ReadOnlySpan<char> content, STRType isXcbStr)
     {
         var result = 0;
-        foreach (var items in value)
+        foreach (var item in content)
         {
-            if (items.Trim() == "}")
-                break;
-            if (isXcbStr is STRType.Xcb8 or STRType.Xcb16)
-                result += items.Length + 2;
-            else
-                result++;
-
+            if (isXcbStr == STRType.XcbStr || isXcbStr == STRType.Xcb8 || isXcbStr == STRType.Xcb16)
+            {
+                if (item == '"') result++;
+                continue;
+            }
+            if (isXcbStr == STRType.XcbSegment)
+            {
+                if (item == '}')
+                {
+                    result++;
+                    continue;
+                }
+            }
         }
-        return result + 1;
+        if (isXcbStr is STRType.XcbStr or STRType.Xcb8 or STRType.Xcb16)
+            return result / 2;
+        return result;
     }
 
     private static string GetCItem(string field, STRType isXcbStr, bool addComma)
@@ -291,13 +316,75 @@ file static class StringHelper
         };
     }
 
-    public static string? ToCParams(this string? value, bool addLenInCCall, STRType isXcbStr)
+
+    private static void WriteCArray(StringBuilder sb, ReadOnlySpan<char> data, STRType type)
+    {
+        if (type == STRType.XcbStr)
+        {
+            var isStart = true;
+            foreach (var item in data)
+            {
+                switch (item)
+                {
+                    case '}':
+                        sb.Append(')');
+                        break;
+                    case '{':
+                        sb.Append('(');
+                        break;
+                    case '"':
+                        {
+                            if (isStart) sb.Append("XS(\"");
+                            else sb.Append("\")");
+                            isStart = !isStart;
+                            break;
+                        }
+                    default:
+                        sb.Append(item);
+                        break;
+                }
+            }
+        }
+        else if (type == STRType.Xcb8 || type == STRType.Xcb16 || type == STRType.XcbStr16)
+        {
+            var isStart = true;
+            foreach (var item in data)
+            {
+                switch (item)
+                {
+                    case '"':
+                        {
+                            if (isStart) sb.Append("XS(\"");
+                            else sb.Append("\")");
+                            isStart = !isStart;
+                            break;
+                        }
+                    default:
+                        sb.Append(item);
+                        break;
+                }
+            ;
+            }
+        }
+        else if (type == STRType.XcbUint || type == STRType.XcbByte || type == STRType.XcbStr8)
+        {
+            sb.Append(data);
+        }
+        else
+        {
+            throw new NotImplementedException(data.ToString() + type.ToString());
+        }
+    }
+
+    /*
+    public static string ToCParams(this string? value, STRType isXcbStr, bool addLenInCCall, params string[] formats)
     {
         if (string.IsNullOrWhiteSpace(value))
-            return null;
+            return "connection";
 
         var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var sb = new StringBuilder();
+        sb.Append("connection");
         if (isXcbStr is STRType.XcbStr8 or STRType.XcbStr16)
             sb.Append(',')
                 .Append(items[^1].Length);
@@ -338,8 +425,138 @@ file static class StringHelper
         }
         return sb.ToString();
     }
+    */
+    public static int GetCsField(ReadOnlySpan<char> content, out ReadOnlySpan<char> field)
+    {
+        for (var i = 0; i < content.Length; i++)
+        {
+            if (content[i] == 'n')
+            {
+                // new path
+                if (i + 3 > content.Length) continue; // has enough items
+                if (content[i + 1] != 'e' || content[i + 2] != 'w' || content[i + 3] != ' ') continue;
+                // its new 
+                var endIndex = content.IndexOf('}');
+                if (endIndex == -1) throw new InvalidDataException();
+                field = content[..++endIndex];
+                return endIndex;
+            }
+            else if (content[i] == '[')
+            {
+                // object path []
+                var endIndex = content.IndexOf(']');
+                if (endIndex == -1) throw new InvalidDataException();
+                field = content[i..++endIndex];
+                return endIndex;
+            }
+            else if (content[i] == ',')
+            {
+                // , path
+                field = content[..i];
+                return ++i;
+            }
+            else
+            {
+                continue;
+            }
+        }
 
-    private static string ReplaceOnece(this string value, char target, string replaced)
+        // last section
+        field = content[..];
+        return content.Length;
+    }
+
+
+    public static string ToCParams(this string? parameter, STRType lastElementType, bool addLen, params string[] items)
+    {
+        var sb = new StringBuilder();
+        sb.Append("connection");
+        if (string.IsNullOrWhiteSpace(parameter))
+            return sb.ToString();
+
+        var content = parameter.AsSpan();
+        while (true)
+        {
+            var context = GetCsField(content, out var item);
+            content = content[context..];
+            sb.Append(", ");
+            var field = item.Trim();
+            var targetIndex = field.IndexOf('$');
+            if (targetIndex != -1)
+            {
+                var index = int.Parse(field[++targetIndex..]);
+                sb.Append(items[index]);
+                if (content.Length == 0) break;
+                else continue;
+            }
+            targetIndex = field.IndexOf("new ");
+            if (targetIndex != -1 || field.StartsWith('"'))
+            {
+                targetIndex = field.IndexOf('{');
+                if (targetIndex == -1)
+                {
+                    switch (lastElementType)
+                    {
+                        case STRType.XcbStr16:
+                        case STRType.XcbStr8:
+                            break;
+                        default:
+                            throw new InvalidFilterCriteriaException();
+                    }
+                }
+                else
+                {
+                    field = field[targetIndex..];
+                }
+
+                if (addLen) sb.Append(CalculateLen(field, lastElementType)).Append(", ");
+                sb.Append('(')
+                    .Append(GetCType(lastElementType))
+                    .Append(')');
+                WriteCArray(sb, field, lastElementType);
+                break;
+            }
+
+            targetIndex = field.IndexOf('[');
+            if (targetIndex != -1)
+            {
+                var endObjectIndex = field.IndexOf(']');
+                if (endObjectIndex == -1) throw new InvalidFilterCriteriaException();
+                if (addLen) sb.Append(CalculateLen(field[++targetIndex..endObjectIndex], lastElementType)).Append(", ");
+                sb.Append(GetCType(lastElementType)).Append('{');
+                WriteObject(sb, field[targetIndex..endObjectIndex]);
+                sb.Append('}');
+                break;
+            }
+            if (bool.TryParse(field, out var boolValue))
+            {
+                sb.Append(boolValue ? "1 " : "0 ");
+                continue;
+            }
+
+            sb.Append(field);
+            if (content.Length == 0) break;
+        }
+        return sb.ToString();
+    }
+
+    private static void WriteObject(StringBuilder sb, ReadOnlySpan<char> data)
+    {
+        var isStartCort = false;
+        foreach (var item in data)
+        {
+            if (item == '"')
+            {
+                isStartCort = !isStartCort;
+                if (isStartCort)
+                    sb.Append('.');
+                continue;
+            }
+            sb.Append(char.ToLower(item));
+        }
+    }
+
+    public static string ReplaceOnece(this string value, char target, string replaced)
     {
         var sb = new StringBuilder();
         var isDone = false;
@@ -358,7 +575,7 @@ file static class StringHelper
         return sb.ToString();
     }
 
-    private static string ReplaceAtLast(this string value, char target, string replaced)
+    public static string ReplaceAtLast(this string value, char target, string replaced)
     {
         var sb = new StringBuilder();
         var i = value.LastIndexOf(target);
@@ -373,7 +590,7 @@ file static class StringHelper
         return sb.ToString();
     }
 
-    private static string GetCType(STRType isXcbStr) => isXcbStr switch
+    public static string GetCType(STRType isXcbStr) => isXcbStr switch
     {
         STRType.XcbStr8 or STRType.RawBuffer => "const char *",
         STRType.XcbByte => "uint8_t[]",
@@ -382,6 +599,7 @@ file static class StringHelper
         STRType.XcbStr => "xcb_str_t *",
         STRType.Xcb8 or STRType.Xcb16 => "const uint8_t[]",
         STRType.XcbStr16 => "const xcb_char2b_t[]",
+        STRType.XcbSegment => "(xcb_segment_t[])",
         _ => throw new Exception(isXcbStr.ToString()),
     };
 
@@ -428,7 +646,7 @@ file class MethodDetails1 : StaticBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -437,7 +655,6 @@ $$"""
 #include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
-
 {{GetCStringMacro()}}
 
 int main()
@@ -448,7 +665,7 @@ int main()
         return -1;
     }
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -470,7 +687,7 @@ file class MethodDetails2 : StaticBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "window");
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -489,18 +706,18 @@ int main()
     const xcb_setup_t *setup = xcb_get_setup(connection);
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
 
-    xcb_window_t params0 = xcb_generate_id(connection);
-    xcb_create_window(connection, 0, params0, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+    xcb_window_t window = xcb_generate_id(connection);
+    xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
                     screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
     
     xcb_flush(connection);
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params0);
+    fprintf(stderr, "%d\n", window);
     fprintf(stderr, "{{marker}}\n");
     
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -567,7 +784,6 @@ file class MethodDetails3 : StaticBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -606,7 +822,7 @@ file class MethodDetails4 : StaticBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "rootDepth", "newId", "root");
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -625,26 +841,26 @@ int main()
     const xcb_setup_t *setup = xcb_get_setup(connection);
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
 
-    uint8_t params0 = screen->root_depth;
-    xcb_window_t params1 = xcb_generate_id(connection);
-    xcb_window_t params2 = screen->root;
+    uint8_t rootDepth = screen->root_depth;
+    xcb_window_t newId = xcb_generate_id(connection);
+    xcb_window_t root = screen->root;
     xcb_flush(connection);
 
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params0);
+    fprintf(stderr, "%d\n", rootDepth);
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params1);
+    fprintf(stderr, "%d\n", newId);
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params2);
+    fprintf(stderr, "%d\n", root);
     fprintf(stderr, "{{marker}}\n");
     
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -695,7 +911,7 @@ file class MethodDetails5 : StaticBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "newId", "window");
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -712,22 +928,22 @@ int main()
         return -1;
     }
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-    xcb_window_t params0 = xcb_generate_id(connection);
+    xcb_window_t newId = xcb_generate_id(connection);
 
-    xcb_window_t params1 = xcb_generate_id(connection);
-    xcb_create_window(connection, 0, params1, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+    xcb_window_t window = xcb_generate_id(connection);
+    xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
                     screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
     
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params0);
+    fprintf(stderr, "%d\n", newId);
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params1);
+    fprintf(stderr, "%d\n", window);
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -778,7 +994,7 @@ file class MethodDetails6 : StaticBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "newId", "window", "visual");
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -795,27 +1011,27 @@ int main()
         return -1;
     }
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-    xcb_window_t params0 = xcb_generate_id(connection);
+    xcb_window_t newId = xcb_generate_id(connection);
 
-    xcb_window_t params1 = xcb_generate_id(connection);
-    xcb_create_window(connection, 0, params1, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+    xcb_window_t window = xcb_generate_id(connection);
+    xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
                     screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
-    xcb_window_t params2 = screen->root_visual;
+    xcb_window_t visual = screen->root_visual;
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params0);
-    fprintf(stderr, "{{marker}}\n");
-
-    fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params1);
+    fprintf(stderr, "%d\n", newId);
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params2);
+    fprintf(stderr, "%d\n", window);
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    fprintf(stderr, "%d\n", visual);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -867,7 +1083,7 @@ file class MethodDetails7 : StaticBuilder
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "pixmap");
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -884,17 +1100,17 @@ int main()
         return -1;
     }
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-    xcb_window_t params0 = xcb_generate_id(connection);
-    xcb_create_pixmap_checked(connection, 1, params0, screen->root, 16, 16);
+    xcb_window_t pixmap = xcb_generate_id(connection);
+    xcb_create_pixmap_checked(connection, 1, pixmap, screen->root, 16, 16);
     xcb_flush(connection);
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params0);
+    fprintf(stderr, "%d\n", pixmap);
     fprintf(stderr, "{{marker}}\n");
 
 
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
 
@@ -951,14 +1167,12 @@ file class MethodDetails8 : StaticBuilder
         _castType = castType;
     }
 
-    private string GetItems()
+    private string GetItems() => IsXcbStr switch
     {
-        if (base.IsXcbStr == STRType.XcbStr8)
-        {
-            return $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});";
-        }
-        return $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);";
-    }
+        STRType.XcbStr8 => $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});",
+        STRType.XcbSegment => $"var item = System.Text.Json.JsonSerializer.Deserialize<{ParamSignature[^1]}>(params{ParamSignature.Length});",
+        _ => $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);",
+    };
 
     public override void WriteCsMethodBody(FileStream fileStream)
     {
@@ -995,9 +1209,21 @@ $$"""
 """));
     }
 
+    private string CalculateSize(ReadOnlySpan<char> parameter)
+    {
+        var end = parameter.LastIndexOf('"');
+        var start = parameter.IndexOf('"');
+        if (end == -1 || start == -1) throw new Exception();
+
+        return $", {end - start}, ";
+    }
+
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(AddLenInCCall, IsXcbStr);
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "root", "gc");
+        if (IsXcbStr is STRType.XcbStr8 or STRType.XcbStr16)
+            parameter = parameter.ReplaceOnece(',', CalculateSize(parameter));
+
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -1016,9 +1242,9 @@ int main()
         return -1;
     }
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-    xcb_window_t params0 = screen->root;
-    xcb_gcontext_t params1 = xcb_generate_id(connection);
-    xcb_void_cookie_t cookie = xcb_create_gc_checked(connection, params1, screen->root, 4, (u_int32_t[]){screen->black_pixel});
+    xcb_window_t root = screen->root;
+    xcb_gcontext_t gc = xcb_generate_id(connection);
+    xcb_void_cookie_t cookie = xcb_create_gc_checked(connection, gc, screen->root, 4, (u_int32_t[]){screen->black_pixel});
     xcb_flush(connection);
 
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -1026,15 +1252,15 @@ int main()
         return -1;
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params0);
+    fprintf(stderr, "%d\n", root);
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params1);
+    fprintf(stderr, "%d\n", gc);
     fprintf(stderr, "{{marker}}\n");
 
     fprintf(stderr, "{{marker}}\n");
-    cookie = {{functionName}}(connection{{(parameter == null ? "" : parameter)}});
+    cookie = {{functionName}}({{parameter}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
 
@@ -1160,7 +1386,7 @@ $$"""
 
     public string GetCStringMacro() => IsXcbStr switch
     {
-        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 => "",
+        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 or STRType.XcbSegment => "",
         STRType.XcbStr =>
 """
 #define XS(s)                       \
@@ -1260,7 +1486,7 @@ $$"""
         var content = value.AsSpan();
         for (var i = 0; i < values.Length; i++)
         {
-            var context = GetCsField(content, out var field);
+            var context = StringHelper.GetCsField(content, out var field);
             content = content[context..];
 
             if (field.Trim().Contains('$'))
@@ -1282,23 +1508,6 @@ $$"""
         return sb.ToString();
     }
 
-    public int GetCsField(ReadOnlySpan<char> content, out ReadOnlySpan<char> field)
-    {
-        var comaIndex = content.IndexOf(',');
-        var objectStart = content.IndexOf('[');
-
-        if (objectStart > comaIndex)
-        {
-            field = content[..comaIndex];
-            return ++comaIndex;
-        }
-        else
-        {
-            var objectEnd = content.IndexOf(']');
-            field = content[..++objectEnd];
-            return objectEnd;
-        }
-    }
 
     public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile,
         string[] parameters, string methodName, string[] paramSignature)
@@ -1312,139 +1521,6 @@ $$"""
 
 """));
         }
-    }
-}
-
-file class MethodDetails8_1 : DynamicBuilder
-{
-    private readonly bool AddLen;
-
-    public MethodDetails8_1(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLen) : base(categories, methodName, parameters, paramSignature)
-    {
-        this.AddLen = addLen;
-    }
-
-    public string ToCParams(string? parameter, params string[] items)
-    {
-        var sb = new StringBuilder();
-        sb.Append("connection");
-        if (parameter == null)
-            return sb.ToString();
-
-        var content = parameter.AsSpan();
-        while (true)
-        {
-            var context = base.GetCsField(content, out var item);
-            content = content[context..];
-            sb.Append(", ");
-            var field = item.Trim();
-            var dollerIndex = field.IndexOf('$');
-            if (dollerIndex != -1)
-            {
-                var index = int.Parse(field[++dollerIndex..]);
-                sb.Append(items[index]);
-            }
-            var objectIndex = field.IndexOf('[');
-            if (objectIndex != -1)
-            {
-                var endObjectIndex = field.IndexOf(']');
-                if (endObjectIndex == -1) throw new InvalidFilterCriteriaException();
-                if (AddLen) sb.Append(CalculateLen(field[++objectIndex..endObjectIndex])).Append(", ");
-                sb.Append(CType()).Append('{');
-                WriteObject(sb, field[objectIndex..endObjectIndex]);
-                sb.Append('}');
-            }
-
-            if (content.Length == 0) break;
-        }
-        return sb.ToString();
-    }
-
-    private void WriteObject(StringBuilder sb, ReadOnlySpan<char> data)
-    {
-        var isStartCort = false;
-        foreach (var item in data)
-        {
-            if (item == '"')
-            {
-                isStartCort = !isStartCort;
-                if (isStartCort)
-                    sb.Append('.');
-                continue;
-            }
-            sb.Append(char.ToLower(item));
-        }
-    }
-
-    private string CType()
-    {
-        return base.ParamSignature[^1] == "Xcsb.Models.Segment[]"
-            ? "(xcb_segment_t[])"
-            : "";
-    }
-
-
-    public static int CalculateLen(ReadOnlySpan<char> content)
-    {
-        var result = 0;
-        foreach (var item in content)
-        {
-            if (item == '}')
-                result++;
-        }
-        return result;
-    }
-
-    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
-    {
-        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
-        var item = ToCParams(parameter, "params1", "params0");
-        return
-$$"""
-#include <xcb/xcb.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-
-int main()
-{
-    xcb_connection_t *connection = xcb_connect(NULL, NULL);
-    if (xcb_connection_has_error(connection))
-    {
-        return -1;
-    }
-    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-    xcb_window_t params0 = screen->root;
-    xcb_gcontext_t params1 = xcb_generate_id(connection);
-    xcb_void_cookie_t cookie = xcb_create_gc_checked(connection, params1, screen->root, 4, (u_int32_t[]){screen->black_pixel});
-    xcb_flush(connection);
-
-    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
-    if (error)
-        return -1;
-
-    fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params0);
-    fprintf(stderr, "{{marker}}\n");
-
-    fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", params1);
-    fprintf(stderr, "{{marker}}\n");
-
-    fprintf(stderr, "{{marker}}\n");
-    cookie = {{functionName}}({{item}});
-    xcb_flush(connection);
-    fprintf(stderr, "{{marker}}\n");
-
-    error = xcb_request_check(connection, cookie);
-    if (!error)
-        return 1;
-
-    free(error);
-    return -1;
-} 
-""";
     }
 }
 
@@ -1616,5 +1692,6 @@ file enum STRType
     XcbStr16,
     XcbUint,
     XcbInt,
-    XcbByte
+    XcbByte,
+    XcbSegment
 }
