@@ -1,4 +1,5 @@
 #:sdk Microsoft.NET.Sdk
+#:property TreatWarningsAsErrors=true
 
 using System.ComponentModel;
 using System.Diagnostics;
@@ -55,9 +56,9 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
     new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
     new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
-    new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, "items"),
+    new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
-    new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment),
+    new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment, ""),
 // new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
@@ -245,23 +246,6 @@ static string GetCCompiler()
 
 file static class StringHelper
 {
-    // private static int CalculateLen(Span<string> value, STRType isXcbStr)
-    // {
-    //     var result = 0;
-    //     foreach (var items in value)
-    //     {
-    //         if (items.Trim() == "}")
-    //             break;
-    //         if (isXcbStr is STRType.Xcb8 or STRType.Xcb16)
-    //             result += items.Length + 2;
-    //         else
-    //             result++;
-
-    //     }
-    //     return result + 1;
-    // }
-
-
     public static int CalculateLen(ReadOnlySpan<char> content, STRType isXcbStr)
     {
         var result = 0;
@@ -285,37 +269,6 @@ file static class StringHelper
             return result / 2;
         return result;
     }
-
-    private static string GetCItem(string field, STRType isXcbStr, bool addComma)
-    {
-        var fieldStart = field.IndexOf('{');
-        if (fieldStart == -1)
-            fieldStart = field.IndexOf('(');
-        if (fieldStart != -1)
-        {
-            field = field[fieldStart..];
-        }
-        else
-        {
-            if (field.Contains("="))
-                return ", ." + field
-                .ToLower();
-        }
-        return (addComma ? ", " : "") + isXcbStr switch
-        {
-            STRType.XcbStr => field
-                            .ReplaceOnece('"', "XS(\"")
-                            .ReplaceAtLast('"', "\")")
-                            .Replace('{', '(')
-                            .Replace('}', ')'),
-            STRType.Xcb8 or STRType.Xcb16 or STRType.XcbStr16 => field
-                            .ReplaceOnece('"', "XS(\"")
-                            .ReplaceAtLast('"', "\")"),
-            STRType.XcbStr8 or STRType.XcbUint or STRType.XcbByte or STRType.RawBuffer => field,
-            _ => throw new Exception($"{field} {isXcbStr}"),
-        };
-    }
-
 
     private static void WriteCArray(StringBuilder sb, ReadOnlySpan<char> data, STRType type)
     {
@@ -376,56 +329,6 @@ file static class StringHelper
         }
     }
 
-    /*
-    public static string ToCParams(this string? value, STRType isXcbStr, bool addLenInCCall, params string[] formats)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return "connection";
-
-        var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        var sb = new StringBuilder();
-        sb.Append("connection");
-        if (isXcbStr is STRType.XcbStr8 or STRType.XcbStr16)
-            sb.Append(',')
-                .Append(items[^1].Length);
-
-        var index = 0;
-        bool canCome = false;
-        foreach (var field in items)
-        {
-            index++;
-            if (field.StartsWith("new ") || canCome || field.StartsWith("\""))
-            {
-                canCome = true;
-                if (field.Contains("[]") || isXcbStr is STRType.XcbStr16)
-                {
-                    if (addLenInCCall)
-                    {
-                        sb.Append(", ")
-                            .Append(CalculateLen(items.AsSpan()[index..], isXcbStr));
-                    }
-                    sb.Append(", (")
-                        .Append(GetCType(isXcbStr))
-                        .Append(')')
-                        .Append(GetCItem(field, isXcbStr, false));
-                }
-                else
-                {
-                    sb.Append(GetCItem(field, isXcbStr, true));
-                }
-            }
-            else if (field.Contains('$'))
-                sb.Append($", ").Append(field.Replace("$", "params").Trim());
-            else if (field.Contains("false"))
-                sb.Append(", 0");
-            else if (field.Contains("true"))
-                sb.Append(", 1");
-            else
-                sb.Append(", ").Append(field);
-        }
-        return sb.ToString();
-    }
-    */
     public static int GetCsField(ReadOnlySpan<char> content, out ReadOnlySpan<char> field)
     {
         for (var i = 0; i < content.Length; i++)
@@ -570,21 +473,6 @@ file static class StringHelper
             }
 
             sb.Append(item);
-        }
-
-        return sb.ToString();
-    }
-
-    public static string ReplaceAtLast(this string value, char target, string replaced)
-    {
-        var sb = new StringBuilder();
-        var i = value.LastIndexOf(target);
-        for (var index = 0; index < value.Length; index++)
-        {
-            if (index == i)
-                sb.Append(replaced);
-            else
-                sb.Append(value[index]);
         }
 
         return sb.ToString();
@@ -1170,7 +1058,8 @@ file class MethodDetails8 : StaticBuilder
     private string GetItems() => IsXcbStr switch
     {
         STRType.XcbStr8 => $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});",
-        STRType.XcbSegment => $"var item = System.Text.Json.JsonSerializer.Deserialize<{ParamSignature[^1]}>(params{ParamSignature.Length});",
+        STRType.XcbSegment => $"var items = System.Text.Json.JsonSerializer.Deserialize<{ParamSignature[^1]}>(params{ParamSignature.Length - 1});",
+        STRType.XcbStr16 => "",
         _ => $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);",
     };
 
@@ -1188,12 +1077,10 @@ $$"""
         var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
         var gc = _xProto.NewId();
         _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
-        {{(string.IsNullOrWhiteSpace(_castType)
-            ? ""
-            : GetItems())}}
+        {{GetItems()}}
 
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (string.IsNullOrWhiteSpace(_castType) ? null : "items"))}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (_castType == null ? null : "items"))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1289,39 +1176,66 @@ file abstract class StaticBuilder : BaseBuilder
     public bool AddLenInCCall { get; }
     public STRType IsXcbStr { get; }
 
-    //todo: remove the string shit.
-    private static string GetField(string parameter, out string field)
+
+    public static string Format(string value, string[] values, string[] paramSignature)
     {
-        var result = "";
-        var canReturn = true;
-        for (int i = 0; i < parameter.Length; i++)
+        var sb = new StringBuilder();
+        var content = value.AsSpan();
+        for (var i = 0; i < paramSignature.Length; i++)
         {
-            if (parameter[i] == ',' && canReturn)
+            var context = StringHelper.GetCsField(content, out var field);
+            content = content[context..];
+            field = field.Trim();
+
+            if (field.Contains('$'))
             {
-                field = result;
-                return parameter[++i..];
+                var index = field.IndexOf('$');
+                sb.Append('(')
+                    .Append(paramSignature[i])
+                    .Append(')')
+                    .Append(int.Parse(field[++index..]))
+                    .Append(", ");
             }
-
-            if (parameter[i] == '"')
+            else if (field.StartsWith('[') && field.EndsWith(']'))
             {
-                if (canReturn)
-                    canReturn = false;
-                else
-                    canReturn = true;
+                sb.Append("\"")
+                    .Append(field.ToString().Replace("\"", "\\\""))
+                    .Append("\", ");
             }
-
-            if (parameter[i] == '{')
-                canReturn = false;
-
-            if (parameter[i] == '}')
-                canReturn = true;
-
-            result += parameter[i];
+            else if (field.Contains("[]", StringComparison.InvariantCultureIgnoreCase))
+            {
+                sb.Append(field)
+                    .Append(", ");
+            }
+            else
+            {
+                sb.Append('(')
+                    .Append(paramSignature[i])
+                    .Append(')')
+                    .Append(field)
+                    .Append(", ");
+            }
         }
 
-        field = result;
-        return "";
+        sb.Append("new byte[] {")
+            .Append(values[^1])
+            .Append('}');
 
+        return sb.ToString();
+    }
+
+    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile,
+        string[] parameters, string methodName, string[] paramSignature)
+    {
+        foreach (var parameter in parameters)
+        {
+            var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
+            fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{Format(parameter, cResponse, paramSignature)}})]
+
+"""));
+        }
     }
 
     public override void WriteCsMethodBody(FileStream fileStream)
@@ -1349,39 +1263,6 @@ $$"""
     }
 
 """));
-    }
-
-    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile,
-        string[] parameters, string MethodName, string[] paramSignature)
-    {
-        foreach (var testCase in parameters)
-        {
-            var cResponse = GetCResult(compiler, MethodName, testCase, monitorFile);
-
-            var veriables = "";
-            if (!string.IsNullOrWhiteSpace(testCase))
-            {
-                var tempStr = testCase;
-                foreach (var signature in paramSignature)
-                {
-                    tempStr = GetField(tempStr, out var field);
-                    if (field.Trim().Contains('$'))
-                        veriables += $"{cResponse[int.Parse(field.Trim().Replace("$", ""))]}, ";
-                    else if (field.Trim().StartsWith("new"))
-                        veriables += $"{field}, ";
-                    else
-                        veriables += $"({signature}){field}, ";
-                }
-            }
-
-            fileStream.Write(Encoding.UTF8.GetBytes(
-$$"""
-    [InlineData({{veriables}}new byte[] {{{cResponse[^1]}} })]
-
-"""));
-
-        }
-
     }
 
     public string GetCStringMacro() => IsXcbStr switch
@@ -1439,89 +1320,6 @@ $$"""
 """,
         _ => throw new Exception(),
     };
-}
-
-file abstract class DynamicBuilder : BaseBuilder
-{
-    private readonly string Categories;
-    public DynamicBuilder(string categories, string methodName, string[] parameters, string[] paramSignature)
-        : base(parameters, methodName, paramSignature)
-    {
-        this.Categories = categories;
-    }
-
-    public override void WriteCsMethodBody(FileStream fileStream)
-    {
-        fileStream.Write(Encoding.UTF8.GetBytes(
-$$"""
-    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}} byte[] expectedResult)
-    {
-       // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
-            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
-        var gc = _xProto.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
-        var item = System.Text.Json.JsonSerializer.Deserialize<{{base.ParamSignature[^1]}}>(parameter);
-
-        // act
-        bufferClient.{{MethodName}}({{base.FillPassingParameter(ParamSignature.Length, "item")}});
-        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
-
-        // assert
-        Assert.NotNull(buffer);
-        Assert.NotNull(expectedResult);
-        Assert.NotEmpty(buffer);
-        Assert.NotEmpty(expectedResult);
-        Assert.True(expectedResult.SequenceEqual(buffer));
-    }
-
-"""));
-    }
-
-    public string Format(string value, string[] values)
-    {
-        var sb = new StringBuilder();
-        var content = value.AsSpan();
-        for (var i = 0; i < values.Length; i++)
-        {
-            var context = StringHelper.GetCsField(content, out var field);
-            content = content[context..];
-
-            if (field.Trim().Contains('$'))
-            {
-                sb.Append(values[i])
-                    .Append(", ");
-            }
-            else if (field.Trim().StartsWith('[') && field.Trim().EndsWith(']'))
-            {
-                sb.Append("\"")
-                    .Append(field.Trim().ToString().Replace("\"", "\\\""))
-                    .Append("\", ");
-            }
-            else
-            {
-                throw new Exception();
-            }
-        }
-        return sb.ToString();
-    }
-
-
-    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile,
-        string[] parameters, string methodName, string[] paramSignature)
-    {
-        foreach (var parameter in parameters)
-        {
-            var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
-            fileStream.Write(Encoding.UTF8.GetBytes(
-$$"""
-    [InlineData({{Format(parameter, cResponse)}}new byte[] { {{cResponse[^1]}} })]
-
-"""));
-        }
-    }
 }
 
 file abstract class BaseBuilder : IBuilder
