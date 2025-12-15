@@ -59,7 +59,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
     new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment, ""),
-// new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
+    new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1, [{ \"X\" = 50, \"Y\" = 50, \"Width\" = 100, \"Height\" = 80 }, { \"X\" = 200, \"Y\" = 100, \"Width\" = 120, \"Height\" = 60 }, { \"X\" = 100, \"Y\" = 180, \"Width\" = 80, \"Height\" = 90 }]"], ["uint", "uint", "string"], true, STRType.XcbRectangle, ""),
 // new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1,"], ["uint", "uint", "Arc[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1,"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Point[]"]),
 // new MethodDetails8("DependentOnDrawableGc", "PolyFillRectangle", ["$0, $1,"], ["uint", "uint", "Rectangle[]"]),
@@ -256,18 +256,31 @@ file static class StringHelper
                 if (item == '"') result++;
                 continue;
             }
-            if (isXcbStr == STRType.XcbSegment)
+            if (isXcbStr is STRType.XcbSegment or STRType.XcbRectangle)
             {
                 if (item == '}')
-                {
                     result++;
-                    continue;
-                }
+
+                continue;
             }
+            if (isXcbStr == STRType.XcbByte)
+            {
+                if (item == ',')
+                    result++;
+
+                continue;
+            }
+            throw new NotImplementedException(isXcbStr.ToString());
         }
-        if (isXcbStr is STRType.XcbStr or STRType.Xcb8 or STRType.Xcb16)
-            return result / 2;
-        return result;
+        switch (isXcbStr)
+        {
+            case STRType.XcbStr or STRType.Xcb8 or STRType.Xcb16:
+                return result / 2;
+            case STRType.XcbByte:
+                return ++result;
+            default:
+                return result;
+        }
     }
 
     private static void WriteCArray(StringBuilder sb, ReadOnlySpan<char> data, STRType type)
@@ -488,6 +501,7 @@ file static class StringHelper
         STRType.Xcb8 or STRType.Xcb16 => "const uint8_t[]",
         STRType.XcbStr16 => "const xcb_char2b_t[]",
         STRType.XcbSegment => "(xcb_segment_t[])",
+        STRType.XcbRectangle => "(xcb_rectangle_t[])",
         _ => throw new Exception(isXcbStr.ToString()),
     };
 
@@ -1058,9 +1072,10 @@ file class MethodDetails8 : StaticBuilder
     private string GetItems() => IsXcbStr switch
     {
         STRType.XcbStr8 => $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});",
-        STRType.XcbSegment => $"var items = System.Text.Json.JsonSerializer.Deserialize<{ParamSignature[^1]}>(params{ParamSignature.Length - 1});",
+        STRType.XcbSegment or STRType.XcbRectangle => $"var items = System.Text.Json.JsonSerializer.Deserialize<{ParamSignature[^1]}>(params{ParamSignature.Length - 1});",
         STRType.XcbStr16 => "",
-        _ => $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);",
+        STRType.Xcb8 or STRType.Xcb16 => $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);",
+        _ => throw new NotImplementedException(IsXcbStr.ToString())
     };
 
     public override void WriteCsMethodBody(FileStream fileStream)
@@ -1267,7 +1282,7 @@ $$"""
 
     public string GetCStringMacro() => IsXcbStr switch
     {
-        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 or STRType.XcbSegment => "",
+        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 or STRType.XcbSegment or STRType.XcbRectangle => "",
         STRType.XcbStr =>
 """
 #define XS(s)                       \
@@ -1491,5 +1506,6 @@ file enum STRType
     XcbUint,
     XcbInt,
     XcbByte,
-    XcbSegment
+    XcbSegment,
+    XcbRectangle
 }
