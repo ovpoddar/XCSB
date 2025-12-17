@@ -24,7 +24,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails1("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
     new MethodDetails1("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
     new MethodDetails1("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
-    new MethodDetails1("IndependentMethod", "SetFontPath", [$"new string[] {{ \"built-ins\" , \"{Environment.CurrentDirectory}\" }}", $"new string[] {{\"{Environment.CurrentDirectory}\", \"/usr/bin\"}}", "new string[] {\"build-ins\"}"], ["string[]"], true, STRType.XcbStr),
+    new MethodDetails1("IndependentMethod", "SetFontPath", [$"new string[] {{ \"fixed\" , \"{Environment.CurrentDirectory}\" }}", $"new string[] {{\"{Environment.CurrentDirectory}\", \"/usr/bin\"}}", "new string[] {\"build-ins\"}"], ["string[]"], true, STRType.XcbStr),
     new MethodDetails1("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
     new MethodDetails1("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false, STRType.XcbUint),
     new MethodDetails1("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
@@ -664,11 +664,13 @@ int main()
         return
 $$"""
         var {{name}} = _xProto.NewId();
-        var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
-        _xProto.CreateWindowChecked(0, {{name}}, screen.Root, 0, 0, 100, 100, 0, ClassType.InputOutput,
-                    screen.RootVisualId, ValueMask.BackgroundPixel | ValueMask.EventMask, [0, (uint)(EventMask.ExposureMask)]);
+        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        _xProto.CreateWindowChecked(0, {{name}}, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
+                    screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
 """;
     }
+
+    public virtual string GetMethodNameUpdated(string name) => name;
 
     public override void WriteCsMethodBody(FileStream fileStream)
     {
@@ -682,10 +684,10 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        {{WriteUpValueOfCsSetup(out var typeName)}}
+{{WriteUpValueOfCsSetup(out var typeName)}}
 
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        bufferClient.{{GetMethodNameUpdated(MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -710,14 +712,61 @@ file class MethodDetails2Dynamic : MethodDetails2
         _type = type;
     }
 
+    public override string GetMethodNameUpdated(string name)
+    {
+        if (base.MethodName == "FreeGc")
+            return base.GetMethodNameUpdated(name).Fix();
+        return base.GetMethodNameUpdated(name);
+    }
+
     public override string WriteUpValueOfCsSetup(out string name)
     {
-        return base.WriteUpValueOfCsSetup(out name);
+        name = _type.ToString().ToLower();
+        return _type switch
+        {
+            DynamicType.Gc =>
+$"""
+    var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+    var window = _xProto.NewId();
+    _xProto.CreateWindowChecked(0, window, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
+                    screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
+    var {name} = _xProto.NewId();
+    _xProto.CreateGCChecked({name}, window, (Xcsb.Masks.GCMask)(4|8), [screen.BlackPixel, screen.WhitePixel]);
+""",
+            DynamicType.FontId =>
+$"""
+    var {name} = _xProto.NewId();
+    _xProto.OpenFontChecked("fixed", {name});
+
+""",
+            DynamicType.PixmapId =>
+$"""
+    var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+    var {name} = _xProto.NewId();
+    _xProto.CreatePixmapChecked(screen.RootDepth!.DepthValue, {name}, screen.Root, 1, 1);
+""",
+            DynamicType.CursorId =>
+$"""
+    var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+    
+    var window = _xProto.NewId();
+    _xProto.CreateWindowChecked(0, window, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
+                           screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
+    var src = _xProto.NewId();
+    _xProto.CreatePixmapChecked(1, src, window, 8, 8);
+    var mask = _xProto.NewId();
+    _xProto.CreatePixmapChecked(1, mask, window, 8, 8);
+     var {name} = _xProto.NewId();
+    _xProto.CreateCursorChecked(
+        {name}, src, mask, 0, 0, 0, 65535, 65535, 65535, 0, 0);
+""",
+            _ => throw new NullReferenceException()
+        };
     }
 
     public override string WriteUpValueOfCSetup(out string name)
     {
-        name = _type.ToString().ToLower(System.Globalization.CultureInfo.InvariantCulture);
+        name = _type.ToString().ToLower();
         return _type switch
         {
             DynamicType.Gc =>
@@ -791,9 +840,15 @@ $$"""
     
 """,
             DynamicType.FontId =>
-$"""
-    xcb_font_t {name} = xcb_generate_id(connection);
-    xcb_open_font(connection, {name}, 9, "built-ins");
+$$"""
+    xcb_font_t {{name}} = xcb_generate_id(connection);
+    xcb_void_cookie_t c = xcb_open_font_checked(connection, {{name}}, 5, "fixed");
+    xcb_generic_error_t *e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
 """,
             DynamicType.PixmapId =>
 $$"""
@@ -1549,7 +1604,7 @@ file abstract class BaseBuilder : IBuilder
     private static ReadOnlySpan<char> UpdateParameter(ReadOnlySpan<char> value) =>
         value switch
         {
-            "Xcsb.Models.Segment[]" or "Xcsb.Models.Rectangle[]" or "Xcsb.Models.Arc[]" or "Xcsb.Models.Poient[]" => "string",
+            "Xcsb.Models.Segment[]" or "Xcsb.Models.Rectangle[]" or "Xcsb.Models.Arc[]" or "Xcsb.Models.Point[]" => "string",
             _ => value
         };
 
@@ -1575,7 +1630,7 @@ file abstract class BaseBuilder : IBuilder
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-
+        System.Console.WriteLine(cMainBody);
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
