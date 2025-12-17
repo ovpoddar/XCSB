@@ -1270,7 +1270,7 @@ file class MethodDetails8 : StaticBuilder
     private string GetItems() => IsXcbStr switch
     {
         STRType.XcbStr8 => $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});",
-        STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient => $"var items = System.Text.Json.JsonSerializer.Deserialize<{ParamSignature[^1]}>(params{ParamSignature.Length - 1});",
+        STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient => $"var items = System.Text.Json.JsonSerializer.Deserialize<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));",
         STRType.XcbStr16 => "",
         STRType.Xcb8 or STRType.Xcb16 => $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);",
         _ => throw new NotImplementedException(IsXcbStr.ToString())
@@ -1400,13 +1400,14 @@ file abstract class StaticBuilder : BaseBuilder
             content = content[context..];
             field = field.Trim();
 
-            if (field.Contains('$'))
+            var index = field.IndexOf('$');
+            if (index != -1)
             {
-                var index = field.IndexOf('$');
+                field = field[++index..];
                 sb.Append('(')
                     .Append(paramSignature[i])
                     .Append(')')
-                    .Append(int.Parse(field[++index..]))
+                    .Append(values[int.Parse(field)])
                     .Append(", ");
             }
             else if (field.StartsWith('[') && field.EndsWith(']'))
