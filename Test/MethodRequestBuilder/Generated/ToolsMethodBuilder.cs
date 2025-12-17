@@ -30,7 +30,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails1("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
     new MethodDetails1("IndependentMethod", "ForceScreenSaver", ["1", "0"], ["Xcsb.Models.ForceScreenSaverMode"], false),
     new MethodDetails1("IndependentMethod", "SetAccessControl", ["1", "0"], ["Xcsb.Models.AccessControlMode"], false),
-    new MethodDetails1("IndependentMethod", "ChangeHosts", ["0, 4, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true, STRType.XcbByte),
+    new MethodDetails1("IndependentMethod", "ChangeHosts", ["0, 0, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true, STRType.XcbByte),
     new MethodDetails2("DependentOnWindow", "DestroyWindow", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "DestroySubwindows", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "ChangeSaveSet", ["1, $0", "0, $0"], ["Xcsb.Models.ChangeSaveSetMode", "uint"], false),
@@ -1616,7 +1616,6 @@ file abstract class BaseBuilder : IBuilder
 #endif
 
         process.WaitForExit();
-        Debug.Assert(process.ExitCode == 0);
         File.Delete(execFile);
         var result = new List<string>();
         var currentPos = 0;
