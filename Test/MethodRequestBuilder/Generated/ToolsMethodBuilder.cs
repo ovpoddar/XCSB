@@ -47,6 +47,10 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
+    new MethodDetails2Dynamic("DependentOnfontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
+    new MethodDetails2Dynamic("DependentOnpixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
+    new MethodDetails2Dynamic("DependentOngc", "FreeGc", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.Gc),
+    new MethodDetails2Dynamic("DependentOncursorId", "FreeCursor", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.CursorId),
     new MethodDetails3("SpecialMethod", "NoOperation"),
     new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"] , ["byte", "uint", "uint", "ushort", "ushort"]),
     new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
@@ -68,6 +72,7 @@ IBuilder[] noParamMethod = [
 // CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
 // CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
 
+
 // CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
 // ReparentWindow                    (uint window, uint parent, short x, short y)
 // ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
@@ -79,13 +84,10 @@ IBuilder[] noParamMethod = [
 // ChangeActivePointerGrab           (uint cursor, uint time, ushort mask)
 // WarpPointer                       (uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destinationX, short destinationY)
 // OpenFont                          (string fontName, uint fontId)
-// CloseFont                         (uint fontId)
-// FreePixmap                        (uint pixmapId)
 // ChangeGC                          (uint gc, GCMask mask, Span<uint> args)
 // CopyGC                            (uint srcGc, uint dstGc, GCMask mask)
 // SetDashes                         (uint gc, ushort dashOffset, Span<byte> dashes)
 // SetClipRectangles                 (ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles)
-// FreeGC                            (uint gc)
 // ClearArea                         (bool exposures, uint window, short x, short y, ushort width, ushort height)
 // CopyArea                          (uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX, ushort destinationY, ushort width, ushort height)
 // CopyPlane                         (uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
@@ -96,7 +98,6 @@ IBuilder[] noParamMethod = [
 // FreeColors                        (uint colormapId, uint planeMask, Span<uint> pixels)
 // StoreColors                       (uint colormapId, Span<ColorItem> item)
 // StoreNamedColor                   (ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
-// FreeCursor                        (uint cursorId)
 // RecolorCursor                     (uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
 
@@ -574,7 +575,7 @@ int main()
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
     if (!error)
-        return 1;
+        return 0;
 
     free(error);
     return -1;
@@ -589,9 +590,19 @@ file class MethodDetails2 : StaticBuilder
         bool addLenInCCall) : base(categories, methodName, parameters, paramSignature, addLenInCCall, STRType.XcbUint)
     { }
 
+    public virtual string WriteUpValueOfCSetup(out string name)
+    {
+        name = "window";
+        return
+$$"""
+    xcb_window_t {{name}} = xcb_generate_id(connection);
+    xcb_create_window(connection, 0, {{name}}, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+""";
+    }
+
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "window");
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
@@ -609,24 +620,22 @@ int main()
     }
     const xcb_setup_t *setup = xcb_get_setup(connection);
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-
-    xcb_window_t window = xcb_generate_id(connection);
-    xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
     
+{{WriteUpValueOfCSetup(out var type)}}
+
     xcb_flush(connection);
 
     fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d\n", window);
+    fprintf(stderr, "%d\n", {{type}});
     fprintf(stderr, "{{marker}}\n");
     
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter.ToCParams(IsXcbStr, AddLenInCCall, type)}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
     if (!error)
-        return 1;
+        return 0;
 
     free(error);
     return -1;
@@ -649,6 +658,18 @@ int main()
     }
 
 
+    public virtual string WriteUpValueOfCsSetup(out string name)
+    {
+        name = "window";
+        return
+$$"""
+        var {{name}} = _xProto.NewId();
+        var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
+        _xProto.CreateWindowChecked(0, {{name}}, screen.Root, 0, 0, 100, 100, 0, ClassType.InputOutput,
+                    screen.RootVisualId, ValueMask.BackgroundPixel | ValueMask.EventMask, [0, (uint)(EventMask.ExposureMask)]);
+""";
+    }
+
     public override void WriteCsMethodBody(FileStream fileStream)
     {
         var methodSignature = GetTestMethodSignature(ParamSignature);
@@ -661,14 +682,14 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var window = _xProto.NewId();
+        {{WriteUpValueOfCsSetup(out var typeName)}}
 
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
-        Assert.Equal(window, {{hasWindowPlaceHolder}});
+        Assert.Equal({{typeName}}, {{hasWindowPlaceHolder}});
         Assert.NotNull(buffer);
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
@@ -677,6 +698,126 @@ $$"""
     }
 
 """));
+    }
+}
+
+file class MethodDetails2Dynamic : MethodDetails2
+{
+    private readonly DynamicType _type;
+    public MethodDetails2Dynamic(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, DynamicType type) : base(categories, methodName, parameters, paramSignature, addLenInCCall)
+    {
+        _type = type;
+    }
+
+    public override string WriteUpValueOfCsSetup(out string name)
+    {
+        return base.WriteUpValueOfCsSetup(out name);
+    }
+
+    public override string WriteUpValueOfCSetup(out string name)
+    {
+        name = _type.ToString().ToLower(System.Globalization.CultureInfo.InvariantCulture);
+        return _type switch
+        {
+            DynamicType.Gc =>
+$$"""
+
+    xcb_window_t window = xcb_generate_id(connection);
+    xcb_void_cookie_t c = xcb_create_window_checked(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                                                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+    xcb_generic_error_t *e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
+
+    xcb_gcontext_t {{name}} = xcb_generate_id(connection);
+    c = xcb_create_gc_checked(connection, {{name}}, window, 4|8, (uint32_t[]){screen->black_pixel, screen->white_pixel});
+    e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
+""",
+            DynamicType.CursorId =>
+$$"""
+    xcb_window_t window = xcb_generate_id(connection);
+    xcb_void_cookie_t c = xcb_create_window_checked(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                                                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+    xcb_generic_error_t *e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
+
+    xcb_pixmap_t src = xcb_generate_id(connection);
+    c = xcb_create_pixmap_checked(connection, 1, src, window, 8, 8);
+    e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
+
+    xcb_pixmap_t mask = xcb_generate_id(connection);
+    c = xcb_create_pixmap_checked(connection, 1, mask, window, 8, 8);
+    e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
+
+    xcb_cursor_t {{name}} = xcb_generate_id(connection);
+    c = xcb_create_cursor_checked(
+        connection,
+        {{name}},
+        src,
+        mask,
+        0, 0, 0,                 
+        65535, 65535, 65535,     
+        0, 0                     
+    );
+    e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
+    
+""",
+            DynamicType.FontId =>
+$"""
+    xcb_font_t {name} = xcb_generate_id(connection);
+    xcb_open_font(connection, {name}, 9, "built-ins");
+""",
+            DynamicType.PixmapId =>
+$$"""
+    xcb_pixmap_t {{name}} = xcb_generate_id(connection);
+    uint8_t rootDepth = screen->root_depth;
+    xcb_window_t root = screen->root;
+    xcb_void_cookie_t c = xcb_create_pixmap_checked(connection, rootDepth, {{name}}, root, 1, 1);
+    xcb_generic_error_t *e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
+""",
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public enum DynamicType
+    {
+        FontId,
+        PixmapId,
+        Gc,
+        CursorId
     }
 }
 
@@ -710,7 +851,7 @@ int main()
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
     if (!error)
-        return 1;
+        return 0;
 
     free(error);
     return -1;
@@ -769,7 +910,7 @@ int main()
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
     if (!error)
-        return 1;
+        return 0;
 
     free(error);
     return -1;
@@ -852,7 +993,7 @@ int main()
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
     if (!error)
-        return 1;
+        return 0;
 
     free(error);
     return -1;
@@ -940,7 +1081,7 @@ int main()
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
     if (!error)
-        return 1;
+        return 0;
 
     free(error);
     return -1;
@@ -1020,7 +1161,7 @@ int main()
 
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
     if (!error)
-        return 1;
+        return 0;
 
     free(error);
     return -1;
@@ -1170,7 +1311,7 @@ int main()
 
     error = xcb_request_check(connection, cookie);
     if (!error)
-        return 1;
+        return 0;
 
     free(error);
     return -1;
@@ -1474,6 +1615,8 @@ file abstract class BaseBuilder : IBuilder
         var response = process.StandardError.ReadToEnd();
 #endif
 
+        process.WaitForExit();
+        Debug.Assert(process.ExitCode == 0);
         File.Delete(execFile);
         var result = new List<string>();
         var currentPos = 0;
