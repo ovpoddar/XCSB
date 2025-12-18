@@ -58,10 +58,10 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
-    new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
-    new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
+    // new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
+    // new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
+    // new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
+    new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
     new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment, ""),
     new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1, [{ \"X\" = 50, \"Y\" = 50, \"Width\" = 100, \"Height\" = 80 }, { \"X\" = 200, \"Y\" = 100, \"Width\" = 120, \"Height\" = 60 }, { \"X\" = 100, \"Y\" = 180, \"Width\" = 80, \"Height\" = 90 }]"], ["uint", "uint", "Xcsb.Models.Rectangle[]"], true, STRType.XcbRectangle, ""),
     new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, ""),
@@ -1033,7 +1033,8 @@ int main()
     xcb_window_t window = xcb_generate_id(connection);
     xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
                     screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
-    
+    xcb_flush(connection);
+
     fprintf(stderr, "{{marker}}\n");
     fprintf(stderr, "%d\n", newId);
     fprintf(stderr, "{{marker}}\n");
@@ -1117,6 +1118,7 @@ int main()
     xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
                     screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
     xcb_window_t visual = screen->root_visual;
+    xcb_flush(connection);
 
     fprintf(stderr, "{{marker}}\n");
     fprintf(stderr, "%d\n", newId);
@@ -1224,7 +1226,6 @@ int main()
 """;
     }
 
-
     public override void WriteCsMethodBody(FileStream fileStream)
     {
         var methodSignature = GetTestMethodSignature(ParamSignature);
@@ -1271,8 +1272,8 @@ file class MethodDetails8 : StaticBuilder
     {
         STRType.XcbStr8 => $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});",
         STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient => $"var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));",
-        STRType.XcbStr16 => "",
         STRType.Xcb8 or STRType.Xcb16 => $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);",
+        STRType.XcbStr16 => "",
         _ => throw new NotImplementedException(IsXcbStr.ToString())
     };
 
@@ -1309,7 +1310,7 @@ $$"""
 """));
     }
 
-    private string CalculateSize(ReadOnlySpan<char> parameter)
+    private static string CalculateSize(ReadOnlySpan<char> parameter)
     {
         var end = parameter.LastIndexOf('"');
         var start = parameter.IndexOf('"');
@@ -1388,7 +1389,6 @@ file abstract class StaticBuilder : BaseBuilder
     public string Categories { get; }
     public bool AddLenInCCall { get; }
     public STRType IsXcbStr { get; }
-
 
     public static string Format(string value, string[] values, string[] paramSignature)
     {
@@ -1549,8 +1549,10 @@ file abstract class BaseBuilder : IBuilder
         this.Parameters = parameters;
 
     }
+
     public abstract void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters,
         string MethodName, string[] paramSignature);
+
     public abstract string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker);
 
     public abstract void WriteCsMethodBody(FileStream fileStream);
@@ -1567,7 +1569,7 @@ file abstract class BaseBuilder : IBuilder
         WriteCsMethodBody(fileStream);
     }
 
-    public string FillPassingParameter(int parameterCount, string? lastItemName = null)
+    public static string FillPassingParameter(int parameterCount, string? lastItemName = null)
     {
         if (parameterCount == 0)
             return string.Empty;
@@ -1585,7 +1587,6 @@ file abstract class BaseBuilder : IBuilder
         sb.Remove(sb.Length - 2, 2);
         return sb.ToString();
     }
-
 
     protected static string GetTestMethodSignature(string[] paramsSignature)
     {

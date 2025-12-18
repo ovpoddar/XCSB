@@ -42,4 +42,11 @@
         <Folder Include="Generated\" />
     </ItemGroup>
   </Target>
+  <Target Name="CleanUps" BeforeTargets="Clean">
+    
+    <ItemGroup>
+      <GeneratedFiles Include="Generated\**\*Generated.cs" />
+    </ItemGroup>
+    <Delete Files="@(GeneratedFiles)" />
+  </Target>
 </Project>
