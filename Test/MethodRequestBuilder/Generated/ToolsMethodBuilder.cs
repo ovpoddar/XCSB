@@ -500,7 +500,7 @@ file static class StringHelper
         STRType.XcbUint => "uint32_t[]",
         STRType.XcbStr => "xcb_str_t *",
         STRType.Xcb8 or STRType.Xcb16 => "const uint8_t[]",
-        STRType.XcbStr16 => "const xcb_char2b_t[]",
+        STRType.XcbStr16 => "xcb_char2b_t *",
         STRType.XcbSegment => "(xcb_segment_t[])",
         STRType.XcbRectangle => "(xcb_rectangle_t[])",
         STRType.XcbArc => "(xcb_arc_t[])",
@@ -1316,7 +1316,7 @@ $$"""
         var start = parameter.IndexOf('"');
         if (end == -1 || start == -1) throw new Exception();
 
-        return $", {end - start}, ";
+        return $", {end - start - 1}, ";
     }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
@@ -1332,6 +1332,7 @@ $$"""
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 {{GetCStringMacro()}}
 
@@ -1515,22 +1516,19 @@ $$"""
 """,
         STRType.XcbStr16 =>
 """
-#define _XS_I(str, i) \
-    { 0, (i < sizeof(str)-1 ? str[i] : 0) }
-
-#define XS(str)        \
-    {                  \
-        _XS_I(str, 0), \
-        _XS_I(str, 1), \
-        _XS_I(str, 2), \
-        _XS_I(str, 3), \
-        _XS_I(str, 4), \
-        _XS_I(str, 5), \
-        _XS_I(str, 6), \
-        _XS_I(str, 7), \
-        _XS_I(str, 8), \
-        _XS_I(str, 9) \
+xcb_char2b_t *XS(const char *data)
+{
+    int len = strlen(data);
+    // i know its not right
+    // but it will claim by os after program end
+    xcb_char2b_t *buf = calloc(len, sizeof(xcb_char2b_t));
+    for (int i = 0; i < len; ++i)
+    {
+        buf[i].byte1 = 0;
+        buf[i].byte2 = data[i];
     }
+    return buf;
+}
 """,
         _ => throw new Exception(),
     };
