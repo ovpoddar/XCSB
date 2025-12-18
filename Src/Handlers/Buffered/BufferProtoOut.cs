@@ -25,12 +25,11 @@ internal class BufferProtoOut : ProtoBase
         RequestLength++;
     }
 
-    internal void AddRange(ReadOnlySpan<byte> buffer)
+    internal void AddRange<T>(ReadOnlySpan<T> content) where T : struct
     {
-        var scratchBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
-        buffer.CopyTo(scratchBuffer);
-        _buffer.AddRange(scratchBuffer.Take(buffer.Length));
-        ArrayPool<byte>.Shared.Return(scratchBuffer);
+        ReadOnlySpan<byte> buffers = MemoryMarshal.Cast<T, byte>(content);
+        foreach (var item in buffers)
+            _buffer.Add(item);
     }
 
     internal void Add(byte value) =>
@@ -58,5 +57,5 @@ internal class BufferProtoOut : ProtoBase
         base.SendExact(in buffer, socketFlags);
         ProtoOut.Sequence += RequestLength;
     }
-    
+
 }

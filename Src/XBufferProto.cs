@@ -48,7 +48,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new ChangeGCType(gc, mask, args.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        BufferProtoOut.AddRange(args);
 
     }
 
@@ -65,14 +65,14 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new ChangeKeyboardControlType(mask, args.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        BufferProtoOut.AddRange(args);
     }
 
     public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> keysym)
     {
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(keysym));
+        BufferProtoOut.AddRange(keysym);
     }
 
     public void ChangePointerControl(Acceleration acceleration, ushort? threshold)
@@ -94,7 +94,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
         var request = new ChangePropertyType(mode, window, property, type, args.Length, (byte)(size * 8));
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<T, byte>(args));
+        BufferProtoOut.AddRange(args);
         BufferProtoOut.AddRange(new byte[args.Length.Padding()]);
     }
 
@@ -111,7 +111,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        BufferProtoOut.AddRange(args);
     }
 
     public void CirculateWindow(Circulate circulate, uint window)
@@ -138,7 +138,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
         var request = new ConfigureWindowType(window, mask, args.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        BufferProtoOut.AddRange(args);
     }
 
     public void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
@@ -199,7 +199,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        BufferProtoOut.AddRange(args);
     }
 
     public void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
@@ -222,7 +222,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        BufferProtoOut.AddRange(args);
     }
 
     public void DeleteProperty(uint window, ATOM atom)
@@ -247,7 +247,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<Point, byte>(points));
+        BufferProtoOut.AddRange(points);
     }
 
     public void FlushChecked() =>
@@ -274,7 +274,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(pixels));
+        BufferProtoOut.AddRange(pixels);
 
     }
 
@@ -371,7 +371,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new NoOperationType(args.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<uint, byte>(args));
+        BufferProtoOut.AddRange(args);
     }
 
     public void OpenFont(string fontName, uint fontId)
@@ -387,49 +387,49 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new PolyArcType(drawable, gc, arcs.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<Arc, byte>(arcs));
+        BufferProtoOut.AddRange(arcs);
     }
 
     public void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs)
     {
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<Arc, byte>(arcs));
+        BufferProtoOut.AddRange(arcs);
     }
 
     public void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+        BufferProtoOut.AddRange(rectangles);
     }
 
     public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<Point, byte>(points));
+        BufferProtoOut.AddRange(points);
     }
 
     public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<Point, byte>(points));
+        BufferProtoOut.AddRange(points);
     }
 
     public void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+        BufferProtoOut.AddRange(rectangles);
     }
 
     public void PolySegment(uint drawable, uint gc, Span<Segment> segments)
     {
         var request = new PolySegmentType(drawable, gc, segments.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<Segment, byte>(segments));
+        BufferProtoOut.AddRange(segments);
     }
 
     public void PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
@@ -476,7 +476,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<ATOM, byte>(properties));
+        BufferProtoOut.AddRange(properties);
     }
 
     public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt)
@@ -495,7 +495,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+        BufferProtoOut.AddRange(rectangles);
     }
 
     public void SetCloseDownMode(CloseDownMode mode)
@@ -546,7 +546,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
     {
         var request = new StoreColorsType(colormapId, item.Length);
         BufferProtoOut.Add(ref request);
-        BufferProtoOut.AddRange(MemoryMarshal.Cast<ColorItem, byte>(item));
+        BufferProtoOut.AddRange(item);
         BufferProtoOut.Add(0);
     }
 
