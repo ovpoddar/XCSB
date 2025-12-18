@@ -327,7 +327,7 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         var request = new ImageText16Type(drawable, gc, x, y, text.Length);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(Encoding.BigEndianUnicode.GetBytes(text.ToString()));
-        BufferProtoOut.AddRange(new byte[text.Length.Padding()]);
+        BufferProtoOut.AddRange(new byte[(16 + (text.Length * 2)).Padding()]);
 
     }
 
