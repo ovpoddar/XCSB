@@ -59,8 +59,8 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
     // new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
-    // new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
-    // new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1,0, 0, \"XCB System Control Demo\" "], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
+    new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
     new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment, ""),
     new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1, [{ \"X\" = 50, \"Y\" = 50, \"Width\" = 100, \"Height\" = 80 }, { \"X\" = 200, \"Y\" = 100, \"Width\" = 120, \"Height\" = 60 }, { \"X\" = 100, \"Y\" = 180, \"Width\" = 80, \"Height\" = 90 }]"], ["uint", "uint", "Xcsb.Models.Rectangle[]"], true, STRType.XcbRectangle, ""),
@@ -247,6 +247,25 @@ static string GetCCompiler()
 
 file static class StringHelper
 {
+
+    public static int CalculateSize(this ReadOnlySpan<char> parameter)
+    {
+        var toCount = false;
+        var result = 0;
+        foreach (var item in parameter)
+        {
+            if (item == '"')
+            {
+                toCount = !toCount;
+                continue;
+            }
+            if (toCount)
+                result++;
+
+        }
+        return result;
+    }
+
     public static int CalculateLen(ReadOnlySpan<char> content, STRType isXcbStr)
     {
         var result = 0;
@@ -275,7 +294,9 @@ file static class StringHelper
         }
         switch (isXcbStr)
         {
-            case STRType.XcbStr or STRType.Xcb8 or STRType.Xcb16:
+            case STRType.Xcb16:
+                return (result / 2) + content.CalculateSize() * 2;
+            case STRType.XcbStr or STRType.Xcb8:
                 return result / 2;
             case STRType.XcbByte:
                 return ++result;
@@ -312,7 +333,26 @@ file static class StringHelper
                 }
             }
         }
-        else if (type == STRType.Xcb8 || type == STRType.Xcb16 || type == STRType.XcbStr16)
+        else if (type == STRType.Xcb16)
+        {
+            sb.Append("XS");
+            foreach (var item in data)
+            {
+                switch (item)
+                {
+                    case '{':
+                        sb.Append('(');
+                        break;
+                    case '}':
+                        sb.Append(')');
+                        break;
+                    default:
+                        sb.Append(item);
+                        break;
+                }
+            }
+        }
+        else if (type == STRType.Xcb8 || type == STRType.XcbStr16)
         {
             var isStart = true;
             foreach (var item in data)
@@ -330,7 +370,6 @@ file static class StringHelper
                         sb.Append(item);
                         break;
                 }
-            ;
             }
         }
         else if (type == STRType.XcbUint || type == STRType.XcbByte || type == STRType.XcbStr8)
@@ -499,7 +538,7 @@ file static class StringHelper
         STRType.XcbInt => "int32_t[]",
         STRType.XcbUint => "uint32_t[]",
         STRType.XcbStr => "xcb_str_t *",
-        STRType.Xcb8 or STRType.Xcb16 => "const uint8_t[]",
+        STRType.Xcb8 or STRType.Xcb16 => "uint8_t *",
         STRType.XcbStr16 => "xcb_char2b_t *",
         STRType.XcbSegment => "(xcb_segment_t[])",
         STRType.XcbRectangle => "(xcb_rectangle_t[])",
@@ -1310,20 +1349,11 @@ $$"""
 """));
     }
 
-    private static string CalculateSize(ReadOnlySpan<char> parameter)
-    {
-        var end = parameter.LastIndexOf('"');
-        var start = parameter.IndexOf('"');
-        if (end == -1 || start == -1) throw new Exception();
-
-        return $", {end - start - 1}, ";
-    }
-
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
         parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "root", "gc");
         if (IsXcbStr is STRType.XcbStr8 or STRType.XcbStr16)
-            parameter = parameter.ReplaceOnece(',', CalculateSize(parameter));
+            parameter = parameter.ReplaceOnece(',', $", {parameter.CalculateSize()}, ");
 
         var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
@@ -1333,6 +1363,7 @@ $$"""
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdarg.h>
 
 {{GetCStringMacro()}}
 
@@ -1505,14 +1536,46 @@ $$"""
 """,
         STRType.Xcb16 =>
 """
-#define _XSI(i, s) ((i < sizeof(s) - 1) ? 0 : 0), ((i < sizeof(s) - 1) ? s[i] : 0)
 
-#define XS(s)                                             \
-    sizeof(s) - 1, 0,                                     \
-        _XSI(0, s), _XSI(1, s), _XSI(2, s), _XSI(3, s),   \
-        _XSI(4, s), _XSI(5, s), _XSI(6, s), _XSI(7, s),   \
-        _XSI(8, s), _XSI(9, s), _XSI(10, s), _XSI(11, s), \
-        _XSI(12, s), _XSI(13, s), _XSI(14, s), _XSI(15, s)
+uint8_t *__XS(int count, ...)
+{
+    va_list args;
+    int size = 0;
+    int workingIndex = 0;
+
+    va_start(args, count);
+    for (int i = 0; i < count; i++)
+    {
+        size += strlen(va_arg(args, const char *)) * 2;
+        size++;
+    }
+    va_end(args);
+
+    uint8_t *result = malloc(size);
+    if (!result)
+        return NULL;
+
+    va_start(args, count);
+    while (workingIndex < size)
+    {
+        const char *text = va_arg(args, const char *);
+        result[workingIndex++] = (uint8_t)strlen(text);
+        for (size_t i = 0; i < strlen(text); i++)
+        {
+            result[workingIndex++] = (uint8_t)0;
+            result[workingIndex++] = (uint8_t)text[i];
+        }
+    }
+    va_end(args);
+    return result;
+}
+#define PP_NARG(...) PP_NARG_(__VA_ARGS__, PP_RSEQ_N())
+#define PP_NARG_(...) PP_ARG_N(__VA_ARGS__)
+#define PP_ARG_N(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, N, ...) N
+#define PP_RSEQ_N() 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+
+#define XS(...) __XS(PP_NARG(__VA_ARGS__), __VA_ARGS__)
+
 """,
         STRType.XcbStr16 =>
 """
