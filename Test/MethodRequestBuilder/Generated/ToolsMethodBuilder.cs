@@ -58,8 +58,8 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
-    // new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
     new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment, ""),
@@ -295,8 +295,10 @@ file static class StringHelper
         switch (isXcbStr)
         {
             case STRType.Xcb16:
-                return (result / 2) + content.CalculateSize() * 2;
-            case STRType.XcbStr or STRType.Xcb8:
+                return result + content.CalculateSize() * 2;
+            case STRType.Xcb8:
+                return result + content.CalculateSize();
+            case STRType.XcbStr:
                 return result / 2;
             case STRType.XcbByte:
                 return ++result;
@@ -333,7 +335,7 @@ file static class StringHelper
                 }
             }
         }
-        else if (type == STRType.Xcb16)
+        else if (type == STRType.Xcb16 || type == STRType.Xcb8)
         {
             sb.Append("XS");
             foreach (var item in data)
@@ -352,7 +354,7 @@ file static class StringHelper
                 }
             }
         }
-        else if (type == STRType.Xcb8 || type == STRType.XcbStr16)
+        else if (type == STRType.XcbStr16)
         {
             var isStart = true;
             foreach (var item in data)
@@ -1524,15 +1526,45 @@ $$"""
 """,
         STRType.Xcb8 =>
 """
-#define _XS_I(i, s) ((i < sizeof(s)-1) ? s[i] : 0)
+uint8_t *__XS(int count, ...)
+{
+    va_list args;
+    int size = 0;
+    int workingIndex = 0;
 
-#define XS(s) \
-    sizeof(s) - 1, 0, \
-    _XS_I(0, s), _XS_I(1, s), _XS_I(2, s), _XS_I(3, s), \
-    _XS_I(4, s), _XS_I(5, s), _XS_I(6, s), _XS_I(7, s), \
-    _XS_I(8, s), _XS_I(9, s), _XS_I(10, s), _XS_I(11, s), \
-    _XS_I(12, s), _XS_I(13, s), _XS_I(14, s), _XS_I(15, s)
+    va_start(args, count);
+    for (int i = 0; i < count; i++)
+    {
+        size += strlen(va_arg(args, const char *));
+        size++;
+        size++;
+    }
+    va_end(args);
 
+    uint8_t *result = malloc(size);
+    if (!result)
+        return NULL;
+
+    va_start(args, count);
+    while (workingIndex < size)
+    {
+        const char *text = va_arg(args, const char *);
+        result[workingIndex++] = (uint8_t)strlen(text);
+        result[workingIndex++] = (uint8_t)0;
+        for (size_t i = 0; i < strlen(text); i++)
+        {
+            result[workingIndex++] = (uint8_t)text[i];
+        }
+    }
+    va_end(args);
+    return result;
+}
+#define PP_NARG(...) PP_NARG_(__VA_ARGS__, PP_RSEQ_N())
+#define PP_NARG_(...) PP_ARG_N(__VA_ARGS__)
+#define PP_ARG_N(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, N, ...) N
+#define PP_RSEQ_N() 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+
+#define XS(...) __XS(PP_NARG(__VA_ARGS__), __VA_ARGS__)
 """,
         STRType.Xcb16 =>
 """
@@ -1548,6 +1580,7 @@ uint8_t *__XS(int count, ...)
     {
         size += strlen(va_arg(args, const char *)) * 2;
         size++;
+        size++;
     }
     va_end(args);
 
@@ -1560,6 +1593,7 @@ uint8_t *__XS(int count, ...)
     {
         const char *text = va_arg(args, const char *);
         result[workingIndex++] = (uint8_t)strlen(text);
+        result[workingIndex++] = (uint8_t)0;
         for (size_t i = 0; i < strlen(text); i++)
         {
             result[workingIndex++] = (uint8_t)0;
@@ -1693,7 +1727,7 @@ file abstract class BaseBuilder : IBuilder
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-
+        System.Console.WriteLine(cMainBody);
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
