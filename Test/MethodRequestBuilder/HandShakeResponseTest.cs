@@ -404,6 +404,7 @@ public class HandShakeResponseTest
         /// Act
         var formats = xcsb.HandshakeSuccessResponseBody.Formats;
         /// Assert
+        Assert.NotNull(xcb);
         Assert.Equal(xcb.Count, formats.Length);
         for (int i = 0; i < xcb.Count; i++)
         {
@@ -426,6 +427,7 @@ public class HandShakeResponseTest
         /// Act
         var depthes = xcsb.HandshakeSuccessResponseBody.Screens.SelectMany(a => a.Depths).ToList();
         /// Assert
+        Assert.NotNull(xcb);
         for (var i = 0; i < depthes.Count; i++)
         {
             var csItem = depthes[i];
@@ -447,6 +449,7 @@ public class HandShakeResponseTest
         /// Act
         var depthes = xcsb.HandshakeSuccessResponseBody.Screens.SelectMany(a => a.Depths.SelectMany(a => a.Visuals)).ToList();
         /// Assert
+        Assert.NotNull(xcb);
         Assert.Equal(depthes.Count, xcb.Count);
         foreach (var item in depthes)
         {

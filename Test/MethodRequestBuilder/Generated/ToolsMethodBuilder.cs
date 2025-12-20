@@ -1727,27 +1727,27 @@ file abstract class BaseBuilder : IBuilder
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-        System.Console.WriteLine(cMainBody);
+        
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
 
 #if DOCKERENV
-            process = new Process
+        process = new Process
+        {
+            StartInfo = new ProcessStartInfo
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "xvfb-run",
-                    Arguments = $"-a env LD_PRELOAD={monitorFile} {execFile}",
-                    UseShellExecute = false,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardInput = true,
-                    CreateNoWindow = true
-                }
-            };
-            process.Start();
-            var response = process.StandardOutput.ReadToEnd();
+                FileName = "xvfb-run",
+                Arguments = $"-a env LD_PRELOAD={monitorFile} {execFile}",
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                CreateNoWindow = true
+            }
+        };
+        process.Start();
+        var response = process.StandardOutput.ReadToEnd();
 #else
         process = new Process
         {
@@ -1767,7 +1767,7 @@ file abstract class BaseBuilder : IBuilder
         var response = process.StandardError.ReadToEnd();
 #endif
 
-        process.WaitForExit();
+        //process.WaitForExit();
         File.Delete(execFile);
         var result = new List<string>();
         var currentPos = 0;
