@@ -69,37 +69,38 @@ IBuilder[] noParamMethod = [
     new MethodDetails8("DependentOnDrawableGc", "PolyFillRectangle", ["$0, $1,  [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["uint", "uint", "Xcsb.Models.Rectangle[]"], true, STRType.XcbRectangle, ""),
     new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, "")
 ];
+// ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+// RotateProperties                  (uint window, ushort delta, Span<ATOM> properties)
+// ChangeGC                          (uint gc, GCMask mask, Span<uint> args)
+// SetDashes                         (uint gc, ushort dashOffset, Span<byte> dashes)
+// SetClipRectangles                 (ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles)
+// PolyPoint                         (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+// PolyLine                          (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+// PutImage                          (ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y, byte leftPad, byte depth, Span<byte> data)
+// FreeColors                        (uint colormapId, uint planeMask, Span<uint> pixels)
+// StoreColors                       (uint colormapId, Span<ColorItem> item)
+// StoreNamedColor                   (ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
+// ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
+// CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+
+
 // CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
 // CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
 
-
-// CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
 // ReparentWindow                    (uint window, uint parent, short x, short y)
-// ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
 // DeleteProperty                    (uint window, ATOM atom)
-// RotateProperties                  (uint window, ushort delta, Span<ATOM> properties)
 // SetSelectionOwner                 (uint owner, ATOM atom, uint timestamp)
 // ConvertSelection                  (uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
 // SendEvent                         (bool propagate, uint destination, uint eventMask, XEvent evnt)
 // ChangeActivePointerGrab           (uint cursor, uint time, ushort mask)
 // WarpPointer                       (uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destinationX, short destinationY)
 // OpenFont                          (string fontName, uint fontId)
-// ChangeGC                          (uint gc, GCMask mask, Span<uint> args)
 // CopyGC                            (uint srcGc, uint dstGc, GCMask mask)
-// SetDashes                         (uint gc, ushort dashOffset, Span<byte> dashes)
-// SetClipRectangles                 (ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles)
 // ClearArea                         (bool exposures, uint window, short x, short y, ushort width, ushort height)
 // CopyArea                          (uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX, ushort destinationY, ushort width, ushort height)
 // CopyPlane                         (uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
-// PolyPoint                         (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
-// PolyLine                          (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
-// PutImage                          (ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y, byte leftPad, byte depth, Span<byte> data)
 // CopyColormapAndFree               (uint colormapId, uint srcColormapId)
-// FreeColors                        (uint colormapId, uint planeMask, Span<uint> pixels)
-// StoreColors                       (uint colormapId, Span<ColorItem> item)
-// StoreNamedColor                   (ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
 // RecolorCursor                     (uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
-// ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
 
 
 // new("IndependentMethod", "ChangePointerControl", ["new Xcsb.Models.Acceleration(1, 1), 4"], ["Xcsb.Models.Acceleration", "ushort"], false), // special case when the params being different
