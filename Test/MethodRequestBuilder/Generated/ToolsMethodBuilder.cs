@@ -302,6 +302,7 @@ file static class StringHelper
             case STRType.XcbStr:
                 return result / 2;
             case STRType.XcbByte:
+            case STRType.XcbAtom:
                 return ++result;
             default:
                 return result;
@@ -764,7 +765,7 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 {{WriteUpValueOfCsSetup(out var typeName)}}
 
-{{GetItems(out var name)}}
+        {{GetItems(out var name)}}
 
         // act
         bufferClient.{{GetMethodNameUpdated(MethodName)}}({{FillPassingParameter(ParamSignature.Length, name)}});
