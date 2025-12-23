@@ -425,6 +425,18 @@ file static class StringHelper
         return content.Length;
     }
 
+    public static ReadOnlySpan<char> GetLastItem(this ReadOnlySpan<char> content)
+    {
+        ReadOnlySpan<char> result;
+        while (true)
+        {
+            var context = GetCsField(content, out result);
+            content = content[context..];
+            if (content.Length == 0) break;
+        }
+
+        return result;
+    }
 
     public static string ToCParams(this string? parameter, STRType lastElementType, bool addLen, params string[] items)
     {
@@ -515,17 +527,21 @@ file static class StringHelper
         }
     }
 
-    public static string ReplaceOnece(this string value, char target, string replaced)
+    public static string ReplaceOnece(this string value, char target, string replaced, int targetIndex = 0)
     {
         var sb = new StringBuilder();
-        var isDone = false;
-        foreach (var item in value)
+        var foundIndex = -1;
+        for (int i = 0; i < value.Length; i++)
         {
-            if (item == target && !isDone)
+            char item = value[i];
+            if (item == target)
             {
-                sb.Append(replaced);
-                isDone = true;
-                continue;
+                foundIndex++;
+                if (targetIndex == foundIndex)
+                {
+                    sb.Append(replaced);
+                    continue;
+                }
             }
 
             sb.Append(item);
@@ -629,7 +645,8 @@ int main()
 file class MethodDetails2 : StaticBuilder
 {
     public MethodDetails2(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall) : base(categories, methodName, parameters, paramSignature, addLenInCCall, STRType.XcbUint)
+        bool addLenInCCall, STRType strType = STRType.XcbUint) : base(categories, methodName, parameters, paramSignature,
+        addLenInCCall, strType)
     { }
 
     public virtual string WriteUpValueOfCSetup(out string name)
@@ -645,7 +662,11 @@ $$"""
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        var workingTypes = WriteUpValueOfCSetup(out var type);
+        var lastParameter = parameter.GetLastItem();
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, type);
+        if (base.IsXcbStr == STRType.XcbByte)
+            parameter = parameter.ReplaceOnece(',', $", {StringHelper.CalculateLen(lastParameter, IsXcbStr)}, ", 1);
         return
 $$"""
 #include <xcb/xcb.h>
@@ -663,7 +684,7 @@ int main()
     const xcb_setup_t *setup = xcb_get_setup(connection);
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
     
-{{WriteUpValueOfCSetup(out var type)}}
+{{workingTypes}}
 
     xcb_flush(connection);
 
@@ -672,7 +693,7 @@ int main()
     fprintf(stderr, "{{marker}}\n");
     
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}({{parameter.ToCParams(IsXcbStr, AddLenInCCall, type)}});
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked({{parameter}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -1728,7 +1749,7 @@ file abstract class BaseBuilder : IBuilder
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-        System.Console.WriteLine(cMainBody);
+
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
