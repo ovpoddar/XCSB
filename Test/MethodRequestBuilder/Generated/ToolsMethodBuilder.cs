@@ -47,7 +47,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow",    "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "Span<ATOM>"], false, STRType.XcbByte),
+    new MethodDetails2("DependentOnWindow",    "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "Span<ATOM>"], false, STRType.XcbAtom),
     new MethodDetails2Dynamic("DependentOnfontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
     new MethodDetails2Dynamic("DependentOnpixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
     new MethodDetails2Dynamic("DependentOngc", "FreeGc", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.Gc),
@@ -284,7 +284,7 @@ file static class StringHelper
 
                 continue;
             }
-            if (isXcbStr == STRType.XcbByte)
+            if (isXcbStr is STRType.XcbByte or STRType.XcbAtom)
             {
                 if (item == ',')
                     result++;
@@ -375,7 +375,7 @@ file static class StringHelper
                 }
             }
         }
-        else if (type == STRType.XcbUint || type == STRType.XcbByte || type == STRType.XcbStr8)
+        else if (type == STRType.XcbUint || type == STRType.XcbByte || type == STRType.XcbStr8 || type == STRType.XcbAtom)
         {
             sb.Append(data);
         }
@@ -563,6 +563,7 @@ file static class StringHelper
         STRType.XcbRectangle => "(xcb_rectangle_t[])",
         STRType.XcbArc => "(xcb_arc_t[])",
         STRType.XcbPoient => "(xcb_point_t[])",
+        STRType.XcbAtom => "xcb_atom_t[]",
         _ => throw new Exception(isXcbStr.ToString()),
     };
 
@@ -665,7 +666,7 @@ $$"""
         var workingTypes = WriteUpValueOfCSetup(out var type);
         var lastParameter = parameter.GetLastItem();
         parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, type);
-        if (base.IsXcbStr == STRType.XcbByte)
+        if (base.IsXcbStr == STRType.XcbAtom)
             parameter = parameter.ReplaceOnece(',', $", {StringHelper.CalculateLen(lastParameter, IsXcbStr)}, ", 1);
         return
 $$"""
@@ -1827,5 +1828,6 @@ file enum STRType
     XcbSegment,
     XcbRectangle,
     XcbArc,
-    XcbPoient
+    XcbPoient,
+    XcbAtom
 }
