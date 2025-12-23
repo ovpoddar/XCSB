@@ -47,7 +47,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow",    "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "Span<ATOM>"], false, STRType.XcbAtom),
+    new MethodDetails2("DependentOnWindow",    "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
     new MethodDetails2Dynamic("DependentOnfontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
     new MethodDetails2Dynamic("DependentOnpixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
     new MethodDetails2Dynamic("DependentOngc", "FreeGc", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.Gc),
@@ -736,6 +736,20 @@ $$"""
 
     public virtual string GetMethodNameUpdated(string name) => name;
 
+    private string? GetItems(out string? name)
+    {
+        if (IsXcbStr == STRType.XcbAtom)
+        {
+            name = "items";
+            return $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => (Xcsb.Models.ATOM)a);";
+        }
+        else
+        {
+            name = null;
+            return null;
+        }
+    }
+
     public override void WriteCsMethodBody(FileStream fileStream)
     {
         var methodSignature = GetTestMethodSignature(ParamSignature);
@@ -750,8 +764,10 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 {{WriteUpValueOfCsSetup(out var typeName)}}
 
+{{GetItems(out var name)}}
+
         // act
-        bufferClient.{{GetMethodNameUpdated(MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
+        bufferClient.{{GetMethodNameUpdated(MethodName)}}({{FillPassingParameter(ParamSignature.Length, name)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
