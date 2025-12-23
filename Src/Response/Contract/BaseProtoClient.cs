@@ -89,6 +89,9 @@ internal class BaseProtoClient
 
     protected ResponseProto ChangeGCBase(uint gc, GCMask mask, Span<uint> args)
     {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
         var request = new ChangeGCType(gc, mask, args.Length);
         var requiredBuffer = request.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)

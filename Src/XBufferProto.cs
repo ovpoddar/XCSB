@@ -46,6 +46,9 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 
     public void ChangeGC(uint gc, GCMask mask, Span<uint> args)
     {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
         var request = new ChangeGCType(gc, mask, args.Length);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(args);
