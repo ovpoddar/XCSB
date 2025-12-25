@@ -48,19 +48,25 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow",    "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
-    new MethodDetails2Dynamic("DependentOnfontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
-    new MethodDetails2Dynamic("DependentOnpixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
-    new MethodDetails2Dynamic("DependentOngc", "FreeGc", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.Gc),
-    new MethodDetails2Dynamic("DependentOncursorId", "FreeCursor", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.CursorId),
+    new MethodDetails2Dynamic("DependentOnFontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
+    new MethodDetails2Dynamic("DependentOnPixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
+    new MethodDetails2Dynamic("DependentOnGc", "FreeGc", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.Gc),
+    new MethodDetails2Dynamic("DependentOnCursorId", "FreeCursor", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.CursorId),
+    new MethodDetails2Dynamic("DependentOnGc", "ChangeGc", ["$0, 4, new uint[] {4294967295}"], ["uint", "Xcsb.Masks.GCMask", "uint[]"], false, MethodDetails2Dynamic.DynamicType.Gc),
+    new MethodDetails2Dynamic("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbByte),
+    new MethodDetails2Dynamic("DependentOnGc", "SetClipRectangles", ["0, $0, 0, 0, [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["Xcsb.Models.ClipOrdering", "uint", "ushort", "ushort", "Xcsb.Models.Rectangle[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbRectangle),
     new MethodDetails3("SpecialMethod", "NoOperation"),
-    new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"] , ["byte", "uint", "uint", "ushort", "ushort"]),
+    new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"], ["byte", "uint", "uint", "ushort", "ushort"]),
     new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
     new MethodDetails6("DependentOnWindowId", "CreateColormap", ["0, $0, $1, $2", "1, $0, $1, $2"], ["Xcsb.Models.ColormapAlloc", "uint", "uint", "uint"]),
     new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
+    new MethodDetails7("DependentOnColorMap", "FreeColors", ["$0, 0, new uint[] {16711680}"], ["uint", "uint", "uint[]"], true, STRType.XcbUint),
+// new MethodDetails7("DependentOnColorMap", "StoreColors", [], [uint colormapId, Span<ColorItem> item]),
+    new MethodDetails7("DependentOnColorMap", "StoreNamedColor", ["1, $0, 16711680, \"red\""], ["Xcsb.Models.ColorFlag", "uint", "uint" , "string"], true, STRType.XcbStr8),
     new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
     new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment, ""),
@@ -68,18 +74,12 @@ IBuilder[] noParamMethod = [
     new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, ""),
     new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1, 0, 0, [{ \"X\" = 120, \"Y\" = 130 }, { \"X\" = 80, \"Y\" = 180 }, { \"X\" = 160, \"Y\" = 180 }]", "$0, $1, 2, 1, [{ \"X\" = 120, \"Y\" = 130 }, { \"X\" = 80, \"Y\" = 180 }, { \"X\" = 160, \"Y\" = 180 }]"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
     new MethodDetails8("DependentOnDrawableGc", "PolyFillRectangle", ["$0, $1,  [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["uint", "uint", "Xcsb.Models.Rectangle[]"], true, STRType.XcbRectangle, ""),
-    new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, "")
+    new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, ""),
+    new MethodDetails8("DependentOnDrawableGc", "PolyPoint",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
+    new MethodDetails8("DependentOnDrawableGc", "PolyLine",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint",  "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
+    new MethodDetails8("DependentOnDrawableGc", "PutImage",["2, $0, $1, 2, 2, 0, 0, 0, 0, new byte[] {255, 0, 0, 255, 255,255,0,255, 255, 0, 0, 255, 255,255,0,255}"], ["Xcsb.Models.ImageFormatBitmap", "uint", "uint", "ushort", "ushort", "short", "short", "byte", "byte", "byte[]"], true, STRType.XcbByte),
 ];
 // ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
-// ChangeGC                          (uint gc, GCMask mask, Span<uint> args)
-// SetDashes                         (uint gc, ushort dashOffset, Span<byte> dashes)
-// SetClipRectangles                 (ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles)
-// PolyPoint                         (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
-// PolyLine                          (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
-// PutImage                          (ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y, byte leftPad, byte depth, Span<byte> data)
-// FreeColors                        (uint colormapId, uint planeMask, Span<uint> pixels)
-// StoreColors                       (uint colormapId, Span<ColorItem> item)
-// StoreNamedColor                   (ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
 // CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
 
@@ -272,7 +272,7 @@ file static class StringHelper
         var result = 0;
         foreach (var item in content)
         {
-            if (isXcbStr == STRType.XcbStr || isXcbStr == STRType.Xcb8 || isXcbStr == STRType.Xcb16)
+            if (isXcbStr == STRType.XcbStr || isXcbStr == STRType.Xcb8 || isXcbStr == STRType.Xcb16 || isXcbStr == STRType.XcbStr8)
             {
                 if (item == '"') result++;
                 continue;
@@ -284,7 +284,7 @@ file static class StringHelper
 
                 continue;
             }
-            if (isXcbStr is STRType.XcbByte or STRType.XcbAtom)
+            if (isXcbStr is STRType.XcbByte or STRType.XcbAtom or STRType.XcbUint)
             {
                 if (item == ',')
                     result++;
@@ -303,6 +303,8 @@ file static class StringHelper
                 return result / 2;
             case STRType.XcbByte:
             case STRType.XcbAtom:
+            case STRType.XcbUint:
+            case STRType.XcbStr8:
                 return ++result;
             default:
                 return result;
@@ -788,14 +790,14 @@ file class MethodDetails2Dynamic : MethodDetails2
 {
     private readonly DynamicType _type;
     public MethodDetails2Dynamic(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall, DynamicType type) : base(categories, methodName, parameters, paramSignature, addLenInCCall)
+        bool addLenInCCall, DynamicType type, STRType strType = STRType.XcbUint) : base(categories, methodName, parameters, paramSignature, addLenInCCall, strType)
     {
         _type = type;
     }
 
     public override string GetMethodNameUpdated(string name)
     {
-        if (base.MethodName == "FreeGc")
+        if (base.MethodName is "FreeGc" or "ChangeGc")
             return base.GetMethodNameUpdated(name).Fix();
         return base.GetMethodNameUpdated(name);
     }
@@ -1261,8 +1263,10 @@ $$"""
 
 file class MethodDetails7 : StaticBuilder
 {
-    public MethodDetails7(string categories, string methodName, string[] parameters, string[] paramSignature)
-        : base(categories, methodName, parameters, paramSignature, false, STRType.RawBuffer) { }
+    public MethodDetails7(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool len = false, STRType sTRType = STRType.RawBuffer) : base(categories, methodName, parameters, paramSignature,
+        len, sTRType)
+    { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
