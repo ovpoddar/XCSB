@@ -37,6 +37,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "MapWindow", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "MapSubwindows", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "UnmapWindow", ["$0"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "DeleteProperty", ["$0, 0"], ["uint", "Xcsb.Models.ATOM"], false),
     new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $0", "1, $0" ], ["Xcsb.Models.Circulate", "uint"], false),
     new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$0, 1, new uint[] {100}", "$0, 2, new uint[] {100}", "$0, 4, new uint[] {100}", "$0, 8, new uint[] {100}", "$0, 16, new uint[] {0}", "$0, 64, new uint[] {0}", "$0, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
@@ -47,6 +48,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "SetSelectionOwner", ["$0, 0, 0", "$0, 68, 0"], ["uint", "Xcsb.Models.ATOM", "uint"], false),
     new MethodDetails2("DependentOnWindow",    "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
     new MethodDetails2Dynamic("DependentOnFontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
     new MethodDetails2Dynamic("DependentOnPixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
@@ -88,8 +90,6 @@ IBuilder[] noParamMethod = [
 // CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
 
 // ReparentWindow                    (uint window, uint parent, short x, short y)
-// DeleteProperty                    (uint window, ATOM atom)
-// SetSelectionOwner                 (uint owner, ATOM atom, uint timestamp)
 // ConvertSelection                  (uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
 // SendEvent                         (bool propagate, uint destination, uint eventMask, XEvent evnt)
 // ChangeActivePointerGrab           (uint cursor, uint time, ushort mask)
@@ -1358,7 +1358,7 @@ file class MethodDetails8 : StaticBuilder
         STRType.XcbStr8 => $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});",
         STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient => $"var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));",
         STRType.Xcb8 or STRType.Xcb16 => $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);",
-        STRType.XcbStr16 => "",
+        STRType.XcbStr16 or STRType.XcbByte => "",
         _ => throw new NotImplementedException(IsXcbStr.ToString())
     };
 
@@ -1771,7 +1771,7 @@ file abstract class BaseBuilder : IBuilder
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-
+        System.Console.WriteLine(cMainBody);
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
