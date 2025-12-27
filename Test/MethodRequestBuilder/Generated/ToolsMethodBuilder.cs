@@ -37,7 +37,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "MapWindow", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "MapSubwindows", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "UnmapWindow", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "DeleteProperty", ["$0, 0"], ["uint", "Xcsb.Models.ATOM"], false),
+    new MethodDetails2("DependentOnWindow", "DeleteProperty", ["$0, 0"], ["uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $0", "1, $0" ], ["Xcsb.Models.Circulate", "uint"], false),
     new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$0, 1, new uint[] {100}", "$0, 2, new uint[] {100}", "$0, 4, new uint[] {100}", "$0, 8, new uint[] {100}", "$0, 16, new uint[] {0}", "$0, 64, new uint[] {0}", "$0, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
@@ -48,8 +48,8 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
-    new MethodDetails2("DependentOnWindow", "SetSelectionOwner", ["$0, 0, 0", "$0, 68, 0"], ["uint", "Xcsb.Models.ATOM", "uint"], false),
-    new MethodDetails2("DependentOnWindow",    "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
+    new MethodDetails2("DependentOnWindow", "SetSelectionOwner", ["$0, 0, 0", "$0, 68, 0"], ["uint", "uint", "uint"], false),
+    new MethodDetails2("DependentOnWindow", "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
     new MethodDetails2Dynamic("DependentOnFontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
     new MethodDetails2Dynamic("DependentOnPixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
     new MethodDetails2Dynamic("DependentOnGc", "FreeGc", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.Gc),
@@ -66,7 +66,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "FreeColors", ["$0, 0, new uint[] {16711680}"], ["uint", "uint", "uint[]"], true, STRType.XcbUint),
 // new MethodDetails7("DependentOnColorMap", "StoreColors", [], [uint colormapId, Span<ColorItem> item]),
-    new MethodDetails7("DependentOnColorMap", "StoreNamedColor", ["1, $0, 16711680, \"red\""], ["Xcsb.Models.ColorFlag", "uint", "uint" , "string"], true, STRType.XcbStr8),
+    new MethodDetails7Update("DependentOnColorMap", "StoreNamedColor", ["1, $0, 16711680, \"red\""], ["Xcsb.Models.ColorFlag", "uint", "uint" , "string"], true, STRType.XcbStr8),
     new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
     new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
@@ -77,9 +77,9 @@ IBuilder[] noParamMethod = [
     new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1, 0, 0, [{ \"X\" = 120, \"Y\" = 130 }, { \"X\" = 80, \"Y\" = 180 }, { \"X\" = 160, \"Y\" = 180 }]", "$0, $1, 2, 1, [{ \"X\" = 120, \"Y\" = 130 }, { \"X\" = 80, \"Y\" = 180 }, { \"X\" = 160, \"Y\" = 180 }]"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
     new MethodDetails8("DependentOnDrawableGc", "PolyFillRectangle", ["$0, $1,  [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["uint", "uint", "Xcsb.Models.Rectangle[]"], true, STRType.XcbRectangle, ""),
     new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, ""),
-    new MethodDetails8("DependentOnDrawableGc", "PolyPoint",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
-    new MethodDetails8("DependentOnDrawableGc", "PolyLine",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint",  "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
-    new MethodDetails8("DependentOnDrawableGc", "PutImage",["2, $0, $1, 2, 2, 0, 0, 0, 0, new byte[] {255, 0, 0, 255, 255,255,0,255, 255, 0, 0, 255, 255,255,0,255}"], ["Xcsb.Models.ImageFormatBitmap", "uint", "uint", "ushort", "ushort", "short", "short", "byte", "byte", "byte[]"], true, STRType.XcbByte),
+    new MethodDetails8Valid("DependentOnDrawableGc", "PolyPoint",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
+    new MethodDetails8Valid("DependentOnDrawableGc", "PolyLine",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint",  "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
+    new MethodDetails8Valid("DependentOnDrawableGc", "PutImage",["2, $0, $1, 2, 2, 0, 0, 0, 0, new byte[] {255, 0, 0, 255, 255,255,0,255, 255, 0, 0, 255, 255,255,0,255}"], ["Xcsb.Models.ImageFormatBitmap", "uint", "uint", "ushort", "ushort", "short", "short", "byte", "byte", "byte[]"], true, STRType.XcbByte),
 ];
 // ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
@@ -658,9 +658,9 @@ file class MethodDetails2 : StaticBuilder
         name = "window";
         return
 $$"""
-    xcb_window_t {{name}} = xcb_generate_id(connection);
-    xcb_create_window(connection, 0, {{name}}, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+        xcb_window_t {{name}} = xcb_generate_id(connection);
+        xcb_create_window(connection, 0, {{name}}, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                        screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
 """;
     }
 
@@ -724,7 +724,6 @@ int main()
         throw new UnreachableException();
     }
 
-
     public virtual string WriteUpValueOfCsSetup(out string name)
     {
         name = "window";
@@ -745,6 +744,11 @@ $$"""
         {
             name = "items";
             return $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => (Xcsb.Models.ATOM)a);";
+        }
+        else if (IsXcbStr == STRType.XcbRectangle)
+        {
+            name = "items";
+            return $"var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));";
         }
         else
         {
@@ -1311,6 +1315,20 @@ int main()
 """;
     }
 
+    public string? WriteCast(out string? items)
+    {
+        if (base.ParamSignature[^1] == "string")
+        {
+            items = "items";
+            return $"var items = System.Text.Encoding.UTF8.GetBytes(params3);";
+        }
+        else
+        {
+            items = null;
+            return null;
+        }
+    }
+
     public override void WriteCsMethodBody(FileStream fileStream)
     {
         var methodSignature = GetTestMethodSignature(ParamSignature);
@@ -1324,9 +1342,9 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var cursor_pixmap = _xProto.NewId();
         _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
-
+        {{WriteCast(out var item)}}
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, item)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1343,9 +1361,46 @@ $$"""
 
 }
 
+file class MethodDetails7Update : MethodDetails7
+{
+    public MethodDetails7Update(string categories, string methodName, string[] parameters, string[] paramSignature, bool len = false, STRType sTRType = STRType.RawBuffer) : base(categories, methodName, parameters, paramSignature, len, sTRType)
+    {
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var cursor_pixmap = _xProto.NewId();
+        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
+        {{WriteCast(out var item)}}
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, item)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params1, cursor_pixmap);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+}
+
 file class MethodDetails8 : StaticBuilder
 {
-    private string? _castType;
+    public string? _castType;
     public MethodDetails8(string categories, string methodName, string[] parameters, string[] paramSignature,
         bool addLenInCCall, STRType isXcbStr, string? castType = null) : base(categories, methodName, parameters,
         paramSignature, addLenInCCall, isXcbStr)
@@ -1353,7 +1408,7 @@ file class MethodDetails8 : StaticBuilder
         _castType = castType;
     }
 
-    private string GetItems() => IsXcbStr switch
+    public string GetItems() => IsXcbStr switch
     {
         STRType.XcbStr8 => $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});",
         STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient => $"var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));",
@@ -1451,6 +1506,48 @@ int main()
     return -1;
 } 
 """;
+    }
+}
+
+
+file class MethodDetails8Valid : MethodDetails8
+{
+    public MethodDetails8Valid(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType isXcbStr, string? castType = null) : base(categories, methodName, parameters,
+        paramSignature, addLenInCCall, isXcbStr, castType)
+    { }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
+        var gc = _xProto.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+        {{base.GetItems()}}
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (_castType == null ? null : "items"))}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(root, params1);
+        Assert.Equal(gc, params2);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
     }
 }
 
@@ -1771,7 +1868,7 @@ file abstract class BaseBuilder : IBuilder
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-        System.Console.WriteLine(cMainBody);
+
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));

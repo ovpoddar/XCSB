@@ -158,10 +158,8 @@ public readonly struct ATOM : IEquatable<ATOM>, IComparable<ATOM>
     public static readonly ATOM WmClass = new(PredefinedAtom.WmClass);
     public static readonly ATOM WmTransientFor = new(PredefinedAtom.WmTransientFor);
 
-
-    public static explicit operator uint(ATOM value) => value._value;
-    public static explicit operator ATOM(uint value) => new(value);
-
+    public static implicit operator uint(ATOM value) => value._value;
+    public static implicit operator ATOM(uint value) => new(value);
     public bool Equals(ATOM other) =>
         _value == other._value;
 
