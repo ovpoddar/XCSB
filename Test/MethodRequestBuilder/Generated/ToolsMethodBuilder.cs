@@ -58,7 +58,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2Dynamic("DependentOnGc", "ChangeGc", ["$0, 4, new uint[] {4294967295}"], ["uint", "Xcsb.Masks.GCMask", "uint[]"], false, MethodDetails2Dynamic.DynamicType.Gc),
     new MethodDetails2Dynamic("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbByte),
     new MethodDetails2Dynamic("DependentOnGc", "SetClipRectangles", ["0, $0, 0, 0, [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["Xcsb.Models.ClipOrdering", "uint", "ushort", "ushort", "Xcsb.Models.Rectangle[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbRectangle),
-    new MethodDetails3("SpecialMethod", "NoOperation"),
+    new NoOperation(),
     new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"], ["byte", "uint", "uint", "ushort", "ushort"]),
     new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
     new MethodDetails6("DependentOnWindowId", "CreateColormap", ["0, $0, $1, $2", "1, $0, $1, $2"], ["Xcsb.Models.ColormapAlloc", "uint", "uint", "uint"]),
@@ -964,9 +964,9 @@ $$"""
     }
 }
 
-file class MethodDetails3 : StaticBuilder
+file class NoOperation : StaticBuilder
 {
-    public MethodDetails3(string categories, string methodName) : base(categories, methodName, ["new uint[] {}"],
+    public NoOperation() : base("SpecialMethod", nameof(NoOperation), ["new uint[] {}"],
         ["uint[]"], false, STRType.RawBuffer)
     { }
 
@@ -1549,6 +1549,115 @@ $$"""
     }
 
 """));
+    }
+}
+
+file class MethodDetailsCopyColormapAndFree : StaticBuilder
+{
+    public MethodDetailsCopyColormapAndFree()
+        : base(
+            "DependentOnColorMap",
+            "CopyColormapAndFree",
+            ["$0, $1"],
+            ["uint", "uint"],
+            false,
+            STRType.RawBuffer)
+    { }
+
+    public virtual string GetCImpl(ImplType type, string name)
+    {
+        return type switch
+        {
+            ImplType.Id => $"        xcb_colormap_t {name} = xcb_generate_id(connection);",
+            ImplType.ColorMap =>
+$@"
+        xcb_colormap_t {name} = xcb_generate_id(connection);
+        xcb_create_colormap(connection, XCB_COLORMAP_ALLOC_NONE, {name}, screen->root, screen->root_visual);
+",
+            _ => throw new NotImplementedException()
+        };
+    }
+
+
+    public virtual string GetCsImpl(ImplType type, string name)
+    {
+        return type switch
+        {
+            ImplType.Id => $"        var {name} = _xProto.NewId();",
+            ImplType.ColorMap =>
+$@"
+        var {name} = _xProto.NewId();
+        _xProto.CreateColormapChecked(0, {name}, screen.root, screen.RootVisualId);
+",
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection)) return -1;
+
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+
+    {{GetCImpl(ImplType.ColorMap, "srcColormap")}}
+    {{GetCImpl(ImplType.Id, "newColormap")}}
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", srcColormap);
+    fprintf(stderr, "{{marker}}\n");
+    
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", newColormap);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie =
+        xcb_{{method.ToSnakeCase()}}_checked({{parameter.ToCParams(IsXcbStr, AddLenInCCall, "newColormap", "srcColormap")}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    return error ? -1 : 0;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fs)
+    {
+        fs.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}}byte[] expectedResult)
+    {
+        var field = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", BindingFlags.NonPublic | BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        {{GetCsImpl(ImplType.ColorMap, )}}
+        {{GetCsImpl(ImplType.Id, )}}
+        
+
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+
+        var buffer = (List<byte>?)field?.GetValue(bufferClient.BufferProtoOut);
+        Assert.NotNull(buffer);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+"""));
+    }
+
+    public enum ImplType
+    {
+        Id,
+        ColorMap
     }
 }
 
