@@ -50,6 +50,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "SetSelectionOwner", ["$0, 0, 0", "$0, 68, 0"], ["uint", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
+    new MethodDetails2("DependentOnWindow", "ConvertSelection", ["$0, 1, 31, 9, 0"], ["uint","uint","uint","uint","uint"], false),
     new MethodDetails2Dynamic("DependentOnFontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
     new MethodDetails2Dynamic("DependentOnPixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
     new MethodDetails2Dynamic("DependentOnGc", "FreeGc", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.Gc),
@@ -66,7 +67,6 @@ IBuilder[] noParamMethod = [
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "FreeColors", ["$0, 0, new uint[] {16711680}"], ["uint", "uint", "uint[]"], true, STRType.XcbUint),
-// new MethodDetails7("DependentOnColorMap", "StoreColors", [], [uint colormapId, Span<ColorItem> item]),
     new MethodDetails7Update("DependentOnColorMap", "StoreNamedColor", ["1, $0, 16711680, \"red\""], ["Xcsb.Models.ColorFlag", "uint", "uint" , "string"], true, STRType.XcbStr8),
     new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
     new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
@@ -82,17 +82,17 @@ IBuilder[] noParamMethod = [
     new MethodDetails8Valid("DependentOnDrawableGc", "PolyLine",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint",  "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
     new MethodDetails8Valid("DependentOnDrawableGc", "PutImage",["2, $0, $1, 2, 2, 0, 0, 0, 0, new byte[] {255, 0, 0, 255, 255,255,0,255, 255, 0, 0, 255, 255,255,0,255}"], ["Xcsb.Models.ImageFormatBitmap", "uint", "uint", "ushort", "ushort", "short", "short", "byte", "byte", "byte[]"], true, STRType.XcbByte),
     new MethodDetails9("DependentOnColorMapId", "CopyColormapAndFree", ["$0, $1"], ["uint", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.ColorMap, MethodDetails9.ImplType.Id),
-    new MethodDetails9("DependentOnColorMapId", "CopyGc", ["$0, $1, 4"], ["uint", "uint", "Xcsb.Masks.GCMask"], false, STRType.RawBuffer, MethodDetails9.ImplType.GC, MethodDetails9.ImplType.GC)
+    new MethodDetails9("DependentOnGcGc", "CopyGc", ["$0, $1, 4"], ["uint", "uint", "Xcsb.Masks.GCMask"], false, STRType.RawBuffer, MethodDetails9.ImplType.GC, MethodDetails9.ImplType.GC)
 // ReparentWindow                    (uint window, uint parent, short x, short y)
 ];
 // ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
 // CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+// new MethodDetails7("DependentOnColorMap", "StoreColors", [], [uint colormapId, Span<ColorItem> item]),
 
 // CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
 // CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
 
-// ConvertSelection                  (uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
 // SendEvent                         (bool propagate, uint destination, uint eventMask, XEvent evnt)
 // WarpPointer                       (uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destinationX, short destinationY)
 // ClearArea                         (bool exposures, uint window, short x, short y, ushort width, ushort height)
@@ -1594,7 +1594,6 @@ $@"
 ",
             ImplType.GC =>
 $@"
-        
         var {name} = _xProto.NewId();
         _xProto.CreateColormapChecked(0, {name}, window, screen.RootVisualId);
 ",
@@ -1634,7 +1633,7 @@ int main()
 
     fprintf(stderr, "{{marker}}\n");
     xcb_void_cookie_t cookie =
-        xcb_{{method.ToSnakeCase()}}_checked({{parameter.ToCParams(IsXcbStr, AddLenInCCall, "paramDynamic2", "paramDynamic1")}});
+        xcb_{{method.ToSnakeCase()}}_checked({{parameter.ToCParams(IsXcbStr, AddLenInCCall, "paramDynamic1", "paramDynamic2")}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
 
@@ -1655,18 +1654,19 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
         var window = _xProto.NewId();
-        _xProto.CreateWindowChecked(0, window, screenRoot, 0, 0, 640, 480, 0, 
-            1, screen.RootVisualId, 2 | 2048, 
-            (uint32_t[]){screen.WhitePixel, 32768 | 1 });
+        _xProto.CreateWindowChecked(0, window, screen.Root, 0, 0, 640, 480, 0, 
+            Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, (Xcsb.Masks.ValueMask)(2 | 2048), 
+            [screen.WhitePixel, 32768 | 1 ]);
         {{GetCsImpl(Type1, "item1")}}
         {{GetCsImpl(Type2, "item2")}}
         
 
-        bufferClient.{{MethodName.Fix()}}({{FillPassingParameter(ParamSignature.Length)}});
+        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
 
         var buffer = (List<byte>?)field?.GetValue(bufferClient.BufferProtoOut);
         Assert.NotNull(buffer);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        // todo assert
     }
 """));
     }
