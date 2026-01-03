@@ -5,7 +5,7 @@ using Xcsb.Models;
 const int width = 400;
 const int height = 300;
 
-var xcsb = XcsbClient.Initialized();
+using var xcsb = XcsbClient.Initialized();
 var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
 var window = xcsb.NewId();
 
