@@ -9,5 +9,5 @@ public struct ColorItem
     public ushort Red;
     public ushort Green;
     public ushort Blue;
-    public ColorFlag ColorFlag;
+    public ColorFlag Flags;
 }

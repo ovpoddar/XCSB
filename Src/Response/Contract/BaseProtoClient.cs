@@ -1181,7 +1181,6 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 MemoryMarshal.Cast<ColorItem, byte>(item));
-            scratchBuffer[requiredBuffer - 1] = 0;
             ProtoOut.SendExact(scratchBuffer);
         }
         else
@@ -1192,7 +1191,6 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 MemoryMarshal.Cast<ColorItem, byte>(item));
-            scratchBuffer[requiredBuffer - 1] = 0;
         }
 
         return new ResponseProto(ProtoOut.Sequence);
