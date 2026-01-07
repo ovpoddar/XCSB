@@ -60,6 +60,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2Dynamic("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbByte),
     new MethodDetails2Dynamic("DependentOnGc", "SetClipRectangles", ["0, $0, 0, 0, [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["Xcsb.Models.ClipOrdering", "uint", "ushort", "ushort", "Xcsb.Models.Rectangle[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbRectangle),
     new NoOperation(),
+    new ChangePointerControl(["null-null", "null-4", "null-2", "{ \"Denominator\" = 4, \"Numerator\" = 2 }-null", "{ \"Denominator\" = 2, \"Numerator\" = 4 }-2"], ["Xcsb.Models.Acceleration?", "ushort?"]),
     new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"], ["byte", "uint", "uint", "ushort", "ushort"]),
     new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
     new MethodDetails6("DependentOnWindowId", "CreateColormap", ["0, $0, $1, $2", "1, $0, $1, $2"], ["Xcsb.Models.ColormapAlloc", "uint", "uint", "uint"]),
@@ -93,7 +94,6 @@ IBuilder[] noParamMethod = [
 // CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
     new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
-// new("IndependentMethod", "ChangePointerControl", ["new Xcsb.Models.Acceleration(1, 1), 4"], ["Xcsb.Models.Acceleration", "ushort"], false), // special case when the params being different
 // ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
 ];
 
@@ -770,7 +770,7 @@ $$"""
         {{GetItems(out var name)}}
 
         // act
-        bufferClient.{{GetMethodNameUpdated(MethodName)}}({{FillPassingParameter(ParamSignature.Length, name)}});
+        bufferClient.{{GetMethodNameUpdated(MethodName)}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, name)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -996,6 +996,158 @@ int main()
 """;
     }
 }
+
+
+file class ChangePointerControl : StaticBuilder
+{
+    public ChangePointerControl(string[] parameters, string[] paramSignature)
+        : base("SpecialMethod", nameof(ChangePointerControl), parameters, paramSignature, false, STRType.RawBuffer)
+    { }
+
+    public static string ToCParams(ReadOnlySpan<char> value)
+    {
+        const string nullasText = "null";
+        var sliceIndex = value.IndexOf('-');
+        if (sliceIndex == -1) throw new UnreachableException();
+        var part1 = value[..sliceIndex];
+        var part2 = value[++sliceIndex..];
+        var hasVal1 = true;
+        var hasVal2 = true;
+        if (part1.SequenceEqual(nullasText))
+            hasVal1 = false;
+        if (part2.SequenceEqual(nullasText))
+            hasVal2 = false;
+        var sb = new StringBuilder();
+        if (hasVal1)
+        {
+            var incort = false;
+            foreach (var item in part1)
+            {
+                if (item is '"') incort = !incort;
+                if (item is '{' or '}' or '=' or '"') continue;
+                if (incort) continue;
+                sb.Append(item);
+            }
+            sb.Append(", ");
+        }
+        else
+            sb.Append("0, 0, ");
+
+        sb.Append(hasVal2 ? part2 : "0");
+        sb.Append(hasVal1 ? ", 1, " : ", 0, ");
+        sb.Append(hasVal2 ? '1' : '0');
+
+        return sb.ToString();
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection, {{ToCParams(parameter)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{{base.ParamSignature[0]}}>(params0);
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, 0, "items")}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+
+    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters, string methodName, string[] paramSignature)
+    {
+        foreach (var parameter in parameters)
+        {
+            var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
+            fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{ToCsParameter(parameter, cResponse)}})]
+
+"""));
+        }
+    }
+
+    private string ToCsParameter(ReadOnlySpan<char> parameter, string[] cResponse)
+    {
+        var sb = new StringBuilder();
+        sb.Append('"');
+        var canWrite = false;
+        foreach (var item in parameter)
+        {
+            if (item == '-')
+            {
+                sb.Append("\", ");
+                canWrite = true;
+                continue;
+            }
+            if (item == '"')
+                sb.Append('\\');
+
+            if (char.IsNumber(item) && canWrite)
+            {
+                sb.Append("(ushort)");
+            }
+            if (item == '=')
+            {
+                sb.Append(':');
+                continue;
+            }
+            sb.Append(item);
+        }
+        sb.Append(", new byte[] {")
+            .Append(cResponse[^1])
+            .Append('}');
+
+        return sb.ToString();
+    }
+}
+
 
 file class OpenFont : StaticBuilder
 {
@@ -1413,7 +1565,7 @@ $$"""
         _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, item)}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, item)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1452,7 +1604,7 @@ $$"""
         _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, item)}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, item)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1502,7 +1654,7 @@ $$"""
         {{GetItems()}}
 
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (_castType == null ? null : "items"))}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, (_castType == null ? null : "items"))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1651,7 +1803,7 @@ $$"""
         {{base.GetItems()}}
 
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (_castType == null ? null : "items"))}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, (_castType == null ? null : "items"))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1839,7 +1991,6 @@ $$"""
         CursorFont
     }
 }
-
 
 file abstract class StaticBuilder : BaseBuilder
 {
@@ -2103,8 +2254,8 @@ file abstract class BaseBuilder : IBuilder
         var sb = new StringBuilder();
         for (var i = 0; i < parameterCount; i++)
         {
-            if (i == (parameterCount - 1) && lastItemName != null)
-                sb.Append(lastItemName);
+            if (i == index && replaceName != null)
+                sb.Append(replaceName);
             else
                 sb.Append("params")
                     .Append(i);
@@ -2132,7 +2283,7 @@ file abstract class BaseBuilder : IBuilder
     private static ReadOnlySpan<char> UpdateParameter(ReadOnlySpan<char> value) =>
         value switch
         {
-            "Xcsb.Models.Segment[]" or "Xcsb.Models.Rectangle[]" or "Xcsb.Models.Arc[]" or "Xcsb.Models.Point[]" or "Xcsb.Models.ColorItem[]" => "string",
+            "Xcsb.Models.Segment[]" or "Xcsb.Models.Rectangle[]" or "Xcsb.Models.Arc[]" or "Xcsb.Models.Point[]" or "Xcsb.Models.ColorItem[]" or "Xcsb.Models.Acceleration?" => "string",
             _ => value
         };
 

@@ -78,11 +78,10 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         BufferProtoOut.AddRange(keysym);
     }
 
-    public void ChangePointerControl(Acceleration acceleration, ushort? threshold)
+    public void ChangePointerControl(Acceleration? acceleration, ushort? threshold)
     {
         var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
-            threshold ?? 0,
-            (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
+            threshold ?? 0, (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
         BufferProtoOut.Add(ref request);
     }
 

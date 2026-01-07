@@ -162,7 +162,7 @@ public interface IVoidProtoUnchecked
 
     void ChangeKeyboardControlUnchecked(KeyboardControlMask mask, Span<uint> args);
 
-    void ChangePointerControlUnchecked(Acceleration acceleration, ushort? threshold);
+    void ChangePointerControlUnchecked(Acceleration? acceleration, ushort? threshold);
 
     void SetScreenSaverUnchecked(short timeout, short interval, TriState preferBlanking, TriState allowExposures);
 

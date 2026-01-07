@@ -159,7 +159,7 @@ public interface IVoidBufferProto
 
     void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args);
 
-    void ChangePointerControl(Acceleration acceleration, ushort? threshold);
+    void ChangePointerControl(Acceleration? acceleration, ushort? threshold);
 
     void SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures);
 

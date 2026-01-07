@@ -198,8 +198,7 @@ internal class BaseProtoClient
     protected ResponseProto ChangePointerControlBase(Acceleration? acceleration, ushort? threshold)
     {
         var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
-            threshold ?? 0, (byte)(acceleration is null ? 0 : 1),
-            (byte)(threshold.HasValue ? 1 : 0));
+            threshold ?? 0, (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
         ProtoOut.Send(ref request);
         return new ResponseProto(ProtoOut.Sequence);
     }
