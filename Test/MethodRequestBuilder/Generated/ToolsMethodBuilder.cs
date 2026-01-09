@@ -959,270 +959,6 @@ $$"""
     }
 }
 
-file class NoOperation : StaticBuilder
-{
-    public NoOperation() : base("SpecialMethod", nameof(NoOperation), ["new uint[] {}"], ["uint[]"], false,
-        STRType.RawBuffer)
-    { }
-
-    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
-    {
-        return
-$$"""
-#include <xcb/xcb.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h> 
-
-int main()
-{
-    xcb_connection_t *connection = xcb_connect(NULL, NULL);
-    if (xcb_connection_has_error(connection))
-    {
-        return -1;
-    }
-    xcb_flush(connection);
-    fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection);
-    xcb_flush(connection);
-    fprintf(stderr, "{{marker}}\n");
-    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
-    if (!error)
-        return 0;
-
-    free(error);
-    return -1;
-}
-""";
-    }
-}
-
-
-file class ChangePointerControl : StaticBuilder
-{
-    public ChangePointerControl(string[] parameters, string[] paramSignature)
-        : base("SpecialMethod", nameof(ChangePointerControl), parameters, paramSignature, false, STRType.RawBuffer)
-    { }
-
-    public static string ToCParams(ReadOnlySpan<char> value)
-    {
-        const string nullasText = "null";
-        var sliceIndex = value.IndexOf('-');
-        if (sliceIndex == -1) throw new UnreachableException();
-        var part1 = value[..sliceIndex];
-        var part2 = value[++sliceIndex..];
-        var hasVal1 = true;
-        var hasVal2 = true;
-        if (part1.SequenceEqual(nullasText))
-            hasVal1 = false;
-        if (part2.SequenceEqual(nullasText))
-            hasVal2 = false;
-        var sb = new StringBuilder();
-        if (hasVal1)
-        {
-            var incort = false;
-            foreach (var item in part1)
-            {
-                if (item is '"') incort = !incort;
-                if (item is '{' or '}' or '=' or '"') continue;
-                if (incort) continue;
-                sb.Append(item);
-            }
-            sb.Append(", ");
-        }
-        else
-            sb.Append("0, 0, ");
-
-        sb.Append(hasVal2 ? part2 : "0");
-        sb.Append(hasVal1 ? ", 1, " : ", 0, ");
-        sb.Append(hasVal2 ? '1' : '0');
-
-        return sb.ToString();
-    }
-
-    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
-    {
-        return
-$$"""
-#include <xcb/xcb.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h> 
-
-int main()
-{
-    xcb_connection_t *connection = xcb_connect(NULL, NULL);
-    if (xcb_connection_has_error(connection))
-    {
-        return -1;
-    }
-    xcb_flush(connection);
-    fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection, {{ToCParams(parameter)}});
-    xcb_flush(connection);
-    fprintf(stderr, "{{marker}}\n");
-    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
-    if (!error)
-        return 0;
-
-    free(error);
-    return -1;
-}
-""";
-
-    }
-
-    public override void WriteCsMethodBody(FileStream fileStream)
-    {
-        var methodSignature = GetTestMethodSignature(ParamSignature);
-        fileStream.Write(Encoding.UTF8.GetBytes(
-$$"""
-    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
-    {
-        // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
-            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{{base.ParamSignature[0]}}>(params0);
-
-        // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, 0, "items")}});
-        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
-
-        // assert
-        Assert.NotNull(buffer);
-        Assert.NotNull(expectedResult);
-        Assert.NotEmpty(buffer);
-        Assert.NotEmpty(expectedResult);
-        Assert.True(expectedResult.SequenceEqual(buffer));
-    }
-
-"""));
-    }
-
-    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters, string methodName, string[] paramSignature)
-    {
-        foreach (var parameter in parameters)
-        {
-            var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
-            fileStream.Write(Encoding.UTF8.GetBytes(
-$$"""
-    [InlineData({{ToCsParameter(parameter, cResponse)}})]
-
-"""));
-        }
-    }
-
-    private string ToCsParameter(ReadOnlySpan<char> parameter, string[] cResponse)
-    {
-        var sb = new StringBuilder();
-        sb.Append('"');
-        var canWrite = false;
-        foreach (var item in parameter)
-        {
-            if (item == '-')
-            {
-                sb.Append("\", ");
-                canWrite = true;
-                continue;
-            }
-            if (item == '"')
-                sb.Append('\\');
-
-            if (char.IsNumber(item) && canWrite)
-            {
-                sb.Append("(ushort)");
-            }
-            if (item == '=')
-            {
-                sb.Append(':');
-                continue;
-            }
-            sb.Append(item);
-        }
-        sb.Append(", new byte[] {")
-            .Append(cResponse[^1])
-            .Append('}');
-
-        return sb.ToString();
-    }
-}
-
-
-file class OpenFont : StaticBuilder
-{
-    public OpenFont(string[] parameters) : base("SpecialMethod", nameof(OpenFont), parameters, ["string", "uint"], true,
-        STRType.XcbStr)
-    { }
-
-    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
-    {
-        StringHelper.GetCsField(parameter, out var field);
-        return
-$$"""
-#include <xcb/xcb.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-
-int main()
-{
-    xcb_connection_t *connection = xcb_connect(NULL, NULL);
-    if (xcb_connection_has_error(connection))
-    {
-        return -1;
-    }
-    xcb_font_t font = xcb_generate_id(connection);
-    xcb_flush(connection);
-    
-    fprintf(stderr, "{{marker}}\n");
-    fprintf(stderr, "%d \n", font);
-    fprintf(stderr, "{{marker}}\n");
-
-    fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection, font, strlen({{field}}), {{field}});
-    xcb_flush(connection);
-    fprintf(stderr, "{{marker}}\n");
-    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
-    if (!error)
-        return 0;
-
-    free(error);
-    return -1;
-}
-""";
-    }
-
-    public override void WriteCsMethodBody(FileStream fileStream)
-    {
-        var methodSignature = GetTestMethodSignature(ParamSignature);
-        fileStream.Write(Encoding.UTF8.GetBytes(
-$$"""
-    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
-    {
-        // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
-            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
-
-        // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
-        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
-
-        // assert
-        Assert.NotNull(buffer);
-        Assert.Equal(params1, _xProto.NewId());
-        Assert.NotNull(expectedResult);
-        Assert.NotEmpty(buffer);
-        Assert.NotEmpty(expectedResult);
-        Assert.True(expectedResult.SequenceEqual(buffer));
-    }
-
-"""));
-    }
-}
-
 file class MethodDetails4 : StaticBuilder
 {
     public MethodDetails4(string categories, string methodName, string[] parameters, string[] parameterSignature)
@@ -1778,7 +1514,6 @@ $$"""
     }
 }
 
-
 file class MethodDetails8Valid : MethodDetails8
 {
     public MethodDetails8Valid(string categories, string methodName, string[] parameters, string[] paramSignature,
@@ -2025,6 +1760,268 @@ $$"""
         VisualId,
         Root,
         Rootdepth
+    }
+}
+
+file class OpenFont : StaticBuilder
+{
+    public OpenFont(string[] parameters) : base("SpecialMethod", nameof(OpenFont), parameters, ["string", "uint"], true,
+        STRType.XcbStr)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        StringHelper.GetCsField(parameter, out var field);
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_font_t font = xcb_generate_id(connection);
+    xcb_flush(connection);
+    
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d \n", font);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection, font, strlen({{field}}), {{field}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params1, _xProto.NewId());
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+}
+
+file class NoOperation : StaticBuilder
+{
+    public NoOperation() : base("SpecialMethod", nameof(NoOperation), ["new uint[] {}"], ["uint[]"], false,
+        STRType.RawBuffer)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection);
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+}
+
+file class ChangePointerControl : StaticBuilder
+{
+    public ChangePointerControl(string[] parameters, string[] paramSignature)
+        : base("SpecialMethod", nameof(ChangePointerControl), parameters, paramSignature, false, STRType.RawBuffer)
+    { }
+
+    public static string ToCParams(ReadOnlySpan<char> value)
+    {
+        const string nullasText = "null";
+        var sliceIndex = value.IndexOf('-');
+        if (sliceIndex == -1) throw new UnreachableException();
+        var part1 = value[..sliceIndex];
+        var part2 = value[++sliceIndex..];
+        var hasVal1 = true;
+        var hasVal2 = true;
+        if (part1.SequenceEqual(nullasText))
+            hasVal1 = false;
+        if (part2.SequenceEqual(nullasText))
+            hasVal2 = false;
+        var sb = new StringBuilder();
+        if (hasVal1)
+        {
+            var incort = false;
+            foreach (var item in part1)
+            {
+                if (item is '"') incort = !incort;
+                if (item is '{' or '}' or '=' or '"') continue;
+                if (incort) continue;
+                sb.Append(item);
+            }
+            sb.Append(", ");
+        }
+        else
+            sb.Append("0, 0, ");
+
+        sb.Append(hasVal2 ? part2 : "0");
+        sb.Append(hasVal1 ? ", 1, " : ", 0, ");
+        sb.Append(hasVal2 ? '1' : '0');
+
+        return sb.ToString();
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection, {{ToCParams(parameter)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{{base.ParamSignature[0]}}>(params0);
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, 0, "items")}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+
+    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters, string methodName, string[] paramSignature)
+    {
+        foreach (var parameter in parameters)
+        {
+            var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
+            fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{ToCsParameter(parameter, cResponse)}})]
+
+"""));
+        }
+    }
+
+    private string ToCsParameter(ReadOnlySpan<char> parameter, string[] cResponse)
+    {
+        var sb = new StringBuilder();
+        sb.Append('"');
+        var canWrite = false;
+        foreach (var item in parameter)
+        {
+            if (item == '-')
+            {
+                sb.Append("\", ");
+                canWrite = true;
+                continue;
+            }
+            if (item == '"')
+                sb.Append('\\');
+
+            if (char.IsNumber(item) && canWrite)
+            {
+                sb.Append("(ushort)");
+            }
+            if (item == '=')
+            {
+                sb.Append(':');
+                continue;
+            }
+            sb.Append(item);
+        }
+        sb.Append(", new byte[] {")
+            .Append(cResponse[^1])
+            .Append('}');
+
+        return sb.ToString();
     }
 }
 
