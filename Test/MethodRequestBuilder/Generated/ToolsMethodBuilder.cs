@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Text;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Reflection;
 
@@ -83,15 +82,15 @@ IBuilder[] noParamMethod = [
     new MethodDetails8Valid("DependentOnDrawableGc", "PolyPoint",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
     new MethodDetails8Valid("DependentOnDrawableGc", "PolyLine",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint",  "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
     new MethodDetails8Valid("DependentOnDrawableGc", "PutImage",["2, $0, $1, 2, 2, 0, 0, 0, 0, new byte[] {255, 0, 0, 255, 255,255,0,255, 255, 0, 0, 255, 255,255,0,255}"], ["Xcsb.Models.ImageFormatBitmap", "uint", "uint", "ushort", "ushort", "short", "short", "byte", "byte", "byte[]"], true, STRType.XcbByte),
-    new MethodDetails9("DependentOnColorMapId", "CopyColormapAndFree", ["$0, $1"], ["uint", "uint"], false, MethodDetails9.ImplType.ColorMap, MethodDetails9.ImplType.Id),
-    new MethodDetails9("DependentOnGcGc", "CopyGc", ["$0, $1, 4"], ["uint", "uint", "Xcsb.Masks.GCMask"], false, MethodDetails9.ImplType.GC, MethodDetails9.ImplType.GC),
-    new MethodDetails9("DependentOnWindowWindow", "ReparentWindow", ["$0, $1, 0, 0"], ["uint", "uint", "short", "short"], false, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window),
-    new MethodDetails9("DependentOnIdGc", "CreateCursor", ["$0, $1, 0, 0, 0, 0, 65535, 65535, 65535, 8, 8"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.GC),
-    new MethodDetails9("DependentOnIdCursorFont", "CreateGlyphCursor", ["$0, $1, $1, 'a', 69, 0, 0, 0, 65535, 65535, 65535"], ["uint", "uint", "uint", "char", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.CursorFont),
-    new MethodDetails9("DependentOnWindowWindow", "WarpPointer", ["$0, $1, 0, 0, 0, 0, 640, 480"], ["uint", "uint", "short", "short", "ushort", "ushort", "short", "short"], false, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window),
-    new MethodDetails9("DependentOnWindowWindowGc", "CopyArea", ["$0, $1, $2, 0, 0, 0, 0, 640, 480"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.GC),
-    new MethodDetails9("DependentOnWindowWindowGc", "CopyPlane", ["$0, $1, $2, 0, 0, 0, 0, 640, 480, 4"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "uint"], false, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.GC),
-// CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+    new MethodDetails9("DependentOnColorMapId", "CopyColormapAndFree", ["$0, $1"], ["uint", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.ColorMap, MethodDetails9.ImplType.Id),
+    new MethodDetails9("DependentOnGcGc", "CopyGc", ["$0, $1, 4"], ["uint", "uint", "Xcsb.Masks.GCMask"], false,STRType.RawBuffer, MethodDetails9.ImplType.GC, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnWindowWindow", "ReparentWindow", ["$0, $1, 0, 0"], ["uint", "uint", "short", "short"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnIdGc", "CreateCursor", ["$0, $1, 0, 0, 0, 0, 65535, 65535, 65535, 8, 8"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnIdCursorFont", "CreateGlyphCursor", ["$0, $1, $1, 'a', 69, 0, 0, 0, 65535, 65535, 65535"], ["uint", "uint", "uint", "char", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.CursorFont),
+    new MethodDetails9("DependentOnWindowWindow", "WarpPointer", ["$0, $1, 0, 0, 0, 0, 640, 480"], ["uint", "uint", "short", "short", "ushort", "ushort", "short", "short"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindowWindowGc", "CopyArea", ["$0, $1, $2, 0, 0, 0, 0, 640, 480"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnWindowWindowGc", "CopyPlane", ["$0, $1, $2, 0, 0, 0, 0, 640, 480, 4"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "uint"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnRootdepthIdRootVisualId", "CreateWindow", ["$0, $1, $2, 0, 0, 500, 500,0, 1, $3, 2050, new uint[] {0, 32768 }"], ["byte", "uint", "uint", "short", "short", "ushort", "ushort", "ushort", "Xcsb.Models.ClassType", "uint", "Xcsb.Masks.ValueMask", "uint[]"], false,STRType.XcbUint, MethodDetails9.ImplType.Rootdepth, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.Root, MethodDetails9.ImplType.VisualId),
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
     new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
 // ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
@@ -110,6 +109,7 @@ using Xcsb;
 
 namespace MethodRequestBuilder.Test.Generated;
 
+[Collection("Sequential Execution")]
 public class VoidMethodsTest : IDisposable
 {
     private readonly IXProto _xProto;
@@ -1825,8 +1825,8 @@ file class MethodDetails9 : StaticBuilder
     public ImplType[] Types { get; }
 
     public MethodDetails9(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall, params ImplType[] types) : base(categories, methodName, parameters, paramSignature,
-        addLenInCCall, STRType.RawBuffer)
+        bool addLenInCCall, STRType strType, params ImplType[] types) : base(categories, methodName, parameters, paramSignature,
+        addLenInCCall, strType)
     {
         Types = types;
     }
@@ -1858,6 +1858,18 @@ $@"
     xcb_font_t paramDynamic{name} = xcb_generate_id(connection);
     xcb_open_font(connection, paramDynamic{name}, {"cursor".Length}, ""cursor"");
 ",
+            ImplType.Root =>
+$"""        
+    xcb_window_t paramDynamic{name} = screen->root;
+""",
+            ImplType.Rootdepth =>
+$"""
+    uint8_t paramDynamic{name} = screen->root_depth;
+""",
+            ImplType.VisualId =>
+$"""
+    xcb_visualid_t paramDynamic{name} = screen->root_visual;
+""",
             _ => throw new NotImplementedException()
         };
     }
@@ -1866,29 +1878,50 @@ $@"
     {
         return type switch
         {
-            ImplType.Id => $"var item{name} = _xProto.NewId();",
+            ImplType.Id =>
+$"""
+
+        var item{name} = _xProto.NewId();
+""",
             ImplType.ColorMap =>
-$@"
+$"""
+
         var item{name} = _xProto.NewId();
         _xProto.CreateColormapChecked(0, item{name}, screen.Root, screen.RootVisualId);
-",
+""",
             ImplType.GC =>
-$@"
+$"""
+
         var item{name} = _xProto.NewId();
         _xProto.CreateColormapChecked(0, item{name}, window, screen.RootVisualId);
-",
+""",
             ImplType.Window =>
-$@"
+$"""
+
         var item{name} = _xProto.NewId();
-        _xProto.CreateWindowChecked(0, item{name}, screen.Root, 0, 0, 640, 480, 0, 
-            Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, (Xcsb.Masks.ValueMask)(2 | 2048), 
-            [screen.WhitePixel, 32768 | 1 ]);
-",
+        _xProto.CreateWindowChecked(0, item{name}, screen.Root, 0, 0, 640, 480, 0,  Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, (Xcsb.Masks.ValueMask)(2 | 2048),  [screen.WhitePixel, 32768 | 1 ]);
+""",
             ImplType.CursorFont =>
-$@"
+$"""
+
         var item{name} = _xProto.NewId();
-        _xProto.OpenFontChecked(""cursor"", item{name});
-",
+        _xProto.OpenFontChecked("cursor", item{name});
+""",
+            ImplType.Root =>
+$"""
+
+        var iten{name} = screen.Root;
+""",
+            ImplType.Rootdepth =>
+$"""
+
+        var iten{name} = screen.RootDepth!.DepthValue;
+""",
+            ImplType.VisualId =>
+$"""
+
+        var iten{name} = screen.RootVisualId;
+""",
             _ => throw new NotImplementedException()
         };
     }
@@ -1988,7 +2021,10 @@ $$"""
         ColorMap,
         GC,
         Window,
-        CursorFont
+        CursorFont,
+        VisualId,
+        Root,
+        Rootdepth
     }
 }
 
