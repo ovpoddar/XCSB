@@ -5,7 +5,7 @@ using Xcsb.Models;
 using Xcsb.Models.Handshake;
 
 int screen_num = 0;
-var x = XcsbClient.Initialized();
+using var x = XcsbClient.Initialized();
 
 var screen = x.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
@@ -161,13 +161,13 @@ Thread.Sleep(1500);
 
 
 var font = x.NewId();
-
 x.OpenFontUnchecked("cursor", font);
-
 var cursor = x.NewId();
 x.CreateGlyphCursorUnchecked(cursor, font, font, 'D', 69, 0, 0, 0, 65535, 65535, 65535);
 
 Console.WriteLine("Created cursor with ID: {0}", cursor);
+x.ChangeWindowAttributesUnchecked(win, ValueMask.Cursor, [cursor]);
+
 Thread.Sleep(3000);
 
 x.FreeCursorUnchecked(cursor);

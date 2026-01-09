@@ -89,6 +89,9 @@ internal class BaseProtoClient
 
     protected ResponseProto ChangeGCBase(uint gc, GCMask mask, Span<uint> args)
     {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
         var request = new ChangeGCType(gc, mask, args.Length);
         var requiredBuffer = request.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
@@ -195,8 +198,7 @@ internal class BaseProtoClient
     protected ResponseProto ChangePointerControlBase(Acceleration? acceleration, ushort? threshold)
     {
         var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
-            threshold ?? 0, (byte)(acceleration is null ? 0 : 1),
-            (byte)(threshold.HasValue ? 1 : 0));
+            threshold ?? 0, (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
         ProtoOut.Send(ref request);
         return new ResponseProto(ProtoOut.Sequence);
     }
@@ -1178,7 +1180,6 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 MemoryMarshal.Cast<ColorItem, byte>(item));
-            scratchBuffer[requiredBuffer - 1] = 0;
             ProtoOut.SendExact(scratchBuffer);
         }
         else
@@ -1189,7 +1190,6 @@ internal class BaseProtoClient
                 ref request,
                 8,
                 MemoryMarshal.Cast<ColorItem, byte>(item));
-            scratchBuffer[requiredBuffer - 1] = 0;
         }
 
         return new ResponseProto(ProtoOut.Sequence);

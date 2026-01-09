@@ -17,7 +17,7 @@ connection.CreateWindowUnchecked(0, window, screen.Root,
                EventMask.ButtonReleaseMask)
     ]);
 connection.ChangePropertyUnchecked<byte>(PropertyMode.Replace, window,
-    (ATOM)39, ATOM.String, "XCB System Control Demo"u8.ToArray());
+    ATOM.WmName, ATOM.String, "XCB System Control Demo"u8.ToArray());
 var gc = connection.NewId();
 connection.CreateGCUnchecked(gc, window, 0, []);
 connection.MapWindowUnchecked(window);
@@ -97,7 +97,7 @@ void demo_change_hosts()
     }
 
     connection.ChangeHostsUnchecked(HostMode.Insert, Family.Internet, [127, 0, 0, 1]);
-    
+
     Console.WriteLine("ChangeHosts: Successfully added localhost to access list\n");
 }
 

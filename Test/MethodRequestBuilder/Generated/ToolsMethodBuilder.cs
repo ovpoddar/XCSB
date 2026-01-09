@@ -1,11 +1,8 @@
 #:sdk Microsoft.NET.Sdk
 #:property TreatWarningsAsErrors=true
 
-using System.ComponentModel;
 using System.Diagnostics;
-using System.IO.Pipelines;
 using System.Text;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Reflection;
 
@@ -37,6 +34,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "MapWindow", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "MapSubwindows", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "UnmapWindow", ["$0"], ["uint"], false),
+    new MethodDetails2("DependentOnWindow", "DeleteProperty", ["$0, 0"], ["uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "UnmapSubwindows", ["$0"], ["uint"], false),
     new MethodDetails2("DependentOnWindow", "CirculateWindow", ["0, $0", "1, $0" ], ["Xcsb.Models.Circulate", "uint"], false),
     new MethodDetails2("DependentOnWindow", "ConfigureWindow", ["$0, 1, new uint[] {100}", "$0, 2, new uint[] {100}", "$0, 4, new uint[] {100}", "$0, 8, new uint[] {100}", "$0, 16, new uint[] {0}", "$0, 64, new uint[] {0}", "$0, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false),
@@ -47,19 +45,31 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false),
     new MethodDetails2("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false),
     new MethodDetails2("DependentOnWindow", "KillClient", ["$0"], ["uint"], false),
-    new MethodDetails2Dynamic("DependentOnfontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
-    new MethodDetails2Dynamic("DependentOnpixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
-    new MethodDetails2Dynamic("DependentOngc", "FreeGc", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.Gc),
-    new MethodDetails2Dynamic("DependentOncursorId", "FreeCursor", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.CursorId),
-    new MethodDetails3("SpecialMethod", "NoOperation"),
-    new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"] , ["byte", "uint", "uint", "ushort", "ushort"]),
+    new MethodDetails2("DependentOnWindow", "SetSelectionOwner", ["$0, 0, 0", "$0, 68, 0"], ["uint", "uint", "uint"], false),
+    new MethodDetails2("DependentOnWindow", "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
+    new MethodDetails2("DependentOnWindow", "ConvertSelection", ["$0, 1, 31, 9, 0"], ["uint","uint","uint","uint","uint"], false),
+    new MethodDetails2("DependentOnWindow", "ClearArea", ["false, $0, 0, 0, 100, 100"], ["bool", "uint", "short", "short", "ushort", "ushort"], false),
+    new MethodDetails2Dynamic("DependentOnFontId", "CloseFont", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.FontId),
+    new MethodDetails2Dynamic("DependentOnPixmapId", "FreePixmap", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.PixmapId),
+    new MethodDetails2Dynamic("DependentOnGc", "FreeGc", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.Gc),
+    new MethodDetails2Dynamic("DependentOnCursorId", "FreeCursor", ["$0"], ["uint"], false, MethodDetails2Dynamic.DynamicType.CursorId),
+    new MethodDetails2Dynamic("DependentOnCursorId", "RecolorCursor", ["$0, 65535, 0, 0, 0, 0, 65535"], ["uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false, MethodDetails2Dynamic.DynamicType.CursorId),
+    new MethodDetails2Dynamic("DependentOnCursorId", "ChangeActivePointerGrab", ["$0, 0, 4"], [ "uint", "uint", "ushort" ],false, MethodDetails2Dynamic.DynamicType.CursorId),
+    new MethodDetails2Dynamic("DependentOnGc", "ChangeGc", ["$0, 4, new uint[] {4294967295}"], ["uint", "Xcsb.Masks.GCMask", "uint[]"], false, MethodDetails2Dynamic.DynamicType.Gc),
+    new MethodDetails2Dynamic("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbByte),
+    new MethodDetails2Dynamic("DependentOnGc", "SetClipRectangles", ["0, $0, 0, 0, [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["Xcsb.Models.ClipOrdering", "uint", "ushort", "ushort", "Xcsb.Models.Rectangle[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbRectangle),
+    new NoOperation(),
+    new ChangePointerControl(["null-null", "null-4", "null-2", "{ \"Denominator\" = 4, \"Numerator\" = 2 }-null", "{ \"Denominator\" = 2, \"Numerator\" = 4 }-2"], ["Xcsb.Models.Acceleration?", "ushort?"]),
+    new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"], ["byte", "uint", "uint", "ushort", "ushort"]),
     new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
     new MethodDetails6("DependentOnWindowId", "CreateColormap", ["0, $0, $1, $2", "1, $0, $1, $2"], ["Xcsb.Models.ColormapAlloc", "uint", "uint", "uint"]),
     new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
+    new MethodDetails7("DependentOnColorMap", "FreeColors", ["$0, 0, new uint[] {16711680}"], ["uint", "uint", "uint[]"], true, STRType.XcbUint),
+    new MethodDetails7Update("DependentOnColorMap", "StoreNamedColor", ["1, $0, 16711680, \"red\""], ["Xcsb.Models.ColorFlag", "uint", "uint" , "string"], true, STRType.XcbStr8),
     new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
-    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]" ], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
     new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
     new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
     new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment, ""),
@@ -67,42 +77,27 @@ IBuilder[] noParamMethod = [
     new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, ""),
     new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1, 0, 0, [{ \"X\" = 120, \"Y\" = 130 }, { \"X\" = 80, \"Y\" = 180 }, { \"X\" = 160, \"Y\" = 180 }]", "$0, $1, 2, 1, [{ \"X\" = 120, \"Y\" = 130 }, { \"X\" = 80, \"Y\" = 180 }, { \"X\" = 160, \"Y\" = 180 }]"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
     new MethodDetails8("DependentOnDrawableGc", "PolyFillRectangle", ["$0, $1,  [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["uint", "uint", "Xcsb.Models.Rectangle[]"], true, STRType.XcbRectangle, ""),
-    new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, "")
-];
-// CreateCursor                      (uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
-// CreateGlyphCursor                 (uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
-
-
-// CreateWindow                      (byte depth, uint window, uint parent, short x, short y, ushort width, ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
-// ReparentWindow                    (uint window, uint parent, short x, short y)
-// ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
-// DeleteProperty                    (uint window, ATOM atom)
-// RotateProperties                  (uint window, ushort delta, Span<ATOM> properties)
-// SetSelectionOwner                 (uint owner, ATOM atom, uint timestamp)
-// ConvertSelection                  (uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
-// SendEvent                         (bool propagate, uint destination, uint eventMask, XEvent evnt)
-// ChangeActivePointerGrab           (uint cursor, uint time, ushort mask)
-// WarpPointer                       (uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth, ushort srcHeight, short destinationX, short destinationY)
-// OpenFont                          (string fontName, uint fontId)
-// ChangeGC                          (uint gc, GCMask mask, Span<uint> args)
-// CopyGC                            (uint srcGc, uint dstGc, GCMask mask)
-// SetDashes                         (uint gc, ushort dashOffset, Span<byte> dashes)
-// SetClipRectangles                 (ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles)
-// ClearArea                         (bool exposures, uint window, short x, short y, ushort width, ushort height)
-// CopyArea                          (uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX, ushort destinationY, ushort width, ushort height)
-// CopyPlane                         (uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
-// PolyPoint                         (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
-// PolyLine                          (CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
-// PutImage                          (ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y, byte leftPad, byte depth, Span<byte> data)
-// CopyColormapAndFree               (uint colormapId, uint srcColormapId)
-// FreeColors                        (uint colormapId, uint planeMask, Span<uint> pixels)
-// StoreColors                       (uint colormapId, Span<ColorItem> item)
-// StoreNamedColor                   (ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
-// RecolorCursor                     (uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+    new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, ""),
+    new MethodDetails8("DependentOnColorMap", "StoreColors", ["$0, [{ \"Pixel\" = 10, \"Red\" = 255, \"Green\" = 255, \"Blue\" = 255, \"Flags\" = 1 }]"], ["uint", "Xcsb.Models.ColorItem[]"], true, STRType.XcbColorItem, ""),
+    new MethodDetails8Valid("DependentOnDrawableGc", "PolyPoint",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
+    new MethodDetails8Valid("DependentOnDrawableGc", "PolyLine",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint",  "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
+    new MethodDetails8Valid("DependentOnDrawableGc", "PutImage",["2, $0, $1, 2, 2, 0, 0, 0, 0, new byte[] {255, 0, 0, 255, 255,255,0,255, 255, 0, 0, 255, 255,255,0,255}"], ["Xcsb.Models.ImageFormatBitmap", "uint", "uint", "ushort", "ushort", "short", "short", "byte", "byte", "byte[]"], true, STRType.XcbByte),
+    new MethodDetails9("DependentOnColorMapId", "CopyColormapAndFree", ["$0, $1"], ["uint", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.ColorMap, MethodDetails9.ImplType.Id),
+    new MethodDetails9("DependentOnGcGc", "CopyGc", ["$0, $1, 4"], ["uint", "uint", "Xcsb.Masks.GCMask"], false,STRType.RawBuffer, MethodDetails9.ImplType.GC, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnWindowWindow", "ReparentWindow", ["$0, $1, 0, 0"], ["uint", "uint", "short", "short"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnIdGc", "CreateCursor", ["$0, $1, 0, 0, 0, 0, 65535, 65535, 65535, 8, 8"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnIdCursorFont", "CreateGlyphCursor", ["$0, $1, $1, 'a', 69, 0, 0, 0, 65535, 65535, 65535"], ["uint", "uint", "uint", "char", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.CursorFont),
+    new MethodDetails9("DependentOnWindowWindow", "WarpPointer", ["$0, $1, 0, 0, 0, 0, 640, 480"], ["uint", "uint", "short", "short", "ushort", "ushort", "short", "short"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindowWindowGc", "CopyArea", ["$0, $1, $2, 0, 0, 0, 0, 640, 480"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnWindowWindowGc", "CopyPlane", ["$0, $1, $2, 0, 0, 0, 0, 640, 480, 4"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "uint"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnRootdepthIdRootVisualId", "CreateWindow", ["$0, $1, $2, 0, 0, 500, 500,0, 1, $3, 2050, new uint[] {0, 32768 }"], ["byte", "uint", "uint", "short", "short", "ushort", "ushort", "ushort", "Xcsb.Models.ClassType", "uint", "Xcsb.Masks.ValueMask", "uint[]"], false,STRType.XcbUint, MethodDetails9.ImplType.Rootdepth, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.Root, MethodDetails9.ImplType.VisualId),
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
+    new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
+// ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+];
 
+// SendEvent                         (bool propagate, uint destination, uint eventMask, XEvent evnt)
 
-// new("IndependentMethod", "ChangePointerControl", ["new Xcsb.Models.Acceleration(1, 1), 4"], ["Xcsb.Models.Acceleration", "ushort"], false), // special case when the params being different
 
 
 fileStream.Write(
@@ -114,6 +109,7 @@ using Xcsb;
 
 namespace MethodRequestBuilder.Test.Generated;
 
+[Collection("Sequential Execution")]
 public class VoidMethodsTest : IDisposable
 {
     private readonly IXProto _xProto;
@@ -271,19 +267,19 @@ file static class StringHelper
         var result = 0;
         foreach (var item in content)
         {
-            if (isXcbStr == STRType.XcbStr || isXcbStr == STRType.Xcb8 || isXcbStr == STRType.Xcb16)
+            if (isXcbStr == STRType.XcbStr || isXcbStr == STRType.Xcb8 || isXcbStr == STRType.Xcb16 || isXcbStr == STRType.XcbStr8)
             {
                 if (item == '"') result++;
                 continue;
             }
-            if (isXcbStr is STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient)
+            if (isXcbStr is STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient or STRType.XcbColorItem)
             {
                 if (item == '}')
                     result++;
 
                 continue;
             }
-            if (isXcbStr == STRType.XcbByte)
+            if (isXcbStr is STRType.XcbByte or STRType.XcbAtom or STRType.XcbUint)
             {
                 if (item == ',')
                     result++;
@@ -301,6 +297,9 @@ file static class StringHelper
             case STRType.XcbStr:
                 return result / 2;
             case STRType.XcbByte:
+            case STRType.XcbAtom:
+            case STRType.XcbUint:
+            case STRType.XcbStr8:
                 return ++result;
             default:
                 return result;
@@ -374,7 +373,7 @@ file static class StringHelper
                 }
             }
         }
-        else if (type == STRType.XcbUint || type == STRType.XcbByte || type == STRType.XcbStr8)
+        else if (type == STRType.XcbUint || type == STRType.XcbByte || type == STRType.XcbStr8 || type == STRType.XcbAtom)
         {
             sb.Append(data);
         }
@@ -424,6 +423,18 @@ file static class StringHelper
         return content.Length;
     }
 
+    public static ReadOnlySpan<char> GetLastItem(this ReadOnlySpan<char> content)
+    {
+        ReadOnlySpan<char> result;
+        while (true)
+        {
+            var context = GetCsField(content, out result);
+            content = content[context..];
+            if (content.Length == 0) break;
+        }
+
+        return result;
+    }
 
     public static string ToCParams(this string? parameter, STRType lastElementType, bool addLen, params string[] items)
     {
@@ -514,17 +525,21 @@ file static class StringHelper
         }
     }
 
-    public static string ReplaceOnece(this string value, char target, string replaced)
+    public static string ReplaceOnece(this string value, char target, string replaced, int targetIndex = 0)
     {
         var sb = new StringBuilder();
-        var isDone = false;
-        foreach (var item in value)
+        var foundIndex = -1;
+        for (int i = 0; i < value.Length; i++)
         {
-            if (item == target && !isDone)
+            char item = value[i];
+            if (item == target)
             {
-                sb.Append(replaced);
-                isDone = true;
-                continue;
+                foundIndex++;
+                if (targetIndex == foundIndex)
+                {
+                    sb.Append(replaced);
+                    continue;
+                }
             }
 
             sb.Append(item);
@@ -546,6 +561,8 @@ file static class StringHelper
         STRType.XcbRectangle => "(xcb_rectangle_t[])",
         STRType.XcbArc => "(xcb_arc_t[])",
         STRType.XcbPoient => "(xcb_point_t[])",
+        STRType.XcbAtom => "xcb_atom_t[]",
+        STRType.XcbColorItem => "(xcb_coloritem_t[])",
         _ => throw new Exception(isXcbStr.ToString()),
     };
 
@@ -628,7 +645,8 @@ int main()
 file class MethodDetails2 : StaticBuilder
 {
     public MethodDetails2(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall) : base(categories, methodName, parameters, paramSignature, addLenInCCall, STRType.XcbUint)
+        bool addLenInCCall, STRType strType = STRType.XcbUint) : base(categories, methodName, parameters, paramSignature,
+        addLenInCCall, strType)
     { }
 
     public virtual string WriteUpValueOfCSetup(out string name)
@@ -636,15 +654,19 @@ file class MethodDetails2 : StaticBuilder
         name = "window";
         return
 $$"""
-    xcb_window_t {{name}} = xcb_generate_id(connection);
-    xcb_create_window(connection, 0, {{name}}, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+        xcb_window_t {{name}} = xcb_generate_id(connection);
+        xcb_create_window(connection, 0, {{name}}, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                        screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
 """;
     }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        var workingTypes = WriteUpValueOfCSetup(out var type);
+        var lastParameter = parameter.GetLastItem();
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, type);
+        if (base.IsXcbStr == STRType.XcbAtom)
+            parameter = parameter.ReplaceOnece(',', $", {StringHelper.CalculateLen(lastParameter, IsXcbStr)}, ", 1);
         return
 $$"""
 #include <xcb/xcb.h>
@@ -662,7 +684,7 @@ int main()
     const xcb_setup_t *setup = xcb_get_setup(connection);
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
     
-{{WriteUpValueOfCSetup(out var type)}}
+{{workingTypes}}
 
     xcb_flush(connection);
 
@@ -671,7 +693,7 @@ int main()
     fprintf(stderr, "{{marker}}\n");
     
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}({{parameter.ToCParams(IsXcbStr, AddLenInCCall, type)}});
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked({{parameter}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -698,20 +720,38 @@ int main()
         throw new UnreachableException();
     }
 
-
     public virtual string WriteUpValueOfCsSetup(out string name)
     {
         name = "window";
         return
 $$"""
-        var {{name}} = _xProto.NewId();
-        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
-        _xProto.CreateWindowChecked(0, {{name}}, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
-                    screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
+            var {{name}} = _xProto.NewId();
+            var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+            _xProto.CreateWindowChecked(0, {{name}}, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
+                        screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
 """;
     }
 
     public virtual string GetMethodNameUpdated(string name) => name;
+
+    private string? GetItems(out string? name)
+    {
+        if (IsXcbStr == STRType.XcbAtom)
+        {
+            name = "items";
+            return $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => (Xcsb.Models.ATOM)a);";
+        }
+        else if (IsXcbStr == STRType.XcbRectangle)
+        {
+            name = "items";
+            return $"var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));";
+        }
+        else
+        {
+            name = null;
+            return null;
+        }
+    }
 
     public override void WriteCsMethodBody(FileStream fileStream)
     {
@@ -725,10 +765,12 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-{{WriteUpValueOfCsSetup(out var typeName)}}
+        {{WriteUpValueOfCsSetup(out var typeName)}}
+
+        {{GetItems(out var name)}}
 
         // act
-        bufferClient.{{GetMethodNameUpdated(MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
+        bufferClient.{{GetMethodNameUpdated(MethodName)}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, name)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -748,14 +790,14 @@ file class MethodDetails2Dynamic : MethodDetails2
 {
     private readonly DynamicType _type;
     public MethodDetails2Dynamic(string categories, string methodName, string[] parameters, string[] paramSignature,
-        bool addLenInCCall, DynamicType type) : base(categories, methodName, parameters, paramSignature, addLenInCCall)
+        bool addLenInCCall, DynamicType type, STRType strType = STRType.XcbUint) : base(categories, methodName, parameters, paramSignature, addLenInCCall, strType)
     {
         _type = type;
     }
 
     public override string GetMethodNameUpdated(string name)
     {
-        if (base.MethodName == "FreeGc")
+        if (base.MethodName is "FreeGc" or "ChangeGc")
             return base.GetMethodNameUpdated(name).Fix();
         return base.GetMethodNameUpdated(name);
     }
@@ -917,15 +959,14 @@ $$"""
     }
 }
 
-file class MethodDetails3 : StaticBuilder
+file class NoOperation : StaticBuilder
 {
-    public MethodDetails3(string categories, string methodName) : base(categories, methodName, ["new uint[] {}"],
-        ["uint[]"], false, STRType.RawBuffer)
+    public NoOperation() : base("SpecialMethod", nameof(NoOperation), ["new uint[] {}"], ["uint[]"], false,
+        STRType.RawBuffer)
     { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
         return
 $$"""
 #include <xcb/xcb.h>
@@ -942,7 +983,7 @@ int main()
     }
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = {{functionName}}(connection);
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection);
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
     xcb_generic_error_t *error = xcb_request_check(connection, cookie);
@@ -953,6 +994,232 @@ int main()
     return -1;
 }
 """;
+    }
+}
+
+
+file class ChangePointerControl : StaticBuilder
+{
+    public ChangePointerControl(string[] parameters, string[] paramSignature)
+        : base("SpecialMethod", nameof(ChangePointerControl), parameters, paramSignature, false, STRType.RawBuffer)
+    { }
+
+    public static string ToCParams(ReadOnlySpan<char> value)
+    {
+        const string nullasText = "null";
+        var sliceIndex = value.IndexOf('-');
+        if (sliceIndex == -1) throw new UnreachableException();
+        var part1 = value[..sliceIndex];
+        var part2 = value[++sliceIndex..];
+        var hasVal1 = true;
+        var hasVal2 = true;
+        if (part1.SequenceEqual(nullasText))
+            hasVal1 = false;
+        if (part2.SequenceEqual(nullasText))
+            hasVal2 = false;
+        var sb = new StringBuilder();
+        if (hasVal1)
+        {
+            var incort = false;
+            foreach (var item in part1)
+            {
+                if (item is '"') incort = !incort;
+                if (item is '{' or '}' or '=' or '"') continue;
+                if (incort) continue;
+                sb.Append(item);
+            }
+            sb.Append(", ");
+        }
+        else
+            sb.Append("0, 0, ");
+
+        sb.Append(hasVal2 ? part2 : "0");
+        sb.Append(hasVal1 ? ", 1, " : ", 0, ");
+        sb.Append(hasVal2 ? '1' : '0');
+
+        return sb.ToString();
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection, {{ToCParams(parameter)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{{base.ParamSignature[0]}}>(params0);
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, 0, "items")}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+
+    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters, string methodName, string[] paramSignature)
+    {
+        foreach (var parameter in parameters)
+        {
+            var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
+            fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{ToCsParameter(parameter, cResponse)}})]
+
+"""));
+        }
+    }
+
+    private string ToCsParameter(ReadOnlySpan<char> parameter, string[] cResponse)
+    {
+        var sb = new StringBuilder();
+        sb.Append('"');
+        var canWrite = false;
+        foreach (var item in parameter)
+        {
+            if (item == '-')
+            {
+                sb.Append("\", ");
+                canWrite = true;
+                continue;
+            }
+            if (item == '"')
+                sb.Append('\\');
+
+            if (char.IsNumber(item) && canWrite)
+            {
+                sb.Append("(ushort)");
+            }
+            if (item == '=')
+            {
+                sb.Append(':');
+                continue;
+            }
+            sb.Append(item);
+        }
+        sb.Append(", new byte[] {")
+            .Append(cResponse[^1])
+            .Append('}');
+
+        return sb.ToString();
+    }
+}
+
+
+file class OpenFont : StaticBuilder
+{
+    public OpenFont(string[] parameters) : base("SpecialMethod", nameof(OpenFont), parameters, ["string", "uint"], true,
+        STRType.XcbStr)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        StringHelper.GetCsField(parameter, out var field);
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_font_t font = xcb_generate_id(connection);
+    xcb_flush(connection);
+    
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d \n", font);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection, font, strlen({{field}}), {{field}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params1, _xProto.NewId());
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
     }
 }
 
@@ -1221,8 +1488,10 @@ $$"""
 
 file class MethodDetails7 : StaticBuilder
 {
-    public MethodDetails7(string categories, string methodName, string[] parameters, string[] paramSignature)
-        : base(categories, methodName, parameters, paramSignature, false, STRType.RawBuffer) { }
+    public MethodDetails7(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool len = false, STRType sTRType = STRType.RawBuffer) : base(categories, methodName, parameters, paramSignature,
+        len, sTRType)
+    { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
@@ -1267,6 +1536,20 @@ int main()
 """;
     }
 
+    public string? WriteCast(out string? items)
+    {
+        if (base.ParamSignature[^1] == "string")
+        {
+            items = "items";
+            return $"var items = System.Text.Encoding.UTF8.GetBytes(params3);";
+        }
+        else
+        {
+            items = null;
+            return null;
+        }
+    }
+
     public override void WriteCsMethodBody(FileStream fileStream)
     {
         var methodSignature = GetTestMethodSignature(ParamSignature);
@@ -1280,9 +1563,9 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var cursor_pixmap = _xProto.NewId();
         _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
-
+        {{WriteCast(out var item)}}
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, item)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1299,9 +1582,47 @@ $$"""
 
 }
 
+file class MethodDetails7Update : MethodDetails7
+{
+    public MethodDetails7Update(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool len = false, STRType sTRType = STRType.RawBuffer) : base(categories, methodName, parameters, paramSignature,
+        len, sTRType)
+    { }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var cursor_pixmap = _xProto.NewId();
+        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
+        {{WriteCast(out var item)}}
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, item)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params1, cursor_pixmap);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+}
+
 file class MethodDetails8 : StaticBuilder
 {
-    private string? _castType;
+    public string? _castType;
     public MethodDetails8(string categories, string methodName, string[] parameters, string[] paramSignature,
         bool addLenInCCall, STRType isXcbStr, string? castType = null) : base(categories, methodName, parameters,
         paramSignature, addLenInCCall, isXcbStr)
@@ -1309,12 +1630,12 @@ file class MethodDetails8 : StaticBuilder
         _castType = castType;
     }
 
-    private string GetItems() => IsXcbStr switch
+    public string GetItems() => IsXcbStr switch
     {
         STRType.XcbStr8 => $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});",
-        STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient => $"var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));",
+        STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient or STRType.XcbColorItem => $"var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));",
         STRType.Xcb8 or STRType.Xcb16 => $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);",
-        STRType.XcbStr16 => "",
+        STRType.XcbStr16 or STRType.XcbByte => "",
         _ => throw new NotImplementedException(IsXcbStr.ToString())
     };
 
@@ -1329,19 +1650,16 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
-        var gc = _xProto.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+        {{GetCsSpeicalContent()}}
         {{GetItems()}}
 
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (_castType == null ? null : "items"))}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, (_castType == null ? null : "items"))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
         Assert.NotNull(buffer);
-        Assert.Equal(root, params0);
-        Assert.Equal(gc, params1);
+        {{GetCsAssert()}}
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
@@ -1351,9 +1669,38 @@ $$"""
 """));
     }
 
+    private string GetCsAssert()
+    {
+
+        return IsXcbStr != STRType.XcbColorItem ?
+        @"
+        Assert.Equal(root, params0);
+        Assert.Equal(gc, params1);
+" :
+        @"
+        Assert.Equal(cmap, params0);
+";
+    }
+
+    private string GetCsSpeicalContent()
+    {
+        return IsXcbStr != STRType.XcbColorItem ?
+@"
+        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
+        var gc = _xProto.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+" :
+@"
+        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        var cmap = _xProto.NewId();
+        _xProto.CreateColormapChecked(0, cmap, screen.Root, screen.RootVisualId);
+";
+    }
+
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "root", "gc");
+        string[] result = IsXcbStr != STRType.XcbColorItem ? ["root", "gc"] : ["cmap"];
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, result);
         if (IsXcbStr is STRType.XcbStr8 or STRType.XcbStr16)
             parameter = parameter.ReplaceOnece(',', $", {parameter.CalculateSize()}, ");
 
@@ -1377,6 +1724,27 @@ int main()
         return -1;
     }
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    {{GetCSpeicalContent(marker)}}
+
+    fprintf(stderr, "{{marker}}\n");
+    cookie = {{functionName}}({{parameter}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+
+    error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+} 
+""";
+    }
+
+    private string GetCSpeicalContent(ReadOnlySpan<char> marker)
+    {
+        return IsXcbStr != STRType.XcbColorItem ?
+$$"""
     xcb_window_t root = screen->root;
     xcb_gcontext_t gc = xcb_generate_id(connection);
     xcb_void_cookie_t cookie = xcb_create_gc_checked(connection, gc, screen->root, 4, (u_int32_t[]){screen->black_pixel});
@@ -1393,20 +1761,270 @@ int main()
     fprintf(stderr, "{{marker}}\n");
     fprintf(stderr, "%d\n", gc);
     fprintf(stderr, "{{marker}}\n");
+""" :
+$$"""
+    xcb_colormap_t cmap = xcb_generate_id(connection);
+    xcb_void_cookie_t cookie = xcb_create_colormap_checked(connection, XCB_COLORMAP_ALLOC_NONE, cmap, screen->root, screen->root_visual);
+    xcb_flush(connection);
+
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (error)
+        return -1;
+    
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", cmap);
+    fprintf(stderr, "{{marker}}\n");
+""";
+    }
+}
+
+
+file class MethodDetails8Valid : MethodDetails8
+{
+    public MethodDetails8Valid(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType isXcbStr, string? castType = null) : base(categories, methodName, parameters,
+        paramSignature, addLenInCCall, isXcbStr, castType)
+    { }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
+        var gc = _xProto.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+        {{base.GetItems()}}
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, (_castType == null ? null : "items"))}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(root, params1);
+        Assert.Equal(gc, params2);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+}
+
+file class MethodDetails9 : StaticBuilder
+{
+    public ImplType[] Types { get; }
+
+    public MethodDetails9(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType strType, params ImplType[] types) : base(categories, methodName, parameters, paramSignature,
+        addLenInCCall, strType)
+    {
+        Types = types;
+    }
+
+    public string GetCImpl(ImplType type, int name)
+    {
+        return type switch
+        {
+            ImplType.Id => $"        xcb_colormap_t paramDynamic{name} = xcb_generate_id(connection);",
+            ImplType.ColorMap =>
+$@"
+        xcb_colormap_t paramDynamic{name} = xcb_generate_id(connection);
+        xcb_create_colormap(connection, XCB_COLORMAP_ALLOC_NONE, paramDynamic{name}, screen->root, screen->root_visual);
+",
+            ImplType.GC =>
+$@"
+    xcb_colormap_t paramDynamic{name} = xcb_generate_id(connection);
+    xcb_create_gc(connection, paramDynamic{name}, window, 4, (uint32_t[]){{{Random.Shared.Next(0, int.MaxValue)}}});
+",
+            ImplType.Window =>
+$@"
+    xcb_window_t paramDynamic{name} = xcb_generate_id(connection);
+    xcb_create_window(connection, XCB_COPY_FROM_PARENT, paramDynamic{name}, screen->root, 0, 0, 640, 480, 0, 
+            XCB_WINDOW_CLASS_INPUT_OUTPUT, screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, 
+            (uint32_t[]){{screen->white_pixel,XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS}});
+",
+            ImplType.CursorFont =>
+$@"
+    xcb_font_t paramDynamic{name} = xcb_generate_id(connection);
+    xcb_open_font(connection, paramDynamic{name}, {"cursor".Length}, ""cursor"");
+",
+            ImplType.Root =>
+$"""        
+    xcb_window_t paramDynamic{name} = screen->root;
+""",
+            ImplType.Rootdepth =>
+$"""
+    uint8_t paramDynamic{name} = screen->root_depth;
+""",
+            ImplType.VisualId =>
+$"""
+    xcb_visualid_t paramDynamic{name} = screen->root_visual;
+""",
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public string GetCsImpl(ImplType type, int name)
+    {
+        return type switch
+        {
+            ImplType.Id =>
+$"""
+
+        var item{name} = _xProto.NewId();
+""",
+            ImplType.ColorMap =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.CreateColormapChecked(0, item{name}, screen.Root, screen.RootVisualId);
+""",
+            ImplType.GC =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.CreateColormapChecked(0, item{name}, window, screen.RootVisualId);
+""",
+            ImplType.Window =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.CreateWindowChecked(0, item{name}, screen.Root, 0, 0, 640, 480, 0,  Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, (Xcsb.Masks.ValueMask)(2 | 2048),  [screen.WhitePixel, 32768 | 1 ]);
+""",
+            ImplType.CursorFont =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.OpenFontChecked("cursor", item{name});
+""",
+            ImplType.Root =>
+$"""
+
+        var iten{name} = screen.Root;
+""",
+            ImplType.Rootdepth =>
+$"""
+
+        var iten{name} = screen.RootDepth!.DepthValue;
+""",
+            ImplType.VisualId =>
+$"""
+
+        var iten{name} = screen.RootVisualId;
+""",
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public string WriteMembers(Func<ImplType, int, string> selector)
+    {
+        var sb = new StringBuilder();
+        if (this.Types.Contains(ImplType.GC))
+        {
+            sb.Append(selector(ImplType.Window, -99).Replace("paramDynamic-99", "window").Replace("item-99", "window"));
+        }
+
+        for (int i = 0; i < Types.Length; i++)
+            sb.Append(selector(Types[i], i));
+
+        return sb.ToString();
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        var dynamicNames = Enumerable.Range(0, Types.Length).Select((a, i) => "paramDynamic" + i).ToArray();
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection)) return -1;
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    {{WriteMembers(GetCImpl)}}
+    xcb_flush(connection);
+
+    {{WriteOutPutofCDynamic(marker)}}
 
     fprintf(stderr, "{{marker}}\n");
-    cookie = {{functionName}}({{parameter}});
+    xcb_void_cookie_t cookie =
+        xcb_{{method.ToSnakeCase()}}_checked({{parameter.ToCParams(IsXcbStr, AddLenInCCall, dynamicNames)}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
 
-    error = xcb_request_check(connection, cookie);
-    if (!error)
-        return 0;
-
-    free(error);
-    return -1;
-} 
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    return error ? -1 : 0;
+}
 """;
+    }
+
+    string WriteOutPutofCDynamic(ReadOnlySpan<char> marker)
+    {
+        var sb = new StringBuilder();
+        for (int i = 0; i < Types.Length; i++)
+        {
+            sb.Append("fprintf(stderr, \"");
+            sb.Append(marker);
+            sb.AppendLine("\\n\");");
+
+            sb.Append("    fprintf(stderr, \"%d\\n\", paramDynamic");
+            sb.Append(i);
+            sb.AppendLine(");");
+
+            sb.Append("    fprintf(stderr, \"");
+            sb.Append(marker);
+            sb.AppendLine("\\n\");");
+        }
+        return sb.ToString();
+
+    }
+
+    public override void WriteCsMethodBody(FileStream fs)
+    {
+        fs.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}}byte[] expectedResult)
+    {
+        var field = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        {{WriteMembers(GetCsImpl)}}
+        
+
+        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
+
+        var buffer = (List<byte>?)field?.GetValue(bufferClient.BufferProtoOut);
+        Assert.NotNull(buffer);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+        // todo assert
+    }
+"""));
+    }
+
+    public enum ImplType
+    {
+        Id,
+        ColorMap,
+        GC,
+        Window,
+        CursorFont,
+        VisualId,
+        Root,
+        Rootdepth
     }
 }
 
@@ -1515,7 +2133,7 @@ $$"""
 
     public string GetCStringMacro() => IsXcbStr switch
     {
-        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 or STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient => "",
+        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 or STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient or STRType.XcbColorItem => "",
         STRType.XcbStr =>
 """
 #define XS(s)                       \
@@ -1672,8 +2290,8 @@ file abstract class BaseBuilder : IBuilder
         var sb = new StringBuilder();
         for (var i = 0; i < parameterCount; i++)
         {
-            if (i == (parameterCount - 1) && lastItemName != null)
-                sb.Append(lastItemName);
+            if (i == index && replaceName != null)
+                sb.Append(replaceName);
             else
                 sb.Append("params")
                     .Append(i);
@@ -1701,7 +2319,7 @@ file abstract class BaseBuilder : IBuilder
     private static ReadOnlySpan<char> UpdateParameter(ReadOnlySpan<char> value) =>
         value switch
         {
-            "Xcsb.Models.Segment[]" or "Xcsb.Models.Rectangle[]" or "Xcsb.Models.Arc[]" or "Xcsb.Models.Point[]" => "string",
+            "Xcsb.Models.Segment[]" or "Xcsb.Models.Rectangle[]" or "Xcsb.Models.Arc[]" or "Xcsb.Models.Point[]" or "Xcsb.Models.ColorItem[]" or "Xcsb.Models.Acceleration?" => "string",
             _ => value
         };
 
@@ -1727,27 +2345,27 @@ file abstract class BaseBuilder : IBuilder
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-        
+
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
 
 #if DOCKERENV
-        process = new Process
-        {
-            StartInfo = new ProcessStartInfo
+            process = new Process
             {
-                FileName = "xvfb-run",
-                Arguments = $"-a env LD_PRELOAD={monitorFile} {execFile}",
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                RedirectStandardInput = true,
-                CreateNoWindow = true
-            }
-        };
-        process.Start();
-        var response = process.StandardOutput.ReadToEnd();
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "xvfb-run",
+                    Arguments = $"-a env LD_PRELOAD={monitorFile} {execFile}",
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    CreateNoWindow = true
+                }
+            };
+            process.Start();
+            var response = process.StandardOutput.ReadToEnd();
 #else
         process = new Process
         {
@@ -1767,7 +2385,7 @@ file abstract class BaseBuilder : IBuilder
         var response = process.StandardError.ReadToEnd();
 #endif
 
-        //process.WaitForExit();
+        process.WaitForExit();
         File.Delete(execFile);
         var result = new List<string>();
         var currentPos = 0;
@@ -1805,5 +2423,7 @@ file enum STRType
     XcbSegment,
     XcbRectangle,
     XcbArc,
-    XcbPoient
+    XcbPoient,
+    XcbAtom,
+    XcbColorItem
 }

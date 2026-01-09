@@ -46,6 +46,9 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 
     public void ChangeGC(uint gc, GCMask mask, Span<uint> args)
     {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
         var request = new ChangeGCType(gc, mask, args.Length);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(args);
@@ -75,11 +78,10 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         BufferProtoOut.AddRange(keysym);
     }
 
-    public void ChangePointerControl(Acceleration acceleration, ushort? threshold)
+    public void ChangePointerControl(Acceleration? acceleration, ushort? threshold)
     {
         var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
-            threshold ?? 0,
-            (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
+            threshold ?? 0, (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
         BufferProtoOut.Add(ref request);
     }
 
@@ -547,7 +549,6 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         var request = new StoreColorsType(colormapId, item.Length);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(item);
-        BufferProtoOut.Add(0);
     }
 
     public void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)

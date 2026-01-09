@@ -1,7 +1,12 @@
 ﻿namespace Xcsb.Models;
 
-public class Acceleration
+public struct Acceleration
 {
+    public Acceleration(ushort numerator, ushort denominator)
+    {
+        Numerator = numerator;
+        Denominator = denominator;
+    }
 #if !NETSTANDARD
     public required ushort Numerator { get; set; }
     public required ushort Denominator { get; set; }

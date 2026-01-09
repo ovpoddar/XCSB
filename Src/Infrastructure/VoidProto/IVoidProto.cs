@@ -160,7 +160,7 @@ public interface IVoidProto
 
     ResponseProto ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args);
 
-    ResponseProto ChangePointerControl(Acceleration acceleration, ushort? threshold);
+    ResponseProto ChangePointerControl(Acceleration? acceleration, ushort? threshold);
 
     ResponseProto SetScreenSaver(short timeout, short interval, TriState preferBlanking, TriState allowExposures);
 

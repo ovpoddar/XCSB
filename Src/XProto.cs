@@ -669,7 +669,7 @@ internal class XProto : BaseProtoClient, IXProto
     public ResponseProto ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args) =>
         ChangeKeyboardControlBase(mask, args);
 
-    public ResponseProto ChangePointerControl(Acceleration acceleration, ushort? threshold) =>
+    public ResponseProto ChangePointerControl(Acceleration? acceleration, ushort? threshold) =>
         ChangePointerControlBase(acceleration, threshold);
 
     public ResponseProto SetScreenSaver(short timeout, short interval, TriState preferBlanking,
@@ -1146,7 +1146,7 @@ internal class XProto : BaseProtoClient, IXProto
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void ChangePointerControlUnchecked(Acceleration acceleration, ushort? threshold)
+    public void ChangePointerControlUnchecked(Acceleration? acceleration, ushort? threshold)
     {
         var cookie = this.ChangePointerControlBase(acceleration, threshold);
         ProtoIn.SkipErrorForSequence(cookie.Id, false);
@@ -1650,7 +1650,7 @@ internal class XProto : BaseProtoClient, IXProto
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void ChangePointerControlChecked(Acceleration acceleration, ushort? threshold)
+    public void ChangePointerControlChecked(Acceleration? acceleration, ushort? threshold)
     {
         var cookie = this.ChangePointerControlBase(acceleration, threshold);
         ProtoIn.SkipErrorForSequence(cookie.Id, true);
