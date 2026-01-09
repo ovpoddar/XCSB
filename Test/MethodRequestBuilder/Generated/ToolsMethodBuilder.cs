@@ -2282,7 +2282,7 @@ file abstract class BaseBuilder : IBuilder
         WriteCsMethodBody(fileStream);
     }
 
-    public static string FillPassingParameter(int parameterCount, string? lastItemName = null)
+    public static string FillPassingParameter(int parameterCount, int index = -1, string? replaceName = null)
     {
         if (parameterCount == 0)
             return string.Empty;
