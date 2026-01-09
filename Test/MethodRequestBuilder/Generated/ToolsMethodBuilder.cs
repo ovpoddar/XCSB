@@ -1570,31 +1570,63 @@ file class MethodDetails9 : StaticBuilder
     {
         return type switch
         {
-            ImplType.Id => $"        xcb_colormap_t paramDynamic{name} = xcb_generate_id(connection);",
+            ImplType.Id => $"   xcb_colormap_t paramDynamic{name} = xcb_generate_id(connection);",
             ImplType.ColorMap =>
-$@"
-        xcb_colormap_t paramDynamic{name} = xcb_generate_id(connection);
-        xcb_create_colormap(connection, XCB_COLORMAP_ALLOC_NONE, paramDynamic{name}, screen->root, screen->root_visual);
-",
+$$"""
+    xcb_colormap_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_create_colormap_checked(connection, XCB_COLORMAP_ALLOC_NONE, paramDynamic{{name}}, screen->root, screen->root_visual);
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
             ImplType.GC =>
-$@"
-    xcb_colormap_t paramDynamic{name} = xcb_generate_id(connection);
-    xcb_create_gc(connection, paramDynamic{name}, window, 4, (uint32_t[]){{{Random.Shared.Next(0, int.MaxValue)}}});
-",
+$$"""
+    xcb_colormap_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_create_gc_checked(connection, paramDynamic{{name}}, window, 4, (uint32_t[]){ {{Random.Shared.Next(0, int.MaxValue)}} });
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
             ImplType.Window =>
-$@"
-    xcb_window_t paramDynamic{name} = xcb_generate_id(connection);
-    xcb_create_window(connection, XCB_COPY_FROM_PARENT, paramDynamic{name}, screen->root, 0, 0, 640, 480, 0, 
+$$"""
+    xcb_window_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_create_window_checked(connection, XCB_COPY_FROM_PARENT, paramDynamic{{name}}, screen->root, 0, 0, 640, 480, 0, 
             XCB_WINDOW_CLASS_INPUT_OUTPUT, screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, 
-            (uint32_t[]){{screen->white_pixel,XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS}});
-",
+            (uint32_t[]){screen->white_pixel,XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS});
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
             ImplType.CursorFont =>
-$@"
-    xcb_font_t paramDynamic{name} = xcb_generate_id(connection);
-    xcb_open_font(connection, paramDynamic{name}, {"cursor".Length}, ""cursor"");
-",
+$$"""
+    xcb_font_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_open_font_checked(connection, paramDynamic{{name}}, {{"cursor".Length}}, "cursor");
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
             ImplType.Root =>
-$"""        
+$"""
     xcb_window_t paramDynamic{name} = screen->root;
 """,
             ImplType.Rootdepth =>
