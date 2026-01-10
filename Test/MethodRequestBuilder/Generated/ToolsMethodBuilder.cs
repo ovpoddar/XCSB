@@ -91,8 +91,12 @@ IBuilder[] noParamMethod = [
     new MethodDetails9("DependentOnWindow", "ChangeWindowAttributes", ["$0, 1, new uint[] {167772}", "$0, 2, new uint[] {16777215}", "$0, 4, new uint[] {167772}", "$0, 8, new uint[] {16777215}", "$0, 16, new uint[] {1}", "$0, 32, new uint[] {1}", "$0, 64, new uint[] {167772}", "$0, 128, new uint[] {167772}", "$0, 256, new uint[] {167772}", "$0, 512, new uint[] {0}", "$0, 1024, new uint[] {1}", "$0, 2048, new uint[] {32769}", "$0, 4096, new uint[] {1}", "$0, 8192, new uint[] {167772}", "$0, 16384, new uint[] {167772}"], ["uint", "Xcsb.Masks.ValueMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.Window),
     new MethodDetails9("DependentOnGc", "ChangeGc", ["$0, 4, new uint[] {4294967295}"], ["uint", "Xcsb.Masks.GCMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.GC),
     new MethodDetails9("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, STRType.XcbByte, MethodDetails9.ImplType.GC),
+#if DOCKERENV
+// AVOIDE RUNNING IN YOU PC IT COULD BE CHANGE YOU KEYBOARD KEYS
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
+#endif
     new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
+    new ChangeProperty<byte>(["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "byte[]"])
 // ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
 ];
 
@@ -768,7 +772,7 @@ $$"""
         {{GetItems(out var name)}}
 
         // act
-        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, name)}});
+        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length, (name, ParamSignature.Length - 1))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1190,7 +1194,7 @@ $$"""
         _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, item)}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (item, ParamSignature.Length - 1))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1229,7 +1233,7 @@ $$"""
         _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, item)}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (item, ParamSignature.Length - 1))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1279,7 +1283,7 @@ $$"""
         {{GetItems()}}
 
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, (_castType == null ? null : "items"))}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ((_castType == null ? null : "items"), ParamSignature.Length - 1))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1427,7 +1431,7 @@ $$"""
         {{base.GetItems()}}
 
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, (_castType == null ? null : "items"))}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ((_castType == null ? null : "items"), ParamSignature.Length - 1))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -2005,7 +2009,7 @@ $$"""
         var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{{base.ParamSignature[0]}}>(params0);
 
         // act
-        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, 0, "items")}});
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ("items", 0))}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -2064,6 +2068,20 @@ $$"""
             .Append('}');
 
         return sb.ToString();
+    }
+}
+
+
+file class ChangeProperty<T> : StaticBuilder where T : unmanaged
+{
+    public ChangeProperty(string[] parameterSingature) : base("SpecialMethodOf" + typeof(T).Name, nameof(ChangeProperty<>),
+        [], parameterSingature, true, STRType.RawBuffer)
+    {
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        throw new NotImplementedException();
     }
 }
 
@@ -2321,7 +2339,7 @@ file abstract class BaseBuilder : IBuilder
         WriteCsMethodBody(fileStream);
     }
 
-    public static string FillPassingParameter(int parameterCount, int index = -1, string? replaceName = null)
+    public static string FillPassingParameter(int parameterCount, (string?, int)? replaceItems = null)
     {
         if (parameterCount == 0)
             return string.Empty;
@@ -2329,11 +2347,12 @@ file abstract class BaseBuilder : IBuilder
         var sb = new StringBuilder();
         for (var i = 0; i < parameterCount; i++)
         {
-            if (i == index && replaceName != null)
-                sb.Append(replaceName);
+            if (replaceItems.HasValue
+                    && !string.IsNullOrWhiteSpace(replaceItems.Value.Item1)
+                    && replaceItems.Value.Item2 == i)
+                sb.Append(replaceItems.Value.Item1);
             else
-                sb.Append("params")
-                    .Append(i);
+                sb.Append("params").Append(i);
             sb.Append(", ");
         }
         sb.Remove(sb.Length - 2, 2);
