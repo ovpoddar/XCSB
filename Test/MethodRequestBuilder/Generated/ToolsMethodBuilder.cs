@@ -732,8 +732,6 @@ $$"""
 """;
     }
 
-    public virtual string GetMethodNameUpdated(string name) => name;
-
     private string? GetItems(out string? name)
     {
         if (IsXcbStr == STRType.XcbAtom)
@@ -770,7 +768,7 @@ $$"""
         {{GetItems(out var name)}}
 
         // act
-        bufferClient.{{GetMethodNameUpdated(MethodName)}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, name)}});
+        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length, ParamSignature.Length - 1, name)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -795,13 +793,6 @@ file class MethodDetails2Dynamic : MethodDetails2
         _type = type;
     }
 
-    public override string GetMethodNameUpdated(string name)
-    {
-        if (base.MethodName is "FreeGc" or "ChangeGc")
-            return base.GetMethodNameUpdated(name).Fix();
-        return base.GetMethodNameUpdated(name);
-    }
-
     public override string WriteUpValueOfCsSetup(out string name)
     {
         name = _type.ToString().ToLower();
@@ -815,33 +806,6 @@ $"""
                     screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
     var {name} = _xProto.NewId();
     _xProto.CreateGCChecked({name}, window, (Xcsb.Masks.GCMask)(4|8), [screen.BlackPixel, screen.WhitePixel]);
-""",
-            DynamicType.FontId =>
-$"""
-    var {name} = _xProto.NewId();
-    _xProto.OpenFontChecked("fixed", {name});
-
-""",
-            DynamicType.PixmapId =>
-$"""
-    var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
-    var {name} = _xProto.NewId();
-    _xProto.CreatePixmapChecked(screen.RootDepth!.DepthValue, {name}, screen.Root, 1, 1);
-""",
-            DynamicType.CursorId =>
-$"""
-    var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
-    
-    var window = _xProto.NewId();
-    _xProto.CreateWindowChecked(0, window, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
-                           screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
-    var src = _xProto.NewId();
-    _xProto.CreatePixmapChecked(1, src, window, 8, 8);
-    var mask = _xProto.NewId();
-    _xProto.CreatePixmapChecked(1, mask, window, 8, 8);
-     var {name} = _xProto.NewId();
-    _xProto.CreateCursorChecked(
-        {name}, src, mask, 0, 0, 0, 65535, 65535, 65535, 0, 0);
 """,
             _ => throw new NullReferenceException()
         };
@@ -874,88 +838,13 @@ $$"""
         return 1;
     }
 """,
-            DynamicType.CursorId =>
-$$"""
-    xcb_window_t window = xcb_generate_id(connection);
-    xcb_void_cookie_t c = xcb_create_window_checked(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                                                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
-    xcb_generic_error_t *e = xcb_request_check(connection, c);
-    if (e) 
-    {
-        free(e);
-        return 1;
-    }
-
-    xcb_pixmap_t src = xcb_generate_id(connection);
-    c = xcb_create_pixmap_checked(connection, 1, src, window, 8, 8);
-    e = xcb_request_check(connection, c);
-    if (e) 
-    {
-        free(e);
-        return 1;
-    }
-
-    xcb_pixmap_t mask = xcb_generate_id(connection);
-    c = xcb_create_pixmap_checked(connection, 1, mask, window, 8, 8);
-    e = xcb_request_check(connection, c);
-    if (e) 
-    {
-        free(e);
-        return 1;
-    }
-
-    xcb_cursor_t {{name}} = xcb_generate_id(connection);
-    c = xcb_create_cursor_checked(
-        connection,
-        {{name}},
-        src,
-        mask,
-        0, 0, 0,                 
-        65535, 65535, 65535,     
-        0, 0                     
-    );
-    e = xcb_request_check(connection, c);
-    if (e) 
-    {
-        free(e);
-        return 1;
-    }
-    
-""",
-            DynamicType.FontId =>
-$$"""
-    xcb_font_t {{name}} = xcb_generate_id(connection);
-    xcb_void_cookie_t c = xcb_open_font_checked(connection, {{name}}, 5, "fixed");
-    xcb_generic_error_t *e = xcb_request_check(connection, c);
-    if (e) 
-    {
-        free(e);
-        return 1;
-    }
-""",
-            DynamicType.PixmapId =>
-$$"""
-    xcb_pixmap_t {{name}} = xcb_generate_id(connection);
-    uint8_t rootDepth = screen->root_depth;
-    xcb_window_t root = screen->root;
-    xcb_void_cookie_t c = xcb_create_pixmap_checked(connection, rootDepth, {{name}}, root, 1, 1);
-    xcb_generic_error_t *e = xcb_request_check(connection, c);
-    if (e) 
-    {
-        free(e);
-        return 1;
-    }
-""",
             _ => throw new NotImplementedException()
         };
     }
 
     public enum DynamicType
     {
-        FontId,
-        PixmapId,
         Gc,
-        CursorId
     }
 }
 
@@ -1114,7 +1003,7 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 
         // act
-        bufferClient.{{MethodName.Fix()}}({{FillPassingParameter(ParamSignature.Length)}});
+        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
         var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
 
         // assert
@@ -1742,39 +1631,41 @@ $"""
             ImplType.Root =>
 $"""
 
-        var iten{name} = screen.Root;
+        var item{name} = screen.Root;
 """,
             ImplType.Rootdepth =>
 $"""
 
-        var iten{name} = screen.RootDepth!.DepthValue;
+        var item{name} = screen.RootDepth!.DepthValue;
 """,
             ImplType.VisualId =>
 $"""
 
-        var iten{name} = screen.RootVisualId;
+        var item{name} = screen.RootVisualId;
 """,
             ImplType.FontId =>
 $"""
 
-        var iten{name} = _xProto.NewId();
-        _xProto.OpenFontChecked("fixed", iten{name});
+        var item{name} = _xProto.NewId();
+        _xProto.OpenFontChecked("fixed", item{name});
 """,
             ImplType.PixmapId =>
 $"""
 
-        var iten{name} = _xProto.NewId();
-        _xProto.CreatePixmapChecked(screen.RootDepth!.DepthValue, iten{name}, screen.Root, 1, 1);
+        var item{name} = _xProto.NewId();
+        _xProto.CreatePixmapChecked(screen.RootDepth!.DepthValue, item{name}, screen.Root, 1, 1);
 """,
             ImplType.CursorId =>
 $"""
+
+        var item{name} = _xProto.NewId();
 
         var srcPixmap = _xProto.NewId();
         _xProto.CreatePixmapChecked(1, srcPixmap, window, 8, 8);
         var maskPixmap = _xProto.NewId();
         _xProto.CreatePixmapChecked(1, maskPixmap, window, 8, 8);
-        var iten{name} = _xProto.NewId();
-        _xProto.CreateCursorChecked(iten{name}, srcPixmap, maskPixmap, 0, 0, 0, 65535, 65535, 65535, 0, 0);
+        
+        _xProto.CreateCursorChecked(item{name}, srcPixmap, maskPixmap, 0, 0, 0, 65535, 65535, 65535, 0, 0);
 """,
             _ => throw new NotImplementedException(type.ToString())
         };
@@ -1861,11 +1752,41 @@ $$"""
         bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
 
         var buffer = (List<byte>?)field?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+{{WrittingAsserts(this.Parameters[0])}}
         Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
-        // todo assert
     }
 """));
+    }
+
+    static string WrittingAsserts(ReadOnlySpan<char> format)
+    {
+        var sb = new StringBuilder();
+        int i = 0;
+        while (true)
+        {
+            var context = StringHelper.GetCsField(format, out var item);
+            format = format[context..];
+            var index = item.IndexOf('$');
+            if (index != -1)
+            {
+                sb.Append("\t\tAssert.Equal(params");
+                sb.Append(i);
+                sb.Append(", item");
+                sb.Append(int.Parse(item[++index..]));
+                sb.AppendLine(");");
+            }
+
+            i++;
+            if (format.Length == 0)
+                break;
+        }
+        return sb.ToString();
     }
 
     public enum ImplType
