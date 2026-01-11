@@ -96,8 +96,9 @@ IBuilder[] noParamMethod = [
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
 #endif
     new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
-    new ChangeProperty<byte>(["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "byte[]"])
-// ChangeProperty                    (PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+    new ChangeProperty<byte>([$"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow World"))} }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "byte[]"], STRType.XcbByte),
+    // new ChangeProperty<ushort>([$"0, $0, 35, 19, new ushort[] {{ 10, 20, 30 }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "ushort[]"], STRType.Xcb16),
+    new ChangeProperty<uint>([$"0, $0, 39, 6, new uint[] {{  100, 200, 300 }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "uint[]"], STRType.XcbUint),
 ];
 
 // SendEvent                         (bool propagate, uint destination, uint eventMask, XEvent evnt)
@@ -1719,7 +1720,7 @@ int main()
 """;
     }
 
-    string WriteOutPutofCDynamic(ReadOnlySpan<char> marker)
+    public string WriteOutPutofCDynamic(ReadOnlySpan<char> marker)
     {
         var sb = new StringBuilder();
         for (int i = 0; i < Types.Length; i++)
@@ -1768,7 +1769,7 @@ $$"""
 """));
     }
 
-    static string WrittingAsserts(ReadOnlySpan<char> format)
+    public string WrittingAsserts(ReadOnlySpan<char> format)
     {
         var sb = new StringBuilder();
         int i = 0;
@@ -2071,17 +2072,83 @@ $$"""
     }
 }
 
-
-file class ChangeProperty<T> : StaticBuilder where T : unmanaged
+file class ChangeProperty<T> : MethodDetails9 where T : unmanaged
 {
-    public ChangeProperty(string[] parameterSingature) : base("SpecialMethodOf" + typeof(T).Name, nameof(ChangeProperty<>),
-        [], parameterSingature, true, STRType.RawBuffer)
+    public ChangeProperty(string[] parameter, string[] parameterSingature, STRType strType) : base("SpecialMethodOf" + typeof(T).Name, nameof(ChangeProperty<>),
+        parameter, parameterSingature, true, strType, ImplType.Window)
     {
     }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
     {
-        throw new NotImplementedException();
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+{{GetCStringMacro()}}
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    {{WriteMembers(GetCImpl)}}
+
+    xcb_flush(connection);
+    
+    {{WriteOutPutofCDynamic(marker)}}
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked({{parameter.ToCParams(IsXcbStr, AddLenInCCall, "paramDynamic0").ReplaceOnece(',', $", {Marshal.SizeOf<T>() * 8},", 4)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        {{WriteMembers(GetCsImpl)}}
+
+        // act
+        bufferClient.{{MethodName}}<{{typeof(T).Name}}>({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+{{base.WrittingAsserts(this.Parameters[0])}}
+    }
+
+"""));
     }
 }
 
