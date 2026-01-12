@@ -96,9 +96,9 @@ IBuilder[] noParamMethod = [
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
 #endif
     new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
-    new ChangeProperty<byte>([$"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow World"))} }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "byte[]"], STRType.XcbByte),
-    new ChangeProperty<ushort>([$"0, $0, 35, 19, new ushort[] {{ 10, 20, 30 }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "ushort[]"], STRType.XcbShort),
-    new ChangeProperty<uint>([$"0, $0, 39, 6, new uint[] {{  100, 200, 300 }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "uint[]"], STRType.XcbUint),
+    new ChangeProperty<byte>([$"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow World"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Worl"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Wor"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Wo"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow W"))} }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "byte[]"], STRType.XcbByte),
+    new ChangeProperty<ushort>(["0, $0, 35, 19, new ushort[] { 10 }", "0, $0, 35, 19, new ushort[] { 10, 20 }", "0, $0, 35, 19, new ushort[] { 10, 20, 30 }", "0, $0, 35, 19, new ushort[] { 10, 20, 30, 40 }"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "ushort[]"], STRType.XcbShort),
+    new ChangeProperty<uint>(["0, $0, 39, 6, new uint[] { 100 }", "0, $0, 39, 6, new uint[] { 100, 200 }", "0, $0, 39, 6, new uint[] { 100, 200, 300 }", "0, $0, 39, 6, new uint[] { 100, 200, 300, 400 }"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "uint[]"], STRType.XcbUint),
 ];
 
 // SendEvent                         (bool propagate, uint destination, uint eventMask, XEvent evnt)
@@ -2473,7 +2473,7 @@ file abstract class BaseBuilder : IBuilder
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-        System.Console.WriteLine(cMainBody);
+
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
