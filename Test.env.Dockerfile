@@ -22,16 +22,14 @@ RUN rm -rf /temp
 
 FROM cs-lang AS content
 WORKDIR /workspace
-COPY . .
-WORKDIR /workspace/Src/
-RUN dotnet build -c Release
-
+COPY Src/ Src/.
+COPY Test/ Test/.
 WORKDIR /workspace/Test/MethodRequestBuilder
-ENV DISPLAY=:0
-ENV SCREEN_RESOLUTION=1280x720x24
+RUN xvfb-run -s '-screen 0 1280x720x24' dotnet build -p:DOCKER=true
 ENV TEST_RESULTS_DIR=/workspace/TestResults
 
 RUN mkdir -p ${TEST_RESULTS_DIR}
-
-RUN dotnet build -p:DOCKER=true
-ENTRYPOINT ["bash", "-c", "xvfb-run -s '-screen 0 1280x720x24' dotnet test --logger 'trx;LogFileName=test_results.trx' --results-directory $TEST_RESULTS_DIR; exit 0"]
+ENTRYPOINT ["bash", "-c", "Xvfb :99 -screen 0 1280x720x24 -nolisten tcp -ac 2>/tmp/xvfb.log & \
+  export DISPLAY=:99; \
+  for i in {1..50}; do xdpyinfo >/dev/null 2>&1 && break; sleep 0.2; done; \
+  dotnet test --logger \"trx;LogFileName=test_results.trx\" --results-directory \"$TEST_RESULTS_DIR\" || true; exit 0"]
