@@ -30,8 +30,6 @@ IBuilder[] noParamMethod = [
     new MethodDetails1("IndependentMethod", "ChangeHosts", ["0, 0, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true, STRType.XcbByte),
     new MethodDetails2("DependentOnWindow", "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
     new MethodDetails2Dynamic("DependentOnGc", "SetClipRectangles", ["0, $0, 0, 0, [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["Xcsb.Models.ClipOrdering", "uint", "ushort", "ushort", "Xcsb.Models.Rectangle[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbRectangle),
-    new NoOperation(),
-    new ChangePointerControl(["null-null", "null-4", "null-2", "{ \"Denominator\" = 4, \"Numerator\" = 2 }-null", "{ \"Denominator\" = 2, \"Numerator\" = 4 }-2"], ["Xcsb.Models.Acceleration?", "ushort?"]),
     new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"], ["byte", "uint", "uint", "ushort", "ushort"]),
     new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
     new MethodDetails6("DependentOnWindowId", "CreateColormap", ["0, $0, $1, $2", "1, $0, $1, $2"], ["Xcsb.Models.ColormapAlloc", "uint", "uint", "uint"]),
@@ -95,6 +93,8 @@ IBuilder[] noParamMethod = [
 // AVOIDE RUNNING IN YOU PC IT COULD BE CHANGE YOU KEYBOARD KEYS
 // ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
 #endif
+    new NoOperation(),
+    new ChangePointerControl(["null-null", "null-4", "null-2", "{ \"Denominator\" = 4, \"Numerator\" = 2 }-null", "{ \"Denominator\" = 2, \"Numerator\" = 4 }-2"], ["Xcsb.Models.Acceleration?", "ushort?"]),
     new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
     new ChangeProperty<byte>([$"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow World"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Worl"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Wor"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Wo"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow W"))} }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "byte[]"], STRType.XcbByte),
     new ChangeProperty<ushort>(["0, $0, 35, 19, new ushort[] { 10 }", "0, $0, 35, 19, new ushort[] { 10, 20 }", "0, $0, 35, 19, new ushort[] { 10, 20, 30 }", "0, $0, 35, 19, new ushort[] { 10, 20, 30, 40 }"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "ushort[]"], STRType.XcbShort),
