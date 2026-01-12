@@ -97,7 +97,7 @@ IBuilder[] noParamMethod = [
 #endif
     new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
     new ChangeProperty<byte>([$"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow World"))} }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "byte[]"], STRType.XcbByte),
-    // new ChangeProperty<ushort>([$"0, $0, 35, 19, new ushort[] {{ 10, 20, 30 }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "ushort[]"], STRType.Xcb16),
+    new ChangeProperty<ushort>([$"0, $0, 35, 19, new ushort[] {{ 10, 20, 30 }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "ushort[]"], STRType.XcbShort),
     new ChangeProperty<uint>([$"0, $0, 39, 6, new uint[] {{  100, 200, 300 }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "uint[]"], STRType.XcbUint),
 ];
 
@@ -284,7 +284,7 @@ file static class StringHelper
 
                 continue;
             }
-            if (isXcbStr is STRType.XcbByte or STRType.XcbAtom or STRType.XcbUint)
+            if (isXcbStr is STRType.XcbByte or STRType.XcbShort or STRType.XcbAtom or STRType.XcbUint)
             {
                 if (item == ',')
                     result++;
@@ -302,6 +302,7 @@ file static class StringHelper
             case STRType.XcbStr:
                 return result / 2;
             case STRType.XcbByte:
+            case STRType.XcbShort:
             case STRType.XcbAtom:
             case STRType.XcbUint:
             case STRType.XcbStr8:
@@ -378,7 +379,7 @@ file static class StringHelper
                 }
             }
         }
-        else if (type == STRType.XcbUint || type == STRType.XcbByte || type == STRType.XcbStr8 || type == STRType.XcbAtom)
+        else if (type is STRType.XcbUint or STRType.XcbByte or STRType.XcbStr8 or STRType.XcbAtom or STRType.XcbShort)
         {
             sb.Append(data);
         }
@@ -557,6 +558,7 @@ file static class StringHelper
     {
         STRType.XcbStr8 or STRType.RawBuffer => "const char *",
         STRType.XcbByte => "uint8_t[]",
+        STRType.XcbShort => "uint16_t[]",
         STRType.XcbInt => "int32_t[]",
         STRType.XcbUint => "uint32_t[]",
         STRType.XcbStr => "xcb_str_t *",
@@ -2257,7 +2259,8 @@ $$"""
 
     public string GetCStringMacro() => IsXcbStr switch
     {
-        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 or STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient or STRType.XcbColorItem => "",
+        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 or STRType.XcbSegment
+        or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient or STRType.XcbColorItem or STRType.XcbShort => "",
         STRType.XcbStr =>
 """
 #define XS(s)                       \
@@ -2470,7 +2473,7 @@ file abstract class BaseBuilder : IBuilder
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
         process.WaitForExit();
-
+        System.Console.WriteLine(cMainBody);
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
         Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
         Debug.Assert(File.Exists(execFile));
@@ -2538,6 +2541,7 @@ file enum STRType
 {
     RawBuffer,
     XcbStr,
+    XcbShort,
     Xcb8,
     Xcb16,
     XcbStr8,

@@ -213,7 +213,7 @@ internal class BaseProtoClient
         var size = Marshal.SizeOf<T>();
         if (size is not 1 and not 2 and not 4)
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
-        var request = new ChangePropertyType(mode, window, property, type, args.Length, (byte)(size * 8));
+        var request = new ChangePropertyType(mode, window, property, type, args.Length, size);
         var requiredBuffer = request.Length * 4;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
         {

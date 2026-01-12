@@ -94,10 +94,10 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
         var size = Marshal.SizeOf<T>();
         if (size is not 1 and not 2 and not 4)
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
-        var request = new ChangePropertyType(mode, window, property, type, args.Length, (byte)(size * 8));
+        var request = new ChangePropertyType(mode, window, property, type, args.Length, size);
         BufferProtoOut.Add(ref request);
         BufferProtoOut.AddRange(args);
-        BufferProtoOut.AddRange(new byte[args.Length.Padding()]);
+        BufferProtoOut.AddRange(new byte[(args.Length * size).Padding()]);
     }
 
     public void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
