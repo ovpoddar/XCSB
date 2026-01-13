@@ -94,7 +94,7 @@ IBuilder[] noParamMethod = [
     new  ChangeKeyboardMapping(),
 #endif
     new NoOperation(),
-    new ChangePointerControl(["null-null", "null-4", "null-2", "{ \"Denominator\" = 4, \"Numerator\" = 2 }-null", "{ \"Denominator\" = 2, \"Numerator\" = 4 }-2"], ["Xcsb.Models.Acceleration?", "ushort?"]),
+    new ChangePointerControl(["null-null", "null-4", "null-2", "{  \"Numerator\" = 2, \"Denominator\" = 4 }-null", "{ \"Numerator\" = 4, \"Denominator\" = 2 }-2"], ["Xcsb.Models.Acceleration?", "ushort?"]),
     new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
     new ChangeProperty<byte>([$"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow World"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Worl"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Wor"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Wo"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow W"))} }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "byte[]"], STRType.XcbByte),
     new ChangeProperty<ushort>(["0, $0, 35, 19, new ushort[] { 10 }", "0, $0, 35, 19, new ushort[] { 10, 20 }", "0, $0, 35, 19, new ushort[] { 10, 20, 30 }", "0, $0, 35, 19, new ushort[] { 10, 20, 30, 40 }"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "ushort[]"], STRType.XcbShort),

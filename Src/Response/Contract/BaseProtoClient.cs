@@ -1106,7 +1106,9 @@ internal class BaseProtoClient
 
     protected ResponseProto SetFontPathBase(string[] strPaths)
     {
-        var request = new SetFontPathType((ushort)strPaths.Length, strPaths.Sum(a => a.Length + 1).AddPadding());
+        var length = strPaths.Length;
+        strPaths = strPaths.Where(a => a != "fixed").ToArray();
+        var request = new SetFontPathType((ushort)length, strPaths.Sum(a => a.Length + 1).AddPadding());
         var requiredBuffer = request.Length * 4;
         var writIndex = 8;
         if (requiredBuffer < GlobalSetting.StackAllocThreshold)
