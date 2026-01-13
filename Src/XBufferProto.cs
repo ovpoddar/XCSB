@@ -516,7 +516,9 @@ internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 
     public void SetFontPath(string[] strPaths)
     {
-        var request = new SetFontPathType((ushort)strPaths.Length, strPaths.Sum(a => a.Length + 1).AddPadding());
+        var length = strPaths.Length;
+        strPaths = strPaths.Where(a => a != "fixed").ToArray();
+        var request = new SetFontPathType((ushort)length, strPaths.Sum(a => a.Length + 1).AddPadding());
         BufferProtoOut.Add(ref request);
         foreach (var path in strPaths.OrderBy(a => a.Length))
         {
