@@ -91,7 +91,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails9("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, STRType.XcbByte, MethodDetails9.ImplType.GC),
 #if DOCKERENV
 // AVOIDE RUNNING IN YOU PC IT COULD BE CHANGE YOU KEYBOARD KEYS
-// ChangeKeyboardMapping             (byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym)
+    new  ChangeKeyboardMapping(),
 #endif
     new NoOperation(),
     new ChangePointerControl(["null-null", "null-4", "null-2", "{ \"Denominator\" = 4, \"Numerator\" = 2 }-null", "{ \"Denominator\" = 2, \"Numerator\" = 4 }-2"], ["Xcsb.Models.Acceleration?", "ushort?"]),
@@ -2148,6 +2148,125 @@ $$"""
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
 {{base.WrittingAsserts(this.Parameters[0])}}
+    }
+
+"""));
+    }
+}
+
+file class ChangeKeyboardMapping : StaticBuilder
+{
+    public ChangeKeyboardMapping() : base("SpecialMethod", nameof(ChangeKeyboardMapping),
+        [], [], false, STRType.RawBuffer)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+int main(void)
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        fprintf(stderr, "Failed to connect to X server\n");
+        return 1;
+    }
+
+    const xcb_setup_t *setup = xcb_get_setup(connection);
+
+    xcb_get_keyboard_mapping_cookie_t cookie = xcb_get_keyboard_mapping(connection,
+        setup->min_keycode,
+        setup->max_keycode - setup->min_keycode + 1);
+
+    xcb_generic_error_t *error = NULL;
+    xcb_get_keyboard_mapping_reply_t *reply =
+        xcb_get_keyboard_mapping_reply(connection, cookie, &error);
+
+    if (error)
+    {
+        fprintf(stderr, "GetKeyboardMapping error: %d\n", error->error_code);
+        free(error);
+        xcb_disconnect(connection);
+        return 1;
+    }
+
+    int total_keysyms = xcb_get_keyboard_mapping_keysyms_length(reply);
+    xcb_keysym_t *keys = xcb_get_keyboard_mapping_keysyms(reply);
+
+    xcb_keysym_t *buff = malloc(reply->keysyms_per_keycode * sizeof(xcb_keysym_t));
+
+    if (!buff)
+    {
+        fprintf(stderr, "Out of memory\n");
+        free(reply);
+        xcb_disconnect(connection);
+        return 1;
+    }
+
+    for (int i = 0; i < reply->keysyms_per_keycode; i++)
+        buff[i] = keys[i];
+
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t ck =
+        xcb_change_keyboard_mapping_checked(
+            connection,
+            1,
+            8,
+            reply->keysyms_per_keycode,
+            buff);
+
+    error = xcb_request_check(connection, ck);
+    if (error)
+    {
+        fprintf(stderr, "ChangeKeyboardMapping error: %d\n", error->error_code);
+        free(error);
+    }
+
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+
+    free(buff);
+    free(reply);
+    xcb_disconnect(connection);
+
+    return 0;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test(byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var keyboardMapping = _xProto.GetKeyboardMapping(_xProto.HandshakeSuccessResponseBody.MinKeyCode,
+            (byte)(_xProto.HandshakeSuccessResponseBody.MaxKeyCode - _xProto.HandshakeSuccessResponseBody.MinKeyCode + 1));
+
+        var keysyms_per_keycode = new uint[keyboardMapping.KeyPerKeyCode];
+        Array.Copy(originalKeySym[0..keyboardMapping.KeyPerKeyCode], keysyms_per_keycode, keyboardMapping.KeyPerKeyCode);
+
+        // act
+        bufferClient.{{MethodName}}(1, 8, keyboardMapping.KeyPerKeyCode, keysyms_per_keycode);
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
     }
 
 """));
