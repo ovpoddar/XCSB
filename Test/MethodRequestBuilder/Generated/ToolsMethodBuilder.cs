@@ -114,7 +114,7 @@ using Xcsb;
 
 namespace MethodRequestBuilder.Test.Generated;
 
-[Collection("Sequential Execution")]
+[Collection("Sequential Execution of Generated Methods")]
 public class VoidMethodsTest : IDisposable
 {
     private readonly IXProto _xProto;

@@ -11,6 +11,7 @@ using Xcsb;
 
 namespace MethodRequestBuilder.Test;
 
+[Collection("Sequential Execution of Handshake Response")]
 public class HandShakeResponseTest
 {
     private const string SetUpResponseCBody =
