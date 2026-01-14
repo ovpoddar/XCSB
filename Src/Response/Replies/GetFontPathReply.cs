@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public struct GetFontPathReply
 {
@@ -13,22 +14,31 @@ public struct GetFontPathReply
     public ushort Sequence;
     public string[] Paths;
 
-    internal GetFontPathReply(GetFontPathResponse response, Socket socket)
+    internal GetFontPathReply(Span<byte> response)
     {
-        Reply = response.ResponseHeader.Reply;
-        Sequence = response.ResponseHeader.Sequence;
-        if (response.StringLength == 0)
+        ref readonly var context = ref response.AsStruct<GetFontPathResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+        if (context.StringLength == 0)
             Paths = [];
         else
         {
-            var requiredSize = (int)response.Length * 4;
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            socket.ReceiveExact(buffer[0..requiredSize]);
-            this.Paths = new string[response.StringLength];
-            int i = 0;
-            foreach (var range in GenericHelper.GetNextStrValue(buffer))
-                Paths[i++] = Encoding.UTF8.GetString(buffer, range.Position, range.Length);
-            Debug.Assert(i == response.StringLength);
+            Paths = new string[context.StringLength];
+            var cursor = Unsafe.SizeOf<GetFontPathResponse>();
+            var i = 0;
+            while (cursor < response.Length)
+            {
+                var length = response[cursor++];
+                if (length == 0)
+                    break;
+                
+                Paths[i++] = cursor + length > response.Length
+                    ? Encoding.UTF8.GetString(response[cursor..])
+                    : Encoding.UTF8.GetString(response.Slice(cursor, length));
+                cursor += length;
+            }
+            
+            Debug.Assert(i == context.StringLength);
         }
     }
 }

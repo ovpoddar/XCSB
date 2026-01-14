@@ -132,14 +132,14 @@ internal static class Connection
             else
             {
                 using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
-                authName.CopyTo(scratchBuffer[..]);
-                authData.CopyTo(scratchBuffer[namePaddedLength..]);
+                authName.CopyTo(scratchBuffer[..namePaddedLength]);
+                authData.CopyTo(scratchBuffer[namePaddedLength..scratchBufferSize]);
                 socket.SendExact(scratchBuffer[..scratchBufferSize]);
             }
 
             Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
             socket.ReceiveExact(tempBuffer);
-            return (tempBuffer.AsStruct<HandshakeResponseHead>(), socket);
+            return (tempBuffer.ToStruct<HandshakeResponseHead>(), socket);
         }
         catch (Exception)
         {

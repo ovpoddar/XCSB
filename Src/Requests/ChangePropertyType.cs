@@ -13,15 +13,15 @@ internal readonly struct ChangePropertyType(
     ATOM property,
     ATOM type,
     int argsLength,
-    byte size)
+    int size)
 {
     public readonly Opcode OpCode = Opcode.ChangeProperty;
     public readonly PropertyMode Mode = mode;
-    public readonly ushort Length = (ushort)(6 + argsLength.AddPadding() / 4);
+    public readonly ushort Length = (ushort)(6 + (argsLength * size).AddPadding() / 4);
     public readonly uint Window = window;
     public readonly ATOM Property = property;
     public readonly ATOM Type = type;
-    public readonly byte Size = size;
+    public readonly byte Size = (byte)(size * 8);
     private readonly byte _pad0 = 0;
     private readonly byte _pad1 = 0;
     private readonly byte _pad2 = 0;

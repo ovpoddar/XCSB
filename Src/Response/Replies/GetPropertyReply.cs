@@ -1,9 +1,10 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct GetPropertyReply
 {
@@ -13,22 +14,22 @@ public readonly struct GetPropertyReply
     public readonly uint Type;
     public readonly byte[] Data;
 
-    internal GetPropertyReply(GetPropertyResponse response, Socket socket)
+    internal GetPropertyReply(Span<byte> response)
     {
-        Reply = response.ResponseHeader.Reply;
-        Format = response.ResponseHeader.GetValue();
-        Sequence = response.ResponseHeader.Sequence;
-        Type = response.Type;
+        ref readonly var context = ref response.AsStruct<GetPropertyResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Format = context.ResponseHeader.GetValue();
+        Sequence = context.ResponseHeader.Sequence;
+        Type = context.Type;
 
-        if (response.Length == 0)
+        if (context.Length == 0)
             Data = [];
         else
         {
-            var data = new byte[response.Length * 4];
-            socket.ReceiveExact(data);
-            Data = data;
+            var cursor = Unsafe.SizeOf<GetPropertyResponse>();
+            var length = (int)context.Length * 4;
+            Data = response.Slice(cursor, length).ToArray();
         }
+
     }
-
-
 }

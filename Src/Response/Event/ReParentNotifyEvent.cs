@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ReParentNotifyEvent : IXEvent
@@ -13,9 +13,9 @@ public struct ReParentNotifyEvent : IXEvent
     public short X;
     public short Y;
     public bool OverrideRedirect;
-    
+
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.ReParentNotify && this.ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.ReParentNotify && ResponseHeader.GetValue() == 0;
     }
 }

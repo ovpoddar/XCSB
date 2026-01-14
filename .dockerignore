@@ -1,0 +1,6 @@
+/Examples/*
+.vs/*
+.github/*
+.idea/*
+*.bin
+*.obj

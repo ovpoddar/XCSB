@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct AllocColorReply : IXReply
@@ -16,7 +16,7 @@ public readonly struct AllocColorReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply &&
-               _pad1 == 0 && this.Length == 0;
+        return ResponseHeader.Reply == ResponseType.Reply &&
+               _pad1 == 0 && Length == 0;
     }
 }

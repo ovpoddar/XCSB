@@ -2,7 +2,7 @@
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ClientMessageEvent : IXEvent
@@ -15,6 +15,6 @@ public struct ClientMessageEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.ClientMessage;
+        return ResponseHeader.Reply == ResponseType.ClientMessage;
     }
 }

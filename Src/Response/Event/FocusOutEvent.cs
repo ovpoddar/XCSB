@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct FocusOutEvent : IXEvent
@@ -13,6 +13,6 @@ public struct FocusOutEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.FocusOut;// && this.ResponseHeader.Sequence == sequence;
+        return ResponseHeader.Reply == ResponseType.FocusOut;// && this.ResponseHeader.Sequence == sequence;
     }
 }

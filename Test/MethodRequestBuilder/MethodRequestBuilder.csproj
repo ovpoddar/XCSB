@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>MethodRequestBuilder.Test</AssemblyName>
+    <RootNamespace>MethodRequestBuilder.Test</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <Extra Condition="$(DOCKER) != ''"> -p:DefineConstants=DOCKERENV</Extra>
+    <GenerateCmd>dotnet run ToolsMethodBuilder.cs$(Extra)</GenerateCmd>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <Using Include="Xunit" />    
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Src\Xcsb.csproj" />
+    <Compile Remove="**\Tools*.cs" />
+    <Folder Include="Generated\" />
+  </ItemGroup>
+
+  <Target Name="GenerateTests" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+        <GeneratedFiles Include="Generated\**\*Generated.cs" />
+    </ItemGroup>
+    <Exec Condition="@(GeneratedFiles->Count()) == 0" Command="$(GenerateCmd)" WorkingDirectory="Generated" />
+    <ItemGroup>
+        <Folder Include="Generated\" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CleanUps" BeforeTargets="Clean">
+    
+    <ItemGroup>
+      <GeneratedFiles Include="Generated\**\*Generated.cs" />
+    </ItemGroup>
+    <Delete Files="@(GeneratedFiles)" />
+  </Target>
+</Project>

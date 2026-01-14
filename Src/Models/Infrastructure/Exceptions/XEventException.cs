@@ -1,9 +1,8 @@
-﻿using Xcsb.Event;
-using Xcsb.Response.Errors;
+﻿using Xcsb.Response.Errors;
 
 namespace Xcsb.Models.Infrastructure.Exceptions;
 
-public class XEventException : Exception
+public sealed class XEventException : Exception
 {
     internal XEventException(GenericError error, string methodName = "")
         : base(GetErrorMessage(error.ResponseHeader.GetValue())) =>

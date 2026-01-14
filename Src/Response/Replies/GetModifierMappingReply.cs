@@ -1,10 +1,11 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public struct GetModifierMappingReply
 {
@@ -13,19 +14,19 @@ public struct GetModifierMappingReply
     public readonly ushort Sequence;
     public ulong[] Keycodes;
 
-    internal GetModifierMappingReply(GetModifierMappingResponse result, Socket socket)
+    internal GetModifierMappingReply(Span<byte> response)
     {
-        Reply = result.ResponseHeader.Reply;
-        KeycodesPerModifier = result.ResponseHeader.GetValue();
-        Sequence = result.ResponseHeader.Sequence;
-        if (result.ResponseHeader.GetValue() == 0)
+        ref readonly var context = ref response.AsStruct<GetModifierMappingResponse>();
+        Reply = context.ResponseHeader.Reply;
+        KeycodesPerModifier = context.ResponseHeader.GetValue();
+        Sequence = context.ResponseHeader.Sequence;
+        if (KeycodesPerModifier == 0)
             Keycodes = [];
         else
         {
-            var requiredSize = result.ResponseHeader.GetValue() * 8;
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            socket.ReceiveExact(buffer[0..requiredSize]);
-            Keycodes = MemoryMarshal.Cast<byte, ulong>(buffer[0..requiredSize]).ToArray();
+            var cursor = Unsafe.SizeOf<GetModifierMappingResponse>();
+            var length = KeycodesPerModifier * 8;
+            Keycodes = MemoryMarshal.Cast<byte, ulong>(response[cursor..length]).ToArray();
         }
     }
 }

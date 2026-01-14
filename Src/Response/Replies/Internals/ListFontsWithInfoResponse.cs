@@ -2,7 +2,7 @@
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Internals;
+namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 60)]
 internal readonly struct ListFontsWithInfoResponse : IXReply
@@ -27,7 +27,7 @@ internal readonly struct ListFontsWithInfoResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                _pad0 == 0 && _pad1 == 0;
     }
 

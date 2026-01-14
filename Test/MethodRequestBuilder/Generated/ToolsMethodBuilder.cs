@@ -1,0 +1,2698 @@
+#:sdk Microsoft.NET.Sdk
+#:property TreatWarningsAsErrors=true
+
+using System.Diagnostics;
+using System.Text;
+using System.Runtime.InteropServices;
+using System.Reflection;
+
+// Global Set Up
+if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+    return 0;
+var compiler = GetCCompiler();
+var monitorFile = GenerateMonitorFile(compiler);
+using var fileStream = File.Open("./BufferVoidMethodsTest.Generated.cs", FileMode.OpenOrCreate);
+
+// No Parameter Methods Set Up
+IBuilder[] noParamMethod = [
+    new MethodDetails1("NoParameter", "GrabServer", [""], [], false),
+    new MethodDetails1("NoParameter", "UngrabServer", [""], [], false),
+    new MethodDetails1("IndependentMethod", "Bell", ["0", "50", "90", "99", "100"], ["sbyte"], false),
+    new MethodDetails1("IndependentMethod", "UngrabPointer", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
+    new MethodDetails1("IndependentMethod", "UngrabKeyboard", ["0", "10", "100", "1000", "10000", "100000", "1000000", "10000000","100000000", "1000000000", "4294967295"], ["uint"], false),
+    new MethodDetails1("IndependentMethod", "AllowEvents", ["0, 0", "1, 10", "2, 100", "3, 1000", "4, 10000", "5, 100000", "6, 1000000", "7, 10000000", "7, 100000000", "7, 1000000000", "7, 4294967295"], ["Xcsb.Models.EventsMode" ,"uint"], false),
+    new MethodDetails1("IndependentMethod", "SetFontPath", [$"new string[] {{ \"fixed\" , \"{Environment.CurrentDirectory}\" }}", $"new string[] {{\"{Environment.CurrentDirectory}\", \"/usr/bin\"}}", "new string[] {\"build-ins\"}"], ["string[]"], true, STRType.XcbStr),
+    new MethodDetails1("IndependentMethod", "SetCloseDownMode", ["0", "1", "2"], ["Xcsb.Models.CloseDownMode"], false),
+    new MethodDetails1("IndependentMethod", "ChangeKeyboardControl", ["7, new uint[] {80, 90, 1200}"], ["Xcsb.Masks.KeyboardControlMask", "uint[]"], false, STRType.XcbUint),
+    new MethodDetails1("IndependentMethod", "SetScreenSaver", ["5, 10, 1, 1", "0, 0, 0, 0", "2, 2, 0, 0"], ["short", "short", "Xcsb.Models.TriState", "Xcsb.Models.TriState"], false),
+    new MethodDetails1("IndependentMethod", "ForceScreenSaver", ["1", "0"], ["Xcsb.Models.ForceScreenSaverMode"], false),
+    new MethodDetails1("IndependentMethod", "SetAccessControl", ["1", "0"], ["Xcsb.Models.AccessControlMode"], false),
+    new MethodDetails1("IndependentMethod", "ChangeHosts", ["0, 0, new byte[] {127, 0, 0, 1}" , "1, 4, new byte[] {127, 0, 0, 1}"], ["Xcsb.Models.HostMode", "Xcsb.Models.Family", "byte[]"], true, STRType.XcbByte),
+    new MethodDetails2("DependentOnWindow", "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
+    new MethodDetails2Dynamic("DependentOnGc", "SetClipRectangles", ["0, $0, 0, 0, [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["Xcsb.Models.ClipOrdering", "uint", "ushort", "ushort", "Xcsb.Models.Rectangle[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbRectangle),
+    new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"], ["byte", "uint", "uint", "ushort", "ushort"]),
+    new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
+    new MethodDetails6("DependentOnWindowId", "CreateColormap", ["0, $0, $1, $2", "1, $0, $1, $2"], ["Xcsb.Models.ColormapAlloc", "uint", "uint", "uint"]),
+    new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
+    new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
+    new MethodDetails7("DependentOnColorMap", "UninstallColormap", ["$0"], ["uint"]),
+    new MethodDetails7("DependentOnColorMap", "FreeColors", ["$0, 0, new uint[] {16711680}"], ["uint", "uint", "uint[]"], true, STRType.XcbUint),
+    new MethodDetails7Update("DependentOnColorMap", "StoreNamedColor", ["1, $0, 16711680, \"red\""], ["Xcsb.Models.ColorFlag", "uint", "uint" , "string"], true, STRType.XcbStr8),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText8", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"xcb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb8, "Xcsb.Models.String.TextItem8"),
+    new MethodDetails8("DependentOnDrawableGc", "PolyText16", ["$0, $1, 0, 0, new string[] { \"Hellow\", \"World\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"cb\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\", \"x\" }", "$0, $1, 0, 0, new string[] { \"Hellow\", \"world\"}"], ["uint", "uint", "ushort", "ushort", "string[]"], true, STRType.Xcb16, "Xcsb.Models.String.TextItem16"),
+    new MethodDetails8("DependentOnDrawableGc", "ImageText8", [$"$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr8, ""),
+    new MethodDetails8("DependentOnDrawableGc", "ImageText16", ["$0, $1, 0, 0, \"XCB System Control Demo\"", "$0, $1, 0, 0, \"XCB System Control Dem\"", "$0, $1, 0, 0, \"XCB System Control De\"", "$0, $1, 0, 0, \"XCB System Control D\"", "$0, $1, 0, 0, \"XCB System Control \""], ["uint", "uint", "short", "short", "string"], false, STRType.XcbStr16),
+    new MethodDetails8("DependentOnDrawableGc", "PolySegment", ["$0, $1, [{ \"X1\" = 8, \"Y1\" = 0, \"X2\" = 8, \"Y2\" = 15 }, { \"X1\" = 0, \"Y1\" = 8, \"X2\" = 15, \"Y2\" = 8 } ]"], ["uint", "uint", "Xcsb.Models.Segment[]"], true, STRType.XcbSegment, ""),
+    new MethodDetails8("DependentOnDrawableGc", "PolyRectangle", ["$0, $1, [{ \"X\" = 50, \"Y\" = 50, \"Width\" = 100, \"Height\" = 80 }, { \"X\" = 200, \"Y\" = 100, \"Width\" = 120, \"Height\" = 60 }, { \"X\" = 100, \"Y\" = 180, \"Width\" = 80, \"Height\" = 90 }]"], ["uint", "uint", "Xcsb.Models.Rectangle[]"], true, STRType.XcbRectangle, ""),
+    new MethodDetails8("DependentOnDrawableGc", "PolyArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, ""),
+    new MethodDetails8("DependentOnDrawableGc", "FillPoly", ["$0, $1, 0, 0, [{ \"X\" = 120, \"Y\" = 130 }, { \"X\" = 80, \"Y\" = 180 }, { \"X\" = 160, \"Y\" = 180 }]", "$0, $1, 2, 1, [{ \"X\" = 120, \"Y\" = 130 }, { \"X\" = 80, \"Y\" = 180 }, { \"X\" = 160, \"Y\" = 180 }]"], ["uint", "uint", "Xcsb.Models.PolyShape", "Xcsb.Models.CoordinateMode", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
+    new MethodDetails8("DependentOnDrawableGc", "PolyFillRectangle", ["$0, $1,  [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["uint", "uint", "Xcsb.Models.Rectangle[]"], true, STRType.XcbRectangle, ""),
+    new MethodDetails8("DependentOnDrawableGc", "PolyFillArc", ["$0, $1, [{ \"X\" = 20, \"Y\" = 200, \"Width\" = 40, \"Height\" = 40, \"Angle1\" = 0, \"Angle2\" = 360 }, { \"X\" = 100, \"Y\" = 200, \"Width\" = 30, \"Height\" = 30, \"Angle1\" = 0, \"Angle2\" = 180 }, { \"X\" = 180, \"Y\" = 200, \"Width\" = 35, \"Height\" = 25, \"Angle1\" = 45, \"Angle2\" = 90  }]"], ["uint", "uint", "Xcsb.Models.Arc[]"], true, STRType.XcbArc, ""),
+    new MethodDetails8("DependentOnColorMap", "StoreColors", ["$0, [{ \"Pixel\" = 10, \"Red\" = 255, \"Green\" = 255, \"Blue\" = 255, \"Flags\" = 1 }]"], ["uint", "Xcsb.Models.ColorItem[]"], true, STRType.XcbColorItem, ""),
+    new MethodDetails8Valid("DependentOnDrawableGc", "PolyPoint",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint", "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
+    new MethodDetails8Valid("DependentOnDrawableGc", "PolyLine",["0, $0, $1, [{ \"X\" = 10, \"Y\" = 305 },{ \"X\" = 180, \"Y\" = 305 }]"], ["Xcsb.Models.CoordinateMode", "uint", "uint",  "Xcsb.Models.Point[]"], true, STRType.XcbPoient, ""),
+    new MethodDetails8Valid("DependentOnDrawableGc", "PutImage",["2, $0, $1, 2, 2, 0, 0, 0, 0, new byte[] {255, 0, 0, 255, 255,255,0,255, 255, 0, 0, 255, 255,255,0,255}"], ["Xcsb.Models.ImageFormatBitmap", "uint", "uint", "ushort", "ushort", "short", "short", "byte", "byte", "byte[]"], true, STRType.XcbByte),
+    new MethodDetails9("DependentOnWindow", "DestroyWindow", ["$0"], ["uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnColorMapId", "CopyColormapAndFree", ["$0, $1"], ["uint", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.ColorMap, MethodDetails9.ImplType.Id),
+    new MethodDetails9("DependentOnGcGc", "CopyGc", ["$0, $1, 4"], ["uint", "uint", "Xcsb.Masks.GCMask"], false,STRType.RawBuffer, MethodDetails9.ImplType.GC, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnWindow", "GrabButton", ["false, $0, 12, 1, 0, 0, 0, 5, 32768", "true, $0, 12, 1, 0, 0, 0, 0, 1"], ["bool", "uint", "ushort", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode", "uint", "uint", "Xcsb.Models.Button", "Xcsb.Masks.ModifierMask"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindowWindow", "ReparentWindow", ["$0, $1, 0, 0"], ["uint", "uint", "short", "short"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnIdGc", "CreateCursor", ["$0, $1, 0, 0, 0, 0, 65535, 65535, 65535, 8, 8"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnIdCursorFont", "CreateGlyphCursor", ["$0, $1, $1, 'a', 69, 0, 0, 0, 65535, 65535, 65535"], ["uint", "uint", "uint", "char", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.CursorFont),
+    new MethodDetails9("DependentOnWindowWindow", "WarpPointer", ["$0, $1, 0, 0, 0, 0, 640, 480"], ["uint", "uint", "short", "short", "ushort", "ushort", "short", "short"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindowWindowGc", "CopyArea", ["$0, $1, $2, 0, 0, 0, 0, 640, 480"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnWindowWindowGc", "CopyPlane", ["$0, $1, $2, 0, 0, 0, 0, 640, 480, 4"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "uint"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnRootdepthIdRootVisualId", "CreateWindow", ["$0, $1, $2, 0, 0, 500, 500,0, 1, $3, 2050, new uint[] {0, 32768 }"], ["byte", "uint", "uint", "short", "short", "ushort", "ushort", "ushort", "Xcsb.Models.ClassType", "uint", "Xcsb.Masks.ValueMask", "uint[]"], false,STRType.XcbUint, MethodDetails9.ImplType.Rootdepth, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.Root, MethodDetails9.ImplType.VisualId),
+    new MethodDetails9("DependentOnWindow", "ConvertSelection", ["$0, 1, 31, 9, 0"], ["uint","uint","uint","uint","uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "DestroySubwindows", ["$0"], ["uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "ChangeSaveSet", ["1, $0", "0, $0"], ["Xcsb.Models.ChangeSaveSetMode", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "MapWindow", ["$0"], ["uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "MapSubwindows", ["$0"], ["uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "UnmapWindow", ["$0"], ["uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "DeleteProperty", ["$0, 0"], ["uint", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "UnmapSubwindows", ["$0"], ["uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "CirculateWindow", ["0, $0", "1, $0" ], ["Xcsb.Models.Circulate", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "UngrabButton", ["0, $0, 0", "5, $0, 32768"], ["Xcsb.Models.Button", "uint", "Xcsb.Masks.ModifierMask"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "GrabKey", ["false, $0, 1, 0, 0, 1", "true, $0, 32768, 255, 0, 1"], ["bool", "uint", "Xcsb.Masks.ModifierMask", "byte", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "UngrabKey", ["0, $0, 0", "255, $0, 32768"], ["byte", "uint", "Xcsb.Masks.ModifierMask"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "SetInputFocus", ["0, $0, 0", "2, $0, 0"], ["Xcsb.Models.InputFocusMode", "uint", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "KillClient", ["$0"], ["uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "SetSelectionOwner", ["$0, 0, 0", "$0, 68, 0"], ["uint", "uint", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "ClearArea", ["false, $0, 0, 0, 100, 100"], ["bool", "uint", "short", "short", "ushort", "ushort"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnFontId", "CloseFont", ["$0"], ["uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.FontId),
+    new MethodDetails9("DependentOnPixmapId", "FreePixmap", ["$0"], ["uint"], false,STRType.RawBuffer, MethodDetails9.ImplType.PixmapId),
+    new MethodDetails9("DependentOnGc", "FreeGc", ["$0"], ["uint"], false,STRType.RawBuffer, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnCursorId", "FreeCursor", ["$0"], ["uint"], false,STRType.RawBuffer, MethodDetails9.ImplType.CursorId),
+    new MethodDetails9("DependentOnCursorId", "RecolorCursor", ["$0, 65535, 0, 0, 0, 0, 65535"], ["uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false, STRType.RawBuffer, MethodDetails9.ImplType.CursorId),
+    new MethodDetails9("DependentOnCursorId", "ChangeActivePointerGrab", ["$0, 0, 4"], [ "uint", "uint", "ushort" ],false, STRType.RawBuffer, MethodDetails9.ImplType.CursorId),
+    new MethodDetails9("DependentOnWindow", "ConfigureWindow", ["$0, 1, new uint[] {100}", "$0, 2, new uint[] {100}", "$0, 4, new uint[] {100}", "$0, 8, new uint[] {100}", "$0, 16, new uint[] {0}", "$0, 64, new uint[] {0}", "$0, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnWindow", "ChangeWindowAttributes", ["$0, 1, new uint[] {167772}", "$0, 2, new uint[] {16777215}", "$0, 4, new uint[] {167772}", "$0, 8, new uint[] {16777215}", "$0, 16, new uint[] {1}", "$0, 32, new uint[] {1}", "$0, 64, new uint[] {167772}", "$0, 128, new uint[] {167772}", "$0, 256, new uint[] {167772}", "$0, 512, new uint[] {0}", "$0, 1024, new uint[] {1}", "$0, 2048, new uint[] {32769}", "$0, 4096, new uint[] {1}", "$0, 8192, new uint[] {167772}", "$0, 16384, new uint[] {167772}"], ["uint", "Xcsb.Masks.ValueMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.Window),
+    new MethodDetails9("DependentOnGc", "ChangeGc", ["$0, 4, new uint[] {4294967295}"], ["uint", "Xcsb.Masks.GCMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, STRType.XcbByte, MethodDetails9.ImplType.GC),
+#if DOCKERENV
+    // AVOIDE RUNNING IN YOU PC IT COULD BE CHANGE YOU KEYBOARD KEYS
+    new  ChangeKeyboardMapping(),
+#endif
+    new NoOperation(),
+    new ChangePointerControl(["null-null", "null-4", "null-2", "{  \"Numerator\" = 2, \"Denominator\" = 4 }-null", "{ \"Numerator\" = 4, \"Denominator\" = 2 }-2"], ["Xcsb.Models.Acceleration?", "ushort?"]),
+    new OpenFont(["\"cursor\", $0", "\"fixed\", $0", $"\"{Environment.CurrentDirectory}\", $0", "\"/usr/bin\", $0", "\"build-ins\", $0"]),
+    new ChangeProperty<byte>([$"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow World"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Worl"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Wor"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow Wo"))} }}", $"0, $0, 39, 31, new byte[] {{ {string.Join(", ", Encoding.UTF8.GetBytes("Hellow W"))} }}"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "byte[]"], STRType.XcbByte),
+    new ChangeProperty<ushort>(["0, $0, 35, 19, new ushort[] { 10 }", "0, $0, 35, 19, new ushort[] { 10, 20 }", "0, $0, 35, 19, new ushort[] { 10, 20, 30 }", "0, $0, 35, 19, new ushort[] { 10, 20, 30, 40 }"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "ushort[]"], STRType.XcbShort),
+    new ChangeProperty<uint>(["0, $0, 39, 6, new uint[] { 100 }", "0, $0, 39, 6, new uint[] { 100, 200 }", "0, $0, 39, 6, new uint[] { 100, 200, 300 }", "0, $0, 39, 6, new uint[] { 100, 200, 300, 400 }"], ["Xcsb.Models.PropertyMode", "uint", "uint", "uint", "uint[]"], STRType.XcbUint),
+];
+
+// SendEvent                         (bool propagate, uint destination, uint eventMask, XEvent evnt)
+
+
+
+fileStream.Write(
+"""
+// DO NOT MODIFY THIS FILE
+// IT WILL BE OVERWRITTEN WHEN GENERATING
+#nullable enable
+using Xcsb;
+
+namespace MethodRequestBuilder.Test.Generated;
+
+[Collection("Sequential Execution of Generated Methods")]
+public class VoidMethodsTest : IDisposable
+{
+    private readonly IXProto _xProto;
+    public VoidMethodsTest()
+    {
+        _xProto = XcsbClient.Initialized();
+    }
+
+"""u8);
+{
+    foreach (var method in noParamMethod)
+        method.WriteCsMethodContent(fileStream, compiler, monitorFile);
+}
+fileStream.Write(
+"""
+
+    public void Dispose() => 
+        _xProto.Dispose();
+}
+#nullable restore
+
+"""u8);
+File.Delete(monitorFile);
+return 0;
+
+static string GenerateMonitorFile(string compiler)
+{
+    var result = Path.Join(Environment.CurrentDirectory, "monitorFile.so");
+    var process = new Process
+    {
+        StartInfo = new ProcessStartInfo
+        {
+            FileName = compiler,
+            Arguments = $"-shared -fPIC -o \"{result}\" -ldl -x c -",
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        }
+    };
+    process.Start();
+    process.StandardInput.Write(
+$$"""
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <stdio.h>
+#include <sys/uio.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+ssize_t (*real_write)(int, const void *, size_t) = NULL;
+ssize_t (*real_writev)(int, const struct iovec *, int) = NULL;
+ssize_t (*real_sendmsg)(int, const struct msghdr *, int) = NULL;
+
+__attribute__((constructor))
+void init() {
+    real_write = dlsym(RTLD_NEXT, "write");
+    real_writev = dlsym(RTLD_NEXT, "writev");
+    real_sendmsg = dlsym(RTLD_NEXT, "sendmsg");
+}
+
+static void hex_dump(const void *buf, size_t len) {
+    const unsigned char *p = buf;
+    for (size_t i = 0; i < len; ++i) {
+        fprintf(stderr, " %d,", p[i]);
+    }
+    fprintf(stderr, "\n");
+}
+
+/****************************************************************/
+
+ssize_t write(int fd, const void *buf, size_t count) {
+    hex_dump(buf, count);
+    return real_write(fd, buf, count);
+}
+
+ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
+    for (int i = 0; i < iovcnt; ++i) {
+        hex_dump(iov[i].iov_base, iov[i].iov_len);
+    }
+    return real_writev(fd, iov, iovcnt);
+}
+
+ssize_t sendmsg(int fd, const struct msghdr *msg, int flags) {
+    for (int i = 0; i < msg->msg_iovlen; ++i) {
+        hex_dump(msg->msg_iov[i].iov_base, msg->msg_iov[i].iov_len);
+    }
+    return real_sendmsg(fd, msg, flags);
+}
+                    
+""");
+    process.StandardInput.Close();
+    process.WaitForExit();
+
+    Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
+    Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
+    Debug.Assert(File.Exists(result));
+    return result;
+}
+
+static string GetCCompiler()
+{
+    string[] compilerCommands = ["gcc", "clang"];
+    foreach (var command in compilerCommands)
+    {
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = command,
+                Arguments = command == "cl" ? "" : "--version",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        process.Start();
+        var output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+        if (process.ExitCode != 0
+            && !output.Contains("version", StringComparison.OrdinalIgnoreCase))
+            continue;
+        return command;
+    }
+
+    throw new Exception("Could not find any compiler to build c project");
+}
+
+file static class StringHelper
+{
+
+    public static int CalculateSize(this ReadOnlySpan<char> parameter)
+    {
+        var toCount = false;
+        var result = 0;
+        foreach (var item in parameter)
+        {
+            if (item == '"')
+            {
+                toCount = !toCount;
+                continue;
+            }
+            if (toCount)
+                result++;
+
+        }
+        return result;
+    }
+
+    public static int CalculateLen(ReadOnlySpan<char> content, STRType isXcbStr)
+    {
+        var result = 0;
+        foreach (var item in content)
+        {
+            if (isXcbStr == STRType.XcbStr || isXcbStr == STRType.Xcb8 || isXcbStr == STRType.Xcb16 || isXcbStr == STRType.XcbStr8)
+            {
+                if (item == '"') result++;
+                continue;
+            }
+            if (isXcbStr is STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient or STRType.XcbColorItem)
+            {
+                if (item == '}')
+                    result++;
+
+                continue;
+            }
+            if (isXcbStr is STRType.XcbByte or STRType.XcbShort or STRType.XcbAtom or STRType.XcbUint)
+            {
+                if (item == ',')
+                    result++;
+
+                continue;
+            }
+            throw new NotImplementedException(isXcbStr.ToString());
+        }
+        switch (isXcbStr)
+        {
+            case STRType.Xcb16:
+                return result + content.CalculateSize() * 2;
+            case STRType.Xcb8:
+                return result + content.CalculateSize();
+            case STRType.XcbStr:
+                return result / 2;
+            case STRType.XcbByte:
+            case STRType.XcbShort:
+            case STRType.XcbAtom:
+            case STRType.XcbUint:
+            case STRType.XcbStr8:
+                return ++result;
+            default:
+                return result;
+        }
+    }
+
+    private static void WriteCArray(StringBuilder sb, ReadOnlySpan<char> data, STRType type)
+    {
+        if (type == STRType.XcbStr)
+        {
+            var isStart = true;
+            foreach (var item in data)
+            {
+                switch (item)
+                {
+                    case '}':
+                        sb.Append(')');
+                        break;
+                    case '{':
+                        sb.Append('(');
+                        break;
+                    case '"':
+                        {
+                            if (isStart) sb.Append("XS(\"");
+                            else sb.Append("\")");
+                            isStart = !isStart;
+                            break;
+                        }
+                    default:
+                        sb.Append(item);
+                        break;
+                }
+            }
+        }
+        else if (type == STRType.Xcb16 || type == STRType.Xcb8)
+        {
+            sb.Append("XS");
+            foreach (var item in data)
+            {
+                switch (item)
+                {
+                    case '{':
+                        sb.Append('(');
+                        break;
+                    case '}':
+                        sb.Append(')');
+                        break;
+                    default:
+                        sb.Append(item);
+                        break;
+                }
+            }
+        }
+        else if (type == STRType.XcbStr16)
+        {
+            var isStart = true;
+            foreach (var item in data)
+            {
+                switch (item)
+                {
+                    case '"':
+                        {
+                            if (isStart) sb.Append("XS(\"");
+                            else sb.Append("\")");
+                            isStart = !isStart;
+                            break;
+                        }
+                    default:
+                        sb.Append(item);
+                        break;
+                }
+            }
+        }
+        else if (type is STRType.XcbUint or STRType.XcbByte or STRType.XcbStr8 or STRType.XcbAtom or STRType.XcbShort)
+        {
+            sb.Append(data);
+        }
+        else
+        {
+            throw new NotImplementedException(data.ToString() + type.ToString());
+        }
+    }
+
+    public static int GetCsField(ReadOnlySpan<char> content, out ReadOnlySpan<char> field)
+    {
+        for (var i = 0; i < content.Length; i++)
+        {
+            if (content[i] == 'n')
+            {
+                // new path
+                if (i + 3 > content.Length) continue; // has enough items
+                if (content[i + 1] != 'e' || content[i + 2] != 'w' || content[i + 3] != ' ') continue;
+                // its new 
+                var endIndex = content.IndexOf('}');
+                if (endIndex == -1) throw new InvalidDataException();
+                field = content[..++endIndex];
+                return endIndex;
+            }
+            else if (content[i] == '[')
+            {
+                // object path []
+                var endIndex = content.IndexOf(']');
+                if (endIndex == -1) throw new InvalidDataException();
+                field = content[i..++endIndex];
+                return endIndex;
+            }
+            else if (content[i] == ',')
+            {
+                // , path
+                field = content[..i];
+                return ++i;
+            }
+            else
+            {
+                continue;
+            }
+        }
+
+        // last section
+        field = content[..];
+        return content.Length;
+    }
+
+    public static ReadOnlySpan<char> GetLastItem(this ReadOnlySpan<char> content)
+    {
+        ReadOnlySpan<char> result;
+        while (true)
+        {
+            var context = GetCsField(content, out result);
+            content = content[context..];
+            if (content.Length == 0) break;
+        }
+
+        return result;
+    }
+
+    public static string ToCParams(this string? parameter, STRType lastElementType, bool addLen, params string[] items)
+    {
+        var sb = new StringBuilder();
+        sb.Append("connection");
+        if (string.IsNullOrWhiteSpace(parameter))
+            return sb.ToString();
+
+        var content = parameter.AsSpan();
+        while (true)
+        {
+            var context = GetCsField(content, out var item);
+            content = content[context..];
+            sb.Append(", ");
+            var field = item.Trim();
+            var targetIndex = field.IndexOf('$');
+            if (targetIndex != -1)
+            {
+                var index = int.Parse(field[++targetIndex..]);
+                sb.Append(items[index]);
+                if (content.Length == 0) break;
+                else continue;
+            }
+            targetIndex = field.IndexOf("new ");
+            if (targetIndex != -1 || field.StartsWith('"'))
+            {
+                targetIndex = field.IndexOf('{');
+                if (targetIndex == -1)
+                {
+                    switch (lastElementType)
+                    {
+                        case STRType.XcbStr16:
+                        case STRType.XcbStr8:
+                            break;
+                        default:
+                            throw new InvalidFilterCriteriaException();
+                    }
+                }
+                else
+                {
+                    field = field[targetIndex..];
+                }
+
+                if (addLen) sb.Append(CalculateLen(field, lastElementType)).Append(", ");
+                sb.Append('(')
+                    .Append(GetCType(lastElementType))
+                    .Append(')');
+                WriteCArray(sb, field, lastElementType);
+                break;
+            }
+
+            targetIndex = field.IndexOf('[');
+            if (targetIndex != -1)
+            {
+                var endObjectIndex = field.IndexOf(']');
+                if (endObjectIndex == -1) throw new InvalidFilterCriteriaException();
+                if (addLen) sb.Append(CalculateLen(field[++targetIndex..endObjectIndex], lastElementType)).Append(", ");
+                sb.Append(GetCType(lastElementType)).Append('{');
+                WriteObject(sb, field[targetIndex..endObjectIndex]);
+                sb.Append('}');
+                break;
+            }
+            if (bool.TryParse(field, out var boolValue))
+            {
+                sb.Append(boolValue ? "1 " : "0 ");
+                continue;
+            }
+
+            sb.Append(field);
+            if (content.Length == 0) break;
+        }
+        return sb.ToString();
+    }
+
+    private static void WriteObject(StringBuilder sb, ReadOnlySpan<char> data)
+    {
+        var isStartCort = false;
+        foreach (var item in data)
+        {
+            if (item == '"')
+            {
+                isStartCort = !isStartCort;
+                if (isStartCort)
+                    sb.Append('.');
+                continue;
+            }
+            sb.Append(char.ToLower(item));
+        }
+    }
+
+    public static string ReplaceOnece(this string value, char target, string replaced, int targetIndex = 0)
+    {
+        var sb = new StringBuilder();
+        var foundIndex = -1;
+        for (int i = 0; i < value.Length; i++)
+        {
+            char item = value[i];
+            if (item == target)
+            {
+                foundIndex++;
+                if (targetIndex == foundIndex)
+                {
+                    sb.Append(replaced);
+                    continue;
+                }
+            }
+
+            sb.Append(item);
+        }
+
+        return sb.ToString();
+    }
+
+    public static string GetCType(STRType isXcbStr) => isXcbStr switch
+    {
+        STRType.XcbStr8 or STRType.RawBuffer => "const char *",
+        STRType.XcbByte => "uint8_t[]",
+        STRType.XcbShort => "uint16_t[]",
+        STRType.XcbInt => "int32_t[]",
+        STRType.XcbUint => "uint32_t[]",
+        STRType.XcbStr => "xcb_str_t *",
+        STRType.Xcb8 or STRType.Xcb16 => "uint8_t *",
+        STRType.XcbStr16 => "xcb_char2b_t *",
+        STRType.XcbSegment => "(xcb_segment_t[])",
+        STRType.XcbRectangle => "(xcb_rectangle_t[])",
+        STRType.XcbArc => "(xcb_arc_t[])",
+        STRType.XcbPoient => "(xcb_point_t[])",
+        STRType.XcbAtom => "xcb_atom_t[]",
+        STRType.XcbColorItem => "(xcb_coloritem_t[])",
+        _ => throw new Exception(isXcbStr.ToString()),
+    };
+
+    public static string ToSnakeCase(this string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+        var sb = new StringBuilder();
+        var foundNumber = false;
+        for (var i = 0; i < value.Length; i++)
+        {
+            var chr = value[i];
+            if (char.IsUpper(chr) && i != 0 || char.IsNumber(chr) && !foundNumber)
+                sb.Append('_');
+            if (char.IsNumber(chr))
+                foundNumber = true;
+
+            sb.Append((char)(chr | 32));
+        }
+
+        return sb.ToString();
+    }
+
+    public static string Fix(this string name)
+    {
+        var sb = new StringBuilder();
+        for (int i = 0; i < name.Length; i++)
+        {
+            if (i == name.Length - 1)
+                sb.Append(char.ToUpper(name[i]));
+            else
+                sb.Append(name[i]);
+        }
+        return sb.ToString();
+    }
+}
+
+file class MethodDetails1 : StaticBuilder
+{
+    public MethodDetails1(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType isXcbStr = STRType.RawBuffer) : base(categories, methodName, parameters,
+        paramSignature, addLenInCCall, isXcbStr)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall);
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdint.h>
+{{GetCStringMacro()}}
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+}
+
+file class MethodDetails2 : StaticBuilder
+{
+    public MethodDetails2(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType strType = STRType.XcbUint) : base(categories, methodName, parameters, paramSignature,
+        addLenInCCall, strType)
+    { }
+
+    public virtual string WriteUpValueOfCSetup(out string name)
+    {
+        name = "window";
+        return
+$$"""
+        xcb_window_t {{name}} = xcb_generate_id(connection);
+        xcb_create_window(connection, 0, {{name}}, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                        screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+""";
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        var workingTypes = WriteUpValueOfCSetup(out var type);
+        var lastParameter = parameter.GetLastItem();
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, type);
+        if (base.IsXcbStr == STRType.XcbAtom)
+            parameter = parameter.ReplaceOnece(',', $", {StringHelper.CalculateLen(lastParameter, IsXcbStr)}, ", 1);
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    const xcb_setup_t *setup = xcb_get_setup(connection);
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    
+{{workingTypes}}
+
+    xcb_flush(connection);
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", {{type}});
+    fprintf(stderr, "{{marker}}\n");
+    
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked({{parameter}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+
+    private static string GetPlaceHolderOfWindow(string parameter)
+    {
+        if (!parameter.Contains('$'))
+            throw new UnreachableException();
+        var items = parameter.Split(',');
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i].Trim().Contains('$'))
+                return "params" + i;
+        }
+        throw new UnreachableException();
+    }
+
+    public virtual string WriteUpValueOfCsSetup(out string name)
+    {
+        name = "window";
+        return
+$$"""
+            var {{name}} = _xProto.NewId();
+            var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+            _xProto.CreateWindowChecked(0, {{name}}, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
+                        screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
+""";
+    }
+
+    private string? GetItems(out string? name)
+    {
+        if (IsXcbStr == STRType.XcbAtom)
+        {
+            name = "items";
+            return $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => (Xcsb.Models.ATOM)a);";
+        }
+        else if (IsXcbStr == STRType.XcbRectangle)
+        {
+            name = "items";
+            return $"var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));";
+        }
+        else
+        {
+            name = null;
+            return null;
+        }
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        var hasWindowPlaceHolder = GetPlaceHolderOfWindow(Parameters[0]);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        {{WriteUpValueOfCsSetup(out var typeName)}}
+
+        {{GetItems(out var name)}}
+
+        // act
+        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length, (name, ParamSignature.Length - 1))}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.Equal({{typeName}}, {{hasWindowPlaceHolder}});
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+}
+
+file class MethodDetails2Dynamic : MethodDetails2
+{
+    private readonly DynamicType _type;
+    public MethodDetails2Dynamic(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, DynamicType type, STRType strType = STRType.XcbUint) : base(categories, methodName, parameters, paramSignature, addLenInCCall, strType)
+    {
+        _type = type;
+    }
+
+    public override string WriteUpValueOfCsSetup(out string name)
+    {
+        name = _type.ToString().ToLower();
+        return _type switch
+        {
+            DynamicType.Gc =>
+$"""
+    var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+    var window = _xProto.NewId();
+    _xProto.CreateWindowChecked(0, window, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
+                    screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
+    var {name} = _xProto.NewId();
+    _xProto.CreateGCChecked({name}, window, (Xcsb.Masks.GCMask)(4|8), [screen.BlackPixel, screen.WhitePixel]);
+""",
+            _ => throw new NullReferenceException()
+        };
+    }
+
+    public override string WriteUpValueOfCSetup(out string name)
+    {
+        name = _type.ToString().ToLower();
+        return _type switch
+        {
+            DynamicType.Gc =>
+$$"""
+
+    xcb_window_t window = xcb_generate_id(connection);
+    xcb_void_cookie_t c = xcb_create_window_checked(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                                                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+    xcb_generic_error_t *e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
+
+    xcb_gcontext_t {{name}} = xcb_generate_id(connection);
+    c = xcb_create_gc_checked(connection, {{name}}, window, 4|8, (uint32_t[]){screen->black_pixel, screen->white_pixel});
+    e = xcb_request_check(connection, c);
+    if (e) 
+    {
+        free(e);
+        return 1;
+    }
+""",
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public enum DynamicType
+    {
+        Gc,
+    }
+}
+
+file class MethodDetails4 : StaticBuilder
+{
+    public MethodDetails4(string categories, string methodName, string[] parameters, string[] parameterSignature)
+        : base(categories, methodName, parameters, parameterSignature, false, STRType.RawBuffer) { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "rootDepth", "newId", "root");
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    const xcb_setup_t *setup = xcb_get_setup(connection);
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+
+    uint8_t rootDepth = screen->root_depth;
+    xcb_window_t newId = xcb_generate_id(connection);
+    xcb_window_t root = screen->root;
+    xcb_flush(connection);
+
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", rootDepth);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", newId);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", root);
+    fprintf(stderr, "{{marker}}\n");
+    
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params0, _xProto.HandshakeSuccessResponseBody.Screens[0].RootDepth!.DepthValue);
+        Assert.Equal(params1, _xProto.NewId());
+        Assert.Equal(params2, _xProto.HandshakeSuccessResponseBody.Screens[0].Root);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+}
+
+file class MethodDetails5 : StaticBuilder
+{
+    public MethodDetails5(string categories, string methodName, string[] parameters, string[] paramSignature)
+        : base(categories, methodName, parameters, paramSignature, false, STRType.XcbUint) { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "newId", "window");
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    xcb_window_t newId = xcb_generate_id(connection);
+
+    xcb_window_t window = xcb_generate_id(connection);
+    xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+    xcb_flush(connection);
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", newId);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", window);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+
+        // act
+        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params0, _xProto.NewId());
+        Assert.Equal(params1, _xProto.NewId());
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+
+    }
+}
+
+file class MethodDetails6 : StaticBuilder
+{
+    public MethodDetails6(string categories, string methodName, string[] parameters, string[] paramSignature)
+            : base(categories, methodName, parameters, paramSignature, false, STRType.RawBuffer) { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "newId", "window", "visual");
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    xcb_window_t newId = xcb_generate_id(connection);
+
+    xcb_window_t window = xcb_generate_id(connection);
+    xcb_create_window(connection, 0, window, screen->root, 0, 0, 100, 100, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                    screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, (uint32_t[]){0, XCB_EVENT_MASK_EXPOSURE});
+    xcb_window_t visual = screen->root_visual;
+    xcb_flush(connection);
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", newId);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", window);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", visual);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params1, _xProto.NewId());
+        Assert.Equal(params2, _xProto.NewId());
+        Assert.Equal(params3, _xProto.HandshakeSuccessResponseBody.Screens[0].RootVisualId);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+
+}
+
+file class MethodDetails7 : StaticBuilder
+{
+    public MethodDetails7(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool len = false, STRType sTRType = STRType.RawBuffer) : base(categories, methodName, parameters, paramSignature,
+        len, sTRType)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, "pixmap");
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    xcb_window_t pixmap = xcb_generate_id(connection);
+    xcb_create_pixmap_checked(connection, 1, pixmap, screen->root, 16, 16);
+    xcb_flush(connection);
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", pixmap);
+    fprintf(stderr, "{{marker}}\n");
+
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = {{functionName}}({{parameter}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+} 
+""";
+    }
+
+    public string? WriteCast(out string? items)
+    {
+        if (base.ParamSignature[^1] == "string")
+        {
+            items = "items";
+            return $"var items = System.Text.Encoding.UTF8.GetBytes(params3);";
+        }
+        else
+        {
+            items = null;
+            return null;
+        }
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var cursor_pixmap = _xProto.NewId();
+        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
+        {{WriteCast(out var item)}}
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (item, ParamSignature.Length - 1))}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params0, cursor_pixmap);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+
+}
+
+file class MethodDetails7Update : MethodDetails7
+{
+    public MethodDetails7Update(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool len = false, STRType sTRType = STRType.RawBuffer) : base(categories, methodName, parameters, paramSignature,
+        len, sTRType)
+    { }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var cursor_pixmap = _xProto.NewId();
+        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
+        {{WriteCast(out var item)}}
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (item, ParamSignature.Length - 1))}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params1, cursor_pixmap);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+}
+
+file class MethodDetails8 : StaticBuilder
+{
+    public string? _castType;
+    public MethodDetails8(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType isXcbStr, string? castType = null) : base(categories, methodName, parameters,
+        paramSignature, addLenInCCall, isXcbStr)
+    {
+        _castType = castType;
+    }
+
+    public string GetItems() => IsXcbStr switch
+    {
+        STRType.XcbStr8 => $"var items = System.Text.Encoding.UTF8.GetBytes(params{ParamSignature.Length - 1});",
+        STRType.XcbSegment or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient or STRType.XcbColorItem => $"var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{ParamSignature[^1]}>(params{ParamSignature.Length - 1}.Replace('=', ':'));",
+        STRType.Xcb8 or STRType.Xcb16 => $"var items = Array.ConvertAll(params{ParamSignature.Length - 1}, a => ({_castType})a);",
+        STRType.XcbStr16 or STRType.XcbByte => "",
+        _ => throw new NotImplementedException(IsXcbStr.ToString())
+    };
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        {{GetCsSpeicalContent()}}
+        {{GetItems()}}
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ((_castType == null ? null : "items"), ParamSignature.Length - 1))}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        {{GetCsAssert()}}
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+
+    private string GetCsAssert()
+    {
+
+        return IsXcbStr != STRType.XcbColorItem ?
+        @"
+        Assert.Equal(root, params0);
+        Assert.Equal(gc, params1);
+" :
+        @"
+        Assert.Equal(cmap, params0);
+";
+    }
+
+    private string GetCsSpeicalContent()
+    {
+        return IsXcbStr != STRType.XcbColorItem ?
+@"
+        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
+        var gc = _xProto.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+" :
+@"
+        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        var cmap = _xProto.NewId();
+        _xProto.CreateColormapChecked(0, cmap, screen.Root, screen.RootVisualId);
+";
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        string[] result = IsXcbStr != STRType.XcbColorItem ? ["root", "gc"] : ["cmap"];
+        parameter = parameter.ToCParams(IsXcbStr, AddLenInCCall, result);
+        if (IsXcbStr is STRType.XcbStr8 or STRType.XcbStr16)
+            parameter = parameter.ReplaceOnece(',', $", {parameter.CalculateSize()}, ");
+
+        var functionName = "xcb_" + method.ToSnakeCase() + "_checked";
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdarg.h>
+
+{{GetCStringMacro()}}
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    {{GetCSpeicalContent(marker)}}
+
+    fprintf(stderr, "{{marker}}\n");
+    cookie = {{functionName}}({{parameter}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+
+    error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+} 
+""";
+    }
+
+    private string GetCSpeicalContent(ReadOnlySpan<char> marker)
+    {
+        return IsXcbStr != STRType.XcbColorItem ?
+$$"""
+    xcb_window_t root = screen->root;
+    xcb_gcontext_t gc = xcb_generate_id(connection);
+    xcb_void_cookie_t cookie = xcb_create_gc_checked(connection, gc, screen->root, 4, (u_int32_t[]){screen->black_pixel});
+    xcb_flush(connection);
+
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (error)
+        return -1;
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", root);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", gc);
+    fprintf(stderr, "{{marker}}\n");
+""" :
+$$"""
+    xcb_colormap_t cmap = xcb_generate_id(connection);
+    xcb_void_cookie_t cookie = xcb_create_colormap_checked(connection, XCB_COLORMAP_ALLOC_NONE, cmap, screen->root, screen->root_visual);
+    xcb_flush(connection);
+
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (error)
+        return -1;
+    
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", cmap);
+    fprintf(stderr, "{{marker}}\n");
+""";
+    }
+}
+
+file class MethodDetails8Valid : MethodDetails8
+{
+    public MethodDetails8Valid(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType isXcbStr, string? castType = null) : base(categories, methodName, parameters,
+        paramSignature, addLenInCCall, isXcbStr, castType)
+    { }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
+        var gc = _xProto.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+        {{base.GetItems()}}
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ((_castType == null ? null : "items"), ParamSignature.Length - 1))}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(root, params1);
+        Assert.Equal(gc, params2);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+}
+
+file class MethodDetails9 : StaticBuilder
+{
+    public ImplType[] Types { get; }
+
+    public MethodDetails9(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType strType, params ImplType[] types) : base(categories, methodName, parameters, paramSignature,
+        addLenInCCall, strType)
+    {
+        Types = types;
+    }
+
+    public string GetCImpl(ImplType type, int name)
+    {
+        return type switch
+        {
+            ImplType.Id => $"   xcb_colormap_t paramDynamic{name} = xcb_generate_id(connection);",
+            ImplType.ColorMap =>
+$$"""
+    xcb_colormap_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_create_colormap_checked(connection, XCB_COLORMAP_ALLOC_NONE, paramDynamic{{name}}, screen->root, screen->root_visual);
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
+            ImplType.GC =>
+$$"""
+    xcb_colormap_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_create_gc_checked(connection, paramDynamic{{name}}, window, 4, (uint32_t[]){ {{Random.Shared.Next(0, int.MaxValue)}} });
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
+            ImplType.Window =>
+$$"""
+    xcb_window_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_create_window_checked(connection, XCB_COPY_FROM_PARENT, paramDynamic{{name}}, screen->root, 0, 0, 640, 480, 0, 
+            XCB_WINDOW_CLASS_INPUT_OUTPUT, screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, 
+            (uint32_t[]){screen->white_pixel,XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS});
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
+            ImplType.CursorFont =>
+$$"""
+    xcb_font_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_open_font_checked(connection, paramDynamic{{name}}, {{"cursor".Length}}, "cursor");
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
+            ImplType.Root =>
+$"""
+    xcb_window_t paramDynamic{name} = screen->root;
+""",
+            ImplType.Rootdepth =>
+$"""
+    uint8_t paramDynamic{name} = screen->root_depth;
+""",
+            ImplType.VisualId =>
+$"""
+    xcb_visualid_t paramDynamic{name} = screen->root_visual;
+""",
+            ImplType.PixmapId =>
+$$"""
+    xcb_pixmap_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_create_pixmap_checked(connection, screen->root_depth, paramDynamic{{name}}, screen->root, 1, 1);
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
+            ImplType.FontId =>
+$$"""
+    xcb_font_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_void_cookie_t cookie = xcb_open_font_checked(connection, paramDynamic{{name}}, 5, "fixed");
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
+            ImplType.CursorId =>
+$$"""
+    xcb_cursor_t paramDynamic{{name}} = xcb_generate_id(connection);
+    {
+        xcb_pixmap_t src = xcb_generate_id(connection);
+        xcb_void_cookie_t cookie = xcb_create_pixmap_checked(connection, 1, src, window, 8, 8);
+        xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+
+        xcb_pixmap_t mask = xcb_generate_id(connection);
+        cookie = xcb_create_pixmap_checked(connection, 1, mask, window, 8, 8);
+        error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+
+        cookie = xcb_create_cursor_checked(
+            connection,
+            paramDynamic{{name}},
+            src,
+            mask,
+            0, 0, 0,                 
+            65535, 65535, 65535,     
+            0, 0                     
+        );
+        error = xcb_request_check(connection, cookie);
+        if (error) 
+        {
+            free(error);
+            return 1;
+        }
+    }
+""",
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public string GetCsImpl(ImplType type, int name)
+    {
+        return type switch
+        {
+            ImplType.Id =>
+$"""
+
+        var item{name} = _xProto.NewId();
+""",
+            ImplType.ColorMap =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.CreateColormapChecked(0, item{name}, screen.Root, screen.RootVisualId);
+""",
+            ImplType.GC =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.CreateColormapChecked(0, item{name}, window, screen.RootVisualId);
+""",
+            ImplType.Window =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.CreateWindowChecked(0, item{name}, screen.Root, 0, 0, 640, 480, 0,  Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, (Xcsb.Masks.ValueMask)(2 | 2048),  [screen.WhitePixel, 32768 | 1 ]);
+""",
+            ImplType.CursorFont =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.OpenFontChecked("cursor", item{name});
+""",
+            ImplType.Root =>
+$"""
+
+        var item{name} = screen.Root;
+""",
+            ImplType.Rootdepth =>
+$"""
+
+        var item{name} = screen.RootDepth!.DepthValue;
+""",
+            ImplType.VisualId =>
+$"""
+
+        var item{name} = screen.RootVisualId;
+""",
+            ImplType.FontId =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.OpenFontChecked("fixed", item{name});
+""",
+            ImplType.PixmapId =>
+$"""
+
+        var item{name} = _xProto.NewId();
+        _xProto.CreatePixmapChecked(screen.RootDepth!.DepthValue, item{name}, screen.Root, 1, 1);
+""",
+            ImplType.CursorId =>
+$"""
+
+        var item{name} = _xProto.NewId();
+
+        var srcPixmap = _xProto.NewId();
+        _xProto.CreatePixmapChecked(1, srcPixmap, window, 8, 8);
+        var maskPixmap = _xProto.NewId();
+        _xProto.CreatePixmapChecked(1, maskPixmap, window, 8, 8);
+        
+        _xProto.CreateCursorChecked(item{name}, srcPixmap, maskPixmap, 0, 0, 0, 65535, 65535, 65535, 0, 0);
+""",
+            _ => throw new NotImplementedException(type.ToString())
+        };
+    }
+
+    public string WriteMembers(Func<ImplType, int, string> selector)
+    {
+        var sb = new StringBuilder();
+        if (this.Types.Contains(ImplType.GC) || this.Types.Contains(ImplType.CursorId))
+        {
+            sb.Append(selector(ImplType.Window, -99).Replace("paramDynamic-99", "window").Replace("item-99", "window"));
+        }
+
+        for (int i = 0; i < Types.Length; i++)
+            sb.Append(selector(Types[i], i));
+
+        return sb.ToString();
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        var dynamicNames = Enumerable.Range(0, Types.Length).Select((a, i) => "paramDynamic" + i).ToArray();
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection)) return -1;
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    {{WriteMembers(GetCImpl)}}
+    xcb_flush(connection);
+
+    {{WriteOutPutofCDynamic(marker)}}
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked({{parameter.ToCParams(IsXcbStr, AddLenInCCall, dynamicNames)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    return error ? -1 : 0;
+}
+""";
+    }
+
+    public string WriteOutPutofCDynamic(ReadOnlySpan<char> marker)
+    {
+        var sb = new StringBuilder();
+        for (int i = 0; i < Types.Length; i++)
+        {
+            sb.Append("fprintf(stderr, \"");
+            sb.Append(marker);
+            sb.AppendLine("\\n\");");
+
+            sb.Append("    fprintf(stderr, \"%d\\n\", paramDynamic");
+            sb.Append(i);
+            sb.AppendLine(");");
+
+            sb.Append("    fprintf(stderr, \"");
+            sb.Append(marker);
+            sb.AppendLine("\\n\");");
+        }
+        return sb.ToString();
+
+    }
+
+    public override void WriteCsMethodBody(FileStream fs)
+    {
+        fs.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}}byte[] expectedResult)
+    {
+        var field = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        {{WriteMembers(GetCsImpl)}}
+        
+
+        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
+
+        var buffer = (List<byte>?)field?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+{{WrittingAsserts(this.Parameters[0])}}
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+"""));
+    }
+
+    public string WrittingAsserts(ReadOnlySpan<char> format)
+    {
+        var sb = new StringBuilder();
+        int i = 0;
+        while (true)
+        {
+            var context = StringHelper.GetCsField(format, out var item);
+            format = format[context..];
+            var index = item.IndexOf('$');
+            if (index != -1)
+            {
+                sb.Append("\t\tAssert.Equal(params");
+                sb.Append(i);
+                sb.Append(", item");
+                sb.Append(int.Parse(item[++index..]));
+                sb.AppendLine(");");
+            }
+
+            i++;
+            if (format.Length == 0)
+                break;
+        }
+        return sb.ToString();
+    }
+
+    public enum ImplType
+    {
+        Id,
+        ColorMap,
+        GC,
+        Window,
+        CursorFont,
+        VisualId,
+        Root,
+        Rootdepth,
+        PixmapId,
+        FontId,
+        CursorId
+    }
+}
+
+file class OpenFont : StaticBuilder
+{
+    public OpenFont(string[] parameters) : base("SpecialMethod", nameof(OpenFont), parameters, ["string", "uint"], true,
+        STRType.XcbStr)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        StringHelper.GetCsField(parameter, out var field);
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_font_t font = xcb_generate_id(connection);
+    xcb_flush(connection);
+    
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d \n", font);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection, font, strlen({{field}}), {{field}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.Equal(params1, _xProto.NewId());
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+}
+
+file class NoOperation : StaticBuilder
+{
+    public NoOperation() : base("SpecialMethod", nameof(NoOperation), ["new uint[] {}"], ["uint[]"], false,
+        STRType.RawBuffer)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection);
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+    }
+}
+
+file class ChangePointerControl : StaticBuilder
+{
+    public ChangePointerControl(string[] parameters, string[] paramSignature)
+        : base("SpecialMethod", nameof(ChangePointerControl), parameters, paramSignature, false, STRType.RawBuffer)
+    { }
+
+    public static string ToCParams(ReadOnlySpan<char> value)
+    {
+        const string nullasText = "null";
+        var sliceIndex = value.IndexOf('-');
+        if (sliceIndex == -1) throw new UnreachableException();
+        var part1 = value[..sliceIndex];
+        var part2 = value[++sliceIndex..];
+        var hasVal1 = true;
+        var hasVal2 = true;
+        if (part1.SequenceEqual(nullasText))
+            hasVal1 = false;
+        if (part2.SequenceEqual(nullasText))
+            hasVal2 = false;
+        var sb = new StringBuilder();
+        if (hasVal1)
+        {
+            var incort = false;
+            foreach (var item in part1)
+            {
+                if (item is '"') incort = !incort;
+                if (item is '{' or '}' or '=' or '"') continue;
+                if (incort) continue;
+                sb.Append(item);
+            }
+            sb.Append(", ");
+        }
+        else
+            sb.Append("0, 0, ");
+
+        sb.Append(hasVal2 ? part2 : "0");
+        sb.Append(hasVal1 ? ", 1, " : ", 0, ");
+        sb.Append(hasVal2 ? '1' : '0');
+
+        return sb.ToString();
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> 
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked(connection, {{ToCParams(parameter)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{{base.ParamSignature[0]}}>(params0);
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, ("items", 0))}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+
+    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters, string methodName, string[] paramSignature)
+    {
+        foreach (var parameter in parameters)
+        {
+            var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
+            fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{ToCsParameter(parameter, cResponse)}})]
+
+"""));
+        }
+    }
+
+    private string ToCsParameter(ReadOnlySpan<char> parameter, string[] cResponse)
+    {
+        var sb = new StringBuilder();
+        sb.Append('"');
+        var canWrite = false;
+        foreach (var item in parameter)
+        {
+            if (item == '-')
+            {
+                sb.Append("\", ");
+                canWrite = true;
+                continue;
+            }
+            if (item == '"')
+                sb.Append('\\');
+
+            if (char.IsNumber(item) && canWrite)
+            {
+                sb.Append("(ushort)");
+            }
+            if (item == '=')
+            {
+                sb.Append(':');
+                continue;
+            }
+            sb.Append(item);
+        }
+        sb.Append(", new byte[] {")
+            .Append(cResponse[^1])
+            .Append('}');
+
+        return sb.ToString();
+    }
+}
+
+file class ChangeProperty<T> : MethodDetails9 where T : unmanaged
+{
+    public ChangeProperty(string[] parameter, string[] parameterSingature, STRType strType) : base("SpecialMethodOf" + typeof(T).Name, nameof(ChangeProperty<>),
+        parameter, parameterSingature, true, strType, ImplType.Window)
+    {
+    }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+{{GetCStringMacro()}}
+
+int main()
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        return -1;
+    }
+
+    xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+    {{WriteMembers(GetCImpl)}}
+
+    xcb_flush(connection);
+    
+    {{WriteOutPutofCDynamic(marker)}}
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked({{parameter.ToCParams(IsXcbStr, AddLenInCCall, "paramDynamic0").ReplaceOnece(',', $", {Marshal.SizeOf<T>() * 8},", 4)}});
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    xcb_generic_error_t *error = xcb_request_check(connection, cookie);
+    if (!error)
+        return 0;
+
+    free(error);
+    return -1;
+}
+""";
+
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        {{WriteMembers(GetCsImpl)}}
+
+        // act
+        bufferClient.{{MethodName}}<{{typeof(T).Name}}>({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+{{base.WrittingAsserts(this.Parameters[0])}}
+    }
+
+"""));
+    }
+}
+
+file class ChangeKeyboardMapping : StaticBuilder
+{
+    public ChangeKeyboardMapping() : base("SpecialMethod", nameof(ChangeKeyboardMapping),
+        ["$0, $1, $2"], ["uint", "uint", "string"], false, STRType.RawBuffer)
+    { }
+
+    public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
+    {
+        return
+$$"""
+#include <xcb/xcb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+int main(void)
+{
+    xcb_connection_t *connection = xcb_connect(NULL, NULL);
+    if (xcb_connection_has_error(connection))
+    {
+        fprintf(stderr, "Failed to connect to X server\n");
+        return 1;
+    }
+
+    const xcb_setup_t *setup = xcb_get_setup(connection);
+
+    xcb_get_keyboard_mapping_cookie_t cookie = xcb_get_keyboard_mapping(connection,
+        setup->min_keycode,
+        setup->max_keycode - setup->min_keycode + 1);
+
+    xcb_generic_error_t *error = NULL;
+    xcb_get_keyboard_mapping_reply_t *reply =
+        xcb_get_keyboard_mapping_reply(connection, cookie, &error);
+
+    if (error)
+    {
+        fprintf(stderr, "GetKeyboardMapping error: %d\n", error->error_code);
+        free(error);
+        xcb_disconnect(connection);
+        return 1;
+    }
+
+    int total_keysyms = xcb_get_keyboard_mapping_keysyms_length(reply);
+    xcb_keysym_t *keys = xcb_get_keyboard_mapping_keysyms(reply);
+
+    xcb_keysym_t *buff = malloc(reply->keysyms_per_keycode * sizeof(xcb_keysym_t));
+
+    if (!buff)
+    {
+        fprintf(stderr, "Out of memory\n");
+        free(reply);
+        xcb_disconnect(connection);
+        return 1;
+    }
+
+    for (int i = 0; i < reply->keysyms_per_keycode; i++)
+        buff[i] = keys[i];
+    
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", total_keysyms);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", reply->keysyms_per_keycode);
+    fprintf(stderr, "{{marker}}\n");
+
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "\" [");
+    for (int i = 0; i < reply->keysyms_per_keycode; i++)
+        fprintf(stderr, "%d, ", buff[i]);
+    
+    fprintf(stderr, "]\" \n");
+    fprintf(stderr, "{{marker}}\n");
+
+
+    fprintf(stderr, "{{marker}}\n");
+    xcb_void_cookie_t ck =
+        xcb_change_keyboard_mapping_checked(
+            connection,
+            1,
+            8,
+            reply->keysyms_per_keycode,
+            buff);
+
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
+    error = xcb_request_check(connection, ck);
+    if (error)
+    {
+        fprintf(stderr, "ChangeKeyboardMapping error: %d\n", error->error_code);
+        free(error);
+    }
+
+
+    free(buff);
+    free(reply);
+    xcb_disconnect(connection);
+
+    return 0;
+}
+""";
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var keyboardMapping = _xProto.GetKeyboardMapping(_xProto.HandshakeSuccessResponseBody.MinKeyCode,
+            (byte)(_xProto.HandshakeSuccessResponseBody.MaxKeyCode - _xProto.HandshakeSuccessResponseBody.MinKeyCode + 1));
+        var itms = Newtonsoft.Json.JsonConvert.DeserializeObject<uint[]>(params2);
+
+        var keysyms_per_keycode = new uint[keyboardMapping.KeyPerKeyCode];
+        Array.Copy(keyboardMapping.Keysyms[0..keyboardMapping.KeyPerKeyCode], keysyms_per_keycode, keyboardMapping.KeyPerKeyCode);
+
+        // act
+        bufferClient.{{MethodName}}(1, 8, keyboardMapping.KeyPerKeyCode, keysyms_per_keycode);
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(keysyms_per_keycode.SequenceEqual(itms!));
+        Assert.True(expectedResult.SequenceEqual(buffer));
+        Assert.Equal(keyboardMapping.KeyPerKeyCode, params1);
+        Assert.Equal((uint)keyboardMapping.Keysyms.Length, params0);
+    }
+
+"""));
+    }
+}
+
+file abstract class StaticBuilder : BaseBuilder
+{
+    public StaticBuilder(string categories, string methodName, string[] parameters, string[] paramSignature,
+        bool addLenInCCall, STRType isXcbStr) : base(parameters, methodName, paramSignature)
+    {
+        Categories = categories;
+        AddLenInCCall = addLenInCCall;
+        IsXcbStr = isXcbStr;
+    }
+
+    public string Categories { get; }
+    public bool AddLenInCCall { get; }
+    public STRType IsXcbStr { get; }
+
+    public static string Format(string value, string[] values, string[] paramSignature)
+    {
+        var sb = new StringBuilder();
+        var content = value.AsSpan();
+        for (var i = 0; i < paramSignature.Length; i++)
+        {
+            var context = StringHelper.GetCsField(content, out var field);
+            content = content[context..];
+            field = field.Trim();
+
+            var index = field.IndexOf('$');
+            if (index != -1)
+            {
+                field = field[++index..];
+                sb.Append('(')
+                    .Append(paramSignature[i])
+                    .Append(')')
+                    .Append(values[int.Parse(field)])
+                    .Append(", ");
+            }
+            else if (field.StartsWith('[') && field.EndsWith(']'))
+            {
+                sb.Append("\"")
+                    .Append(field.ToString().Replace("\"", "\\\""))
+                    .Append("\", ");
+            }
+            else if (field.Contains("[]", StringComparison.InvariantCultureIgnoreCase))
+            {
+                sb.Append(field)
+                    .Append(", ");
+            }
+            else
+            {
+                sb.Append('(')
+                    .Append(paramSignature[i])
+                    .Append(')')
+                    .Append(field)
+                    .Append(", ");
+            }
+        }
+
+        sb.Append("new byte[] {")
+            .Append(values[^1])
+            .Append('}');
+
+        return sb.ToString();
+    }
+
+    public override void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile,
+        string[] parameters, string methodName, string[] paramSignature)
+    {
+        foreach (var parameter in parameters)
+        {
+            var cResponse = GetCResult(compiler, methodName, parameter, monitorFile);
+            fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    [InlineData({{Format(parameter, cResponse, paramSignature)}})]
+
+"""));
+        }
+    }
+
+    public override void WriteCsMethodBody(FileStream fileStream)
+    {
+        var methodSignature = GetTestMethodSignature(ParamSignature);
+        fileStream.Write(Encoding.UTF8.GetBytes(
+$$"""
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
+    {
+        // arrange
+        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+            .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var bufferClient = (XBufferProto)_xProto.BufferClient;
+
+        // act
+        bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
+        var buffer = (List<byte>?)workingField?.GetValue(bufferClient.BufferProtoOut);
+
+        // assert
+        Assert.NotNull(buffer);
+        Assert.NotNull(expectedResult);
+        Assert.NotEmpty(buffer);
+        Assert.NotEmpty(expectedResult);
+        Assert.True(expectedResult.SequenceEqual(buffer));
+    }
+
+"""));
+    }
+
+    public string GetCStringMacro() => IsXcbStr switch
+    {
+        STRType.XcbByte or STRType.XcbInt or STRType.RawBuffer or STRType.XcbUint or STRType.XcbStr8 or STRType.XcbSegment
+        or STRType.XcbRectangle or STRType.XcbArc or STRType.XcbPoient or STRType.XcbColorItem or STRType.XcbShort => "",
+        STRType.XcbStr =>
+"""
+#define XS(s)                       \
+    ((const void *)&(const struct { \
+        uint8_t len;                \
+        char data[sizeof(s) - 1];   \
+    }){(uint8_t)(sizeof(s) - 1), s})
+""",
+        STRType.Xcb8 =>
+"""
+uint8_t *__XS(int count, ...)
+{
+    va_list args;
+    int size = 0;
+    int workingIndex = 0;
+
+    va_start(args, count);
+    for (int i = 0; i < count; i++)
+    {
+        size += strlen(va_arg(args, const char *));
+        size++;
+        size++;
+    }
+    va_end(args);
+
+    uint8_t *result = malloc(size);
+    if (!result)
+        return NULL;
+
+    va_start(args, count);
+    while (workingIndex < size)
+    {
+        const char *text = va_arg(args, const char *);
+        result[workingIndex++] = (uint8_t)strlen(text);
+        result[workingIndex++] = (uint8_t)0;
+        for (size_t i = 0; i < strlen(text); i++)
+        {
+            result[workingIndex++] = (uint8_t)text[i];
+        }
+    }
+    va_end(args);
+    return result;
+}
+#define PP_NARG(...) PP_NARG_(__VA_ARGS__, PP_RSEQ_N())
+#define PP_NARG_(...) PP_ARG_N(__VA_ARGS__)
+#define PP_ARG_N(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, N, ...) N
+#define PP_RSEQ_N() 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+
+#define XS(...) __XS(PP_NARG(__VA_ARGS__), __VA_ARGS__)
+""",
+        STRType.Xcb16 =>
+"""
+
+uint8_t *__XS(int count, ...)
+{
+    va_list args;
+    int size = 0;
+    int workingIndex = 0;
+
+    va_start(args, count);
+    for (int i = 0; i < count; i++)
+    {
+        size += strlen(va_arg(args, const char *)) * 2;
+        size++;
+        size++;
+    }
+    va_end(args);
+
+    uint8_t *result = malloc(size);
+    if (!result)
+        return NULL;
+
+    va_start(args, count);
+    while (workingIndex < size)
+    {
+        const char *text = va_arg(args, const char *);
+        result[workingIndex++] = (uint8_t)strlen(text);
+        result[workingIndex++] = (uint8_t)0;
+        for (size_t i = 0; i < strlen(text); i++)
+        {
+            result[workingIndex++] = (uint8_t)0;
+            result[workingIndex++] = (uint8_t)text[i];
+        }
+    }
+    va_end(args);
+    return result;
+}
+#define PP_NARG(...) PP_NARG_(__VA_ARGS__, PP_RSEQ_N())
+#define PP_NARG_(...) PP_ARG_N(__VA_ARGS__)
+#define PP_ARG_N(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, N, ...) N
+#define PP_RSEQ_N() 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+
+#define XS(...) __XS(PP_NARG(__VA_ARGS__), __VA_ARGS__)
+
+""",
+        STRType.XcbStr16 =>
+"""
+xcb_char2b_t *XS(const char *data)
+{
+    int len = strlen(data);
+    // i know its not right
+    // but it will claim by os after program end
+    xcb_char2b_t *buf = calloc(len, sizeof(xcb_char2b_t));
+    for (int i = 0; i < len; ++i)
+    {
+        buf[i].byte1 = 0;
+        buf[i].byte2 = data[i];
+    }
+    return buf;
+}
+""",
+        _ => throw new Exception(),
+    };
+}
+
+file abstract class BaseBuilder : IBuilder
+{
+    protected readonly string[] Parameters;
+    protected readonly string MethodName;
+    protected readonly string[] ParamSignature;
+
+    public BaseBuilder(string[] parameters, string methodName, string[] paramSignature)
+    {
+        this.ParamSignature = paramSignature;
+        this.MethodName = methodName;
+        this.Parameters = parameters;
+
+    }
+
+    public abstract void WriteCsTestCases(FileStream fileStream, string compiler, string monitorFile, string[] parameters,
+        string MethodName, string[] paramSignature);
+
+    public abstract string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker);
+
+    public abstract void WriteCsMethodBody(FileStream fileStream);
+
+    public void WriteCsMethodContent(FileStream fileStream, string compiler, string monitorFile)
+    {
+        fileStream.Write(
+"""
+
+    [Theory]
+
+"""u8);
+        WriteCsTestCases(fileStream, compiler, monitorFile, Parameters, MethodName, ParamSignature);
+        WriteCsMethodBody(fileStream);
+    }
+
+    public static string FillPassingParameter(int parameterCount, (string?, int)? replaceItems = null)
+    {
+        if (parameterCount == 0)
+            return string.Empty;
+
+        var sb = new StringBuilder();
+        for (var i = 0; i < parameterCount; i++)
+        {
+            if (replaceItems.HasValue
+                    && !string.IsNullOrWhiteSpace(replaceItems.Value.Item1)
+                    && replaceItems.Value.Item2 == i)
+                sb.Append(replaceItems.Value.Item1);
+            else
+                sb.Append("params").Append(i);
+            sb.Append(", ");
+        }
+        sb.Remove(sb.Length - 2, 2);
+        return sb.ToString();
+    }
+
+    protected static string GetTestMethodSignature(string[] paramsSignature)
+    {
+        if (paramsSignature.Length == 0) return string.Empty;
+
+        var sb = new StringBuilder();
+
+        for (var i = 0; i < paramsSignature.Length; i++)
+            sb.Append(UpdateParameter(paramsSignature[i]))
+                .Append(" params")
+                .Append(i)
+                .Append(", ");
+
+        return sb.ToString();
+    }
+
+    private static ReadOnlySpan<char> UpdateParameter(ReadOnlySpan<char> value) =>
+        value switch
+        {
+            "Xcsb.Models.Segment[]" or "Xcsb.Models.Rectangle[]" or "Xcsb.Models.Arc[]" or "Xcsb.Models.Point[]" or "Xcsb.Models.ColorItem[]" or "Xcsb.Models.Acceleration?" => "string",
+            _ => value
+        };
+
+    public string[] GetCResult(string compiler, string method, string? parameter, string monitorFile)
+    {
+        const string MARKER = "****************************************************************";
+        var execFile = Path.Join(Environment.CurrentDirectory, "main");
+        var cMainBody = GetCMethodBody(method, parameter, MARKER);
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = compiler,
+                Arguments = $"-x c -o \"{execFile}\" - -lxcb",
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+        process.Start();
+        process.StandardInput.Write(cMainBody);
+        process.StandardInput.Close();
+        process.WaitForExit();
+
+        Debug.Assert(string.IsNullOrWhiteSpace(process.StandardError.ReadToEnd()));
+        Debug.Assert(string.IsNullOrWhiteSpace(process.StandardOutput.ReadToEnd()));
+        Debug.Assert(File.Exists(execFile));
+
+#if DOCKERENV
+            process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "xvfb-run",
+                    Arguments = $"-a env LD_PRELOAD={monitorFile} {execFile}",
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    CreateNoWindow = true
+                }
+            };
+            process.Start();
+            var response = process.StandardOutput.ReadToEnd();
+#else
+        process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = execFile,
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                CreateNoWindow = true
+            }
+        };
+        process.StartInfo.Environment["LD_PRELOAD"] = monitorFile;
+
+        process.Start();
+        var response = process.StandardError.ReadToEnd();
+#endif
+
+        process.WaitForExit();
+        File.Delete(execFile);
+        var result = new List<string>();
+        var currentPos = 0;
+        while (true)
+        {
+            var startPos = response.IndexOf(MARKER, currentPos, StringComparison.Ordinal);
+            if (startPos == -1) break;
+            startPos += MARKER.Length + 1;
+            var endPos = response.IndexOf(MARKER, startPos, StringComparison.Ordinal);
+
+            result.Add(response[startPos..(endPos - 1)]);
+            currentPos = endPos + MARKER.Length;
+
+        }
+        return [.. result];
+    }
+}
+
+file interface IBuilder
+{
+    void WriteCsMethodContent(FileStream stream, string compiler, string monitorFile);
+}
+
+file enum STRType
+{
+    RawBuffer,
+    XcbStr,
+    XcbShort,
+    Xcb8,
+    Xcb16,
+    XcbStr8,
+    XcbStr16,
+    XcbUint,
+    XcbInt,
+    XcbByte,
+    XcbSegment,
+    XcbRectangle,
+    XcbArc,
+    XcbPoient,
+    XcbAtom,
+    XcbColorItem
+}

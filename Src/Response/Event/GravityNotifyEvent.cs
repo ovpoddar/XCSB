@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct GravityNotifyEvent : IXEvent
@@ -15,6 +15,6 @@ public struct GravityNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.GravityNotify && this.ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.GravityNotify && ResponseHeader.GetValue() == 0;
     }
 }

@@ -1,33 +1,32 @@
 ﻿using System.Net.Sockets;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using Xcsb.Helpers;
-using Xcsb.Models;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct GetImageReply
 {
     public readonly ResponseType Reply;
     public readonly byte Depth;
     public readonly ushort Sequence;
-    public readonly uint Length;
     public readonly uint VisualId;
     public readonly byte[] Data;
-    internal GetImageReply(GetImageResponse result, Socket socket)
+    
+    internal GetImageReply(Span<byte> response)
     {
-        Reply = result.ResponseHeader.Reply;
-        Depth = result.ResponseHeader.GetValue();
-        Sequence = result.ResponseHeader.Sequence;
-        Length = result.Length;
-        VisualId = result.VisualId;
-        if (Length == 0)
+        ref readonly var context = ref response.AsStruct<GetImageResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Depth = context.ResponseHeader.GetValue();
+        Sequence = context.ResponseHeader.Sequence;
+        VisualId = context.VisualId;
+        if (context.Length == 0)
             Data = [];
         else
         {
-            Data = new byte[result.Length * 4];
-            socket.ReceiveExact(Data);
+            var cursor = Unsafe.SizeOf<GetImageResponse>();
+            Data = response.Slice(cursor, (int)(context.Length * 4) ).ToArray();
         }
     }
 }

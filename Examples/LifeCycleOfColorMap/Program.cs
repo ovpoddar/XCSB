@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Xcsb;
-using Xcsb.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
@@ -104,9 +103,9 @@ var resultGrabKeyboard = x.GrabKeyboard(
     GrabMode.Asynchronous,
     GrabMode.Asynchronous
 );
-        
-Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Value.Status}");
-x.UngrabKeyboard(0);
+
+Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Status}");
+x.UngrabKeyboardUnchecked(0);
 
 var xevnt = x.GetEvent();
 Debug.Assert(xevnt.ReplyType == XEventType.Expose || xevnt.ReplyType == XEventType.MappingNotify);

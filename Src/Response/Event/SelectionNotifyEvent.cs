@@ -2,7 +2,7 @@
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct SelectionNotifyEvent : IXEvent
@@ -13,9 +13,9 @@ public struct SelectionNotifyEvent : IXEvent
     public ATOM Selection;
     public ATOM Target;
     public ATOM Property;
-    
+
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.SelectionNotify && this.ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.SelectionNotify && ResponseHeader.GetValue() == 0;
     }
 }

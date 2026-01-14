@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Errors;
 
-namespace Xcsb.Errors;
+namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct AccessError : IXError
 {
     public readonly ResponseHeader<ErrorCode> ResponseHeader;
-    private readonly uint _pad0;
+    public readonly uint BadValue;
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
-    
+
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Error && this._pad0 == 0;
+        return ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public unsafe struct KeymapNotifyEvent : IXEvent
@@ -10,6 +10,6 @@ public unsafe struct KeymapNotifyEvent : IXEvent
     public fixed byte Keys[31];
     public bool Verify(in int sequence)
     {
-        return this.Reply == ResponseType.KeymapNotify;
+        return Reply == ResponseType.KeymapNotify;
     }
 }

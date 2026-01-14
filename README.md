@@ -29,7 +29,7 @@ Or via the NuGet Package Manager:
 Install-Package Xcsb
 ```
 
-For more detailed documentation and advanced usage, see the [Wiki](https://github.com/your-repo/Xcsb/wiki).
+For more detailed documentation and advanced usage, see the [Wiki](https://github.com/ovpoddar/XCSB/wiki).
 
 ## Requirements
 
@@ -60,7 +60,7 @@ To implement a missing feature:
 5. Submit a pull request describing your changes and referencing the relevant protocol documentation.
 
 If you have questions or need guidance, please open an issue or start a discussion
-on [GitHub](https://github.com/your-repo/Xcsb).
+on [GitHub](https://github.com/ovpoddar/XCSB).
 
 ## License
 

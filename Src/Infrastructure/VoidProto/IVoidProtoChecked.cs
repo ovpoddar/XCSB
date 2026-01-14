@@ -1,12 +1,13 @@
-﻿using Xcsb.Event;
-using Xcsb.Masks;
+﻿using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Models.String;
+
 
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb;
+namespace Xcsb.Infrastructure;
 
 public interface IVoidProtoChecked
 {
@@ -159,7 +160,7 @@ public interface IVoidProtoChecked
 
     void ChangeKeyboardControlChecked(KeyboardControlMask mask, Span<uint> args);
 
-    void ChangePointerControlChecked(Acceleration acceleration, ushort? threshold);
+    void ChangePointerControlChecked(Acceleration? acceleration, ushort? threshold);
 
     void SetScreenSaverChecked(short timeout, short interval, TriState preferBlanking, TriState allowExposures);
 
@@ -173,7 +174,6 @@ public interface IVoidProtoChecked
 
     void NoOperationChecked(Span<uint> args);
 
-    // todo: need a writer for the TEXTITEM16, TEXTITEM8
-    void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
-    void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, Span<byte> data);
+    void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
+    void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);
 }

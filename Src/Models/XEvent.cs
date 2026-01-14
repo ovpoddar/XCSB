@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-using Xcsb.Event;
+﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
+using Xcsb.Response.Event;
 
 namespace Xcsb.Models;
 
@@ -42,17 +39,17 @@ public unsafe struct XEvent
             _ => XEventType.Unknown,
         };
 
-    public readonly unsafe ref T As<T>() where T : struct =>
+    public readonly unsafe ref readonly T As<T>() where T : struct =>
         ref _response.As<T>();
 
     public readonly GenericError? Error =>
-        _response.GetResponseType() != XResponseType.Error 
-            ? null 
+        _response.GetResponseType() != XResponseType.Error
+            ? null
             : _response.As<GenericError>();
-    
+
     public readonly GenericEvent? Event =>
-        _response.GetResponseType() is XResponseType.Event or XResponseType.Notify 
-            ? null 
+        _response.GetResponseType() is XResponseType.Event or XResponseType.Notify
+            ? null
             : _response.As<GenericEvent>();
 
     public Span<byte> GetRawResponse()

@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Event;
+﻿namespace Xcsb.Response.Event;
 
 public enum NotifyDetail : byte
 {

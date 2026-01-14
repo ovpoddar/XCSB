@@ -4,9 +4,9 @@ using System.Text;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct ListFontsWithInfoReply
 {
@@ -27,40 +27,38 @@ public readonly struct ListFontsWithInfoReply
     public readonly FontProp[] Properties;
     public readonly string Name;
 
-    internal ListFontsWithInfoReply(ListFontsWithInfoResponse result, Socket socket)
+    internal ListFontsWithInfoReply(ref readonly ListFontsWithInfoResponse response, Span<byte> buffer)
     {
-        Reply = result.ResponseHeader.Reply;
-        Sequence = result.ResponseHeader.Sequence;
-        MinBounds = result.MinBounds;
-        MaxBounds = result.MaxBounds;
-        MinChar = result.MinChar;
-        MaxChar = result.MaxChar;
-        DefaultChar = result.DefaultChar;
-        Direction = result.Direction;
-        MinByte = result.MinByte;
-        MaxByte = result.MaxByte;
-        AllCharsExist = result.AllCharsExist == 1;
-        FontAscent = result.FontAscent;
-        FontDescent = result.FontDescent;
-        ReplyHint = result.ReplyHint;
-        if (result.PropertiLenght == 0)
+
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
+        MinBounds = response.MinBounds;
+        MaxBounds = response.MaxBounds;
+        MinChar = response.MinChar;
+        MaxChar = response.MaxChar;
+        DefaultChar = response.DefaultChar;
+        Direction = response.Direction;
+        MinByte = response.MinByte;
+        MaxByte = response.MaxByte;
+        AllCharsExist = response.AllCharsExist == 1;
+        FontAscent = response.FontAscent;
+        FontDescent = response.FontDescent;
+        ReplyHint = response.ReplyHint;
+        var cursor = 0;
+        if (response.PropertiLenght == 0)
             Properties = [];
         else
         {
-            var requiredSize = result.PropertiLenght * 8;
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            socket.ReceiveExact(buffer[0..requiredSize]);
-            Properties = MemoryMarshal.Cast<byte, FontProp>(buffer).ToArray();
+            var requiredSize = response.PropertiLenght * 8;
+            Properties = MemoryMarshal.Cast<byte, FontProp>(buffer[cursor..requiredSize]).ToArray();
+            cursor += requiredSize;
         }
 
-        if (result.NameLength == 0)
+        if (response.NameLength == 0)
             Name = string.Empty;
         else
         {
-            var requiredSize = result.NameLength.AddPadding();
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            socket.ReceiveExact(buffer[0..requiredSize]);
-            Name = Encoding.UTF8.GetString(buffer, 0, result.NameLength);
+            Name = Encoding.UTF8.GetString(buffer.Slice(cursor, response.NameLength));
         }
     }
 }

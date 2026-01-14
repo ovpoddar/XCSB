@@ -1,10 +1,10 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct ExposeEvent :  IXEvent
+public struct ExposeEvent : IXEvent
 {
     public readonly ResponseHeader<byte> ResponseHeader;
     public uint Window;
@@ -17,6 +17,6 @@ public struct ExposeEvent :  IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Expose && this.ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.Expose && ResponseHeader.GetValue() == 0;
     }
 }

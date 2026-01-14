@@ -2,11 +2,12 @@
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Event;
 using Xcsb.Models;
-using Xcsb.Response;
-using Xcsb.Response.Event;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Contract;
+using Xcsb.Response.Replies;
+using Xcsb.Response.Replies.Internals;
+
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -15,7 +16,7 @@ namespace Xcsb.Helpers;
 
 internal static class GenericHelper
 {
-    internal static ref T AsStruct<T>(this Span<byte> bytes) where T : struct =>
+    internal static ref readonly T AsStruct<T>(this Span<byte> bytes) where T : struct =>
         ref Unsafe.As<byte, T>(ref bytes[0]);
 
     internal static T ToStruct<T>(this Span<byte> bytes) where T : struct =>
@@ -31,22 +32,19 @@ internal static class GenericHelper
 
     internal static T AddPadding<T>(this T pad) where T :
 #if NETSTANDARD
-    struct
+        unmanaged
     {
-        object result;
-        if (typeof(T) == typeof(byte))
-            result = (byte)((byte)(object)pad + (4 - ((byte)(object)pad & 3) & 3));
-        else if (typeof(T) == typeof(ushort))
-            result = (ushort)((ushort)(object)pad + (4 - ((ushort)(object)pad & 3) & 3));
-        else if (typeof(T) == typeof(short))
-            result = (short)((short)(object)pad + (4 - ((short)(object)pad & 3) & 3));
-        else if (typeof(T) == typeof(int))
-            result = (int)(object)pad + (4 - ((int)(object)pad & 3) & 3);
-        else if (typeof(T) == typeof(uint))
-            result = (uint)(object)pad + (4 - ((uint)(object)pad & 3) & 3);
-        else
-            throw new ArgumentException($"Padding not implemented for type {typeof(T)}");
-        return (T)result;
+        var value = Marshal.SizeOf<T>() switch
+        {
+            1 => Unsafe.As<T, byte>(ref pad),
+            2 => Unsafe.As<T, ushort>(ref pad),
+            4 => Unsafe.As<T, int>(ref pad),
+            _ => throw new ArgumentException($"Padding not implemented for type {nameof(T)}")
+        };
+
+        T result = default;
+        Unsafe.As<T, int>(ref result) = value + ((4 - (value & 3)) & 3);
+        return result;
 #else
         INumber<T>
     {
@@ -57,24 +55,45 @@ internal static class GenericHelper
 
     internal static T Padding<T>(this T pad) where T :
 #if NETSTANDARD
-    struct
+        unmanaged
     {
-        object result;
-
         if (typeof(T) == typeof(byte))
-            result = (byte)((4 - ((byte)(object)pad & 3)) & 3);
-        else if (typeof(T) == typeof(ushort))
-            result = (ushort)((4 - ((ushort)(object)pad & 3)) & 3);
-        else if (typeof(T) == typeof(short))
-            result = (short)((4 - ((short)(object)pad & 3)) & 3);
-        else if (typeof(T) == typeof(int))
-            result = (4 - ((int)(object)pad & 3)) & 3;
-        else if (typeof(T) == typeof(uint))
-            result = (4 - ((uint)(object)pad & 3)) & 3;
-        else
-            throw new ArgumentException($"Padding not implemented for type {typeof(T)}");
+        {
+            ref var padByte = ref Unsafe.As<T, byte>(ref pad);
+            var result = (byte)(padByte + ((4 - (padByte & 3u)) & 3u));
+            return Unsafe.As<byte, T>(ref result);
+        }
 
-        return (T)result;
+        if (typeof(T) == typeof(ushort))
+        {
+            ref var padUShort = ref Unsafe.As<T, ushort>(ref pad);
+            var result = (ushort)(padUShort + ((4 - (padUShort & 3u)) & 3u));
+            return Unsafe.As<ushort, T>(ref result);
+        }
+
+        if (typeof(T) == typeof(short))
+        {
+            ref var padShort = ref Unsafe.As<T, short>(ref pad);
+            var result = (short)(padShort + ((4 - (padShort & 3u)) & 3u));
+            return Unsafe.As<short, T>(ref result);
+        }
+
+        if (typeof(T) == typeof(int))
+        {
+            ref var padInt = ref Unsafe.As<T, int>(ref pad);
+            var result = padInt + (int)((4 - (padInt & 3u)) & 3u);
+            return Unsafe.As<int, T>(ref result);
+        }
+
+        if (typeof(T) == typeof(uint))
+        {
+            ref var padUInt = ref Unsafe.As<T, uint>(ref pad);
+            var result = padUInt + ((4 - (padUInt & 3u)) & 3u);
+            return Unsafe.As<uint, T>(ref result);
+        }
+
+        throw new ArgumentException($"Padding not implemented for type {nameof(T)}");
+
 #else
         INumber<T>
     {
@@ -104,7 +123,7 @@ internal static class GenericHelper
     {
         if (buffer.Length == 0)
             return;
-        
+
         var total = 0;
         while (socket.Connected)
         {
@@ -117,10 +136,6 @@ internal static class GenericHelper
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Add<T>(this List<byte> list, scoped ref T value) where T : unmanaged =>
-        list.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
-
     internal static void WriteRequest<T>(this Span<byte> writeBuffer, ref T requestType, int size,
         ReadOnlySpan<byte> requestBody) where T : unmanaged
     {
@@ -130,32 +145,6 @@ internal static class GenericHelper
         if (remainder == 0) return;
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
-
-    internal static IEnumerable<DataRange> GetNextStrValue(ArraySegment<byte> buffer)
-    {
-        var index = 0;
-        while (index < buffer.Count)
-        {
-            var length = buffer[index++];
-            if (length == 0)
-                break;
-            if (index + length > buffer.Count)
-                yield return new DataRange(index, buffer.Count - index);
-            else
-                yield return new DataRange(index, length);
-            index += length;
-        }
-    }
-
-    internal static IEnumerable<ListFontsWithInfoReply> GetNextStrValue(this Socket socket, ListFontsWithInfoResponse firstInfo)
-    {
-        while (firstInfo.HasMore)
-        {
-            yield return new ListFontsWithInfoReply(firstInfo, socket);
-            firstInfo = socket.ReceivedResponse<ListFontsWithInfoResponse>();
-        }
-    }
-
 
 #if !NETSTANDARD
     [SkipLocalsInit]
@@ -169,7 +158,6 @@ internal static class GenericHelper
         return buffer.ToStruct<T>();
     }
 
-
     internal static void EnsureReadSize(this Socket socket, int size)
     {
         while (true)
@@ -178,5 +166,20 @@ internal static class GenericHelper
                 break;
             socket.Poll(-1, SelectMode.SelectRead);
         }
+    }
+
+
+    internal static int CountFlags<T>(this T value) where T : struct, Enum
+    {
+        var v = Convert.ToUInt64(value);
+        var count = 0;
+
+        while (v != 0)
+        {
+            count += (int)(v & 1);
+            v >>= 1;
+        }
+
+        return count;
     }
 }

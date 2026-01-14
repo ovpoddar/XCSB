@@ -1,10 +1,11 @@
-﻿using Xcsb.Event;
+﻿using Xcsb.Infrastructure;
+using Xcsb.Infrastructure.VoidProto;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
 
 namespace Xcsb;
 
-public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IDisposable
+public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked, IDisposable
 {
     HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
     IXBufferProto BufferClient { get; }

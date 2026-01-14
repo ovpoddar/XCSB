@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Runtime.InteropServices;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Errors;
 
-namespace Xcsb.Errors;
+namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct ValueError : IXError
@@ -18,6 +14,6 @@ public readonly struct ValueError : IXError
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence;
+        return ResponseHeader.Reply == ResponseType.Error && ResponseHeader.Sequence == sequence;
     }
 }

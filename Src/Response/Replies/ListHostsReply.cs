@@ -1,11 +1,12 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public readonly struct ListHostsReply
 {
@@ -15,21 +16,21 @@ public readonly struct ListHostsReply
     public readonly ushort NumberOfHosts;
     public readonly uint[] Hosts;
 
-    internal ListHostsReply(ListHostsResponse response, Socket socket)
+    internal ListHostsReply(Span<byte> response)
     {
-        Reply = response.ResponseHeader.Reply;
-        Mode = response.ResponseHeader.GetValue();
-        Sequence = response.ResponseHeader.Sequence;
-        NumberOfHosts = response.NumberOfHosts;
+        ref readonly var context = ref response.AsStruct<ListHostsResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Mode = context.ResponseHeader.GetValue();
+        Sequence = context.ResponseHeader.Sequence;
+        NumberOfHosts = context.NumberOfHosts;
 
-        if (response.Length == 0)
+        if (context.Length == 0)
             Hosts = [];
         else
         {
-            var requiredSize = (int)response.Length * 4;
-            using var buffer = new ArrayPoolUsing<byte>(requiredSize);
-            socket.ReceiveExact(buffer[0..requiredSize]);
-            Hosts = MemoryMarshal.Cast<byte, uint>(buffer[0..requiredSize]).ToArray();
+            var cursor = Unsafe.SizeOf<ListHostsResponse>();
+            var length = (int)context.Length * 4;
+            Hosts = MemoryMarshal.Cast<byte, uint>(response.Slice(cursor, length)).ToArray();
         }
     }
 }

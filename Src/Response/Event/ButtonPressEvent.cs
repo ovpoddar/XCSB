@@ -2,7 +2,7 @@
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ButtonPressEvent : IXEvent
@@ -23,6 +23,6 @@ public struct ButtonPressEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return this.ResponseHeader.Reply == ResponseType.ButtonPress;
+        return ResponseHeader.Reply == ResponseType.ButtonPress;
     }
 }

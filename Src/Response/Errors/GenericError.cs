@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using Xcsb.Errors;
-using Xcsb.Event;
+﻿using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
 
@@ -15,13 +9,12 @@ public unsafe struct GenericError : IXError
 {
     [FieldOffset(0)] public readonly ResponseHeader<ErrorCode> ResponseHeader;
     [FieldOffset(4)] public fixed byte Data[28];
-    
+
     [FieldOffset(0)] private fixed byte _data[32];
-    
+
     public readonly bool Verify(in int sequence)
     {
-        if (this.ResponseHeader.Sequence != sequence ||
-            this.ResponseHeader.Reply != ResponseType.Error)
+        if (this.ResponseHeader.Reply != ResponseType.Error)
             return false;
 
         var errorType = this.ResponseHeader.GetValue();
@@ -58,8 +51,8 @@ public unsafe struct GenericError : IXError
             };
         }
     }
-    
-    public readonly ref T As<T>() where T : struct
+
+    public readonly ref readonly T As<T>() where T : struct
     {
         var isNotValid = this.ResponseHeader.GetValue() switch
         {

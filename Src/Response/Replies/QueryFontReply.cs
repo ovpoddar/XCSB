@@ -1,11 +1,12 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Internals;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Response;
+namespace Xcsb.Response.Replies;
 
 public struct QueryFontReply
 {
@@ -24,38 +25,37 @@ public struct QueryFontReply
     public FontProp[] Properties;
     public CharInfo[] CharInfo;
 
-    internal QueryFontReply(QueryFontResponse result, Socket socket)
+    internal QueryFontReply(Span<byte> response)
     {
-        Reply = result.ResponseHeader.Reply;
-        Sequence = result.ResponseHeader.Sequence;
-        MinBounds = result.MinBounds;
-        MaxBounds = result.MaxBounds;
-        MinChar = result.MinChar;
-        MaxChar = result.MaxChar;
-        DefaultChar = result.DefaultChar;
-        Direction = result.Direction;
-        MinByte = result.MinByte;
-        MaxByte = result.MaxByte;
-        FontAscent = result.FontAscent;
+        ref readonly var context = ref response.AsStruct<QueryFontResponse>();
+        Reply = context.ResponseHeader.Reply;
+        Sequence = context.ResponseHeader.Sequence;
+        MinBounds = context.MinBounds;
+        MaxBounds = context.MaxBounds;
+        MinChar = context.MinChar;
+        MaxChar = context.MaxChar;
+        DefaultChar = context.DefaultChar;
+        Direction = context.Direction;
+        MinByte = context.MinByte;
+        MaxByte = context.MaxByte;
+        FontAscent = context.FontAscent;
 
-        if (result.PropertieLenght == 0)
+        var cursor = Unsafe.SizeOf<QueryFontResponse>();
+        if (context.PropertiesLength == 0)
             Properties = [];
         else
         {
-            var requireLength = result.PropertieLenght * 8;
-            using var buffer = new ArrayPoolUsing<byte>(requireLength);
-            socket.ReceiveExact(buffer[0..requireLength]);
-            Properties = MemoryMarshal.Cast<byte, FontProp>(buffer[0..requireLength]).ToArray();
+            var length = context.PropertiesLength * 8;
+            Properties = MemoryMarshal.Cast<byte, FontProp>(response.Slice(cursor, length)).ToArray();
+            cursor += length;
         }
 
-        if (result.InfoLenght == 0)
+        if (context.InfoLenght == 0)
             CharInfo = [];
         else
         {
-            var requireLength = (int)result.InfoLenght * 12;
-            using var buffer = new ArrayPoolUsing<byte>(requireLength);
-            socket.ReceiveExact(buffer[0..requireLength]);
-            CharInfo = MemoryMarshal.Cast<byte, CharInfo>(buffer[0..requireLength]).ToArray();
+            var length = (int)context.InfoLenght * 12;
+            CharInfo = MemoryMarshal.Cast<byte, CharInfo>(response.Slice(cursor, length)).ToArray();
         }
     }
 }

@@ -11,7 +11,7 @@ internal static class DotnetStandardSupportHelper
         list.AddRange(scratchBuffer.Take(buffer.Length));
         ArrayPool<byte>.Shared.Return(scratchBuffer);
     }
-    
+
     internal static void ReadExactly(this Stream stream, Span<byte> buffer)
     {
         var total = 0;
