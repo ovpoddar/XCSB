@@ -90,7 +90,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails9("DependentOnGc", "ChangeGc", ["$0, 4, new uint[] {4294967295}"], ["uint", "Xcsb.Masks.GCMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.GC),
     new MethodDetails9("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, STRType.XcbByte, MethodDetails9.ImplType.GC),
 #if DOCKERENV
-// AVOIDE RUNNING IN YOU PC IT COULD BE CHANGE YOU KEYBOARD KEYS
+    // AVOIDE RUNNING IN YOU PC IT COULD BE CHANGE YOU KEYBOARD KEYS
     new  ChangeKeyboardMapping(),
 #endif
     new NoOperation(),
@@ -2157,7 +2157,7 @@ $$"""
 file class ChangeKeyboardMapping : StaticBuilder
 {
     public ChangeKeyboardMapping() : base("SpecialMethod", nameof(ChangeKeyboardMapping),
-        [], [], false, STRType.RawBuffer)
+        ["$0, $1, $2"], ["uint", "uint", "string"], false, STRType.RawBuffer)
     { }
 
     public override string GetCMethodBody(string method, string? parameter, ReadOnlySpan<char> marker)
@@ -2211,6 +2211,23 @@ int main(void)
 
     for (int i = 0; i < reply->keysyms_per_keycode; i++)
         buff[i] = keys[i];
+    
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", total_keysyms);
+    fprintf(stderr, "{{marker}}\n");
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "%d\n", reply->keysyms_per_keycode);
+    fprintf(stderr, "{{marker}}\n");
+
+
+    fprintf(stderr, "{{marker}}\n");
+    fprintf(stderr, "\" [");
+    for (int i = 0; i < reply->keysyms_per_keycode; i++)
+        fprintf(stderr, "%d, ", buff[i]);
+    
+    fprintf(stderr, "]\" \n");
+    fprintf(stderr, "{{marker}}\n");
 
 
     fprintf(stderr, "{{marker}}\n");
@@ -2222,6 +2239,8 @@ int main(void)
             reply->keysyms_per_keycode,
             buff);
 
+    xcb_flush(connection);
+    fprintf(stderr, "{{marker}}\n");
     error = xcb_request_check(connection, ck);
     if (error)
     {
@@ -2229,8 +2248,6 @@ int main(void)
         free(error);
     }
 
-    xcb_flush(connection);
-    fprintf(stderr, "{{marker}}\n");
 
     free(buff);
     free(reply);
@@ -2245,7 +2262,7 @@ int main(void)
     {
         fileStream.Write(Encoding.UTF8.GetBytes(
 $$"""
-    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test(byte[] expectedResult)
+    public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}}byte[] expectedResult)
     {
         // arrange
         var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
@@ -2253,9 +2270,10 @@ $$"""
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var keyboardMapping = _xProto.GetKeyboardMapping(_xProto.HandshakeSuccessResponseBody.MinKeyCode,
             (byte)(_xProto.HandshakeSuccessResponseBody.MaxKeyCode - _xProto.HandshakeSuccessResponseBody.MinKeyCode + 1));
+        var itms = Newtonsoft.Json.JsonConvert.DeserializeObject<uint[]>(params2);
 
         var keysyms_per_keycode = new uint[keyboardMapping.KeyPerKeyCode];
-        Array.Copy(originalKeySym[0..keyboardMapping.KeyPerKeyCode], keysyms_per_keycode, keyboardMapping.KeyPerKeyCode);
+        Array.Copy(keyboardMapping.Keysyms[0..keyboardMapping.KeyPerKeyCode], keysyms_per_keycode, keyboardMapping.KeyPerKeyCode);
 
         // act
         bufferClient.{{MethodName}}(1, 8, keyboardMapping.KeyPerKeyCode, keysyms_per_keycode);
@@ -2266,7 +2284,10 @@ $$"""
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
+        Assert.True(keysyms_per_keycode.SequenceEqual(itms!));
         Assert.True(expectedResult.SequenceEqual(buffer));
+        Assert.Equal(keyboardMapping.KeyPerKeyCode, params1);
+        Assert.Equal((uint)keyboardMapping.Keysyms.Length, params0);
     }
 
 """));
