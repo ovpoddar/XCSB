@@ -30,7 +30,8 @@ public readonly struct GetKeyboardMappingReply
         {
             var cursor = Unsafe.SizeOf<GetKeyboardMappingResponse>();
             var length = (int)context.Length * 4;
-            Keysyms = MemoryMarshal.Cast<byte, uint>(response[cursor..length]).ToArray();
+            response = response.Slice(cursor, length);
+            Keysyms = MemoryMarshal.Cast<byte, uint>(response).ToArray();
             // todo: implement try a custom reader of span and span or similar structure dimantion should be extra to
             // store but it's not a big deal' because it does not map to any native types
             // Keysyms = new uint[count][];
