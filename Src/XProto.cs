@@ -26,11 +26,11 @@ internal class XProto : BaseProtoClient, IXProto
     private XBufferProto? _xBufferProto;
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
-    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
+    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this, _configuration);
 
     internal Socket Socket;
 
-    public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult) : base(socket)
+    public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult, XcbClientConfiguration configuration) : base(socket, configuration)
     {
         Socket = socket;
         HandshakeSuccessResponseBody = connectionResult;
@@ -482,7 +482,7 @@ internal class XProto : BaseProtoClient, IXProto
 #if !NETSTANDARD
         , INumber<T>
 #endif
-        => ChangePropertyBase<T>(mode, window, property, type, args);
+        => ChangePropertyBase(mode, window, property, type, args);
 
     public ResponseProto DeleteProperty(uint window, ATOM atom) =>
         DeletePropertyBase(window, atom);
@@ -660,8 +660,8 @@ internal class XProto : BaseProtoClient, IXProto
         RecolorCursorBase(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
 
     public ResponseProto ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
-        Span<uint> Keysym) =>
-        ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, Keysym);
+        Span<uint> keysym) =>
+        ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
 
     public ResponseProto Bell(sbyte percent) =>
         BellBase(percent);

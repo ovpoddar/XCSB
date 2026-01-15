@@ -19,11 +19,13 @@ internal class BaseProtoClient
 {
     public readonly ProtoIn ProtoIn;
     public readonly ProtoOut ProtoOut;
+    protected readonly XcbClientConfiguration _configuration;
 
-    public BaseProtoClient(Socket socket)
+    public BaseProtoClient(Socket socket, XcbClientConfiguration configuration)
     {
         this.ProtoIn = new ProtoIn(socket);
         this.ProtoOut = new ProtoOut(socket);
+        _configuration = configuration;
     }
 
     protected ResponseProto ChangeWindowAttributesBase(uint window, ValueMask mask, Span<uint> args)
@@ -33,7 +35,7 @@ internal class BaseProtoClient
 
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -94,7 +96,7 @@ internal class BaseProtoClient
 
         var request = new ChangeGCType(gc, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -120,7 +122,7 @@ internal class BaseProtoClient
     {
         var request = new ChangeHostsType(mode, family, address.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -146,7 +148,7 @@ internal class BaseProtoClient
     {
         var request = new ChangeKeyboardControlType(mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -173,7 +175,7 @@ internal class BaseProtoClient
     {
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -215,7 +217,7 @@ internal class BaseProtoClient
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
         var request = new ChangePropertyType(mode, window, property, type, args.Length, size);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -272,7 +274,7 @@ internal class BaseProtoClient
 
         var request = new ConfigureWindowType(window, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -359,7 +361,7 @@ internal class BaseProtoClient
 
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -405,7 +407,7 @@ internal class BaseProtoClient
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -446,7 +448,7 @@ internal class BaseProtoClient
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -486,7 +488,7 @@ internal class BaseProtoClient
     {
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -559,7 +561,7 @@ internal class BaseProtoClient
     {
         var request = new ImageText16Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 
@@ -593,7 +595,7 @@ internal class BaseProtoClient
     {
         var request = new ImageText8Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -649,7 +651,7 @@ internal class BaseProtoClient
     {
         var request = new NoOperationType(args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -675,7 +677,7 @@ internal class BaseProtoClient
     {
         var request = new OpenFontType(fontId, (ushort)fontName.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -707,7 +709,7 @@ internal class BaseProtoClient
     {
         var request = new PolyArcType(drawable, gc, arcs.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -733,7 +735,7 @@ internal class BaseProtoClient
     {
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -759,7 +761,7 @@ internal class BaseProtoClient
     {
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -785,7 +787,7 @@ internal class BaseProtoClient
     {
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -811,7 +813,7 @@ internal class BaseProtoClient
     {
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -837,7 +839,7 @@ internal class BaseProtoClient
     {
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -863,7 +865,7 @@ internal class BaseProtoClient
     {
         var request = new PolySegmentType(drawable, gc, segments.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -890,7 +892,7 @@ internal class BaseProtoClient
         var request = new PolyText16Type(drawable, gc, x, y, data.Sum(a => a.Count));
         var requiredBuffer = request.Length * 4;
         var writIndex = 16;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -928,7 +930,7 @@ internal class BaseProtoClient
         var request = new PolyText8Type(drawable, gc, x, y, data.Sum(a => a.Count));
         var requiredBuffer = request.Length * 4;
         var writIndex = 16;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -966,7 +968,7 @@ internal class BaseProtoClient
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1008,7 +1010,7 @@ internal class BaseProtoClient
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1049,7 +1051,7 @@ internal class BaseProtoClient
     {
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1082,7 +1084,7 @@ internal class BaseProtoClient
     {
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1111,7 +1113,7 @@ internal class BaseProtoClient
         var request = new SetFontPathType((ushort)length, strPaths.Sum(a => a.Length + 1).AddPadding());
         var requiredBuffer = request.Length * 4;
         var writIndex = 8;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -1175,7 +1177,7 @@ internal class BaseProtoClient
     {
         var request = new StoreColorsType(colormapId, item.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1201,7 +1203,7 @@ internal class BaseProtoClient
     {
         var request = new StoreNamedColorType(mode, colormapId, pixels, name.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1316,7 +1318,7 @@ internal class BaseProtoClient
     {
         var request = new InternAtomType(onlyIfExist, atomName.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -1441,7 +1443,7 @@ internal class BaseProtoClient
     {
         var request = new QueryTextExtentsType(font, stringForQuery.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 
@@ -1475,7 +1477,7 @@ internal class BaseProtoClient
     {
         var request = new ListFontsType(pattern.Length, maxNames);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1504,7 +1506,7 @@ internal class BaseProtoClient
     {
         var request = new ListFontsWithInfoType(pattan.Length, maxNames);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1556,7 +1558,7 @@ internal class BaseProtoClient
     {
         var request = new AllocNamedColorType(colorMap, name.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1599,7 +1601,7 @@ internal class BaseProtoClient
     {
         var request = new QueryColorsType(colorMap, pixels.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1626,7 +1628,7 @@ internal class BaseProtoClient
     {
         var request = new LookupColorType(colorMap, name.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1660,7 +1662,7 @@ internal class BaseProtoClient
     {
         var request = new QueryExtensionType((ushort)name.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(ref request, 8, name);
@@ -1688,7 +1690,7 @@ internal class BaseProtoClient
     {
         var request = new SetModifierMappingType(keycodes.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1736,7 +1738,7 @@ internal class BaseProtoClient
     {
         var request = new SetPointerMappingType(maps.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < GlobalSetting.StackAllocThreshold)
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(

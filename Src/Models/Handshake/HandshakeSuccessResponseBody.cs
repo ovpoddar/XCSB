@@ -62,7 +62,7 @@ public class HandshakeSuccessResponseBody
     private static int SettFormats(HandshakeSuccessResponseBody result, Socket socket)
     {
         var requireByte = result.Formats.Length * Marshal.SizeOf<Format>();
-        if (requireByte < GlobalSetting.StackAllocThreshold)
+        if (requireByte < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requireByte];
             socket.ReceiveExact(scratchBuffer);
@@ -83,7 +83,7 @@ public class HandshakeSuccessResponseBody
     private static int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int contentLength)
     {
         var length = contentLength.AddPadding();
-        if (length < GlobalSetting.StackAllocThreshold)
+        if (length < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[length];
             socket.ReceiveExact(scratchBuffer);

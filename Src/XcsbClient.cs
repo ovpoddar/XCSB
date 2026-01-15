@@ -5,15 +5,33 @@ namespace Xcsb;
 
 public static class XcsbClient
 {
-    public static IXProto Initialized()
+    public static IXProto Initialized(string? display, XcbClientConfiguration? configuration = null)
     {
-        var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
+        display = string.IsNullOrWhiteSpace(display) ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0" : display;
         var connectionDetails = GetDisplayConfiguration(display);
         var connectionResult = Connection.TryConnect(connectionDetails, display);
-        var result = new XProto(connectionResult.Item2, connectionResult.Item1);
+        var result = new XProto(
+            connectionResult.Item2,
+            connectionResult.Item1,
+            configuration ?? XcbClientConfiguration.Default);
         return result;
     }
-
+    
+    public static IXProto Initialized(string display, Span<byte> name, Span<byte> data, XcbClientConfiguration? configuration = null)
+    {
+        if (string.IsNullOrWhiteSpace(display)) throw new ArgumentNullException(nameof(display));
+        if (name.IsEmpty) throw new ArgumentNullException(nameof(name));
+        if (data.IsEmpty) throw new ArgumentNullException(nameof(data));
+        
+        var connectionDetails = GetDisplayConfiguration(display);
+        var connectionResult = Connection.Connect(connectionDetails, display, name, data);
+        var result = new XProto(
+            connectionResult.Item2, 
+            connectionResult.Item1,
+            configuration ?? XcbClientConfiguration.Default);
+        return result;
+    }
+    
     private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)
     {
         var details = new ConnectionDetails

@@ -18,9 +18,8 @@ namespace Xcsb;
 
 internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 {
-    public XBufferProto(XProto xProto) : base(xProto.ProtoIn, xProto.ProtoOut)
+    public XBufferProto(XProto xProto, XcbClientConfiguration configuration) : base(xProto.ProtoIn, xProto.ProtoOut, configuration)
     {
-        // todo: pass a configuration object and based on that set up the XBufferProto
     }
 
     public void AllowEvents(EventsMode mode, uint time)

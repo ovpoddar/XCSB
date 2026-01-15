@@ -32,7 +32,7 @@ public class Depth
     private static int SetVisual(Depth depth, Socket socket)
     {
         var requireByte = Marshal.SizeOf<Visual>() * depth.Visuals.Length;
-        if (requireByte < GlobalSetting.StackAllocThreshold)
+        if (requireByte < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requireByte];
             socket.ReceiveExact(scratchBuffer);
