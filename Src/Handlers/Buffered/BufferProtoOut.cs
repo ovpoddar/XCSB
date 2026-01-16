@@ -11,7 +11,7 @@ internal class BufferProtoOut : ProtoBase
     internal readonly ProtoOut ProtoOut;
     internal int RequestLength;
 
-    public BufferProtoOut(ProtoOut protoOut) : base(protoOut)
+    public BufferProtoOut(ProtoOut protoOut, XcbClientConfiguration configuration) : base(protoOut, configuration)
     {
         ProtoOut = protoOut;
         _buffer = new List<byte>();

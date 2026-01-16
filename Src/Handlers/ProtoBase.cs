@@ -9,25 +9,33 @@ namespace Xcsb.Handlers;
 
 internal abstract class ProtoBase
 {
+    private readonly XcbClientConfiguration _configuration;
+
     internal readonly Socket Socket;
     internal readonly ConcurrentQueue<GenericEvent> BufferEvents;
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
 
-    protected ProtoBase(Socket socket)
+    protected ProtoBase(Socket socket, XcbClientConfiguration configuration)
+    : this(socket, null, configuration)
+    { }
+
+    protected ProtoBase(ProtoBase proto, XcbClientConfiguration configuration)
+        : this(proto.Socket, proto, configuration)
+    { }
+
+    private ProtoBase(Socket socket, ProtoBase? proto, XcbClientConfiguration configuration)
     {
         Socket = socket;
-        BufferEvents = new ConcurrentQueue<GenericEvent>();
-        ReplyBuffer = new ConcurrentDictionary<int, byte[]>();
+        BufferEvents = proto?.BufferEvents ?? new ConcurrentQueue<GenericEvent>();
+        ReplyBuffer = proto?.ReplyBuffer ?? new ConcurrentDictionary<int, byte[]>();
+        _configuration = configuration;
     }
 
-    protected ProtoBase(ProtoBase proto)
+    protected virtual void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
-        Socket = proto.Socket;
-        BufferEvents = proto.BufferEvents;
-        ReplyBuffer = proto.ReplyBuffer;
+        if (_configuration.OnSendRequest == null)
+            Socket.SendExact(buffer, socketFlags);
+        else
+            _configuration.OnSendRequest(Socket, buffer);
     }
-
-    protected virtual void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags) =>
-        Socket.SendExact(buffer, socketFlags);
-
 }

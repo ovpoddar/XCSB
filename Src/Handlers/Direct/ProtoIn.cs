@@ -17,7 +17,7 @@ namespace Xcsb.Handlers;
 internal class ProtoIn : ProtoBase
 {
     internal int Sequence { get; set; }
-    internal ProtoIn(Socket socket) : base(socket)
+    internal ProtoIn(Socket socket, XcbClientConfiguration configuration) : base(socket, configuration)
     {
         Sequence = 0;
     }

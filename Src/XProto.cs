@@ -26,7 +26,7 @@ internal class XProto : BaseProtoClient, IXProto
     private XBufferProto? _xBufferProto;
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
-    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this, _configuration);
+    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this, Configuration);
 
     internal Socket Socket;
 

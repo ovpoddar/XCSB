@@ -11,14 +11,11 @@ internal class BaseBufferProtoClient
 {
     protected internal readonly BufferProtoOut BufferProtoOut;
     protected internal readonly BufferProtoIn BufferProtoIn;
-    
-    protected readonly XcbClientConfiguration _configuration;
 
     internal BaseBufferProtoClient(ProtoIn protoIn, ProtoOut protoOut, XcbClientConfiguration configuration)
     {
-        BufferProtoOut = new BufferProtoOut(protoOut);
-        BufferProtoIn = new BufferProtoIn(protoIn);
-        _configuration = configuration;
+        BufferProtoOut = new BufferProtoOut(protoOut, configuration);
+        BufferProtoIn = new BufferProtoIn(protoIn, configuration);
     }
 
     protected void FlushBase(bool shouldThorw)

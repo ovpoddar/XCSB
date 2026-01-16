@@ -5,7 +5,7 @@ namespace Xcsb;
 
 public static class XcsbClient
 {
-    public static IXProto Initialized(string? display, XcbClientConfiguration? configuration = null)
+    public static IXProto Initialized(string? display = null, XcbClientConfiguration? configuration = null)
     {
         display = string.IsNullOrWhiteSpace(display) ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0" : display;
         var connectionDetails = GetDisplayConfiguration(display);
