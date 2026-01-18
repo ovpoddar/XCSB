@@ -68,6 +68,7 @@ internal class ClientConnectionContext : IDisposable
                 writeIndex += authData.Length;
                 workingBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
                 ProtoOut.SendExact(workingBuffer);
+                ProtoOut.Sequence = 0;
             }
             return true;
         }
