@@ -162,7 +162,6 @@ internal class ProtoIn : ProtoBase
         }
     }
 
-
     private ListFontsWithInfoReply[] GetListFontsReply(Span<byte> reply, int sequence, int maxNames)
     {
         var result = new ArrayPoolUsing<ListFontsWithInfoReply>(maxNames);
@@ -208,5 +207,14 @@ internal class ProtoIn : ProtoBase
             result = larger;
         }
 
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (DisposedValue)
+            return;
+        if (disposing)
+            Sequence = 0;
+        base.Dispose(disposing);
     }
 }

@@ -26,4 +26,14 @@ internal class ProtoOut : ProtoBase
         base.SendExact(in buffer, socketFlags);
         Sequence++;
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (DisposedValue)
+            return;
+        if (disposing)
+            Sequence = 0;
+
+        base.Dispose(disposing);
+    }
 }

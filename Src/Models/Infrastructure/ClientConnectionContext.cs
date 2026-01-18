@@ -13,6 +13,8 @@ internal class ClientConnectionContext : IDisposable
     public ProtoOut ProtoOut { get; }
     public ProtoIn ProtoIn { get; }
 
+    private bool _disposed;
+
     public ClientConnectionContext(string path, XcbClientConfiguration configuration, in ProtocolType type)
     {
         this.Socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
@@ -78,6 +80,22 @@ internal class ClientConnectionContext : IDisposable
 
     public void Dispose()
     {
-        Socket.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed)
+            return;
+
+        if (disposing)
+        {
+            ProtoIn?.Dispose();
+            ProtoOut?.Dispose();
+            Socket?.Dispose();
+        }
+
+        _disposed = true;
     }
 }

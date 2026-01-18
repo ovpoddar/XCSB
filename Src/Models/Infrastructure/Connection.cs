@@ -47,9 +47,9 @@ internal static class Connection
     {
         ReadOnlySpan<char> error = [];
         var (response, context) = Connect(connectionDetails, display, configuration, name, data, ref error);
-        if (response is not null && context is not null)
-            return (response, context);
-        throw new UnauthorizedAccessException(error.ToString());
+        return response is null || context is null 
+            ? throw new UnauthorizedAccessException(error.ToString()) 
+            : (response, context);
     }
 
     private static (HandshakeSuccessResponseBody?, ClientConnectionContext?) Connect(in ConnectionDetails connectionDetails,

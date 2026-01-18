@@ -23,22 +23,18 @@ namespace Xcsb;
 #endif
 internal sealed class XProto : BaseProtoClient, IXProto
 {
-    private bool _disposedValue;
     private int _globalId;
     private XBufferProto? _xBufferProto;
     public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
 
-    private readonly Socket _socket;
-
     public XProto(
         HandshakeSuccessResponseBody handshakeSuccessResponseBody, 
         ClientConnectionContext connectionResult) 
-        : base(connectionResult.ProtoIn, connectionResult.ProtoOut)
+        : base(connectionResult)
     {
         HandshakeSuccessResponseBody = handshakeSuccessResponseBody;
-        _socket = connectionResult.Socket;
         _globalId = 0;
     }
 
@@ -46,7 +42,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
     {
         var cookie = AllocColorBase(colorMap, red, green, blue);
-        var (result, error) = ProtoIn.ReceivedResponse<AllocColorReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<AllocColorReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -55,7 +51,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
     {
         var cookie = AllocColorCellsBase(contiguous, colorMap, colors, planes);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorCellsResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<AllocColorCellsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new AllocColorCellsReply(result);
@@ -65,7 +61,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         ushort greens, ushort blues)
     {
         var cookie = AllocColorPlanesBase(contiguous, colorMap, colors, reds, greens, blues);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<AllocColorPlanesResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<AllocColorPlanesResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new AllocColorPlanesReply(result);
@@ -74,7 +70,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name)
     {
         var cookie = AllocNamedColorBase(colorMap, name);
-        var (result, error) = ProtoIn.ReceivedResponse<AllocNamedColorReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<AllocNamedColorReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -84,7 +80,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetAtomNameReply GetAtomName(ATOM atom)
     {
         var cookie = GetAtomNameBase(atom);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetAtomNameResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetAtomNameResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetAtomNameReply(result);
@@ -93,7 +89,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public InternAtomReply InternAtom(bool onlyIfExist, string atomName)
     {
         var cookie = InternAtomBase(onlyIfExist, atomName);
-        var (result, error) = ProtoIn.ReceivedResponse<InternAtomReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<InternAtomReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -102,7 +98,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetFontPathReply GetFontPath()
     {
         var cookie = GetFontPathBase();
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetFontPathResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetFontPathResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetFontPathReply(result);
@@ -111,7 +107,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetGeometryReply GetGeometry(uint drawable)
     {
         var cookie = GetGeometryBase(drawable);
-        var (result, error) = ProtoIn.ReceivedResponse<GetGeometryReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetGeometryReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -121,7 +117,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         uint planeMask)
     {
         var cookie = GetImageBase(format, drawable, x, y, width, height, planeMask);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetImageResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetImageResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetImageReply(result);
@@ -130,7 +126,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetInputFocusReply GetInputFocus()
     {
         var cookie = GetInputFocusBase();
-        var (result, error) = ProtoIn.ReceivedResponse<GetInputFocusReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetInputFocusReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -139,7 +135,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetKeyboardControlReply GetKeyboardControl()
     {
         var cookie = GetKeyboardControlBase();
-        var (result, error) = ProtoIn.ReceivedResponse<GetKeyboardControlResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetKeyboardControlResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetKeyboardControlReply(result!.Value);
@@ -148,7 +144,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count)
     {
         var cookie = GetKeyboardMappingBase(firstKeycode, count);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetKeyboardMappingResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetKeyboardMappingResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetKeyboardMappingReply(result, count);
@@ -157,7 +153,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetModifierMappingReply GetModifierMapping()
     {
         var cookie = GetModifierMappingBase();
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetModifierMappingResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetModifierMappingResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetModifierMappingReply(result);
@@ -166,7 +162,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime)
     {
         var cookie = GetMotionEventsBase(window, startTime, endTime);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetMotionEventsResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetMotionEventsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetMotionEventsReply(result);
@@ -175,7 +171,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetPointerControlReply GetPointerControl()
     {
         var cookie = GetPointerControlBase();
-        var (result, error) = ProtoIn.ReceivedResponse<GetPointerControlReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetPointerControlReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -184,7 +180,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetPointerMappingReply GetPointerMapping()
     {
         var cookie = GetPointerMappingBase();
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetPointerMappingResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetPointerMappingResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetPointerMappingReply(result);
@@ -193,7 +189,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
     {
         var cookie = GetPropertyBase(delete, window, property, type, offset, length);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<GetPropertyResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetPropertyResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetPropertyReply(result);
@@ -202,7 +198,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetScreenSaverReply GetScreenSaver()
     {
         var cookie = GetScreenSaverBase();
-        var (result, error) = ProtoIn.ReceivedResponse<GetScreenSaverReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetScreenSaverReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -211,7 +207,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetSelectionOwnerReply GetSelectionOwner(ATOM atom)
     {
         var cookie = GetSelectionOwnerBase(atom);
-        var (result, error) = ProtoIn.ReceivedResponse<GetSelectionOwnerReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetSelectionOwnerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -220,7 +216,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetWindowAttributesReply GetWindowAttributes(uint window)
     {
         var cookie = GetWindowAttributesBase(window);
-        var (result, error) = ProtoIn.ReceivedResponse<GetWindowAttributesReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetWindowAttributesReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -229,7 +225,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListExtensionsReply ListExtensions()
     {
         var cookie = ListExtensionsBase();
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListExtensionsReply(result);
@@ -238,7 +234,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
     {
         var cookie = ListFontsBase(pattern, maxNames);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListFontsResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListFontsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListFontsReply(result);
@@ -247,7 +243,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
     {
         var cookie = ListFontsWithInfoBase(pattan, maxNames);
-        var (result, error) = ProtoIn.ReceivedResponseArray(cookie.Id, maxNames);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseArray(cookie.Id, maxNames);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result;
@@ -256,7 +252,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListHostsReply ListHosts()
     {
         var cookie = ListHostsBase();
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListHostsResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListHostsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListHostsReply(result);
@@ -265,7 +261,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListInstalledColormapsReply ListInstalledColormaps(uint window)
     {
         var cookie = ListInstalledColormapsBase(window);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListInstalledColormapsResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListInstalledColormapsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListInstalledColormapsReply(result);
@@ -274,7 +270,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListPropertiesReply ListProperties(uint window)
     {
         var cookie = ListPropertiesBase(window);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<ListPropertiesResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListPropertiesResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListPropertiesReply(result);
@@ -283,7 +279,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name)
     {
         var cookie = LookupColorBase(colorMap, name);
-        var (result, error) = ProtoIn.ReceivedResponse<LookupColorReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<LookupColorReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -292,7 +288,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height)
     {
         var cookie = QueryBestSizeBase(shape, drawable, width, height);
-        var (result, error) = ProtoIn.ReceivedResponse<QueryBestSizeReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryBestSizeReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -301,7 +297,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels)
     {
         var cookie = QueryColorsBase(colorMap, pixels);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<QueryColorsResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<QueryColorsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryColorsReply(result);
@@ -312,7 +308,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         if (name.Length > ushort.MaxValue)
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
         var cookie = QueryExtensionBase(name);
-        var (result, error) = ProtoIn.ReceivedResponse<QueryExtensionReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryExtensionReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -321,7 +317,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryFontReply QueryFont(uint fontId)
     {
         var cookie = QueryFontBase(fontId);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<QueryFontResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<QueryFontResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryFontReply(result);
@@ -330,7 +326,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryKeymapReply QueryKeymap()
     {
         var cookie = QueryKeymapBase();
-        var (result, error) = ProtoIn.ReceivedResponse<QueryKeymapResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryKeymapResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryKeymapReply(result!.Value);
@@ -339,7 +335,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryPointerReply QueryPointer(uint window)
     {
         var cookie = QueryPointerBase(window);
-        var (result, error) = ProtoIn.ReceivedResponse<QueryPointerReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryPointerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -348,7 +344,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery)
     {
         var cookie = QueryTextExtentsBase(font, stringForQuery);
-        var (result, error) = ProtoIn.ReceivedResponse<QueryTextExtentsReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryTextExtentsReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -357,7 +353,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryTreeReply QueryTree(uint window)
     {
         var cookie = QueryTreeBase(window);
-        var (result, error) = ProtoIn.ReceivedResponseSpan<QueryTreeResponse>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<QueryTreeResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryTreeReply(result);
@@ -368,7 +364,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         GrabMode keyboardMode)
     {
         var cookie = GrabKeyboardBase(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
-        var (result, error) = ProtoIn.ReceivedResponse<GrabKeyboardReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GrabKeyboardReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -379,7 +375,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = GrabPointerBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
-        var (result, error) = ProtoIn.ReceivedResponse<GrabPointerReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GrabPointerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -388,7 +384,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes)
     {
         var cookie = SetModifierMappingBase(keycodes);
-        var (result, error) = ProtoIn.ReceivedResponse<SetModifierMappingReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<SetModifierMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -397,7 +393,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public SetPointerMappingReply SetPointerMapping(Span<byte> maps)
     {
         var cookie = SetPointerMappingBase(maps);
-        var (result, error) = ProtoIn.ReceivedResponse<SetPointerMappingReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<SetPointerMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -407,7 +403,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         ushort srcY)
     {
         var cookie = TranslateCoordinatesBase(srcWindow, destinationWindow, srcX, srcY);
-        var (result, error) = ProtoIn.ReceivedResponse<TranslateCoordinatesReply>(cookie.Id);
+        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<TranslateCoordinatesReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -417,7 +413,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public void WaitForEvent()
     {
         if (!IsEventAvailable())
-            _socket.Poll(-1, SelectMode.SelectRead);
+            base.ClientConnection.Socket.Poll(-1, SelectMode.SelectRead);
     }
 
     public uint NewId() =>
@@ -425,25 +421,10 @@ internal sealed class XProto : BaseProtoClient, IXProto
                HandshakeSuccessResponseBody.ResourceIDBase);
 
     public XEvent GetEvent() =>
-        ProtoIn.ReceivedResponse();
+        base.ClientConnection.ProtoIn.ReceivedResponse();
 
     public bool IsEventAvailable() =>
-        ProtoIn.BufferEvents.Any() || _socket.Available >= Unsafe.SizeOf<GenericEvent>();
-
-    private void Dispose(bool disposing)
-    {
-        if (_disposedValue) return;
-        if (disposing && _socket.Connected)
-            _socket.Close();
-        _disposedValue = true;
-    }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+        base.ClientConnection.ProtoIn.BufferEvents.Any() || base.ClientConnection.Socket.Available >= Unsafe.SizeOf<GenericEvent>();
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
         ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
@@ -710,73 +691,73 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeWindowAttributesUnchecked(uint window, ValueMask mask, Span<uint> args)
     {
         var cookie = this.ChangeWindowAttributesBase(window, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void DestroyWindowUnchecked(uint window)
     {
         var cookie = this.DestroyWindowBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void DestroySubwindowsUnchecked(uint window)
     {
         var cookie = this.DestroySubwindowsBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeSaveSetUnchecked(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
         var cookie = this.ChangeSaveSetBase(changeSaveSetMode, window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ReparentWindowUnchecked(uint window, uint parent, short x, short y)
     {
         var cookie = this.ReparentWindowBase(window, parent, x, y);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void MapWindowUnchecked(uint window)
     {
         var cookie = this.MapWindowBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void MapSubwindowsUnchecked(uint window)
     {
         var cookie = this.MapSubwindowsBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UnmapWindowUnchecked(uint window)
     {
         var cookie = this.UnmapWindowBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UnmapSubwindowsUnchecked(uint window)
     {
         var cookie = this.UnmapSubwindowsBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ConfigureWindowUnchecked(uint window, ConfigureValueMask mask, Span<uint> args)
     {
         var cookie = this.ConfigureWindowBase(window, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CirculateWindowUnchecked(Circulate circulate, uint window)
     {
         var cookie = this.CirculateWindowBase(circulate, window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangePropertyUnchecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
@@ -786,43 +767,43 @@ internal sealed class XProto : BaseProtoClient, IXProto
 #endif
     {
         var cookie = this.ChangePropertyBase(mode, window, property, type, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void DeletePropertyUnchecked(uint window, ATOM atom)
     {
         var cookie = this.DeletePropertyBase(window, atom);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void RotatePropertiesUnchecked(uint window, ushort delta, Span<ATOM> properties)
     {
         var cookie = this.RotatePropertiesBase(window, delta, properties);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetSelectionOwnerUnchecked(uint owner, ATOM atom, uint timestamp)
     {
         var cookie = this.SetSelectionOwnerBase(owner, atom, timestamp);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ConvertSelectionUnchecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
         var cookie = this.ConvertSelectionBase(requestor, selection, target, property, timestamp);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SendEventUnchecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
         var cookie = this.SendEventBase(propagate, destination, eventMask, evnt);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabPointerUnchecked(uint time)
     {
         var cookie = this.UngrabPointerBase(time);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void GrabButtonUnchecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
@@ -830,56 +811,56 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabButtonUnchecked(Button button, uint grabWindow, ModifierMask mask)
     {
         var cookie = this.UngrabButtonBase(button, grabWindow, mask);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeActivePointerGrabUnchecked(uint cursor, uint time, ushort mask)
     {
         var cookie = this.ChangeActivePointerGrabBase(cursor, time, mask);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabKeyboardUnchecked(uint time)
     {
         var cookie = this.UngrabKeyboardBase(time);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void GrabKeyUnchecked(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
         var cookie = this.GrabKeyBase(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabKeyUnchecked(byte key, uint grabWindow, ModifierMask modifier)
     {
         var cookie = this.UngrabKeyBase(key, grabWindow, modifier);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void AllowEventsUnchecked(EventsMode mode, uint time)
     {
         var cookie = this.AllowEventsBase(mode, time);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void GrabServerUnchecked()
     {
         var cookie = this.GrabServerBase();
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabServerUnchecked()
     {
         var cookie = this.UngrabServerBase();
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void WarpPointerUnchecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
@@ -887,86 +868,86 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetInputFocusUnchecked(InputFocusMode mode, uint focus, uint time)
     {
         var cookie = this.SetInputFocusBase(mode, focus, time);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void OpenFontUnchecked(string fontName, uint fontId)
     {
         var cookie = this.OpenFontBase(fontName, fontId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CloseFontUnchecked(uint fontId)
     {
         var cookie = this.CloseFontBase(fontId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetFontPathUnchecked(string[] strPaths)
     {
         var cookie = this.SetFontPathBase(strPaths);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreatePixmapUnchecked(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
         var cookie = this.CreatePixmapBase(depth, pixmapId, drawable, width, height);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreePixmapUnchecked(uint pixmapId)
     {
         var cookie = this.FreePixmapBase(pixmapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateGCUnchecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
         var cookie = this.CreateGCBase(gc, drawable, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeGCUnchecked(uint gc, GCMask mask, Span<uint> args)
     {
         var cookie = this.ChangeGCBase(gc, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyGCUnchecked(uint srcGc, uint dstGc, GCMask mask)
     {
         var cookie = this.CopyGCBase(srcGc, dstGc, mask);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetDashesUnchecked(uint gc, ushort dashOffset, Span<byte> dashes)
     {
         var cookie = this.SetDashesBase(gc, dashOffset, dashes);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetClipRectanglesUnchecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
         Span<Rectangle> rectangles)
     {
         var cookie = this.SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreeGCUnchecked(uint gc)
     {
         var cookie = this.FreeGCBase(gc);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ClearAreaUnchecked(bool exposures, uint window, short x, short y, ushort width, ushort height)
     {
         var cookie = this.ClearAreaBase(exposures, window, x, y, width, height);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyAreaUnchecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -974,7 +955,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyPlaneUnchecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -982,56 +963,56 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height, bitPlane);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyPointUnchecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var cookie = this.PolyPointBase(coordinate, drawable, gc, points);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyLineUnchecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var cookie = this.PolyLineBase(coordinate, drawable, gc, points);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolySegmentUnchecked(uint drawable, uint gc, Span<Segment> segments)
     {
         var cookie = this.PolySegmentBase(drawable, gc, segments);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyRectangleUnchecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var cookie = this.PolyRectangleBase(drawable, gc, rectangles);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyArcUnchecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         var cookie = this.PolyArcBase(drawable, gc, arcs);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FillPolyUnchecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate,
         Span<Point> points)
     {
         var cookie = this.FillPolyBase(drawable, gc, shape, coordinate, points);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyFillRectangleUnchecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var cookie = this.PolyFillRectangleBase(drawable, gc, rectangles);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyFillArcUnchecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         var cookie = this.PolyFillArcBase(drawable, gc, arcs);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PutImageUnchecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height,
@@ -1039,67 +1020,67 @@ internal sealed class XProto : BaseProtoClient, IXProto
         short y, byte leftPad, byte depth, Span<byte> data)
     {
         var cookie = this.PutImageBase(format, drawable, gc, width, height, x, y, leftPad, depth, data);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ImageText8Unchecked(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
     {
         var cookie = this.ImageText8Base(drawable, gc, x, y, text);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ImageText16Unchecked(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
     {
         var cookie = this.ImageText16Base(drawable, gc, x, y, text);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateColormapUnchecked(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
         var cookie = this.CreateColormapBase(alloc, colormapId, window, visual);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreeColormapUnchecked(uint colormapId)
     {
         var cookie = this.FreeColormapBase(colormapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyColormapAndFreeUnchecked(uint colormapId, uint srcColormapId)
     {
         var cookie = this.CopyColormapAndFreeBase(colormapId, srcColormapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void InstallColormapUnchecked(uint colormapId)
     {
         var cookie = this.InstallColormapBase(colormapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UninstallColormapUnchecked(uint colormapId)
     {
         var cookie = this.UninstallColormapBase(colormapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreeColorsUnchecked(uint colormapId, uint planeMask, Span<uint> pixels)
     {
         var cookie = this.FreeColorsBase(colormapId, planeMask, pixels);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void StoreColorsUnchecked(uint colormapId, Span<ColorItem> item)
     {
         var cookie = this.StoreColorsBase(colormapId, item);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void StoreNamedColorUnchecked(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
     {
         var cookie = this.StoreNamedColorBase(mode, colormapId, pixels, name);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateCursorUnchecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
@@ -1107,7 +1088,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed,
             backGreen, backBlue, x, y);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateGlyphCursorUnchecked(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
@@ -1116,99 +1097,99 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreeCursorUnchecked(uint cursorId)
     {
         var cookie = this.FreeCursorBase(cursorId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void RecolorCursorUnchecked(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
         ushort backGreen, ushort backBlue)
     {
         var cookie = this.RecolorCursorBase(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeKeyboardMappingUnchecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
         Span<uint> keysym)
     {
         var cookie = this.ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void BellUnchecked(sbyte percent)
     {
         var cookie = this.BellBase(percent);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeKeyboardControlUnchecked(KeyboardControlMask mask, Span<uint> args)
     {
         var cookie = this.ChangeKeyboardControlBase(mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangePointerControlUnchecked(Acceleration? acceleration, ushort? threshold)
     {
         var cookie = this.ChangePointerControlBase(acceleration, threshold);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetScreenSaverUnchecked(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
     {
         var cookie = this.SetScreenSaverBase(timeout, interval, preferBlanking, allowExposures);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ForceScreenSaverUnchecked(ForceScreenSaverMode mode)
     {
         var cookie = this.ForceScreenSaverBase(mode);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeHostsUnchecked(HostMode mode, Family family, Span<byte> address)
     {
         var cookie = this.ChangeHostsBase(mode, family, address);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetAccessControlUnchecked(AccessControlMode mode)
     {
         var cookie = this.SetAccessControlBase(mode);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetCloseDownModeUnchecked(CloseDownMode mode)
     {
         var cookie = this.SetCloseDownModeBase(mode);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void KillClientUnchecked(uint resource)
     {
         var cookie = this.KillClientBase(resource);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void NoOperationUnchecked(Span<uint> args)
     {
         var cookie = this.NoOperationBase(args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyText8Unchecked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
         var cookie = this.PolyText8Base(drawable, gc, x, y, data);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyText16Unchecked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
         var cookie = this.PolyText16Base(drawable, gc, x, y, data);
-        ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
@@ -1216,73 +1197,73 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeWindowAttributesChecked(uint window, ValueMask mask, Span<uint> args)
     {
         var cookie = this.ChangeWindowAttributesBase(window, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void DestroyWindowChecked(uint window)
     {
         var cookie = this.DestroyWindowBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void DestroySubwindowsChecked(uint window)
     {
         var cookie = this.DestroySubwindowsBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeSaveSetChecked(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
         var cookie = this.ChangeSaveSetBase(changeSaveSetMode, window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ReparentWindowChecked(uint window, uint parent, short x, short y)
     {
         var cookie = this.ReparentWindowBase(window, parent, x, y);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void MapWindowChecked(uint window)
     {
         var cookie = this.MapWindowBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void MapSubwindowsChecked(uint window)
     {
         var cookie = this.MapSubwindowsBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UnmapWindowChecked(uint window)
     {
         var cookie = this.UnmapWindowBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UnmapSubwindowsChecked(uint window)
     {
         var cookie = this.UnmapSubwindowsBase(window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ConfigureWindowChecked(uint window, ConfigureValueMask mask, Span<uint> args)
     {
         var cookie = this.ConfigureWindowBase(window, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CirculateWindowChecked(Circulate circulate, uint window)
     {
         var cookie = this.CirculateWindowBase(circulate, window);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangePropertyChecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
@@ -1292,43 +1273,43 @@ internal sealed class XProto : BaseProtoClient, IXProto
 #endif
     {
         var cookie = this.ChangePropertyBase(mode, window, property, type, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void DeletePropertyChecked(uint window, ATOM atom)
     {
         var cookie = this.DeletePropertyBase(window, atom);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void RotatePropertiesChecked(uint window, ushort delta, Span<ATOM> properties)
     {
         var cookie = this.RotatePropertiesBase(window, delta, properties);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetSelectionOwnerChecked(uint owner, ATOM atom, uint timestamp)
     {
         var cookie = this.SetSelectionOwnerBase(owner, atom, timestamp);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ConvertSelectionChecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
         var cookie = this.ConvertSelectionBase(requestor, selection, target, property, timestamp);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SendEventChecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
         var cookie = this.SendEventBase(propagate, destination, eventMask, evnt);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabPointerChecked(uint time)
     {
         var cookie = this.UngrabPointerBase(time);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void GrabButtonChecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
@@ -1336,56 +1317,56 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabButtonChecked(Button button, uint grabWindow, ModifierMask mask)
     {
         var cookie = this.UngrabButtonBase(button, grabWindow, mask);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeActivePointerGrabChecked(uint cursor, uint time, ushort mask)
     {
         var cookie = this.ChangeActivePointerGrabBase(cursor, time, mask);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabKeyboardChecked(uint time)
     {
         var cookie = this.UngrabKeyboardBase(time);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void GrabKeyChecked(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
         var cookie = this.GrabKeyBase(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabKeyChecked(byte key, uint grabWindow, ModifierMask modifier)
     {
         var cookie = this.UngrabKeyBase(key, grabWindow, modifier);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void AllowEventsChecked(EventsMode mode, uint time)
     {
         var cookie = this.AllowEventsBase(mode, time);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void GrabServerChecked()
     {
         var cookie = this.GrabServerBase();
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabServerChecked()
     {
         var cookie = this.UngrabServerBase();
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void WarpPointerChecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
@@ -1393,86 +1374,86 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetInputFocusChecked(InputFocusMode mode, uint focus, uint time)
     {
         var cookie = this.SetInputFocusBase(mode, focus, time);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void OpenFontChecked(string fontName, uint fontId)
     {
         var cookie = this.OpenFontBase(fontName, fontId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CloseFontChecked(uint fontId)
     {
         var cookie = this.CloseFontBase(fontId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetFontPathChecked(string[] strPaths)
     {
         var cookie = this.SetFontPathBase(strPaths);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreatePixmapChecked(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
         var cookie = this.CreatePixmapBase(depth, pixmapId, drawable, width, height);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreePixmapChecked(uint pixmapId)
     {
         var cookie = this.FreePixmapBase(pixmapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreateGCChecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
         var cookie = this.CreateGCBase(gc, drawable, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeGCChecked(uint gc, GCMask mask, Span<uint> args)
     {
         var cookie = this.ChangeGCBase(gc, mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyGCChecked(uint srcGc, uint dstGc, GCMask mask)
     {
         var cookie = this.CopyGCBase(srcGc, dstGc, mask);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetDashesChecked(uint gc, ushort dashOffset, Span<byte> dashes)
     {
         var cookie = this.SetDashesBase(gc, dashOffset, dashes);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
         Span<Rectangle> rectangles)
     {
         var cookie = this.SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreeGCChecked(uint gc)
     {
         var cookie = this.FreeGCBase(gc);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ClearAreaChecked(bool exposures, uint window, short x, short y, ushort width, ushort height)
     {
         var cookie = this.ClearAreaBase(exposures, window, x, y, width, height);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyAreaChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -1480,7 +1461,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyPlaneChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -1488,122 +1469,122 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height, bitPlane);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var cookie = this.PolyPointBase(coordinate, drawable, gc, points);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var cookie = this.PolyLineBase(coordinate, drawable, gc, points);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolySegmentChecked(uint drawable, uint gc, Span<Segment> segments)
     {
         var cookie = this.PolySegmentBase(drawable, gc, segments);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var cookie = this.PolyRectangleBase(drawable, gc, rectangles);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyArcChecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         var cookie = this.PolyArcBase(drawable, gc, arcs);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
     {
         var cookie = this.FillPolyBase(drawable, gc, shape, coordinate, points);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyFillRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var cookie = this.PolyFillRectangleBase(drawable, gc, rectangles);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyFillArcChecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         var cookie = this.PolyFillArcBase(drawable, gc, arcs);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PutImageChecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x,
         short y, byte leftPad, byte depth, Span<byte> data)
     {
         var cookie = this.PutImageBase(format, drawable, gc, width, height, x, y, leftPad, depth, data);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ImageText8Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
     {
         var cookie = this.ImageText8Base(drawable, gc, x, y, text);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ImageText16Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
     {
         var cookie = this.ImageText16Base(drawable, gc, x, y, text);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreateColormapChecked(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
         var cookie = this.CreateColormapBase(alloc, colormapId, window, visual);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreeColormapChecked(uint colormapId)
     {
         var cookie = this.FreeColormapBase(colormapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyColormapAndFreeChecked(uint colormapId, uint srcColormapId)
     {
         var cookie = this.CopyColormapAndFreeBase(colormapId, srcColormapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void InstallColormapChecked(uint colormapId)
     {
         var cookie = this.InstallColormapBase(colormapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UninstallColormapChecked(uint colormapId)
     {
         var cookie = this.UninstallColormapBase(colormapId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreeColorsChecked(uint colormapId, uint planeMask, Span<uint> pixels)
     {
         var cookie = this.FreeColorsBase(colormapId, planeMask, pixels);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void StoreColorsChecked(uint colormapId, Span<ColorItem> item)
     {
         var cookie = this.StoreColorsBase(colormapId, item);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void StoreNamedColorChecked(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
     {
         var cookie = this.StoreNamedColorBase(mode, colormapId, pixels, name);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreateCursorChecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
@@ -1611,7 +1592,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreateGlyphCursorChecked(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
@@ -1620,98 +1601,98 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreeCursorChecked(uint cursorId)
     {
         var cookie = this.FreeCursorBase(cursorId);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void RecolorCursorChecked(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
         ushort backGreen, ushort backBlue)
     {
         var cookie = this.RecolorCursorBase(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
         Span<uint> keysym)
     {
         var cookie = this.ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void BellChecked(sbyte percent)
     {
         var cookie = this.BellBase(percent);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeKeyboardControlChecked(KeyboardControlMask mask, Span<uint> args)
     {
         var cookie = this.ChangeKeyboardControlBase(mask, args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangePointerControlChecked(Acceleration? acceleration, ushort? threshold)
     {
         var cookie = this.ChangePointerControlBase(acceleration, threshold);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetScreenSaverChecked(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
     {
         var cookie = this.SetScreenSaverBase(timeout, interval, preferBlanking, allowExposures);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ForceScreenSaverChecked(ForceScreenSaverMode mode)
     {
         var cookie = this.ForceScreenSaverBase(mode);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeHostsChecked(HostMode mode, Family family, Span<byte> address)
     {
         var cookie = this.ChangeHostsBase(mode, family, address);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetAccessControlChecked(AccessControlMode mode)
     {
         var cookie = this.SetAccessControlBase(mode);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetCloseDownModeChecked(CloseDownMode mode)
     {
         var cookie = this.SetCloseDownModeBase(mode);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void KillClientChecked(uint resource)
     {
         var cookie = this.KillClientBase(resource);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void NoOperationChecked(Span<uint> args)
     {
         var cookie = this.NoOperationBase(args);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
         var cookie = this.PolyText8Base(drawable, gc, x, y, data);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
         var cookie = this.PolyText16Base(drawable, gc, x, y, data);
-        ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 }
