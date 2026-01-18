@@ -69,9 +69,6 @@ internal class ClientConnectionContext : IDisposable
                 workingBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
                 ProtoOut.SendExact(workingBuffer);
             }
-
-                ProtoOut.Sequence = 0;
-            ProtoIn.Sequence = 0;
             return true;
         }
         catch (Exception)
@@ -79,6 +76,12 @@ internal class ClientConnectionContext : IDisposable
             Socket.Dispose();
             return false;
         }
+    }
+
+    public void SequenceReset()
+    {
+        ProtoOut.Sequence = 0;
+        ProtoIn.Sequence = 0;
     }
 
     public void Dispose()

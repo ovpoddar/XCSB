@@ -33,8 +33,8 @@ internal sealed class XProto : BaseProtoClient, IXProto
         ClientConnectionContext connectionResult) 
         : base(connectionResult)
     {
-        HandshakeSuccessResponseBody = handshakeSuccessResponseBody;
         _globalId = 0;
+        HandshakeSuccessResponseBody = handshakeSuccessResponseBody;
     }
 
 

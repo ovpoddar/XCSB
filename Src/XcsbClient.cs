@@ -17,6 +17,7 @@ public static class XcsbClient
         var result = new XProto(
             connectionResult.Item1,
             connectionResult.Item2);
+        connectionResult.Item2.SequenceReset();
         return result;
     }
     
@@ -30,8 +31,9 @@ public static class XcsbClient
         var connectionDetails = GetDisplayConfiguration(display);
         var connectionResult = Connection.Connect(connectionDetails, display, configuration, name, data);
         var result = new XProto(
-            connectionResult.Item1, 
+            connectionResult.Item1,
             connectionResult.Item2);
+        connectionResult.Item2.SequenceReset();
         return result;
     }
     

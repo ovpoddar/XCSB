@@ -21,12 +21,12 @@ internal class BaseBufferProtoClient
         BufferProtoIn = new BufferProtoIn(protoIn);
     }
 
-    protected void FlushBase(bool shouldThorw)
+    internal void FlushBase(bool shouldThorw)
     {
         try
         {
             BufferProtoIn.ProtoIn.FlushSocket();
-            var outProtoSequence = BufferProtoOut.ProtoOut.Sequence;
+            var outProtoSequence = BufferProtoOut.Sequence;
             BufferProtoOut.Flush();
             BufferProtoIn.FlushSocket(BufferProtoIn.ProtoIn.Sequence, outProtoSequence, shouldThorw);
         }

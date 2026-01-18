@@ -146,6 +146,7 @@ internal static class Connection
         
         Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
         connection.Socket.ReceiveExact(tempBuffer);
+        configuration.OnReceivedReply?.Invoke(tempBuffer);
         return (tempBuffer.ToStruct<HandshakeResponseHead>(), connection);
     }
 

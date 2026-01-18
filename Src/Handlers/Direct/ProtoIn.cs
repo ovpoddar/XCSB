@@ -62,6 +62,7 @@ internal class ProtoIn : ProtoBase
             return scratchBuffer.ToStruct<XEvent>();
 
         var totalRead = Socket.Receive(scratchBuffer);
+        base.Configuration.OnReceivedReply?.Invoke(scratchBuffer);
         return totalRead == 0
             ? scratchBuffer.Make<XEvent, LastEvent>(new LastEvent(Sequence))
             : scratchBuffer.ToStruct<XEvent>();
@@ -74,6 +75,7 @@ internal class ProtoIn : ProtoBase
         while (Socket.Available != 0)
         {
             Socket.ReceiveExact(buffer);
+            base.Configuration.OnReceivedReply?.Invoke(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = content.GetResponseType();
             switch (responseType)
@@ -110,7 +112,7 @@ internal class ProtoIn : ProtoBase
 
         Socket.EnsureReadSize(replySize);
         Socket.ReceiveExact(result[32..result.Length]);
-
+        base.Configuration.OnReceivedReply?.Invoke(result[32..result.Length]);
 
         if (!ReplyBuffer.TryRemove(content.Sequence, out var response)) 
             return result;
@@ -191,6 +193,7 @@ internal class ProtoIn : ProtoBase
         while (true)
         {
             Socket.ReceiveExact(headerBuffer);
+            base.Configuration.OnReceivedReply?.Invoke(headerBuffer);
             var packet = ComputeResponse(ref headerBuffer).AsSpan();
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
