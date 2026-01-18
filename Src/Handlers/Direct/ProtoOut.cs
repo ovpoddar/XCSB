@@ -1,8 +1,9 @@
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Configuration;
 
-namespace Xcsb.Handlers;
+namespace Xcsb.Handlers.Direct;
 
 internal class ProtoOut : ProtoBase
 {

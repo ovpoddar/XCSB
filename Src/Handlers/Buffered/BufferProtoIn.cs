@@ -1,12 +1,14 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using Xcsb.Configuration;
+using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
 using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 
-namespace Xcsb.Handlers;
+namespace Xcsb.Handlers.Buffered;
 
 internal class BufferProtoIn : ProtoBase
 {

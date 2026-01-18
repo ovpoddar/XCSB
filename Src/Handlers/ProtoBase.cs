@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
+using Xcsb.Configuration;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Event;
@@ -16,7 +17,7 @@ internal abstract class ProtoBase
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
 
     protected ProtoBase(Socket socket, XcbClientConfiguration configuration)
-    : this(socket, null, configuration)
+        : this(socket, null, configuration)
     { }
 
     protected ProtoBase(ProtoBase proto, XcbClientConfiguration configuration)
@@ -33,9 +34,6 @@ internal abstract class ProtoBase
 
     protected virtual void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
-        if (_configuration.OnSendRequest == null)
-            Socket.SendExact(buffer, socketFlags);
-        else
-            _configuration.OnSendRequest(Socket, buffer);
+        _configuration.OnSendRequest?.Invoke(Socket, socketFlags, buffer);
     }
 }

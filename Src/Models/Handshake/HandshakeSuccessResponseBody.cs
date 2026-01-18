@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Configuration;
 using Xcsb.Helpers;
 
 namespace Xcsb.Models.Handshake;

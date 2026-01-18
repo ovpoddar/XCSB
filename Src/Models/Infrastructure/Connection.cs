@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Xcsb.Configuration;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
 using Xcsb.Requests;
 using Xcsb.Response.Contract;
 
-namespace Xcsb;
+namespace Xcsb.Models.Infrastructure;
 
 internal static class Connection
 {
@@ -17,10 +18,11 @@ internal static class Connection
     private static readonly object AuthPathLock = new();
 
     internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails,
-        string display)
+        string display,
+        XcbClientConfiguration configuration)
     {
         ReadOnlySpan<char> error = [];
-        var (response, socket) = Connect(connectionDetails, display, [], [], ref error);
+        var (response, socket) = Connect(connectionDetails, display, configuration, [], [], ref error);
         if (response is not null && socket is not null)
             return (response, socket);
 
@@ -29,7 +31,7 @@ internal static class Connection
 
         foreach (var (authName, authData) in GetAuthInfo(host, dis))
         {
-            (response, socket) = Connect(connectionDetails, display, authName, authData, ref error);
+            (response, socket) = Connect(connectionDetails, display, configuration, authName, authData, ref error);
             if (response is not null && socket is not null)
                 return (response, socket);
         }
@@ -39,11 +41,12 @@ internal static class Connection
 
     internal static (HandshakeSuccessResponseBody, Socket) Connect(in ConnectionDetails connectionDetails,
         string display,
+        XcbClientConfiguration configuration,
         Span<byte> name,
         Span<byte> data)
     {
         ReadOnlySpan<char> error = [];
-        var (response, socket) = Connect(connectionDetails, display, name, data, ref error);
+        var (response, socket) = Connect(connectionDetails, display, configuration, name, data, ref error);
         if (response is not null && socket is not null)
             return (response, socket);
         throw new UnauthorizedAccessException(error.ToString());
@@ -51,21 +54,21 @@ internal static class Connection
 
     private static (HandshakeSuccessResponseBody?, Socket?) Connect(in ConnectionDetails connectionDetails,
         string display,
+        XcbClientConfiguration configuration,
         Span<byte> name,
         Span<byte> data,
-        ref ReadOnlySpan<char> errorMessage)
+        ref ReadOnlySpan<char> error)
     {
-        var (response, socket) = MakeHandshake(connectionDetails, display, name, data);
+        var (response, socket) = MakeHandshake(connectionDetails, display, configuration, name, data);
         if (response.HandshakeStatus is HandshakeStatus.Success && socket is not null)
         {
             var successBody = HandshakeSuccessResponseBody.Read(socket,
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
-            errorMessage = "";
             return (successBody, socket);
         }
 
         if (socket is not null)
-            errorMessage = response.GetStatusMessage(socket);
+            error = response.GetStatusMessage(socket);
         socket?.Dispose();
         return (null, null);
     }
@@ -126,44 +129,25 @@ internal static class Connection
     }
 
     private static (HandshakeResponseHead, Socket?) MakeHandshake(in ConnectionDetails connectionDetails,
-        string display,
-        Span<byte> authName,
-        Span<byte> authData)
+       string display,
+       XcbClientConfiguration configuration,
+       Span<byte> authName,
+       Span<byte> authData)
     {
-        var socket = new Socket(AddressFamily.Unix, SocketType.Stream, connectionDetails.Protocol);
-        socket.Connect(new UnixDomainSocketEndPoint(connectionDetails.GetSocketPath(display).ToString()));
-        if (!socket.Connected)
+        var connection = new ClientConnectionContext(
+            connectionDetails.GetSocketPath(display).ToString(),
+            configuration,
+            connectionDetails.Protocol);
+        if (!connection.Connected)
             throw new Exception("Error connecting to X server");
-        try
+
+        if (connection.EstablishConnection(authName, authData))
         {
-            var request = new HandShakeRequestType((ushort)authName.Length, (ushort)authData.Length);
-            socket.Send(ref request);
-
-            var namePaddedLength = authName.Length.AddPadding();
-            var scratchBufferSize = namePaddedLength + authData.Length.AddPadding();
-            if (scratchBufferSize < XcbClientConfiguration.StackAllocThreshold)
-            {
-                Span<byte> scratchBuffer = stackalloc byte[scratchBufferSize];
-                authName.CopyTo(scratchBuffer[..]);
-                authData.CopyTo(scratchBuffer[namePaddedLength..]);
-                socket.SendExact(scratchBuffer);
-            }
-            else
-            {
-                using var scratchBuffer = new ArrayPoolUsing<byte>(scratchBufferSize);
-                authName.CopyTo(scratchBuffer[..namePaddedLength]);
-                authData.CopyTo(scratchBuffer[namePaddedLength..scratchBufferSize]);
-                socket.SendExact(scratchBuffer[..scratchBufferSize]);
-            }
-
             Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
-            socket.ReceiveExact(tempBuffer);
-            return (tempBuffer.ToStruct<HandshakeResponseHead>(), socket);
+            connection.Socket.ReceiveExact(tempBuffer);
+            return (tempBuffer.ToStruct<HandshakeResponseHead>(), connection.Socket);
         }
-        catch (Exception)
-        {
-            socket.Dispose();
-            return (new HandshakeResponseHead(), null);
-        }
+        return (new HandshakeResponseHead(), null);
     }
+
 }

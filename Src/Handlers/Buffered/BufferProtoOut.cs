@@ -1,9 +1,10 @@
-﻿using System.Buffers;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Configuration;
+using Xcsb.Handlers.Direct;
 
-namespace Xcsb.Handlers;
+namespace Xcsb.Handlers.Buffered;
 
 internal class BufferProtoOut : ProtoBase
 {

@@ -1,5 +1,7 @@
 ﻿using System.Net.Sockets;
+using Xcsb.Configuration;
 using Xcsb.Models;
+using Xcsb.Models.Infrastructure;
 
 namespace Xcsb;
 
@@ -8,12 +10,14 @@ public static class XcsbClient
     public static IXProto Initialized(string? display = null, XcbClientConfiguration? configuration = null)
     {
         display = string.IsNullOrWhiteSpace(display) ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0" : display;
+        configuration = configuration ?? XcbClientConfiguration.Default;
+
         var connectionDetails = GetDisplayConfiguration(display);
-        var connectionResult = Connection.TryConnect(connectionDetails, display);
+        var connectionResult = Connection.TryConnect(connectionDetails, display, configuration);
         var result = new XProto(
             connectionResult.Item2,
             connectionResult.Item1,
-            configuration ?? XcbClientConfiguration.Default);
+            configuration);
         return result;
     }
     
@@ -22,13 +26,14 @@ public static class XcsbClient
         if (string.IsNullOrWhiteSpace(display)) throw new ArgumentNullException(nameof(display));
         if (name.IsEmpty) throw new ArgumentNullException(nameof(name));
         if (data.IsEmpty) throw new ArgumentNullException(nameof(data));
-        
+        configuration = configuration ?? XcbClientConfiguration.Default;
+
         var connectionDetails = GetDisplayConfiguration(display);
-        var connectionResult = Connection.Connect(connectionDetails, display, name, data);
+        var connectionResult = Connection.Connect(connectionDetails, display, configuration, name, data);
         var result = new XProto(
             connectionResult.Item2, 
             connectionResult.Item1,
-            configuration ?? XcbClientConfiguration.Default);
+            configuration);
         return result;
     }
     
@@ -57,9 +62,9 @@ public static class XcsbClient
             {
                 details.Protocol =
 #if NETSTANDARD
-                    Enum.TryParse(input[..slashIndex].ToString(), true, out ProtocolType protocol)
+                Enum.TryParse(input[..slashIndex].ToString(), true, out ProtocolType protocol)
 #else
-                    Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
+                Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
 #endif
                         ? protocol
                         : ProtocolType.Tcp;

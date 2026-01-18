@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using Xcsb.Configuration;
 using Xcsb.Models.String;
 using Xcsb.Masks;
 using Xcsb.Models;

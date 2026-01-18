@@ -1,8 +1,8 @@
-using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Configuration;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure.Exceptions;
@@ -12,7 +12,7 @@ using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Handlers;
+namespace Xcsb.Handlers.Direct;
 
 internal class ProtoIn : ProtoBase
 {

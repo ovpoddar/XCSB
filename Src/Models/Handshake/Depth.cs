@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Xcsb.Configuration;
 using Xcsb.Helpers;
 
 namespace Xcsb.Models.Handshake;
