@@ -50,7 +50,7 @@ internal class ClientConnectionContext
 
                 authData.CopyTo(scratchBuffer[writeIndex..]);
                 writeIndex += authData.Length;
-                scratchBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
+                scratchBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
                 ProtoOut.SendExact(scratchBuffer);
             }
             else
@@ -75,7 +75,7 @@ internal class ClientConnectionContext
             }
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             Socket.Dispose();
             return false;

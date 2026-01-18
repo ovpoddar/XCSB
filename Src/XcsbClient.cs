@@ -10,7 +10,7 @@ public static class XcsbClient
     public static IXProto Initialized(string? display = null, XcbClientConfiguration? configuration = null)
     {
         display = string.IsNullOrWhiteSpace(display) ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0" : display;
-        configuration = configuration ?? XcbClientConfiguration.Default;
+        configuration ??= XcbClientConfiguration.Default;
 
         var connectionDetails = GetDisplayConfiguration(display);
         var connectionResult = Connection.TryConnect(connectionDetails, display, configuration);
@@ -26,7 +26,7 @@ public static class XcsbClient
         if (string.IsNullOrWhiteSpace(display)) throw new ArgumentNullException(nameof(display));
         if (name.IsEmpty) throw new ArgumentNullException(nameof(name));
         if (data.IsEmpty) throw new ArgumentNullException(nameof(data));
-        configuration = configuration ?? XcbClientConfiguration.Default;
+        configuration ??= XcbClientConfiguration.Default;
 
         var connectionDetails = GetDisplayConfiguration(display);
         var connectionResult = Connection.Connect(connectionDetails, display, configuration, name, data);

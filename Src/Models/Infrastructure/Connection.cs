@@ -141,13 +141,12 @@ internal static class Connection
         if (!connection.Connected)
             throw new Exception("Error connecting to X server");
 
-        if (connection.EstablishConnection(authName, authData))
-        {
-            Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
-            connection.Socket.ReceiveExact(tempBuffer);
-            return (tempBuffer.ToStruct<HandshakeResponseHead>(), connection.Socket);
-        }
-        return (new HandshakeResponseHead(), null);
+        if (!connection.EstablishConnection(authName, authData))
+            return (new HandshakeResponseHead(), null);
+        
+        Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
+        connection.Socket.ReceiveExact(tempBuffer);
+        return (tempBuffer.ToStruct<HandshakeResponseHead>(), connection.Socket);
     }
 
 }
