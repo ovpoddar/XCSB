@@ -28,7 +28,7 @@ internal class BufferProtoIn : ProtoBase
         Span<byte> buffer = stackalloc byte[bufferSize];
         while (base.Socket.Available != 0)
         {
-            base.Socket.ReceiveExact(buffer);
+            _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = content.GetResponseType();
             switch (responseType)
@@ -69,8 +69,7 @@ internal class BufferProtoIn : ProtoBase
         using var result = new ArrayPoolUsing<byte>(32 + replySize);
         buffer.CopyTo(result[..32]);
 
-        Socket.EnsureReadSize(replySize);
-        Socket.ReceiveExact(result[32..result.Length]);
+        _ = Received(result[32..result.Length]);
 
 
         if (!ReplyBuffer.TryRemove(content.Sequence, out var response))

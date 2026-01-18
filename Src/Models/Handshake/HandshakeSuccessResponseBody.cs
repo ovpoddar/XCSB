@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Configuration;
+using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
 
 namespace Xcsb.Models.Handshake;
@@ -28,11 +29,11 @@ public class HandshakeSuccessResponseBody
     public required Format[] Formats { get; set; }
     public required Screen[] Screens { get; set; }
 #endif
-    internal static HandshakeSuccessResponseBody Read(Socket socket, int additionalDataLength)
+    internal static HandshakeSuccessResponseBody Read(ProtoIn protoIn, int additionalDataLength)
     {
         var readIndex = 0;
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_handshakeSuccessResponseBody>()];
-        socket.ReceiveExact(scratchBuffer);
+        protoIn.ReceiveExact(scratchBuffer);
         readIndex += scratchBuffer.Length;
 
         ref readonly var successResponseBody = ref scratchBuffer.AsStruct<_handshakeSuccessResponseBody>();
@@ -52,28 +53,28 @@ public class HandshakeSuccessResponseBody
             Formats = new Format[successResponseBody.FormatsNumber],
             Screens = new Screen[successResponseBody.ScreensNumber]
         };
-        readIndex += SetVendorName(result, socket, successResponseBody.VendorLength);
-        readIndex += SettFormats(result, socket);
+        readIndex += SetVendorName(result, protoIn, successResponseBody.VendorLength);
+        readIndex += SettFormats(result, protoIn);
         for (var i = 0; i < result.Screens.Length; i++)
-            result.Screens[i] = Screen.Read(socket, ref readIndex);
+            result.Screens[i] = Screen.Read(protoIn, ref readIndex);
         Debug.Assert(readIndex == additionalDataLength);
         return result;
     }
 
-    private static int SettFormats(HandshakeSuccessResponseBody result, Socket socket)
+    private static int SettFormats(HandshakeSuccessResponseBody result, ProtoIn protoIn)
     {
         var requireByte = result.Formats.Length * Marshal.SizeOf<Format>();
         if (requireByte < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requireByte];
-            socket.ReceiveExact(scratchBuffer);
+            protoIn.ReceiveExact(scratchBuffer);
             MemoryMarshal.Cast<byte, Format>(scratchBuffer)
                 .CopyTo(result.Formats);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
-            socket.ReceiveExact(scratchBuffer[..requireByte]);
+            protoIn.ReceiveExact(scratchBuffer[..requireByte]);
             MemoryMarshal.Cast<byte, Format>(scratchBuffer)
                 .CopyTo(result.Formats);
         }
@@ -81,19 +82,19 @@ public class HandshakeSuccessResponseBody
         return requireByte;
     }
 
-    private static int SetVendorName(HandshakeSuccessResponseBody result, Socket socket, int contentLength)
+    private static int SetVendorName(HandshakeSuccessResponseBody result, ProtoIn protoIn, int contentLength)
     {
         var length = contentLength.AddPadding();
         if (length < XcbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[length];
-            socket.ReceiveExact(scratchBuffer);
+            protoIn.ReceiveExact(scratchBuffer);
             result.VendorName = Encoding.ASCII.GetString(scratchBuffer[..contentLength]).TrimEnd();
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(length);
-            socket.ReceiveExact(scratchBuffer[..length]);
+            protoIn.ReceiveExact(scratchBuffer[..length]);
             result.VendorName = Encoding.ASCII.GetString(scratchBuffer, 0, contentLength).TrimEnd();
         }
 

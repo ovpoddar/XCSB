@@ -142,17 +142,6 @@ internal static class GenericHelper
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
 
-    internal static void EnsureReadSize(this Socket socket, int size)
-    {
-        while (true)
-        {
-            if (socket.Available >= size)
-                break;
-            socket.Poll(-1, SelectMode.SelectRead);
-        }
-    }
-
-
     internal static int CountFlags<T>(this T value) where T : struct, Enum
     {
         var v = Convert.ToUInt64(value);

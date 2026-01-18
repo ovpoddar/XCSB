@@ -61,8 +61,7 @@ internal class ProtoIn : ProtoBase
         if (!Socket.Poll(-1, SelectMode.SelectRead))
             return scratchBuffer.ToStruct<XEvent>();
 
-        var totalRead = Socket.Receive(scratchBuffer);
-        base.Configuration.OnReceivedReply?.Invoke(scratchBuffer);
+        var totalRead = Received(scratchBuffer, false);
         return totalRead == 0
             ? scratchBuffer.Make<XEvent, LastEvent>(new LastEvent(Sequence))
             : scratchBuffer.ToStruct<XEvent>();
@@ -74,8 +73,7 @@ internal class ProtoIn : ProtoBase
         Span<byte> buffer = stackalloc byte[bufferSize];
         while (Socket.Available != 0)
         {
-            Socket.ReceiveExact(buffer);
-            base.Configuration.OnReceivedReply?.Invoke(buffer);
+            _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = content.GetResponseType();
             switch (responseType)
@@ -110,9 +108,7 @@ internal class ProtoIn : ProtoBase
         using var result = new ArrayPoolUsing<byte>(32 + replySize);
         buffer.CopyTo(result[..32]);
 
-        Socket.EnsureReadSize(replySize);
-        Socket.ReceiveExact(result[32..result.Length]);
-        base.Configuration.OnReceivedReply?.Invoke(result[32..result.Length]);
+        _ = Received(result[32..result.Length]);
 
         if (!ReplyBuffer.TryRemove(content.Sequence, out var response)) 
             return result;
@@ -123,7 +119,6 @@ internal class ProtoIn : ProtoBase
         result[0..result.Length].CopyTo(scratchBuffer[response.Length..]);
         return scratchBuffer;
     }
-
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
@@ -192,8 +187,7 @@ internal class ProtoIn : ProtoBase
 
         while (true)
         {
-            Socket.ReceiveExact(headerBuffer);
-            base.Configuration.OnReceivedReply?.Invoke(headerBuffer);
+            _ = Received(headerBuffer);
             var packet = ComputeResponse(ref headerBuffer).AsSpan();
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
@@ -211,6 +205,10 @@ internal class ProtoIn : ProtoBase
         }
 
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ReceiveExact(scoped in Span<byte> buffer) =>
+        Received(buffer);
 
     protected override void Dispose(bool disposing)
     {

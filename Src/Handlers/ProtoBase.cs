@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using Xcsb.Configuration;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
@@ -15,7 +16,7 @@ internal abstract class ProtoBase
     internal readonly ConcurrentQueue<GenericEvent> BufferEvents;
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
     protected bool DisposedValue;
-    
+
     protected ProtoBase(Socket socket, XcbClientConfiguration configuration)
         : this(socket, null, configuration)
     { }
@@ -38,6 +39,22 @@ internal abstract class ProtoBase
         Configuration.OnSendRequest?.Invoke(Socket, socketFlags, buffer);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected int Received(scoped in Span<byte> buffer, bool readAll = true)
+    {
+        if (readAll)
+        {
+            Socket.ReceiveExact(buffer);
+            Configuration.OnReceivedReply?.Invoke(buffer);
+            return buffer.Length;
+        }
+        else
+        {
+            var totalRead = Socket.Receive(buffer);
+            Configuration.OnReceivedReply?.Invoke(buffer);
+            return totalRead;
+        }
+    }
 
     public virtual void Dispose()
     {

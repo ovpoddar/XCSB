@@ -62,7 +62,7 @@ internal static class Connection
         var (response, context) = MakeHandshake(connectionDetails, display, configuration, name, data);
         if (response.HandshakeStatus is HandshakeStatus.Success && context is not null)
         {
-            var successBody = HandshakeSuccessResponseBody.Read(context.Socket,
+            var successBody = HandshakeSuccessResponseBody.Read(context.ProtoIn,
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
             return (successBody, context);
         }
@@ -145,8 +145,7 @@ internal static class Connection
             return (new HandshakeResponseHead(), null);
         
         Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
-        connection.Socket.ReceiveExact(tempBuffer);
-        configuration.OnReceivedReply?.Invoke(tempBuffer);
+        connection.ProtoIn.ReceiveExact(tempBuffer);
         return (tempBuffer.ToStruct<HandshakeResponseHead>(), connection);
     }
 
