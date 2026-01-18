@@ -26,17 +26,16 @@ internal sealed class XProto : BaseProtoClient, IXProto
     private bool _disposedValue;
     private int _globalId;
     private XBufferProto? _xBufferProto;
+    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
-    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this, Configuration);
 
     private readonly Socket _socket;
 
     public XProto(
         HandshakeSuccessResponseBody handshakeSuccessResponseBody, 
-        ClientConnectionContext connectionResult, 
-        XcbClientConfiguration configuration) 
-        : base(connectionResult.ProtoIn, connectionResult.ProtoOut, configuration)
+        ClientConnectionContext connectionResult) 
+        : base(connectionResult.ProtoIn, connectionResult.ProtoOut)
     {
         HandshakeSuccessResponseBody = handshakeSuccessResponseBody;
         _socket = connectionResult.Socket;

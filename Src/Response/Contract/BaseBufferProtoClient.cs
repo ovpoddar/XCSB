@@ -15,7 +15,7 @@ internal class BaseBufferProtoClient
     protected internal readonly BufferProtoOut BufferProtoOut;
     protected internal readonly BufferProtoIn BufferProtoIn;
 
-    internal BaseBufferProtoClient(ProtoIn protoIn, ProtoOut protoOut, XcbClientConfiguration configuration)
+    internal BaseBufferProtoClient(ProtoIn protoIn, ProtoOut protoOut)
     {
         BufferProtoOut = new BufferProtoOut(protoOut);
         BufferProtoIn = new BufferProtoIn(protoIn);

@@ -115,10 +115,6 @@ internal static class GenericHelper
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged =>
-        socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
-
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
         if (buffer.Length == 0)

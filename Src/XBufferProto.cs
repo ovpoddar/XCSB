@@ -19,7 +19,7 @@ namespace Xcsb;
 
 internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 {
-    public XBufferProto(XProto xProto, XcbClientConfiguration configuration) : base(xProto.ProtoIn, xProto.ProtoOut, configuration)
+    public XBufferProto(XProto xProto) : base(xProto.ProtoIn, xProto.ProtoOut)
     {
     }
 

@@ -16,8 +16,7 @@ public static class XcsbClient
         var connectionResult = Connection.TryConnect(connectionDetails, display, configuration);
         var result = new XProto(
             connectionResult.Item1,
-            connectionResult.Item2,
-            configuration);
+            connectionResult.Item2);
         return result;
     }
     
@@ -32,8 +31,7 @@ public static class XcsbClient
         var connectionResult = Connection.Connect(connectionDetails, display, configuration, name, data);
         var result = new XProto(
             connectionResult.Item1, 
-            connectionResult.Item2,
-            configuration);
+            connectionResult.Item2);
         return result;
     }
     
