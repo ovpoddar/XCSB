@@ -17,8 +17,8 @@ internal class BaseBufferProtoClient
 
     internal BaseBufferProtoClient(ProtoIn protoIn, ProtoOut protoOut, XcbClientConfiguration configuration)
     {
-        BufferProtoOut = new BufferProtoOut(protoOut, configuration);
-        BufferProtoIn = new BufferProtoIn(protoIn, configuration);
+        BufferProtoOut = new BufferProtoOut(protoOut);
+        BufferProtoIn = new BufferProtoIn(protoIn);
     }
 
     protected void FlushBase(bool shouldThorw)

@@ -17,59 +17,59 @@ internal static class Connection
     private static string? _cachedAuthPath;
     private static readonly object AuthPathLock = new();
 
-    internal static (HandshakeSuccessResponseBody, Socket) TryConnect(ConnectionDetails connectionDetails,
+    internal static (HandshakeSuccessResponseBody, ClientConnectionContext) TryConnect(ConnectionDetails connectionDetails,
         string display,
         XcbClientConfiguration configuration)
     {
         ReadOnlySpan<char> error = [];
-        var (response, socket) = Connect(connectionDetails, display, configuration, [], [], ref error);
-        if (response is not null && socket is not null)
-            return (response, socket);
+        var (response, context) = Connect(connectionDetails, display, configuration, [], [], ref error);
+        if (response is not null && context is not null)
+            return (response, context);
 
         ReadOnlyMemory<char> host = connectionDetails.Host.ToArray();
         ReadOnlyMemory<char> dis = connectionDetails.Display.ToArray();
 
         foreach (var (authName, authData) in GetAuthInfo(host, dis))
         {
-            (response, socket) = Connect(connectionDetails, display, configuration, authName, authData, ref error);
-            if (response is not null && socket is not null)
-                return (response, socket);
+            (response, context) = Connect(connectionDetails, display, configuration, authName, authData, ref error);
+            if (response is not null && context is not null)
+                return (response, context);
         }
 
         throw new UnauthorizedAccessException(error.ToString());
     }
 
-    internal static (HandshakeSuccessResponseBody, Socket) Connect(in ConnectionDetails connectionDetails,
+    internal static (HandshakeSuccessResponseBody, ClientConnectionContext) Connect(in ConnectionDetails connectionDetails,
         string display,
         XcbClientConfiguration configuration,
         Span<byte> name,
         Span<byte> data)
     {
         ReadOnlySpan<char> error = [];
-        var (response, socket) = Connect(connectionDetails, display, configuration, name, data, ref error);
-        if (response is not null && socket is not null)
-            return (response, socket);
+        var (response, context) = Connect(connectionDetails, display, configuration, name, data, ref error);
+        if (response is not null && context is not null)
+            return (response, context);
         throw new UnauthorizedAccessException(error.ToString());
     }
 
-    private static (HandshakeSuccessResponseBody?, Socket?) Connect(in ConnectionDetails connectionDetails,
+    private static (HandshakeSuccessResponseBody?, ClientConnectionContext?) Connect(in ConnectionDetails connectionDetails,
         string display,
         XcbClientConfiguration configuration,
         Span<byte> name,
         Span<byte> data,
         ref ReadOnlySpan<char> error)
     {
-        var (response, socket) = MakeHandshake(connectionDetails, display, configuration, name, data);
-        if (response.HandshakeStatus is HandshakeStatus.Success && socket is not null)
+        var (response, context) = MakeHandshake(connectionDetails, display, configuration, name, data);
+        if (response.HandshakeStatus is HandshakeStatus.Success && context is not null)
         {
-            var successBody = HandshakeSuccessResponseBody.Read(socket,
+            var successBody = HandshakeSuccessResponseBody.Read(context.Socket,
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
-            return (successBody, socket);
+            return (successBody, context);
         }
 
-        if (socket is not null)
-            error = response.GetStatusMessage(socket);
-        socket?.Dispose();
+        if (context is not null)
+            error = response.GetStatusMessage(context.Socket);
+        context?.Dispose();
         return (null, null);
     }
 
@@ -128,7 +128,7 @@ internal static class Connection
         }
     }
 
-    private static (HandshakeResponseHead, Socket?) MakeHandshake(in ConnectionDetails connectionDetails,
+    private static (HandshakeResponseHead, ClientConnectionContext?) MakeHandshake(in ConnectionDetails connectionDetails,
        string display,
        XcbClientConfiguration configuration,
        Span<byte> authName,
@@ -146,7 +146,7 @@ internal static class Connection
         
         Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
         connection.Socket.ReceiveExact(tempBuffer);
-        return (tempBuffer.ToStruct<HandshakeResponseHead>(), connection.Socket);
+        return (tempBuffer.ToStruct<HandshakeResponseHead>(), connection);
     }
 
 }

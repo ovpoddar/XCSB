@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
 using Xcsb.Configuration;
 using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
-using Xcsb.Models.Handshake;
 using Xcsb.Requests;
 
 namespace Xcsb.Models.Infrastructure;
 
-internal class ClientConnectionContext
+internal class ClientConnectionContext : IDisposable
 {
-    public Socket Socket { get; set; }
-    public ProtoOut ProtoOut { get; set; }
-    public ProtoIn ProtoIn { get; set; }
+    public Socket Socket { get; }
+    public ProtoOut ProtoOut { get; }
+    public ProtoIn ProtoIn { get; }
 
     public ClientConnectionContext(string path, XcbClientConfiguration configuration, in ProtocolType type)
     {
@@ -33,11 +29,10 @@ internal class ClientConnectionContext
         {
             var request = new HandShakeRequestType((ushort)authName.Length, (ushort)authData.Length);
             var length = authName.Length.AddPadding() + authData.Length.AddPadding() + Marshal.SizeOf<HandShakeRequestType>();
-            var writeIndex = 0;
+            var writeIndex = 12;
             if (length < XcbClientConfiguration.StackAllocThreshold)
             {
                 Span<byte> scratchBuffer = stackalloc byte[length];
-                writeIndex = 12;
 #if NETSTANDARD
                 MemoryMarshal.Write(scratchBuffer[0..writeIndex], ref request);
 #else
@@ -57,7 +52,6 @@ internal class ClientConnectionContext
             {
                 using var scratchBuffer = new ArrayPoolUsing<byte>(length);
                 var workingBuffer = scratchBuffer[..length];
-                writeIndex = 12;
 #if NETSTANDARD
                 MemoryMarshal.Write(workingBuffer[0..writeIndex], ref request);
 #else
@@ -75,10 +69,15 @@ internal class ClientConnectionContext
             }
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             Socket.Dispose();
             return false;
         }
+    }
+
+    public void Dispose()
+    {
+        Socket.Dispose();
     }
 }

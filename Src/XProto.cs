@@ -5,6 +5,7 @@ using Xcsb.Models.String;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
+using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Infrastructure.Response;
 using Xcsb.Response.Contract;
@@ -20,7 +21,7 @@ namespace Xcsb;
 #if !NETSTANDARD
 [SkipLocalsInit]
 #endif
-internal class XProto : BaseProtoClient, IXProto
+internal sealed class XProto : BaseProtoClient, IXProto
 {
     private bool _disposedValue;
     private int _globalId;
@@ -29,12 +30,16 @@ internal class XProto : BaseProtoClient, IXProto
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
     public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this, Configuration);
 
-    internal Socket Socket;
+    private readonly Socket _socket;
 
-    public XProto(Socket socket, HandshakeSuccessResponseBody connectionResult, XcbClientConfiguration configuration) : base(socket, configuration)
+    public XProto(
+        HandshakeSuccessResponseBody handshakeSuccessResponseBody, 
+        ClientConnectionContext connectionResult, 
+        XcbClientConfiguration configuration) 
+        : base(connectionResult.ProtoIn, connectionResult.ProtoOut, configuration)
     {
-        Socket = socket;
-        HandshakeSuccessResponseBody = connectionResult;
+        HandshakeSuccessResponseBody = handshakeSuccessResponseBody;
+        _socket = connectionResult.Socket;
         _globalId = 0;
     }
 
@@ -413,7 +418,7 @@ internal class XProto : BaseProtoClient, IXProto
     public void WaitForEvent()
     {
         if (!IsEventAvailable())
-            Socket.Poll(-1, SelectMode.SelectRead);
+            _socket.Poll(-1, SelectMode.SelectRead);
     }
 
     public uint NewId() =>
@@ -424,13 +429,13 @@ internal class XProto : BaseProtoClient, IXProto
         ProtoIn.ReceivedResponse();
 
     public bool IsEventAvailable() =>
-        ProtoIn.BufferEvents.Any() || Socket.Available >= Unsafe.SizeOf<GenericEvent>();
+        ProtoIn.BufferEvents.Any() || _socket.Available >= Unsafe.SizeOf<GenericEvent>();
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (_disposedValue) return;
-        if (disposing && Socket.Connected)
-            Socket.Close();
+        if (disposing && _socket.Connected)
+            _socket.Close();
         _disposedValue = true;
     }
 

@@ -23,11 +23,11 @@ internal class BaseProtoClient
     public readonly ProtoOut ProtoOut;
     protected readonly XcbClientConfiguration Configuration;
 
-    public BaseProtoClient(Socket socket, XcbClientConfiguration configuration)
+    public BaseProtoClient(ProtoIn protoIn, ProtoOut protoOut, XcbClientConfiguration configuration)
     {
-        this.ProtoIn = new ProtoIn(socket, configuration);
-        this.ProtoOut = new ProtoOut(socket, configuration);
-        Configuration = configuration;
+        this.ProtoIn = protoIn;
+        this.ProtoOut = protoOut;
+        this.Configuration = configuration;
     }
 
     protected ResponseProto ChangeWindowAttributesBase(uint window, ValueMask mask, Span<uint> args)

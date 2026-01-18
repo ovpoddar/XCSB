@@ -14,7 +14,7 @@ internal class BufferProtoIn : ProtoBase
 {
     internal readonly ProtoIn ProtoIn;
 
-    public BufferProtoIn(ProtoIn protoIn, XcbClientConfiguration configuration) : base(protoIn, configuration)
+    public BufferProtoIn(ProtoIn protoIn) : base(protoIn, protoIn.Configuration)
     {
         ProtoIn = protoIn;
     }

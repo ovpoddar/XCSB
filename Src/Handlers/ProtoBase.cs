@@ -10,8 +10,7 @@ namespace Xcsb.Handlers;
 
 internal abstract class ProtoBase
 {
-    private readonly XcbClientConfiguration _configuration;
-
+    internal readonly XcbClientConfiguration Configuration;
     internal readonly Socket Socket;
     internal readonly ConcurrentQueue<GenericEvent> BufferEvents;
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
@@ -29,11 +28,11 @@ internal abstract class ProtoBase
         Socket = socket;
         BufferEvents = proto?.BufferEvents ?? new ConcurrentQueue<GenericEvent>();
         ReplyBuffer = proto?.ReplyBuffer ?? new ConcurrentDictionary<int, byte[]>();
-        _configuration = configuration;
+        Configuration = configuration;
     }
 
     protected virtual void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
-        _configuration.OnSendRequest?.Invoke(Socket, socketFlags, buffer);
+        Configuration.OnSendRequest?.Invoke(Socket, socketFlags, buffer);
     }
 }
