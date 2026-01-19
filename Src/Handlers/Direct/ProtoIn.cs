@@ -209,13 +209,4 @@ internal class ProtoIn : ProtoBase
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ReceiveExact(scoped in Span<byte> buffer) =>
         Received(buffer);
-
-    protected override void Dispose(bool disposing)
-    {
-        if (DisposedValue)
-            return;
-        if (disposing)
-            Sequence = 0;
-        base.Dispose(disposing);
-    }
 }

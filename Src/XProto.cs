@@ -423,7 +423,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         base.ClientConnection.ProtoIn.ReceivedResponse();
 
     public bool IsEventAvailable() =>
-        base.ClientConnection.ProtoIn.BufferEvents.Any() || base.ClientConnection.Socket.Available >= Unsafe.SizeOf<GenericEvent>();
+        !base.ClientConnection.ProtoIn.BufferEvents.IsEmpty || base.ClientConnection.Socket.Available >= Unsafe.SizeOf<GenericEvent>();
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
         ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>

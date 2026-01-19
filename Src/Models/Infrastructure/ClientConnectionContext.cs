@@ -73,7 +73,8 @@ internal class ClientConnectionContext : IDisposable
         }
         catch (Exception)
         {
-            Socket.Dispose();
+            // Socket disposal is handled by ClientConnectionContext.Dispose()
+            // The caller (Connection.cs) will dispose the context on failure
             return false;
         }
     }
@@ -97,8 +98,8 @@ internal class ClientConnectionContext : IDisposable
 
         if (disposing)
         {
-            ProtoIn?.Dispose();
-            ProtoOut?.Dispose();
+            // ProtoIn and ProtoOut only hold references to the Socket, they don't own it.
+            // Socket is the only resource that needs disposal.
             Socket?.Dispose();
         }
 

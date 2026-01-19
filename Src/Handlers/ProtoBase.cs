@@ -15,7 +15,6 @@ internal abstract class ProtoBase
     internal readonly Socket Socket;
     internal readonly ConcurrentQueue<GenericEvent> BufferEvents;
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
-    protected bool DisposedValue;
 
     protected ProtoBase(Socket socket, XcbClientConfiguration configuration)
         : this(socket, null, configuration)
@@ -31,7 +30,6 @@ internal abstract class ProtoBase
         BufferEvents = proto?.BufferEvents ?? new ConcurrentQueue<GenericEvent>();
         ReplyBuffer = proto?.ReplyBuffer ?? new ConcurrentDictionary<int, byte[]>();
         Configuration = configuration;
-        DisposedValue = false;
     }
 
     protected virtual void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
@@ -54,28 +52,6 @@ internal abstract class ProtoBase
             Configuration.OnReceivedReply?.Invoke(buffer);
             return totalRead;
         }
-    }
-
-    public virtual void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (DisposedValue)
-            return;
-
-        if (disposing)
-        {
-            // Socket is owned by ClientConnectionContext and also disposed by that
-            // Just clear the concurrent collections to free memory
-            BufferEvents.Clear();
-            ReplyBuffer.Clear();
-        }
-
-        DisposedValue = true;
     }
 
 }
