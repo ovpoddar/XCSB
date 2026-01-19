@@ -1,152 +1,142 @@
-﻿using System;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using Xcsb.Configuration;
+using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
-using Xcsb.Models;
 using Xcsb.Models.Handshake;
 using Xcsb.Requests;
-using Xcsb.Response.Contract;
 
 namespace Xcsb.Models.Infrastructure;
 
-internal static class Connection
+internal class Connection : IDisposable
 {
-    private static readonly byte[] MagicCookie = "MIT-MAGIC-COOKIE-1"u8.ToArray();
+    public Socket Socket { get; }
+    public ProtoOut ProtoOut { get; }
+    public ProtoIn ProtoIn { get; }
 
-    private static string? _cachedAuthPath;
-    private static readonly object AuthPathLock = new();
+    public HandshakeSuccessResponseBody? SuccessResponse { get; private set; }
+    public HandshakeStatus HandshakeStatus { get; private set; }
 
-    internal static (HandshakeSuccessResponseBody, ClientConnectionContext) TryConnect(ConnectionDetails connectionDetails,
-        string display,
-        XcbClientConfiguration configuration)
+    private bool _disposed;
+
+    public Connection(string path, XcbClientConfiguration configuration, in ProtocolType type)
     {
-        ReadOnlySpan<char> error = [];
-        var (response, context) = Connect(connectionDetails, display, configuration, [], [], ref error);
-        if (response is not null && context is not null)
-            return (response, context);
-
-        ReadOnlyMemory<char> host = connectionDetails.Host.ToArray();
-        ReadOnlyMemory<char> dis = connectionDetails.Display.ToArray();
-
-        foreach (var (authName, authData) in GetAuthInfo(host, dis))
-        {
-            (response, context) = Connect(connectionDetails, display, configuration, authName, authData, ref error);
-            if (response is not null && context is not null)
-                return (response, context);
-        }
-
-        throw new UnauthorizedAccessException(error.ToString());
+        this.Socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
+        Socket.Connect(new UnixDomainSocketEndPoint(path));
+        ProtoOut = new ProtoOut(Socket, configuration);
+        ProtoIn = new ProtoIn(Socket, configuration);
     }
 
-    internal static (HandshakeSuccessResponseBody, ClientConnectionContext) Connect(in ConnectionDetails connectionDetails,
-        string display,
-        XcbClientConfiguration configuration,
-        Span<byte> name,
-        Span<byte> data)
-    {
-        ReadOnlySpan<char> error = [];
-        var (response, context) = Connect(connectionDetails, display, configuration, name, data, ref error);
-        return response is null || context is null 
-            ? throw new UnauthorizedAccessException(error.ToString()) 
-            : (response, context);
-    }
+    public bool Connected => this.Socket.Connected;
 
-    private static (HandshakeSuccessResponseBody?, ClientConnectionContext?) Connect(in ConnectionDetails connectionDetails,
-        string display,
-        XcbClientConfiguration configuration,
-        Span<byte> name,
-        Span<byte> data,
-        ref ReadOnlySpan<char> error)
+    public bool EstablishConnection(ReadOnlySpan<byte> authName, ReadOnlySpan<byte> authData)
     {
-        var (response, context) = MakeHandshake(connectionDetails, display, configuration, name, data);
-        if (response.HandshakeStatus is HandshakeStatus.Success && context is not null)
+        try
         {
-            var successBody = HandshakeSuccessResponseBody.Read(context.ProtoIn,
-                response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
-            return (successBody, context);
-        }
-
-        if (context is not null)
-            error = response.GetStatusMessage(context.Socket);
-        context?.Dispose();
-        return (null, null);
-    }
-
-    private static string GetAuthFilePath()
-    {
-        Thread.MemoryBarrier();
-        if (_cachedAuthPath is not null)
-            return _cachedAuthPath;
-
-        lock (AuthPathLock)
-        {
-            if (_cachedAuthPath is not null)
-                return _cachedAuthPath;
-
-            string result;
-            var authPath = Environment.GetEnvironmentVariable("XAUTHORITY");
-            if (!string.IsNullOrWhiteSpace(authPath))
+            var request = new HandShakeRequestType((ushort)authName.Length, (ushort)authData.Length);
+            var length = authName.Length.AddPadding() + authData.Length.AddPadding() + Marshal.SizeOf<HandShakeRequestType>();
+            var writeIndex = 12;
+            if (length < XcbClientConfiguration.StackAllocThreshold)
             {
-                result = authPath;
+                Span<byte> scratchBuffer = stackalloc byte[length];
+#if NETSTANDARD
+                MemoryMarshal.Write(scratchBuffer[0..writeIndex], ref request);
+#else
+                MemoryMarshal.Write(scratchBuffer[0..writeIndex], in request);
+#endif
+                authName.CopyTo(scratchBuffer[writeIndex..]);
+                writeIndex += authName.Length;
+                scratchBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
+                writeIndex += authName.Length.Padding();
+
+                authData.CopyTo(scratchBuffer[writeIndex..]);
+                writeIndex += authData.Length;
+                scratchBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
+                ProtoOut.SendExact(scratchBuffer);
             }
             else
             {
-                var homePath = Environment.GetEnvironmentVariable("HOME");
-                if (string.IsNullOrWhiteSpace(homePath))
-                    throw new InvalidOperationException("Neither XAUTHORITY nor HOME environment variables are set");
+                using var scratchBuffer = new ArrayPoolUsing<byte>(length);
+                var workingBuffer = scratchBuffer[..length];
+#if NETSTANDARD
+                MemoryMarshal.Write(workingBuffer[0..writeIndex], ref request);
+#else
+                MemoryMarshal.Write(workingBuffer[0..writeIndex], in request);
+#endif
+                authName.CopyTo(workingBuffer[writeIndex..]);
+                writeIndex += authName.Length;
+                workingBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
+                writeIndex += authName.Length.Padding();
 
-                result = Path.Combine(homePath, ".Xauthority");
+                authData.CopyTo(workingBuffer[writeIndex..]);
+                writeIndex += authData.Length;
+                workingBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
+                ProtoOut.SendExact(workingBuffer);
             }
-
-            Thread.MemoryBarrier();
-            _cachedAuthPath = result;
-
-            return result;
+            return true;
         }
-    }
-
-    // TODO: move all the logic to a separate file or a separate project for less cluster
-    private static IEnumerable<(byte[] authName, byte[] authData)> GetAuthInfo(ReadOnlyMemory<char> host,
-        ReadOnlyMemory<char> display)
-    {
-        var filePath = GetAuthFilePath();
-        if (!File.Exists(filePath))
-            throw new UnauthorizedAccessException("Failed to connect");
-
-        using var fileStream = File.OpenRead(filePath);
-        while (fileStream.Position <= fileStream.Length)
+        catch (Exception)
         {
-            var context = new XAuthority(fileStream);
-            var dspy = context.GetDisplayNumber(fileStream);
-            var displayName = context.GetName(fileStream);
-
-            if ((host.Span is "" or " " || host.Span.SequenceEqual(context.GetHostAddress(fileStream)))
-                && (dspy is "" || dspy.SequenceEqual(display.Span))
-                && displayName.SequenceEqual(MagicCookie))
-                yield return (displayName, context.GetData(fileStream));
+            // Socket disposal is handled by Connection.Dispose()
+            // The caller (ConnectionHelper.cs) will dispose the context on failure
+            return false;
         }
     }
 
-    private static (HandshakeResponseHead, ClientConnectionContext?) MakeHandshake(in ConnectionDetails connectionDetails,
-       string display,
-       XcbClientConfiguration configuration,
-       Span<byte> authName,
-       Span<byte> authData)
+    public void SequenceReset()
     {
-        var connection = new ClientConnectionContext(
-            connectionDetails.GetSocketPath(display).ToString(),
-            configuration,
-            connectionDetails.Protocol);
-        if (!connection.Connected)
-            throw new Exception("Error connecting to X server");
-
-        if (!connection.EstablishConnection(authName, authData))
-            return (new HandshakeResponseHead(), null);
-        
-        Span<byte> tempBuffer = stackalloc byte[Marshal.SizeOf<HandshakeResponseHead>()];
-        connection.ProtoIn.ReceiveExact(tempBuffer);
-        return (tempBuffer.ToStruct<HandshakeResponseHead>(), connection);
+        ProtoOut.Sequence = 0;
+        ProtoIn.Sequence = 0;
     }
 
+    public void SetUpStatus(ref ReadOnlySpan<char> error)
+    {
+        Span<byte> tempBuffer = stackalloc byte[Unsafe.SizeOf<HandshakeResponseHead>()];
+        this.ProtoIn.ReceiveExact(tempBuffer);
+        ref readonly var response = ref tempBuffer.AsStruct<HandshakeResponseHead>();
+
+        HandshakeStatus = response.HandshakeStatus;
+        
+        if (response.HandshakeStatus is HandshakeStatus.Success)
+        {
+            SuccessResponse = HandshakeSuccessResponseBody.Read(this.ProtoIn,
+                response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
+            error = [];
+        }
+        else
+        {
+            int dataLength = response.HandshakeStatus == HandshakeStatus.Failed
+                ? response.HandshakeResponseHeadFailed.AdditionalDataLength
+                : response.HandshakeResponseHeadAuthenticate.AdditionalDataLength;
+            if (dataLength == 0) throw new NotSupportedException();
+
+            // todo: stack overflow handler
+            Span<byte> buffer = stackalloc byte[dataLength * 4];
+            this.ProtoIn.ReceiveExact(buffer);
+            error = Encoding.ASCII.GetString(buffer).TrimEnd();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed)
+            return;
+
+        if (disposing)
+        {
+            // ProtoIn and ProtoOut only hold references to the Socket, they don't own it.
+            // Socket is the only resource that needs disposal.
+            Socket?.Dispose();
+        }
+
+        _disposed = true;
+    }
 }

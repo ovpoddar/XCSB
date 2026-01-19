@@ -28,13 +28,14 @@ internal sealed class XProto : BaseProtoClient, IXProto
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
 
-    public XProto(
-        HandshakeSuccessResponseBody handshakeSuccessResponseBody, 
-        ClientConnectionContext connectionResult) 
+    public XProto(Connection connectionResult, ReadOnlySpan<char> failReason) 
         : base(connectionResult)
     {
+        if (connectionResult.HandshakeStatus is not HandshakeStatus.Success || connectionResult.SuccessResponse is null) 
+            throw new UnauthorizedAccessException(failReason.ToString());
+
         _globalId = 0;
-        HandshakeSuccessResponseBody = handshakeSuccessResponseBody;
+        HandshakeSuccessResponseBody = connectionResult.SuccessResponse;
     }
 
 

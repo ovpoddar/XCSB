@@ -12,12 +12,11 @@ public static class XcsbClient
         display = string.IsNullOrWhiteSpace(display) ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0" : display;
         configuration ??= XcbClientConfiguration.Default;
 
+        ReadOnlySpan<char> error = [];
         var connectionDetails = GetDisplayConfiguration(display);
-        var connectionResult = Connection.TryConnect(connectionDetails, display, configuration);
-        var result = new XProto(
-            connectionResult.Item1,
-            connectionResult.Item2);
-        connectionResult.Item2.SequenceReset();
+        var connectionResult = ConnectionHelper.TryConnect(connectionDetails, display, configuration, ref error);
+        var result = new XProto(connectionResult, error.ToString());
+        connectionResult.SequenceReset();
         return result;
     }
     
@@ -28,12 +27,11 @@ public static class XcsbClient
         if (data.IsEmpty) throw new ArgumentNullException(nameof(data));
         configuration ??= XcbClientConfiguration.Default;
 
+        ReadOnlySpan<char> error = [];
         var connectionDetails = GetDisplayConfiguration(display);
-        var connectionResult = Connection.Connect(connectionDetails, display, configuration, name, data);
-        var result = new XProto(
-            connectionResult.Item1,
-            connectionResult.Item2);
-        connectionResult.Item2.SequenceReset();
+        var connectionResult = ConnectionHelper.Connect(connectionDetails, display, configuration, name, data, ref error);
+        var result = new XProto(connectionResult, error.ToString());
+        connectionResult.SequenceReset();
         return result;
     }
     
@@ -66,8 +64,8 @@ public static class XcsbClient
 #else
                 Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
 #endif
-                        ? protocol
-                        : ProtocolType.Tcp;
+                    ? protocol
+                    : ProtocolType.Tcp;
                 // todo this does not looks right 
                 // verify this
                 details.Host = input.Slice(slashIndex + 1, colonIndex);

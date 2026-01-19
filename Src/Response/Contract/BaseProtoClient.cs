@@ -21,9 +21,9 @@ namespace Xcsb.Response.Contract;
 internal class BaseProtoClient : IDisposable
 {
     private bool _disposedValue;
-    internal readonly ClientConnectionContext ClientConnection;
+    internal readonly Connection ClientConnection;
 
-    public BaseProtoClient(ClientConnectionContext clientConnection)
+    public BaseProtoClient(Connection clientConnection)
     {
         ClientConnection = clientConnection;
     }

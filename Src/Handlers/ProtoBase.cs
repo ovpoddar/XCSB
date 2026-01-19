@@ -34,7 +34,8 @@ internal abstract class ProtoBase
 
     protected virtual void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
-        Configuration.OnSendRequest?.Invoke(Socket, socketFlags, buffer);
+        Socket.SendExact(buffer, socketFlags);
+        Configuration.OnSendRequest?.Invoke(buffer);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
