@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -11,19 +12,27 @@ namespace Xcsb.Generators
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var compilationProvider = context.CompilationProvider
-                .Select((a, _) =>
-                    a.References
-                    .Select(r => a.GetAssemblyOrModuleSymbol(r))
-                    .OfType<IAssemblySymbol>()
-                    .Select(a => a.Identity.Name)
-                    .Where(a => a.StartsWith("Xcsb"))
-                    .Distinct()
-                    .OrderBy(n => n)
-                    .ToImmutableArray());
+            var extensationDefineAttributes = context.CompilationProvider
+                .Select((a, _) => a.GetTypeByMetadataName("Xcsb.Generators.Attributes.XExtensationExporterAttribute"));
+            var extensationAssemblys = context.CompilationProvider
+                    .Select((a, _) =>
+                        a.References
+                            .Select(r => a.GetAssemblyOrModuleSymbol(r)).OfType<IAssemblySymbol>()
+                            .Where(a => a.Identity.Name.StartsWith("Xcsb"))
+                            .ToImmutableArray());
+            var exportedInterfaces = extensationAssemblys
+                .Combine(extensationDefineAttributes)
+                .Select((pair, _) =>
+                    pair.Left.SelectMany(a => GetAllTypes(a.GlobalNamespace))
+                        .Where(t => pair.Right is not null
+                                    && t.TypeKind == TypeKind.Interface
+                                    && t.GetAttributes().Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, pair.Right)))
+                        .Distinct(SymbolEqualityComparer.Default)                        
+                        .ToImmutableArray());
+
             //Debugger.Launch();
 
-            context.RegisterSourceOutput(compilationProvider, (ctx, packets) =>
+            context.RegisterSourceOutput(exportedInterfaces, (ctx, packets) =>
             {
                 ctx.AddSource("IXCProto.g.cs",
 $$"""
@@ -40,7 +49,7 @@ namespace Xcsb
     {
         public void Write()
         {
-            Console.WriteLine("{{String.Join(", ", packets)}}");
+            Console.WriteLine("{{String.Join(", ", packets.Where(a => a is not null).Select(a => a.ToDisplayString()))}}");
         }
     }
 }
@@ -106,5 +115,23 @@ namespace Xcsb
             //            });
 
         }
+
+
+        static IEnumerable<INamedTypeSymbol> GetAllTypes(INamespaceSymbol @namespace)
+        {
+            foreach (var member in @namespace.GetMembers())
+            {
+                if (member is INamespaceSymbol nestedNs)
+                {
+                    foreach (var type in GetAllTypes(nestedNs))
+                        yield return type;
+                }
+                else if (member is INamedTypeSymbol type)
+                {
+                    yield return type;
+                }
+            }
+        }
+
     }
 }

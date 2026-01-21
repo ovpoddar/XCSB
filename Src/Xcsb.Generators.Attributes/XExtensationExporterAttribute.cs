@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace Xcsb.Generators.Attributes
+namespace Xcsb.Generators.Attributes;
+
+[AttributeUsage(AttributeTargets.Interface)]
+public class XExtensationExporterAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Interface)]
-    public class XExtensationExporterAttribute : Attribute
-    {
-        // TODO: ADD FIELDS
-    }
+    // TODO: ADD FIELDS
 }

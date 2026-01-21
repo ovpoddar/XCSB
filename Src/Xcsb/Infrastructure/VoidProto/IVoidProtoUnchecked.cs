@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xcsb.Masks;
+﻿using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
 

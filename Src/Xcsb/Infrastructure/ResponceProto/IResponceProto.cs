@@ -1,8 +1,10 @@
-﻿using Xcsb.Models;
+﻿using Xcsb.Generators.Attributes;
+using Xcsb.Models;
 using Xcsb.Response.Replies;
 
 namespace Xcsb.Infrastructure;
 
+[XExtensationExporter]
 public interface IResponseProto
 {
     AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue);

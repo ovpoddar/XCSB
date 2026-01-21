@@ -110,9 +110,9 @@ internal class ProtoIn : ProtoBase
 
         _ = Received(result[32..result.Length]);
 
-        if (!ReplyBuffer.TryRemove(content.Sequence, out var response)) 
+        if (!ReplyBuffer.TryRemove(content.Sequence, out var response))
             return result;
-        
+
         replySize = result.Length + response.Length;
         using var scratchBuffer = new ArrayPoolUsing<byte>(replySize);
         response.CopyTo(scratchBuffer);
@@ -192,12 +192,12 @@ internal class ProtoIn : ProtoBase
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
             Debug.Assert(response.ResponseHeader.Sequence == sequence);
-            if (!response.HasMore) return result[0..count].ToArray(); 
+            if (!response.HasMore) return result[0..count].ToArray();
 
             result[count++] = new ListFontsWithInfoReply(in response, packet[60..]);
 
             if (count != result.Length) continue;
-            
+
             var larger = new ArrayPoolUsing<ListFontsWithInfoReply>(result.Length << 1);
             result[0..result.Length].CopyTo(larger);
             result.Dispose();

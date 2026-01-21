@@ -1,5 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Xcsb.Configuration;
 using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;

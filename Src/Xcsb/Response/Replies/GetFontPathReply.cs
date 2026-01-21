@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Xcsb.Helpers;
@@ -31,13 +30,13 @@ public struct GetFontPathReply
                 var length = response[cursor++];
                 if (length == 0)
                     break;
-                
+
                 Paths[i++] = cursor + length > response.Length
                     ? Encoding.UTF8.GetString(response[cursor..])
                     : Encoding.UTF8.GetString(response.Slice(cursor, length));
                 cursor += length;
             }
-            
+
             Debug.Assert(i == context.StringLength);
         }
     }

@@ -1,15 +1,12 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
-using Xcsb.Configuration;
-using Xcsb.Models.String;
 using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure.Exceptions;
+using Xcsb.Models.String;
 using Xcsb.Requests;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Errors;
-using Xcsb.Response.Event;
 
 #if !NETSTANDARD
 using System.Numerics;

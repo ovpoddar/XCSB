@@ -98,7 +98,7 @@ internal class Connection : IDisposable
         ref readonly var response = ref tempBuffer.AsStruct<HandshakeResponseHead>();
 
         HandshakeStatus = response.HandshakeStatus;
-        
+
         if (response.HandshakeStatus is HandshakeStatus.Success)
         {
             SuccessResponse = HandshakeSuccessResponseBody.Read(this.ProtoIn,

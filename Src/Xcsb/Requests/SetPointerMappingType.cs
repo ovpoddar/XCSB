@@ -10,6 +10,6 @@ namespace Xcsb.Requests;
 internal readonly struct SetPointerMappingType(int mapLenght)
 {
     public readonly Opcode Opcode = Opcode.SetPointerMapping;
-    public readonly byte MapLength= (byte)mapLenght;
+    public readonly byte MapLength = (byte)mapLenght;
     public readonly ushort Length = (ushort)((mapLenght.AddPadding() / 4) + 1);
 }

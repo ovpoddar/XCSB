@@ -19,7 +19,7 @@ public static class XcsbClient
         connectionResult.SequenceReset();
         return result;
     }
-    
+
     public static IXProto Initialized(string display, Span<byte> name, Span<byte> data, XcbClientConfiguration? configuration = null)
     {
         if (string.IsNullOrWhiteSpace(display)) throw new ArgumentNullException(nameof(display));
@@ -34,7 +34,7 @@ public static class XcsbClient
         connectionResult.SequenceReset();
         return result;
     }
-    
+
     private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)
     {
         var details = new ConnectionDetails

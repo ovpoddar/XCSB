@@ -1,12 +1,12 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using Xcsb.Models.String;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Infrastructure.Response;
+using Xcsb.Models.String;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
@@ -28,10 +28,10 @@ internal sealed class XProto : BaseProtoClient, IXProto
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
 
-    public XProto(Connection connectionResult, ReadOnlySpan<char> failReason) 
+    public XProto(Connection connectionResult, ReadOnlySpan<char> failReason)
         : base(connectionResult)
     {
-        if (connectionResult.HandshakeStatus is not HandshakeStatus.Success || connectionResult.SuccessResponse is null) 
+        if (connectionResult.HandshakeStatus is not HandshakeStatus.Success || connectionResult.SuccessResponse is null)
             throw new UnauthorizedAccessException(failReason.ToString());
 
         _globalId = 0;
