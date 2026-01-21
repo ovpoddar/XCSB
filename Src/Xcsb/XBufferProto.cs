@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Configuration;
 using Xcsb.Models.String;
 using Xcsb.Helpers;
 using Xcsb.Masks;
@@ -18,9 +19,8 @@ namespace Xcsb;
 
 internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 {
-    public XBufferProto(XProto xProto) : base(xProto.ProtoIn, xProto.ProtoOut)
+    public XBufferProto(XProto xProto) : base(xProto.ClientConnection.ProtoIn, xProto.ClientConnection.ProtoOut)
     {
-        // todo: pass a configuration object and based on that set up the XBufferProto
     }
 
     public void AllowEvents(EventsMode mode, uint time)

@@ -76,9 +76,9 @@ internal struct ArrayPoolUsing<T> : IDisposable
         {
             if (_values is null)
                 throw new ArgumentNullException(nameof(_values));
-            if ((uint)index >= (uint)_values.Length)
-                throw new IndexOutOfRangeException();
-            return _values[index];
+            return (uint)index >= (uint)_values.Length 
+                ? throw new IndexOutOfRangeException() 
+                : _values[index];
         }
 
         set

@@ -1,19 +1,40 @@
 ﻿using System.Net.Sockets;
+using Xcsb.Configuration;
 using Xcsb.Models;
+using Xcsb.Models.Infrastructure;
 
 namespace Xcsb;
 
 public static class XcsbClient
 {
-    public static IXProto Initialized()
+    public static IXProto Initialized(string? display = null, XcbClientConfiguration? configuration = null)
     {
-        var display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
+        display = string.IsNullOrWhiteSpace(display) ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0" : display;
+        configuration ??= XcbClientConfiguration.Default;
+
+        ReadOnlySpan<char> error = [];
         var connectionDetails = GetDisplayConfiguration(display);
-        var connectionResult = Connection.TryConnect(connectionDetails, display);
-        var result = new XProto(connectionResult.Item2, connectionResult.Item1);
+        var connectionResult = ConnectionHelper.TryConnect(connectionDetails, display, configuration, ref error);
+        var result = new XProto(connectionResult, error.ToString());
+        connectionResult.SequenceReset();
         return result;
     }
+    
+    public static IXProto Initialized(string display, Span<byte> name, Span<byte> data, XcbClientConfiguration? configuration = null)
+    {
+        if (string.IsNullOrWhiteSpace(display)) throw new ArgumentNullException(nameof(display));
+        if (name.IsEmpty) throw new ArgumentNullException(nameof(name));
+        if (data.IsEmpty) throw new ArgumentNullException(nameof(data));
+        configuration ??= XcbClientConfiguration.Default;
 
+        ReadOnlySpan<char> error = [];
+        var connectionDetails = GetDisplayConfiguration(display);
+        var connectionResult = ConnectionHelper.Connect(connectionDetails, display, configuration, name, data, ref error);
+        var result = new XProto(connectionResult, error.ToString());
+        connectionResult.SequenceReset();
+        return result;
+    }
+    
     private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)
     {
         var details = new ConnectionDetails
@@ -39,12 +60,12 @@ public static class XcsbClient
             {
                 details.Protocol =
 #if NETSTANDARD
-                    Enum.TryParse(input[..slashIndex].ToString(), true, out ProtocolType protocol)
+                Enum.TryParse(input[..slashIndex].ToString(), true, out ProtocolType protocol)
 #else
-                    Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
+                Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
 #endif
-                        ? protocol
-                        : ProtocolType.Tcp;
+                    ? protocol
+                    : ProtocolType.Tcp;
                 // todo this does not looks right 
                 // verify this
                 details.Host = input.Slice(slashIndex + 1, colonIndex);
