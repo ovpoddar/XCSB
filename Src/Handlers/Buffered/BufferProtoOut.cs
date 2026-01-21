@@ -1,28 +1,31 @@
-﻿using System.Buffers;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Configuration;
+using Xcsb.Handlers.Direct;
 
-namespace Xcsb.Handlers;
+namespace Xcsb.Handlers.Buffered;
 
 internal class BufferProtoOut : ProtoBase
 {
     private readonly List<byte> _buffer;
-    internal readonly ProtoOut ProtoOut;
-    internal int RequestLength;
+    private readonly ProtoOut _protoOut;
+    private int _requestLength;
 
-    public BufferProtoOut(ProtoOut protoOut) : base(protoOut)
+    public int Sequence => _protoOut.Sequence;
+
+    public BufferProtoOut(ProtoOut protoOut) : base(protoOut, protoOut.Configuration)
     {
-        ProtoOut = protoOut;
+        _protoOut = protoOut;
         _buffer = new List<byte>();
-        RequestLength = 0;
+        _requestLength = 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Add<T>(scoped ref T value) where T : unmanaged
     {
         AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
-        RequestLength++;
+        _requestLength++;
     }
 
     internal void AddRange<T>(ReadOnlySpan<T> content) where T : struct
@@ -49,13 +52,13 @@ internal class BufferProtoOut : ProtoBase
     internal void Reset()
     {
         _buffer.Clear();
-        RequestLength = 0;
+        _requestLength = 0;
     }
 
     protected override void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
         base.SendExact(in buffer, socketFlags);
-        ProtoOut.Sequence += RequestLength;
+        _protoOut.Sequence += _requestLength;
     }
 
 }

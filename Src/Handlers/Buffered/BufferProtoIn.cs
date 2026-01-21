@@ -1,18 +1,20 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using Xcsb.Configuration;
+using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
 using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 
-namespace Xcsb.Handlers;
+namespace Xcsb.Handlers.Buffered;
 
 internal class BufferProtoIn : ProtoBase
 {
     internal readonly ProtoIn ProtoIn;
 
-    public BufferProtoIn(ProtoIn protoIn) : base(protoIn)
+    public BufferProtoIn(ProtoIn protoIn) : base(protoIn, protoIn.Configuration)
     {
         ProtoIn = protoIn;
     }
@@ -26,7 +28,7 @@ internal class BufferProtoIn : ProtoBase
         Span<byte> buffer = stackalloc byte[bufferSize];
         while (base.Socket.Available != 0)
         {
-            base.Socket.ReceiveExact(buffer);
+            _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = content.GetResponseType();
             switch (responseType)
@@ -67,8 +69,7 @@ internal class BufferProtoIn : ProtoBase
         using var result = new ArrayPoolUsing<byte>(32 + replySize);
         buffer.CopyTo(result[..32]);
 
-        Socket.EnsureReadSize(replySize);
-        Socket.ReceiveExact(result[32..result.Length]);
+        _ = Received(result[32..result.Length]);
 
 
         if (!ReplyBuffer.TryRemove(content.Sequence, out var response))

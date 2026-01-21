@@ -767,7 +767,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         {{WriteUpValueOfCsSetup(out var typeName)}}
@@ -921,7 +921,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 
@@ -1005,7 +1005,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 
@@ -1094,7 +1094,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 
@@ -1190,7 +1190,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var cursor_pixmap = _xProto.NewId();
@@ -1229,7 +1229,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var cursor_pixmap = _xProto.NewId();
@@ -1279,7 +1279,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         {{GetCsSpeicalContent()}}
@@ -1425,7 +1425,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
@@ -1749,7 +1749,7 @@ int main()
 $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}}byte[] expectedResult)
     {
-        var field = typeof(Xcsb.Handlers.BufferProtoOut)
+        var field = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
@@ -1865,7 +1865,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 
@@ -2006,7 +2006,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{{base.ParamSignature[0]}}>(params0);
@@ -2131,7 +2131,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
@@ -2265,7 +2265,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
         var keyboardMapping = _xProto.GetKeyboardMapping(_xProto.HandshakeSuccessResponseBody.MinKeyCode,
@@ -2378,7 +2378,7 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var workingField = typeof(Xcsb.Handlers.BufferProtoOut)
+        var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
 

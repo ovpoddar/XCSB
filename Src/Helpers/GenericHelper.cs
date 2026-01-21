@@ -115,10 +115,6 @@ internal static class GenericHelper
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Send<T>(this Socket socket, scoped ref T value) where T : unmanaged =>
-        socket.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)));
-
     internal static void ReceiveExact(this Socket socket, Span<byte> buffer)
     {
         if (buffer.Length == 0)
@@ -145,29 +141,6 @@ internal static class GenericHelper
         if (remainder == 0) return;
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
-
-#if !NETSTANDARD
-    [SkipLocalsInit]
-#endif
-    private static T ReceivedResponse<T>(this Socket socket) where T : unmanaged
-    {
-        var resultLength = Unsafe.SizeOf<T>();
-        Span<byte> buffer = stackalloc byte[resultLength];
-        socket.EnsureReadSize(resultLength);
-        socket.ReceiveExact(buffer);
-        return buffer.ToStruct<T>();
-    }
-
-    internal static void EnsureReadSize(this Socket socket, int size)
-    {
-        while (true)
-        {
-            if (socket.Available >= size)
-                break;
-            socket.Poll(-1, SelectMode.SelectRead);
-        }
-    }
-
 
     internal static int CountFlags<T>(this T value) where T : struct, Enum
     {

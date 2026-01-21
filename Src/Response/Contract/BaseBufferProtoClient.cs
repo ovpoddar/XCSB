@@ -2,7 +2,10 @@
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Configuration;
 using Xcsb.Handlers;
+using Xcsb.Handlers.Buffered;
+using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
 
 namespace Xcsb.Response.Contract;
@@ -18,12 +21,12 @@ internal class BaseBufferProtoClient
         BufferProtoIn = new BufferProtoIn(protoIn);
     }
 
-    protected void FlushBase(bool shouldThorw)
+    internal void FlushBase(bool shouldThorw)
     {
         try
         {
             BufferProtoIn.ProtoIn.FlushSocket();
-            var outProtoSequence = BufferProtoOut.ProtoOut.Sequence;
+            var outProtoSequence = BufferProtoOut.Sequence;
             BufferProtoOut.Flush();
             BufferProtoIn.FlushSocket(BufferProtoIn.ProtoIn.Sequence, outProtoSequence, shouldThorw);
         }

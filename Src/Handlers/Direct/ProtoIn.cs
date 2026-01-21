@@ -1,8 +1,8 @@
-using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Configuration;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure.Exceptions;
@@ -12,12 +12,12 @@ using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Handlers;
+namespace Xcsb.Handlers.Direct;
 
 internal class ProtoIn : ProtoBase
 {
     internal int Sequence { get; set; }
-    internal ProtoIn(Socket socket) : base(socket)
+    internal ProtoIn(Socket socket, XcbClientConfiguration configuration) : base(socket, configuration)
     {
         Sequence = 0;
     }
@@ -61,7 +61,7 @@ internal class ProtoIn : ProtoBase
         if (!Socket.Poll(-1, SelectMode.SelectRead))
             return scratchBuffer.ToStruct<XEvent>();
 
-        var totalRead = Socket.Receive(scratchBuffer);
+        var totalRead = Received(scratchBuffer, false);
         return totalRead == 0
             ? scratchBuffer.Make<XEvent, LastEvent>(new LastEvent(Sequence))
             : scratchBuffer.ToStruct<XEvent>();
@@ -73,7 +73,7 @@ internal class ProtoIn : ProtoBase
         Span<byte> buffer = stackalloc byte[bufferSize];
         while (Socket.Available != 0)
         {
-            Socket.ReceiveExact(buffer);
+            _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = content.GetResponseType();
             switch (responseType)
@@ -108,9 +108,7 @@ internal class ProtoIn : ProtoBase
         using var result = new ArrayPoolUsing<byte>(32 + replySize);
         buffer.CopyTo(result[..32]);
 
-        Socket.EnsureReadSize(replySize);
-        Socket.ReceiveExact(result[32..result.Length]);
-
+        _ = Received(result[32..result.Length]);
 
         if (!ReplyBuffer.TryRemove(content.Sequence, out var response)) 
             return result;
@@ -121,7 +119,6 @@ internal class ProtoIn : ProtoBase
         result[0..result.Length].CopyTo(scratchBuffer[response.Length..]);
         return scratchBuffer;
     }
-
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
@@ -162,7 +159,6 @@ internal class ProtoIn : ProtoBase
         }
     }
 
-
     private ListFontsWithInfoReply[] GetListFontsReply(Span<byte> reply, int sequence, int maxNames)
     {
         var result = new ArrayPoolUsing<ListFontsWithInfoReply>(maxNames);
@@ -191,7 +187,7 @@ internal class ProtoIn : ProtoBase
 
         while (true)
         {
-            Socket.ReceiveExact(headerBuffer);
+            _ = Received(headerBuffer);
             var packet = ComputeResponse(ref headerBuffer).AsSpan();
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
@@ -209,4 +205,8 @@ internal class ProtoIn : ProtoBase
         }
 
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ReceiveExact(scoped in Span<byte> buffer) =>
+        Received(buffer);
 }
