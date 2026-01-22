@@ -16,7 +16,6 @@ public static class XcsbClient
         var connectionDetails = GetDisplayConfiguration(display);
         var connectionResult = ConnectionHelper.TryConnect(connectionDetails, display, configuration, ref error);
         var result = new XProto(connectionResult, error.ToString());
-        connectionResult.SequenceReset();
         return result;
     }
 
@@ -31,7 +30,6 @@ public static class XcsbClient
         var connectionDetails = GetDisplayConfiguration(display);
         var connectionResult = ConnectionHelper.Connect(connectionDetails, display, configuration, name, data, ref error);
         var result = new XProto(connectionResult, error.ToString());
-        connectionResult.SequenceReset();
         return result;
     }
 

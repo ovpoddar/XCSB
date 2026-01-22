@@ -6,4 +6,7 @@ namespace Xcsb;
 
 internal interface IXConnection
 {
+    bool IsEventAvailable();
+    void WaitForEvent();
+    uint NewId();
 }

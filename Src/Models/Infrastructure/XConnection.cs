@@ -7,11 +7,13 @@ using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
 using Xcsb.Models.ServerConnection.Handshake;
 using Xcsb.Requests;
+using Xcsb.Response.Event;
 
 namespace Xcsb.Models.Infrastructure;
 
 internal class XConnection : IXConnection, IDisposable
 {
+    public int GlobalId;
     public Socket Socket { get; }
     public ProtoOut ProtoOut { get; }
     public ProtoIn ProtoIn { get; }
@@ -24,9 +26,10 @@ internal class XConnection : IXConnection, IDisposable
     public XConnection(string path, XcbClientConfiguration configuration, in ProtocolType type)
     {
         this.Socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
-        Socket.Connect(new UnixDomainSocketEndPoint(path));
-        ProtoOut = new ProtoOut(Socket, configuration);
-        ProtoIn = new ProtoIn(Socket, configuration);
+        this.Socket.Connect(new UnixDomainSocketEndPoint(path));
+        this.ProtoOut = new ProtoOut(Socket, configuration);
+        this.ProtoIn = new ProtoIn(Socket, configuration);
+        this.GlobalId = 0;
     }
 
     public bool Connected => this.Socket.Connected;
@@ -118,6 +121,24 @@ internal class XConnection : IXConnection, IDisposable
             error = Encoding.ASCII.GetString(buffer).TrimEnd();
         }
     }
+
+
+    public void WaitForEvent()
+    {
+        if (!IsEventAvailable())
+            Socket.Poll(-1, SelectMode.SelectRead);
+    }
+
+    public uint NewId() => SuccessResponse is null
+        ? throw new InvalidOperationException()
+        : (uint)((SuccessResponse.ResourceIDMask & this.GlobalId++) | SuccessResponse.ResourceIDBase);
+
+    public XEvent GetEvent() =>
+        ProtoIn.ReceivedResponse();
+
+    public bool IsEventAvailable() =>
+        !ProtoIn.BufferEvents.IsEmpty || Socket.Available >= Unsafe.SizeOf<GenericEvent>();
+
 
     public void Dispose()
     {

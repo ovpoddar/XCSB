@@ -1,5 +1,9 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
+using Xcsb.Configuration;
+using Xcsb.Helpers;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure;
@@ -7,6 +11,7 @@ using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Infrastructure.Response;
 using Xcsb.Models.ServerConnection.Handshake;
 using Xcsb.Models.String;
+using Xcsb.Requests;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
@@ -22,29 +27,32 @@ namespace Xcsb;
 #if !NETSTANDARD
 [SkipLocalsInit]
 #endif
-internal sealed class XProto : BaseProtoClient, IXProto
+internal sealed class XProto : IXProto, IDisposable
 {
-    private int _globalId;
     private XBufferProto? _xBufferProto;
-    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
+    private bool _disposedValue;
 
+    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
 
-    public XProto(XConnection connectionResult, ReadOnlySpan<char> failReason)
-        : base(connectionResult)
+    internal readonly XConnection ClientConnection;
+
+    public XProto(IXConnection connection, ReadOnlySpan<char> failReason)
     {
-        if (connectionResult.HandshakeStatus is not HandshakeStatus.Success || connectionResult.SuccessResponse is null)
+        if (connection is not XConnection clientConnection)
+            throw new ArgumentNullException(nameof(connection));
+
+        ClientConnection = clientConnection;
+        ClientConnection.SequenceReset();
+        if (ClientConnection.HandshakeStatus is not HandshakeStatus.Success || ClientConnection.SuccessResponse is null)
             throw new UnauthorizedAccessException(failReason.ToString());
-
-        _globalId = 0;
-        HandshakeSuccessResponseBody = connectionResult.SuccessResponse;
+        HandshakeSuccessResponseBody = ClientConnection.SuccessResponse;
     }
-
 
     public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
     {
         var cookie = AllocColorBase(colorMap, red, green, blue);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<AllocColorReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<AllocColorReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -53,7 +61,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
     {
         var cookie = AllocColorCellsBase(contiguous, colorMap, colors, planes);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<AllocColorCellsResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<AllocColorCellsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new AllocColorCellsReply(result);
@@ -63,7 +71,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         ushort greens, ushort blues)
     {
         var cookie = AllocColorPlanesBase(contiguous, colorMap, colors, reds, greens, blues);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<AllocColorPlanesResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<AllocColorPlanesResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new AllocColorPlanesReply(result);
@@ -72,7 +80,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name)
     {
         var cookie = AllocNamedColorBase(colorMap, name);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<AllocNamedColorReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<AllocNamedColorReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -82,7 +90,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetAtomNameReply GetAtomName(ATOM atom)
     {
         var cookie = GetAtomNameBase(atom);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetAtomNameResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<GetAtomNameResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetAtomNameReply(result);
@@ -91,7 +99,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public InternAtomReply InternAtom(bool onlyIfExist, string atomName)
     {
         var cookie = InternAtomBase(onlyIfExist, atomName);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<InternAtomReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<InternAtomReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -100,7 +108,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetFontPathReply GetFontPath()
     {
         var cookie = GetFontPathBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetFontPathResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<GetFontPathResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetFontPathReply(result);
@@ -109,7 +117,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetGeometryReply GetGeometry(uint drawable)
     {
         var cookie = GetGeometryBase(drawable);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetGeometryReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<GetGeometryReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -119,7 +127,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         uint planeMask)
     {
         var cookie = GetImageBase(format, drawable, x, y, width, height, planeMask);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetImageResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<GetImageResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetImageReply(result);
@@ -128,7 +136,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetInputFocusReply GetInputFocus()
     {
         var cookie = GetInputFocusBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetInputFocusReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<GetInputFocusReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -137,7 +145,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetKeyboardControlReply GetKeyboardControl()
     {
         var cookie = GetKeyboardControlBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetKeyboardControlResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<GetKeyboardControlResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetKeyboardControlReply(result!.Value);
@@ -146,7 +154,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count)
     {
         var cookie = GetKeyboardMappingBase(firstKeycode, count);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetKeyboardMappingResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<GetKeyboardMappingResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetKeyboardMappingReply(result, count);
@@ -155,7 +163,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetModifierMappingReply GetModifierMapping()
     {
         var cookie = GetModifierMappingBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetModifierMappingResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<GetModifierMappingResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetModifierMappingReply(result);
@@ -164,7 +172,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime)
     {
         var cookie = GetMotionEventsBase(window, startTime, endTime);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetMotionEventsResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<GetMotionEventsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetMotionEventsReply(result);
@@ -173,7 +181,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetPointerControlReply GetPointerControl()
     {
         var cookie = GetPointerControlBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetPointerControlReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<GetPointerControlReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -182,7 +190,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetPointerMappingReply GetPointerMapping()
     {
         var cookie = GetPointerMappingBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetPointerMappingResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<GetPointerMappingResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetPointerMappingReply(result);
@@ -191,7 +199,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
     {
         var cookie = GetPropertyBase(delete, window, property, type, offset, length);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<GetPropertyResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<GetPropertyResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetPropertyReply(result);
@@ -200,7 +208,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetScreenSaverReply GetScreenSaver()
     {
         var cookie = GetScreenSaverBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetScreenSaverReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<GetScreenSaverReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -209,7 +217,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetSelectionOwnerReply GetSelectionOwner(ATOM atom)
     {
         var cookie = GetSelectionOwnerBase(atom);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetSelectionOwnerReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<GetSelectionOwnerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -218,7 +226,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public GetWindowAttributesReply GetWindowAttributes(uint window)
     {
         var cookie = GetWindowAttributesBase(window);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GetWindowAttributesReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<GetWindowAttributesReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -227,7 +235,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListExtensionsReply ListExtensions()
     {
         var cookie = ListExtensionsBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListExtensionsReply(result);
@@ -236,7 +244,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
     {
         var cookie = ListFontsBase(pattern, maxNames);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListFontsResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<ListFontsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListFontsReply(result);
@@ -245,7 +253,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
     {
         var cookie = ListFontsWithInfoBase(pattan, maxNames);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseArray(cookie.Id, maxNames);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseArray(cookie.Id, maxNames);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result;
@@ -254,7 +262,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListHostsReply ListHosts()
     {
         var cookie = ListHostsBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListHostsResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<ListHostsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListHostsReply(result);
@@ -263,7 +271,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListInstalledColormapsReply ListInstalledColormaps(uint window)
     {
         var cookie = ListInstalledColormapsBase(window);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListInstalledColormapsResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<ListInstalledColormapsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListInstalledColormapsReply(result);
@@ -272,7 +280,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public ListPropertiesReply ListProperties(uint window)
     {
         var cookie = ListPropertiesBase(window);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<ListPropertiesResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<ListPropertiesResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListPropertiesReply(result);
@@ -281,7 +289,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name)
     {
         var cookie = LookupColorBase(colorMap, name);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<LookupColorReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<LookupColorReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -290,7 +298,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height)
     {
         var cookie = QueryBestSizeBase(shape, drawable, width, height);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryBestSizeReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<QueryBestSizeReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -299,7 +307,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels)
     {
         var cookie = QueryColorsBase(colorMap, pixels);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<QueryColorsResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<QueryColorsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryColorsReply(result);
@@ -310,7 +318,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         if (name.Length > ushort.MaxValue)
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
         var cookie = QueryExtensionBase(name);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryExtensionReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<QueryExtensionReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -319,7 +327,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryFontReply QueryFont(uint fontId)
     {
         var cookie = QueryFontBase(fontId);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<QueryFontResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<QueryFontResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryFontReply(result);
@@ -328,7 +336,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryKeymapReply QueryKeymap()
     {
         var cookie = QueryKeymapBase();
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryKeymapResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<QueryKeymapResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryKeymapReply(result!.Value);
@@ -337,7 +345,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryPointerReply QueryPointer(uint window)
     {
         var cookie = QueryPointerBase(window);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryPointerReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<QueryPointerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -346,7 +354,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery)
     {
         var cookie = QueryTextExtentsBase(font, stringForQuery);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<QueryTextExtentsReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<QueryTextExtentsReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -355,7 +363,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public QueryTreeReply QueryTree(uint window)
     {
         var cookie = QueryTreeBase(window);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponseSpan<QueryTreeResponse>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseSpan<QueryTreeResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryTreeReply(result);
@@ -366,7 +374,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         GrabMode keyboardMode)
     {
         var cookie = GrabKeyboardBase(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GrabKeyboardReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<GrabKeyboardReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -377,7 +385,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = GrabPointerBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<GrabPointerReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<GrabPointerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -386,7 +394,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes)
     {
         var cookie = SetModifierMappingBase(keycodes);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<SetModifierMappingReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<SetModifierMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -395,7 +403,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public SetPointerMappingReply SetPointerMapping(Span<byte> maps)
     {
         var cookie = SetPointerMappingBase(maps);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<SetPointerMappingReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<SetPointerMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -405,7 +413,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
         ushort srcY)
     {
         var cookie = TranslateCoordinatesBase(srcWindow, destinationWindow, srcX, srcY);
-        var (result, error) = base.ClientConnection.ProtoIn.ReceivedResponse<TranslateCoordinatesReply>(cookie.Id);
+        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponse<TranslateCoordinatesReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.Value;
@@ -415,18 +423,18 @@ internal sealed class XProto : BaseProtoClient, IXProto
     public void WaitForEvent()
     {
         if (!IsEventAvailable())
-            base.ClientConnection.Socket.Poll(-1, SelectMode.SelectRead);
+            this.ClientConnection.Socket.Poll(-1, SelectMode.SelectRead);
     }
 
     public uint NewId() =>
-        (uint)((HandshakeSuccessResponseBody.ResourceIDMask & _globalId++) |
+        (uint)((HandshakeSuccessResponseBody.ResourceIDMask & this.ClientConnection.GlobalId++) |
                HandshakeSuccessResponseBody.ResourceIDBase);
 
     public XEvent GetEvent() =>
-        base.ClientConnection.ProtoIn.ReceivedResponse();
+        this.ClientConnection.ProtoIn.ReceivedResponse();
 
     public bool IsEventAvailable() =>
-        !base.ClientConnection.ProtoIn.BufferEvents.IsEmpty || base.ClientConnection.Socket.Available >= Unsafe.SizeOf<GenericEvent>();
+        !this.ClientConnection.ProtoIn.BufferEvents.IsEmpty || this.ClientConnection.Socket.Available >= Unsafe.SizeOf<GenericEvent>();
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
         ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
@@ -689,11 +697,11 @@ internal sealed class XProto : BaseProtoClient, IXProto
         PolyText16Base(drawable, gc, x, y, data);
 
     public GenericError? CheckResponseProtoResult(ResponseProto response) =>
-        base.ClientConnection.ProtoIn.GetVoidRequestResponse<GenericError>(response);
+        this.ClientConnection.ProtoIn.GetVoidRequestResponse<GenericError>(response);
 
     public void VerifyResponseProtoResult(ResponseProto response)
     {
-        var error = base.ClientConnection.ProtoIn.GetVoidRequestResponse<GenericError>(response);
+        var error = this.ClientConnection.ProtoIn.GetVoidRequestResponse<GenericError>(response);
         if (error.HasValue) throw new XEventException(error.Value);
     }
 
@@ -702,73 +710,73 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeWindowAttributesUnchecked(uint window, ValueMask mask, Span<uint> args)
     {
         var cookie = this.ChangeWindowAttributesBase(window, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void DestroyWindowUnchecked(uint window)
     {
         var cookie = this.DestroyWindowBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void DestroySubwindowsUnchecked(uint window)
     {
         var cookie = this.DestroySubwindowsBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeSaveSetUnchecked(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
         var cookie = this.ChangeSaveSetBase(changeSaveSetMode, window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ReparentWindowUnchecked(uint window, uint parent, short x, short y)
     {
         var cookie = this.ReparentWindowBase(window, parent, x, y);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void MapWindowUnchecked(uint window)
     {
         var cookie = this.MapWindowBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void MapSubwindowsUnchecked(uint window)
     {
         var cookie = this.MapSubwindowsBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UnmapWindowUnchecked(uint window)
     {
         var cookie = this.UnmapWindowBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UnmapSubwindowsUnchecked(uint window)
     {
         var cookie = this.UnmapSubwindowsBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ConfigureWindowUnchecked(uint window, ConfigureValueMask mask, Span<uint> args)
     {
         var cookie = this.ConfigureWindowBase(window, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CirculateWindowUnchecked(Circulate circulate, uint window)
     {
         var cookie = this.CirculateWindowBase(circulate, window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangePropertyUnchecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
@@ -778,43 +786,43 @@ internal sealed class XProto : BaseProtoClient, IXProto
 #endif
     {
         var cookie = this.ChangePropertyBase(mode, window, property, type, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void DeletePropertyUnchecked(uint window, ATOM atom)
     {
         var cookie = this.DeletePropertyBase(window, atom);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void RotatePropertiesUnchecked(uint window, ushort delta, Span<ATOM> properties)
     {
         var cookie = this.RotatePropertiesBase(window, delta, properties);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetSelectionOwnerUnchecked(uint owner, ATOM atom, uint timestamp)
     {
         var cookie = this.SetSelectionOwnerBase(owner, atom, timestamp);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ConvertSelectionUnchecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
         var cookie = this.ConvertSelectionBase(requestor, selection, target, property, timestamp);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SendEventUnchecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
         var cookie = this.SendEventBase(propagate, destination, eventMask, evnt);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabPointerUnchecked(uint time)
     {
         var cookie = this.UngrabPointerBase(time);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void GrabButtonUnchecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
@@ -822,56 +830,56 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabButtonUnchecked(Button button, uint grabWindow, ModifierMask mask)
     {
         var cookie = this.UngrabButtonBase(button, grabWindow, mask);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeActivePointerGrabUnchecked(uint cursor, uint time, ushort mask)
     {
         var cookie = this.ChangeActivePointerGrabBase(cursor, time, mask);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabKeyboardUnchecked(uint time)
     {
         var cookie = this.UngrabKeyboardBase(time);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void GrabKeyUnchecked(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
         var cookie = this.GrabKeyBase(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabKeyUnchecked(byte key, uint grabWindow, ModifierMask modifier)
     {
         var cookie = this.UngrabKeyBase(key, grabWindow, modifier);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void AllowEventsUnchecked(EventsMode mode, uint time)
     {
         var cookie = this.AllowEventsBase(mode, time);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void GrabServerUnchecked()
     {
         var cookie = this.GrabServerBase();
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UngrabServerUnchecked()
     {
         var cookie = this.UngrabServerBase();
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void WarpPointerUnchecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
@@ -879,86 +887,86 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetInputFocusUnchecked(InputFocusMode mode, uint focus, uint time)
     {
         var cookie = this.SetInputFocusBase(mode, focus, time);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void OpenFontUnchecked(string fontName, uint fontId)
     {
         var cookie = this.OpenFontBase(fontName, fontId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CloseFontUnchecked(uint fontId)
     {
         var cookie = this.CloseFontBase(fontId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetFontPathUnchecked(string[] strPaths)
     {
         var cookie = this.SetFontPathBase(strPaths);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreatePixmapUnchecked(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
         var cookie = this.CreatePixmapBase(depth, pixmapId, drawable, width, height);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreePixmapUnchecked(uint pixmapId)
     {
         var cookie = this.FreePixmapBase(pixmapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateGCUnchecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
         var cookie = this.CreateGCBase(gc, drawable, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeGCUnchecked(uint gc, GCMask mask, Span<uint> args)
     {
         var cookie = this.ChangeGCBase(gc, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyGCUnchecked(uint srcGc, uint dstGc, GCMask mask)
     {
         var cookie = this.CopyGCBase(srcGc, dstGc, mask);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetDashesUnchecked(uint gc, ushort dashOffset, Span<byte> dashes)
     {
         var cookie = this.SetDashesBase(gc, dashOffset, dashes);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetClipRectanglesUnchecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
         Span<Rectangle> rectangles)
     {
         var cookie = this.SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreeGCUnchecked(uint gc)
     {
         var cookie = this.FreeGCBase(gc);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ClearAreaUnchecked(bool exposures, uint window, short x, short y, ushort width, ushort height)
     {
         var cookie = this.ClearAreaBase(exposures, window, x, y, width, height);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyAreaUnchecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -966,7 +974,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyPlaneUnchecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -974,56 +982,56 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height, bitPlane);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyPointUnchecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var cookie = this.PolyPointBase(coordinate, drawable, gc, points);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyLineUnchecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var cookie = this.PolyLineBase(coordinate, drawable, gc, points);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolySegmentUnchecked(uint drawable, uint gc, Span<Segment> segments)
     {
         var cookie = this.PolySegmentBase(drawable, gc, segments);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyRectangleUnchecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var cookie = this.PolyRectangleBase(drawable, gc, rectangles);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyArcUnchecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         var cookie = this.PolyArcBase(drawable, gc, arcs);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FillPolyUnchecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate,
         Span<Point> points)
     {
         var cookie = this.FillPolyBase(drawable, gc, shape, coordinate, points);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyFillRectangleUnchecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var cookie = this.PolyFillRectangleBase(drawable, gc, rectangles);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyFillArcUnchecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         var cookie = this.PolyFillArcBase(drawable, gc, arcs);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PutImageUnchecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height,
@@ -1031,67 +1039,67 @@ internal sealed class XProto : BaseProtoClient, IXProto
         short y, byte leftPad, byte depth, Span<byte> data)
     {
         var cookie = this.PutImageBase(format, drawable, gc, width, height, x, y, leftPad, depth, data);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ImageText8Unchecked(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
     {
         var cookie = this.ImageText8Base(drawable, gc, x, y, text);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ImageText16Unchecked(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
     {
         var cookie = this.ImageText16Base(drawable, gc, x, y, text);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateColormapUnchecked(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
         var cookie = this.CreateColormapBase(alloc, colormapId, window, visual);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreeColormapUnchecked(uint colormapId)
     {
         var cookie = this.FreeColormapBase(colormapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyColormapAndFreeUnchecked(uint colormapId, uint srcColormapId)
     {
         var cookie = this.CopyColormapAndFreeBase(colormapId, srcColormapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void InstallColormapUnchecked(uint colormapId)
     {
         var cookie = this.InstallColormapBase(colormapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void UninstallColormapUnchecked(uint colormapId)
     {
         var cookie = this.UninstallColormapBase(colormapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreeColorsUnchecked(uint colormapId, uint planeMask, Span<uint> pixels)
     {
         var cookie = this.FreeColorsBase(colormapId, planeMask, pixels);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void StoreColorsUnchecked(uint colormapId, Span<ColorItem> item)
     {
         var cookie = this.StoreColorsBase(colormapId, item);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void StoreNamedColorUnchecked(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
     {
         var cookie = this.StoreNamedColorBase(mode, colormapId, pixels, name);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateCursorUnchecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
@@ -1099,7 +1107,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed,
             backGreen, backBlue, x, y);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateGlyphCursorUnchecked(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
@@ -1108,99 +1116,99 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FreeCursorUnchecked(uint cursorId)
     {
         var cookie = this.FreeCursorBase(cursorId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void RecolorCursorUnchecked(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
         ushort backGreen, ushort backBlue)
     {
         var cookie = this.RecolorCursorBase(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeKeyboardMappingUnchecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
         Span<uint> keysym)
     {
         var cookie = this.ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void BellUnchecked(sbyte percent)
     {
         var cookie = this.BellBase(percent);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeKeyboardControlUnchecked(KeyboardControlMask mask, Span<uint> args)
     {
         var cookie = this.ChangeKeyboardControlBase(mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangePointerControlUnchecked(Acceleration? acceleration, ushort? threshold)
     {
         var cookie = this.ChangePointerControlBase(acceleration, threshold);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetScreenSaverUnchecked(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
     {
         var cookie = this.SetScreenSaverBase(timeout, interval, preferBlanking, allowExposures);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ForceScreenSaverUnchecked(ForceScreenSaverMode mode)
     {
         var cookie = this.ForceScreenSaverBase(mode);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeHostsUnchecked(HostMode mode, Family family, Span<byte> address)
     {
         var cookie = this.ChangeHostsBase(mode, family, address);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetAccessControlUnchecked(AccessControlMode mode)
     {
         var cookie = this.SetAccessControlBase(mode);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetCloseDownModeUnchecked(CloseDownMode mode)
     {
         var cookie = this.SetCloseDownModeBase(mode);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void KillClientUnchecked(uint resource)
     {
         var cookie = this.KillClientBase(resource);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void NoOperationUnchecked(Span<uint> args)
     {
         var cookie = this.NoOperationBase(args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyText8Unchecked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
         var cookie = this.PolyText8Base(drawable, gc, x, y, data);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void PolyText16Unchecked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
         var cookie = this.PolyText16Base(drawable, gc, x, y, data);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
@@ -1208,73 +1216,73 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeWindowAttributesChecked(uint window, ValueMask mask, Span<uint> args)
     {
         var cookie = this.ChangeWindowAttributesBase(window, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void DestroyWindowChecked(uint window)
     {
         var cookie = this.DestroyWindowBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void DestroySubwindowsChecked(uint window)
     {
         var cookie = this.DestroySubwindowsBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeSaveSetChecked(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
         var cookie = this.ChangeSaveSetBase(changeSaveSetMode, window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ReparentWindowChecked(uint window, uint parent, short x, short y)
     {
         var cookie = this.ReparentWindowBase(window, parent, x, y);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void MapWindowChecked(uint window)
     {
         var cookie = this.MapWindowBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void MapSubwindowsChecked(uint window)
     {
         var cookie = this.MapSubwindowsBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UnmapWindowChecked(uint window)
     {
         var cookie = this.UnmapWindowBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UnmapSubwindowsChecked(uint window)
     {
         var cookie = this.UnmapSubwindowsBase(window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ConfigureWindowChecked(uint window, ConfigureValueMask mask, Span<uint> args)
     {
         var cookie = this.ConfigureWindowBase(window, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CirculateWindowChecked(Circulate circulate, uint window)
     {
         var cookie = this.CirculateWindowBase(circulate, window);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangePropertyChecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
@@ -1284,43 +1292,43 @@ internal sealed class XProto : BaseProtoClient, IXProto
 #endif
     {
         var cookie = this.ChangePropertyBase(mode, window, property, type, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void DeletePropertyChecked(uint window, ATOM atom)
     {
         var cookie = this.DeletePropertyBase(window, atom);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void RotatePropertiesChecked(uint window, ushort delta, Span<ATOM> properties)
     {
         var cookie = this.RotatePropertiesBase(window, delta, properties);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetSelectionOwnerChecked(uint owner, ATOM atom, uint timestamp)
     {
         var cookie = this.SetSelectionOwnerBase(owner, atom, timestamp);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ConvertSelectionChecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
     {
         var cookie = this.ConvertSelectionBase(requestor, selection, target, property, timestamp);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SendEventChecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
         var cookie = this.SendEventBase(propagate, destination, eventMask, evnt);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabPointerChecked(uint time)
     {
         var cookie = this.UngrabPointerBase(time);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void GrabButtonChecked(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
@@ -1328,56 +1336,56 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.GrabButtonBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabButtonChecked(Button button, uint grabWindow, ModifierMask mask)
     {
         var cookie = this.UngrabButtonBase(button, grabWindow, mask);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeActivePointerGrabChecked(uint cursor, uint time, ushort mask)
     {
         var cookie = this.ChangeActivePointerGrabBase(cursor, time, mask);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabKeyboardChecked(uint time)
     {
         var cookie = this.UngrabKeyboardBase(time);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void GrabKeyChecked(bool exposures, uint grabWindow, ModifierMask mask, byte keycode, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
         var cookie = this.GrabKeyBase(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabKeyChecked(byte key, uint grabWindow, ModifierMask modifier)
     {
         var cookie = this.UngrabKeyBase(key, grabWindow, modifier);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void AllowEventsChecked(EventsMode mode, uint time)
     {
         var cookie = this.AllowEventsBase(mode, time);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void GrabServerChecked()
     {
         var cookie = this.GrabServerBase();
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UngrabServerChecked()
     {
         var cookie = this.UngrabServerBase();
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void WarpPointerChecked(uint srcWindow, uint destinationWindow, short srcX, short srcY, ushort srcWidth,
@@ -1385,86 +1393,86 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.WarpPointerBase(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetInputFocusChecked(InputFocusMode mode, uint focus, uint time)
     {
         var cookie = this.SetInputFocusBase(mode, focus, time);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void OpenFontChecked(string fontName, uint fontId)
     {
         var cookie = this.OpenFontBase(fontName, fontId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CloseFontChecked(uint fontId)
     {
         var cookie = this.CloseFontBase(fontId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetFontPathChecked(string[] strPaths)
     {
         var cookie = this.SetFontPathBase(strPaths);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreatePixmapChecked(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
         var cookie = this.CreatePixmapBase(depth, pixmapId, drawable, width, height);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreePixmapChecked(uint pixmapId)
     {
         var cookie = this.FreePixmapBase(pixmapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreateGCChecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
         var cookie = this.CreateGCBase(gc, drawable, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeGCChecked(uint gc, GCMask mask, Span<uint> args)
     {
         var cookie = this.ChangeGCBase(gc, mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyGCChecked(uint srcGc, uint dstGc, GCMask mask)
     {
         var cookie = this.CopyGCBase(srcGc, dstGc, mask);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetDashesChecked(uint gc, ushort dashOffset, Span<byte> dashes)
     {
         var cookie = this.SetDashesBase(gc, dashOffset, dashes);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
         Span<Rectangle> rectangles)
     {
         var cookie = this.SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreeGCChecked(uint gc)
     {
         var cookie = this.FreeGCBase(gc);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ClearAreaChecked(bool exposures, uint window, short x, short y, ushort width, ushort height)
     {
         var cookie = this.ClearAreaBase(exposures, window, x, y, width, height);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyAreaChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -1472,7 +1480,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CopyAreaBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyPlaneChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -1480,122 +1488,122 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height, bitPlane);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var cookie = this.PolyPointBase(coordinate, drawable, gc, points);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var cookie = this.PolyLineBase(coordinate, drawable, gc, points);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolySegmentChecked(uint drawable, uint gc, Span<Segment> segments)
     {
         var cookie = this.PolySegmentBase(drawable, gc, segments);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var cookie = this.PolyRectangleBase(drawable, gc, rectangles);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyArcChecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         var cookie = this.PolyArcBase(drawable, gc, arcs);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
     {
         var cookie = this.FillPolyBase(drawable, gc, shape, coordinate, points);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyFillRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var cookie = this.PolyFillRectangleBase(drawable, gc, rectangles);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyFillArcChecked(uint drawable, uint gc, Span<Arc> arcs)
     {
         var cookie = this.PolyFillArcBase(drawable, gc, arcs);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PutImageChecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x,
         short y, byte leftPad, byte depth, Span<byte> data)
     {
         var cookie = this.PutImageBase(format, drawable, gc, width, height, x, y, leftPad, depth, data);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ImageText8Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
     {
         var cookie = this.ImageText8Base(drawable, gc, x, y, text);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ImageText16Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
     {
         var cookie = this.ImageText16Base(drawable, gc, x, y, text);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreateColormapChecked(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
         var cookie = this.CreateColormapBase(alloc, colormapId, window, visual);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreeColormapChecked(uint colormapId)
     {
         var cookie = this.FreeColormapBase(colormapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyColormapAndFreeChecked(uint colormapId, uint srcColormapId)
     {
         var cookie = this.CopyColormapAndFreeBase(colormapId, srcColormapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void InstallColormapChecked(uint colormapId)
     {
         var cookie = this.InstallColormapBase(colormapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void UninstallColormapChecked(uint colormapId)
     {
         var cookie = this.UninstallColormapBase(colormapId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreeColorsChecked(uint colormapId, uint planeMask, Span<uint> pixels)
     {
         var cookie = this.FreeColorsBase(colormapId, planeMask, pixels);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void StoreColorsChecked(uint colormapId, Span<ColorItem> item)
     {
         var cookie = this.StoreColorsBase(colormapId, item);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void StoreNamedColorChecked(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
     {
         var cookie = this.StoreNamedColorBase(mode, colormapId, pixels, name);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreateCursorChecked(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
@@ -1603,7 +1611,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateCursorBase(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CreateGlyphCursorChecked(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
@@ -1612,98 +1620,1875 @@ internal sealed class XProto : BaseProtoClient, IXProto
     {
         var cookie = this.CreateGlyphCursorBase(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void FreeCursorChecked(uint cursorId)
     {
         var cookie = this.FreeCursorBase(cursorId);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void RecolorCursorChecked(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
         ushort backGreen, ushort backBlue)
     {
         var cookie = this.RecolorCursorBase(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
         Span<uint> keysym)
     {
         var cookie = this.ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void BellChecked(sbyte percent)
     {
         var cookie = this.BellBase(percent);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeKeyboardControlChecked(KeyboardControlMask mask, Span<uint> args)
     {
         var cookie = this.ChangeKeyboardControlBase(mask, args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangePointerControlChecked(Acceleration? acceleration, ushort? threshold)
     {
         var cookie = this.ChangePointerControlBase(acceleration, threshold);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetScreenSaverChecked(short timeout, short interval, TriState preferBlanking, TriState allowExposures)
     {
         var cookie = this.SetScreenSaverBase(timeout, interval, preferBlanking, allowExposures);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ForceScreenSaverChecked(ForceScreenSaverMode mode)
     {
         var cookie = this.ForceScreenSaverBase(mode);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeHostsChecked(HostMode mode, Family family, Span<byte> address)
     {
         var cookie = this.ChangeHostsBase(mode, family, address);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetAccessControlChecked(AccessControlMode mode)
     {
         var cookie = this.SetAccessControlBase(mode);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetCloseDownModeChecked(CloseDownMode mode)
     {
         var cookie = this.SetCloseDownModeBase(mode);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void KillClientChecked(uint resource)
     {
         var cookie = this.KillClientBase(resource);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void NoOperationChecked(Span<uint> args)
     {
         var cookie = this.NoOperationBase(args);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
         var cookie = this.PolyText8Base(drawable, gc, x, y, data);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
         var cookie = this.PolyText16Base(drawable, gc, x, y, data);
-        base.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
+        this.ClientConnection.ProtoIn.SkipErrorForSequence(cookie.Id, true);
     }
+
+    private ResponseProto ChangeWindowAttributesBase(uint window, ValueMask mask, Span<uint> args)
+    {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
+        var request = new ChangeWindowAttributesType(window, mask, args.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(args));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(args));
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto DestroyWindowBase(uint window)
+    {
+        var request = new DestroyWindowType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto AllowEventsBase(EventsMode mode, uint time)
+    {
+        var request = new AllowEventsType(mode, time);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto BellBase(sbyte percent)
+    {
+        if (percent is > 100 or < -100)
+            throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
+
+        var request = new BellType(percent);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ChangeActivePointerGrabBase(uint cursor, uint time, ushort mask)
+    {
+        var request = new ChangeActivePointerGrabType(cursor, time, mask);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ChangeGCBase(uint gc, GCMask mask, Span<uint> args)
+    {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
+        var request = new ChangeGCType(gc, mask, args.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(args));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(args));
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ChangeHostsBase(HostMode mode, Family family, Span<byte> address)
+    {
+        var request = new ChangeHostsType(mode, family, address.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                address);
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                address);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ChangeKeyboardControlBase(KeyboardControlMask mask, Span<uint> args)
+    {
+        var request = new ChangeKeyboardControlType(mask, args.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(args));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(args));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ChangeKeyboardMappingBase(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
+        Span<uint> keysym)
+    {
+        var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(keysym));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(keysym));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ChangePointerControlBase(Acceleration? acceleration, ushort? threshold)
+    {
+        var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
+            threshold ?? 0, (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ChangePropertyBase<T>(PropertyMode mode, uint window, ATOM property, ATOM type,
+        Span<T> args)
+        where T : struct
+#if !NETSTANDARD
+            , INumber<T>
+#endif
+    {
+        var size = Marshal.SizeOf<T>();
+        if (size is not 1 and not 2 and not 4)
+            throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
+        var request = new ChangePropertyType(mode, window, property, type, args.Length, size);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                24,
+                MemoryMarshal.Cast<T, byte>(args));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                24,
+                MemoryMarshal.Cast<T, byte>(args));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ChangeSaveSetBase(ChangeSaveSetMode changeSaveSetMode, uint window)
+    {
+        var request = new ChangeSaveSetType(changeSaveSetMode, window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CirculateWindowBase(Circulate circulate, uint window)
+    {
+        var request = new CirculateWindowType(circulate, window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ClearAreaBase(bool exposures, uint window, short x, short y, ushort width, ushort height)
+    {
+        var request = new ClearAreaType(exposures, window, x, y, width, height);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CloseFontBase(uint fontId)
+    {
+        var request = new CloseFontType(fontId);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ConfigureWindowBase(uint window, ConfigureValueMask mask, Span<uint> args)
+    {
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
+        var request = new ConfigureWindowType(window, mask, args.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(args));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(args));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ConvertSelectionBase(uint requestor, ATOM selection, ATOM target, ATOM property,
+        uint timestamp)
+    {
+        var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CopyAreaBase(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX, ushort destinationY, ushort width, ushort height)
+    {
+        var request = new CopyAreaType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CopyColormapAndFreeBase(uint colormapId, uint srcColormapId)
+    {
+        var request = new CopyColormapAndFreeType(colormapId, srcColormapId);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CopyGCBase(uint srcGc, uint dstGc, GCMask mask)
+    {
+        var request = new CopyGCType(srcGc, dstGc, mask);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CopyPlaneBase(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
+        ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane)
+    {
+        var request = new CopyPlaneType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
+            width, height, bitPlane);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CreateColormapBase(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
+    {
+        var request = new CreateColormapType(alloc, colormapId, window, visual);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CreateCursorBase(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
+        ushort foreBlue,
+        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
+    {
+        var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
+            backBlue, x, y);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CreateGCBase(uint gc, uint drawable, GCMask mask, Span<uint> args)
+    {
+
+        if (mask.CountFlags() != args.Length)
+            throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
+
+        var request = new CreateGCType(gc, drawable, mask, args.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                16,
+                MemoryMarshal.Cast<uint, byte>(args));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                16,
+                MemoryMarshal.Cast<uint, byte>(args));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CreateGlyphCursorBase(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
+        ushort charMask,
+        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+    {
+        var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
+            foreGreen, foreBlue, backRed, backGreen, backBlue);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CreatePixmapBase(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
+    {
+        var request = new CreatePixmapType(depth, pixmapId, drawable, width, height);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto CreateWindowBase(byte depth, uint window, uint parent, short x, short y, ushort width,
+        ushort height,
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+    {
+        var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
+            rootVisualId, mask, args.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                32,
+                MemoryMarshal.Cast<uint, byte>(args));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                32,
+                MemoryMarshal.Cast<uint, byte>(args));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto DeletePropertyBase(uint window, ATOM atom)
+    {
+        var request = new DeletePropertyType(window, atom);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto DestroySubwindowsBase(uint window)
+    {
+        var request = new DestroySubWindowsType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto FillPolyBase(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate,
+        Span<Point> points)
+    {
+        var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                16,
+                MemoryMarshal.Cast<Point, byte>(points));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                16,
+                MemoryMarshal.Cast<Point, byte>(points));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ForceScreenSaverBase(ForceScreenSaverMode mode)
+    {
+        var request = new ForceScreenSaverType(mode);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto FreeColormapBase(uint colormapId)
+    {
+        var request = new FreeColormapType(colormapId);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto FreeColorsBase(uint colormapId, uint planeMask, Span<uint> pixels)
+    {
+        var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(pixels));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<uint, byte>(pixels));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto FreeCursorBase(uint cursorId)
+    {
+        var request = new FreeCursorType(cursorId);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto FreeGCBase(uint gc)
+    {
+        var request = new FreeGCType(gc);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto FreePixmapBase(uint pixmapId)
+    {
+        var request = new FreePixmapType(pixmapId);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto GrabButtonBase(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+        GrabMode keyboardMode,
+        uint confineTo, uint cursor, Button button, ModifierMask modifiers)
+    {
+        var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
+            button, modifiers);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto GrabKeyBase(bool exposures, uint grabWindow, ModifierMask mask, byte keycode,
+        GrabMode pointerMode,
+        GrabMode keyboardMode)
+    {
+        var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto GrabServerBase()
+    {
+        var request = new GrabServerType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ImageText16Base(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
+    {
+        var request = new ImageText16Type(drawable, gc, x, y, text.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+#endif
+            Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
+            scratchBuffer[(text.Length * 2 + 16)..requiredBuffer].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+#endif
+            Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
+            scratchBuffer[(text.Length * 2 + 16)..requiredBuffer].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ImageText8Base(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
+    {
+        var request = new ImageText8Type(drawable, gc, x, y, text.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                16,
+                text
+            );
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                16,
+                text
+            );
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto InstallColormapBase(uint colormapId)
+    {
+        var request = new InstallColormapType(colormapId);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto KillClientBase(uint resource)
+    {
+        var request = new KillClientType(resource);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto MapSubwindowsBase(uint window)
+    {
+        var request = new MapSubWindowsType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto MapWindowBase(uint window)
+    {
+        var request = new MapWindowType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto NoOperationBase(Span<uint> args)
+    {
+        var request = new NoOperationType(args.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                4,
+                MemoryMarshal.Cast<uint, byte>(args));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                4,
+                MemoryMarshal.Cast<uint, byte>(args));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto OpenFontBase(string fontName, uint fontId)
+    {
+        var request = new OpenFontType(fontId, (ushort)fontName.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..12], in request);
+#endif
+            Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
+            scratchBuffer[(fontName.Length + 12)..requiredBuffer].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..12], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..12], in request);
+#endif
+            Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
+            scratchBuffer[(fontName.Length + 12)..requiredBuffer].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PolyArcBase(uint drawable, uint gc, Span<Arc> arcs)
+    {
+        var request = new PolyArcType(drawable, gc, arcs.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Arc, byte>(arcs));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Arc, byte>(arcs));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PolyFillArcBase(uint drawable, uint gc, Span<Arc> arcs)
+    {
+        var request = new PolyFillArcType(drawable, gc, arcs.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Arc, byte>(arcs));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Arc, byte>(arcs));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PolyFillRectangleBase(uint drawable, uint gc, Span<Rectangle> rectangles)
+    {
+        var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PolyLineBase(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    {
+        var request = new PolyLineType(coordinate, drawable, gc, points.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Point, byte>(points));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Point, byte>(points));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PolyPointBase(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    {
+        var request = new PolyPointType(coordinate, drawable, gc, points.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Point, byte>(points));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Point, byte>(points));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PolyRectangleBase(uint drawable, uint gc, Span<Rectangle> rectangles)
+    {
+        var request = new PolyRectangleType(drawable, gc, rectangles.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PolySegmentBase(uint drawable, uint gc, Span<Segment> segments)
+    {
+        var request = new PolySegmentType(drawable, gc, segments.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Segment, byte>(segments));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Segment, byte>(segments));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PolyText16Base(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
+    {
+        var request = new PolyText16Type(drawable, gc, x, y, data.Sum(a => a.Count));
+        var requiredBuffer = request.Length * 4;
+        var writIndex = 16;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+#endif
+            foreach (var item in data)
+                writIndex += item.CopyTo(scratchBuffer.Slice(writIndex, item.Count));
+
+            scratchBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+#if NETSTANDARD
+            MemoryMarshal.Write(workingBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(workingBuffer[..16], in request);
+#endif
+            foreach (var item in data)
+                writIndex += item.CopyTo(workingBuffer.Slice(writIndex, item.Count));
+
+            workingBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PolyText8Base(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
+    {
+        var request = new PolyText8Type(drawable, gc, x, y, data.Sum(a => a.Count));
+        var requiredBuffer = request.Length * 4;
+        var writIndex = 16;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..16], in request);
+#endif
+            foreach (var item in data)
+                writIndex += item.CopyTo(scratchBuffer.Slice(writIndex, item.Count));
+            scratchBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+#if NETSTANDARD
+            MemoryMarshal.Write(workingBuffer[0..16], ref request);
+#else
+            MemoryMarshal.Write(workingBuffer[..16], in request);
+#endif
+            foreach (var item in data)
+                writIndex += item.CopyTo(workingBuffer.Slice(writIndex, item.Count));
+            workingBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto PutImageBase(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height,
+        short x,
+        short y,
+        byte leftPad, byte depth, Span<byte> data)
+    {
+        var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                24,
+                data);
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                24,
+                data);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto RecolorCursorBase(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue,
+        ushort backRed,
+        ushort backGreen, ushort backBlue)
+    {
+        var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto ReparentWindowBase(uint window, uint parent, short x, short y)
+    {
+        var request = new ReparentWindowType(window, parent, x, y);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto RotatePropertiesBase(uint window, ushort delta, Span<ATOM> properties)
+    {
+        var request = new RotatePropertiesType(window, properties.Length, delta);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<ATOM, byte>(properties));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<ATOM, byte>(properties));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto SendEventBase(bool propagate, uint destination, uint eventMask, XEvent evnt)
+    {
+        var request = new SendEventType(propagate, destination, eventMask, evnt);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto SetAccessControlBase(AccessControlMode mode)
+    {
+        var request = new SetAccessControlType(mode);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto SetClipRectanglesBase(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
+        Span<Rectangle> rectangles)
+    {
+        var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto SetCloseDownModeBase(CloseDownMode mode)
+    {
+        var request = new SetCloseDownModeType(mode);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto SetDashesBase(uint gc, ushort dashOffset, Span<byte> dashes)
+    {
+        var request = new SetDashesType(gc, dashOffset, dashes.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                dashes);
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                dashes);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto SetFontPathBase(string[] strPaths)
+    {
+        var length = strPaths.Length;
+        strPaths = strPaths.Where(a => a != "fixed").ToArray();
+        var request = new SetFontPathType((ushort)length, strPaths.Sum(a => a.Length + 1).AddPadding());
+        var requiredBuffer = request.Length * 4;
+        var writIndex = 8;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            foreach (var item in strPaths.OrderBy(a => a.Length))
+            {
+                scratchBuffer[writIndex++] = (byte)item.Length;
+                writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
+            }
+
+            scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            foreach (var item in strPaths.OrderBy(a => a.Length))
+            {
+                scratchBuffer[writIndex++] = (byte)item.Length;
+                writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
+            }
+
+            scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto SetInputFocusBase(InputFocusMode mode, uint focus, uint time)
+    {
+        var request = new SetInputFocusType(mode, focus, time);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto SetScreenSaverBase(short timeout, short interval, TriState preferBlanking,
+        TriState allowExposures)
+    {
+        var request = new SetScreenSaverType(timeout, interval, preferBlanking, allowExposures);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto SetSelectionOwnerBase(uint owner, ATOM atom, uint timestamp)
+    {
+        var request = new SetSelectionOwnerType(owner, atom, timestamp);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto StoreColorsBase(uint colormapId, Span<ColorItem> item)
+    {
+        var request = new StoreColorsType(colormapId, item.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<ColorItem, byte>(item));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<ColorItem, byte>(item));
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto StoreNamedColorBase(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
+    {
+        var request = new StoreNamedColorType(mode, colormapId, pixels, name.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                16,
+                name);
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                16,
+                name);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto UngrabButtonBase(Button button, uint grabWindow, ModifierMask mask)
+    {
+        var request = new UngrabButtonType(button, grabWindow, mask);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto UngrabKeyBase(byte key, uint grabWindow, ModifierMask modifier)
+    {
+        var request = new UngrabKeyType(key, grabWindow, modifier);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto UngrabKeyboardBase(uint time)
+    {
+        var request = new UngrabKeyboardType(time);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto UngrabPointerBase(uint time)
+    {
+        var request = new UngrabPointerType(time);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto UngrabServerBase()
+    {
+        var request = new UnGrabServerType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto UninstallColormapBase(uint colormapId)
+    {
+        var request = new UninstallColormapType(colormapId);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto UnmapSubwindowsBase(uint window)
+    {
+        var request = new UnMapSubwindowsType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto UnmapWindowBase(uint window)
+    {
+        var request = new UnmapWindowType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto WarpPointerBase(uint srcWindow, uint destinationWindow, short srcX, short srcY,
+        ushort srcWidth,
+        ushort srcHeight, short destinationX, short destinationY)
+    {
+        var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
+            destinationY);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence);
+    }
+
+    private ResponseProto AllocColorBase(uint colorMap, ushort red, ushort green, ushort blue)
+    {
+        var request = new AllocColorType(colorMap, red, green, blue);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto QueryPointerBase(uint window)
+    {
+        var request = new QueryPointerType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GrabPointerBase(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+        GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp)
+    {
+        var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
+            timeStamp);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto InternAtomBase(bool onlyIfExist, string atomName)
+    {
+        var request = new InternAtomType(onlyIfExist, atomName.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
+            scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
+            scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetPropertyBase(bool delete, uint window, ATOM property, ATOM type, uint offset,
+        uint length)
+    {
+        var request = new GetPropertyType(delete, window, property, type, offset, length);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetWindowAttributesBase(uint window)
+    {
+        var request = new GetWindowAttributesType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetGeometryBase(uint drawable)
+    {
+        var request = new GetGeometryType(drawable);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto QueryTreeBase(uint window)
+    {
+        var request = new QueryTreeType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetAtomNameBase(ATOM atom)
+    {
+        var request = new GetAtomNameType(atom);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto ListPropertiesBase(uint window)
+    {
+        var request = new ListPropertiesType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetSelectionOwnerBase(ATOM atom)
+    {
+        var request = new GetSelectionOwnerType(atom);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GrabKeyboardBase(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+        GrabMode keyboardMode)
+    {
+        var request = new GrabKeyboardType(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetMotionEventsBase(uint window, uint startTime, uint endTime)
+    {
+        var request = new GetMotionEventsType(window, startTime, endTime);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto TranslateCoordinatesBase(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY)
+    {
+        var request = new TranslateCoordinatesType(srcWindow, destinationWindow, srcX, srcY);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetInputFocusBase()
+    {
+        var request = new GetInputFocusType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto QueryKeymapBase()
+    {
+        var request = new QueryKeymapType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto QueryFontBase(uint fontId)
+    {
+        var request = new QueryFontType(fontId);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto QueryTextExtentsBase(uint font, ReadOnlySpan<char> stringForQuery)
+    {
+        var request = new QueryTextExtentsType(font, stringForQuery.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
+            scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+
+#if NETSTANDARD
+            MemoryMarshal.Write(scratchBuffer[0..8], ref request);
+#else
+            MemoryMarshal.Write(scratchBuffer[..8], in request);
+#endif
+            Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
+            scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
+            ClientConnection.ProtoOut.SendExact(scratchBuffer[..requiredBuffer]);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto ListFontsBase(ReadOnlySpan<byte> pattern, int maxNames)
+    {
+        var request = new ListFontsType(pattern.Length, maxNames);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                pattern
+            );
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                pattern
+            );
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto ListFontsWithInfoBase(ReadOnlySpan<byte> pattan, int maxNames)
+    {
+        var request = new ListFontsWithInfoType(pattan.Length, maxNames);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                pattan
+            );
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                pattan
+            );
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetFontPathBase()
+    {
+        var request = new GetFontPathType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetImageBase(ImageFormat format, uint drawable, ushort x, ushort y, ushort width,
+        ushort height,
+        uint planeMask)
+    {
+        var request = new GetImageType(format, drawable, x, y, width, height, planeMask);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto ListInstalledColormapsBase(uint window)
+    {
+        var request = new ListInstalledColormapsType(window);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto AllocNamedColorBase(uint colorMap, ReadOnlySpan<byte> name)
+    {
+        var request = new AllocNamedColorType(colorMap, name.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto AllocColorCellsBase(bool contiguous, uint colorMap, ushort colors, ushort planes)
+    {
+        var request = new AllocColorCellsType(contiguous, colorMap, colors, planes);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto AllocColorPlanesBase(bool contiguous, uint colorMap, ushort colors, ushort reds,
+        ushort greens,
+        ushort blues)
+    {
+        var request = new AllocColorPlanesType(contiguous, colorMap, colors, reds, greens, blues);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto QueryColorsBase(uint colorMap, Span<uint> pixels)
+    {
+        var request = new QueryColorsType(colorMap, pixels.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(pixels));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                8,
+                MemoryMarshal.Cast<uint, byte>(pixels));
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto LookupColorBase(uint colorMap, ReadOnlySpan<byte> name)
+    {
+        var request = new LookupColorType(colorMap, name.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                12,
+                name);
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto QueryBestSizeBase(QueryShapeOf shape, uint drawable, ushort width, ushort height)
+    {
+        var request = new QueryBestSizeType(shape, drawable, width, height);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto QueryExtensionBase(ReadOnlySpan<byte> name)
+    {
+        var request = new QueryExtensionType((ushort)name.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(ref request, 8, name);
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(ref request, 8, name);
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto ListExtensionsBase()
+    {
+        var request = new ListExtensionsType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto SetModifierMappingBase(Span<ulong> keycodes)
+    {
+        var request = new SetModifierMappingType(keycodes.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                4,
+                MemoryMarshal.Cast<ulong, byte>(keycodes));
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchbuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchbuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                4,
+                MemoryMarshal.Cast<ulong, byte>(keycodes));
+            ClientConnection.ProtoOut.SendExact(workingBuffer);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetModifierMappingBase()
+    {
+        var request = new GetModifierMappingType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetKeyboardMappingBase(byte firstKeycode, byte count)
+    {
+        var request = new GetKeyboardMappingType(firstKeycode, count);
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetKeyboardControlBase()
+    {
+        var request = new GetKeyboardControlType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto SetPointerMappingBase(Span<byte> maps)
+    {
+        var request = new SetPointerMappingType(maps.Length);
+        var requiredBuffer = request.Length * 4;
+        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
+            scratchBuffer.WriteRequest(
+                ref request,
+                4,
+                maps);
+            ClientConnection.ProtoOut.SendExact(scratchBuffer);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
+            var workingBuffer = scratchBuffer[..requiredBuffer];
+            workingBuffer.WriteRequest(
+                ref request,
+                4,
+                maps);
+            ClientConnection.ProtoOut.SendExact(workingBuffer[..requiredBuffer]);
+        }
+
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetPointerMappingBase()
+    {
+        var request = new GetPointerMappingType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetPointerControlBase()
+    {
+        var request = new GetPointerControlType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto GetScreenSaverBase()
+    {
+        var request = new GetScreenSaverType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private ResponseProto ListHostsBase()
+    {
+        var request = new ListHostsType();
+        ClientConnection.ProtoOut.Send(ref request);
+        return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposedValue) return;
+        if (disposing)
+            ClientConnection?.Dispose();
+        _disposedValue = true;
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
 }
