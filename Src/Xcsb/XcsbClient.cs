@@ -20,6 +20,20 @@ public static class XcsbClient
         return result;
     }
 
+
+    public static IXConnection Initialized(int val, string? display = null)
+    {
+        _ = val;
+        display = Environment.GetEnvironmentVariable("DISPLAY") ?? ":0";
+        var configuration = XcbClientConfiguration.Default;
+
+        ReadOnlySpan<char> error = [];
+        var connectionDetails = GetDisplayConfiguration(display);
+        var connectionResult = ConnectionHelper.TryConnect(connectionDetails, display, configuration, ref error);
+        connectionResult.SequenceReset();
+        return connectionResult;
+    }
+
     public static IXProto Initialized(string display, Span<byte> name, Span<byte> data, XcbClientConfiguration? configuration = null)
     {
         if (string.IsNullOrWhiteSpace(display)) throw new ArgumentNullException(nameof(display));

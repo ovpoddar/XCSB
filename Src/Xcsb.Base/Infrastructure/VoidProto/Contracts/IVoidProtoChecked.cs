@@ -1,14 +1,15 @@
-﻿using Xcsb.Masks;
+﻿using Xcsb.Generators.Attributes;
+using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
-
 
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb.Infrastructure;
+namespace Xcsb.Base.Infrastructure.VoidProto.Contracts;
 
+[XExtensationExporter]
 public interface IVoidProtoChecked
 {
     void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
@@ -159,21 +160,14 @@ public interface IVoidProtoChecked
     void BellChecked(sbyte percent);
 
     void ChangeKeyboardControlChecked(KeyboardControlMask mask, Span<uint> args);
-
     void ChangePointerControlChecked(Acceleration? acceleration, ushort? threshold);
-
     void SetScreenSaverChecked(short timeout, short interval, TriState preferBlanking, TriState allowExposures);
-
     void ForceScreenSaverChecked(ForceScreenSaverMode mode);
-
     void ChangeHostsChecked(HostMode mode, Family family, Span<byte> address);
-
     void SetAccessControlChecked(AccessControlMode mode);
     void SetCloseDownModeChecked(CloseDownMode mode);
     void KillClientChecked(uint resource);
-
     void NoOperationChecked(Span<uint> args);
-
     void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
     void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);
 }

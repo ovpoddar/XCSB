@@ -16,10 +16,10 @@ var white = x11.HandshakeSuccessResponseBody.Screens[0].WhitePixel;
 var black = x11.HandshakeSuccessResponseBody.Screens[0].BlackPixel;
 var cmid = x11.NewId();
 x11.CreateColormapUnchecked(ColormapAlloc.None, cmid, root, visual.Value);
-x11.CreateWindowChecked(rgbValue.DepthValue, window, root, 10, 10, 168, 195, 1,
+x11.CheckRequest(x11.CreateWindow(rgbValue.DepthValue, window, root, 10, 10, 168, 195, 1,
     ClassType.InputOutput, visual.Value,
     ValueMask.EventMask | ValueMask.BackgroundPixel | ValueMask.Colormap,
-    [(uint)EventMask.ExposureMask, 0, cmid]);
+    [(uint)EventMask.ExposureMask, 0, cmid]));
 x11.MapWindowUnchecked(window);
 
 var isRunning = true;

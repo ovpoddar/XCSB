@@ -137,6 +137,7 @@ internal class ProtoIn : ProtoBase
             throw new XEventException(error, name);
     }
 
+    //leave this project
     public (ListFontsWithInfoReply[], GenericError?) ReceivedResponseArray(int sequence, int maxNames, int timeOut = 1000)
     {
         while (true)

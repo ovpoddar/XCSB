@@ -5,7 +5,7 @@ using Xcsb.Models.Handshake;
 
 namespace Xcsb;
 
-public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked, IDisposable
+public interface IXProto : IResponseProto, IVoidProto, IVoidProtoUnchecked, IDisposable
 {
     HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
     IXBufferProto BufferClient { get; }

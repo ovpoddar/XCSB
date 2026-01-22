@@ -8,90 +8,90 @@ var x = XcsbClient.Initialized();
 var screen = x.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
 
-x.GrabServerChecked();
+x.CheckRequest( x.GrabServer());
 
 var colormap = x.NewId();
-x.CreateColormapChecked(Xcsb.Models.ColormapAlloc.None,
+x.CheckRequest(x.CreateColormap(Xcsb.Models.ColormapAlloc.None,
     colormap,
     root,
-    screen.RootVisualId);
+    screen.RootVisualId));
 
 var win = x.NewId();
-x.CreateWindowChecked(screen.RootDepth!.DepthValue,
+x.CheckRequest(x.CreateWindow(screen.RootDepth!.DepthValue,
     win,
     root,
     0, 0, 500, 500,
     0, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
     Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask | Xcsb.Masks.ValueMask.Colormap,
-    [screen.WhitePixel, (uint)EventMask.ExposureMask, colormap]);
+    [screen.WhitePixel, (uint)EventMask.ExposureMask, colormap]));
 
-x.InstallColormapChecked(colormap);
+x.CheckRequest(x.InstallColormap(colormap));
 Console.WriteLine("ColorMap installed.");
 
-x.UngrabServerChecked();
+x.CheckRequest(x.UngrabServer());
 
-x.MapWindowChecked(win);
+x.CheckRequest(x.MapWindow(win));
 Thread.Sleep(3000);
 
-x.UninstallColormapChecked(colormap);
+x.CheckRequest(x.UninstallColormap(colormap));
 Console.WriteLine("ColorMap uninstalled.");
 
-x.FreeColormapChecked(colormap);
+x.CheckRequest(x.FreeColormap(colormap));
 Console.WriteLine("ColorMap freed.");
 
-x.ConfigureWindowChecked(win, ConfigureValueMask.X | ConfigureValueMask.Y | ConfigureValueMask.Width | ConfigureValueMask.Height,
-    [100, 100, 300, 300]);
+x.CheckRequest(x.ConfigureWindow(win, ConfigureValueMask.X | ConfigureValueMask.Y | ConfigureValueMask.Width | ConfigureValueMask.Height,
+    [100, 100, 300, 300]));
 Console.WriteLine("Window resized and moved to (100,100).");
 Thread.Sleep(5000);
-x.DestroyWindowChecked(win);
+x.CheckRequest(x.DestroyWindow(win));
 
 
 Thread.Sleep(1500);
 win = x.NewId();
-x.CreateWindowChecked(screen.RootDepth.DepthValue,
+x.CheckRequest(x.CreateWindow(screen.RootDepth.DepthValue,
     win,
     root,
     0, 0, 500, 500,
     0, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
     Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask,
-    [screen.WhitePixel, (uint)EventMask.ExposureMask]);
-x.MapWindowChecked(win);
+    [screen.WhitePixel, (uint)EventMask.ExposureMask]));
+x.CheckRequest(x.MapWindow(win));
 Console.WriteLine("Reloading.");
 Thread.Sleep(1500);
 
 var sub = x.NewId();
-x.CreateWindowChecked(0,
+x.CheckRequest(x.CreateWindow(0,
     sub, win,
     20, 20, 500, 250, 2,
-    Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [0xff0000]);
-x.MapWindowChecked(sub);
+    Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [0xff0000]));
+x.CheckRequest(x.MapWindow(sub));
 
 Console.WriteLine("Subwindow created.");
 
 Thread.Sleep(5000);
 
 var sub1 = x.NewId();
-x.CreateWindowChecked(0,
+x.CheckRequest(x.CreateWindow(0,
     sub1, win,
     30, 30, 500, 250, 2,
-    Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [screen.WhitePixel]);
-x.MapSubwindowsChecked(sub);
+    Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [screen.WhitePixel]));
+x.CheckRequest(x.MapSubwindows(sub));
 Console.WriteLine("Subwindow mapped.");
 
 Thread.Sleep(5000);
 
-x.ReparentWindowChecked(sub, sub1, 0, 0);
+x.CheckRequest(x.ReparentWindow(sub, sub1, 0, 0));
 Thread.Sleep(millisecondsTimeout: 5000);
 
 
 var colormap1 = x.NewId();
-x.CreateColormapChecked(Xcsb.Models.ColormapAlloc.None,
+x.CheckRequest(x.CreateColormap(Xcsb.Models.ColormapAlloc.None,
     colormap1,
     root,
-    screen.RootVisualId);
+    screen.RootVisualId));
 
 var cmap = x.NewId();
-x.CopyColormapAndFreeChecked(cmap, colormap1);
+x.CheckRequest(x.CopyColormapAndFree(cmap, colormap1));
 Console.WriteLine("Copied colormap and freed old one.");
 Thread.Sleep(100);
 
@@ -112,8 +112,8 @@ Debug.Assert(xevnt.ReplyType == XEventType.Expose || xevnt.ReplyType == XEventTy
 // todo: fix this
 Console.WriteLine("all success {0}", !xevnt.Error.HasValue);
 
-x.UnmapSubwindowsChecked(sub);
-x.DestroyWindowChecked(sub1);
-x.DestroySubwindowsChecked(win);
-x.DestroyWindowChecked(win);
+x.CheckRequest(x.UnmapSubwindows(sub));
+x.CheckRequest(x.DestroyWindow(sub1));
+x.CheckRequest(x.DestroySubwindows(win));
+x.CheckRequest(x.DestroyWindow(win));
 Console.WriteLine("closing");

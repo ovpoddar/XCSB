@@ -108,9 +108,9 @@ if (windowDetails.Class != ClassResponseType.InputOutput)
     return;
 var windowGeometry = xcsb.GetGeometry(window);
 if (windowGeometry is { X: 38, Y: 59 })
-    xcsb.ConfigureWindowChecked(window,
+    xcsb.CheckRequest(xcsb.ConfigureWindow(window,
         ConfigureValueMask.X | ConfigureValueMask.Y,
-        [500, 500]);
+        [500, 500]));
 
 var query = xcsb.QueryTree(window);
 if (query.Root != xcsb.HandshakeSuccessResponseBody.Screens[0].Root)

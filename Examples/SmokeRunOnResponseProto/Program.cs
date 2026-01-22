@@ -5,7 +5,7 @@ using Xcsb.Models;
 
 var client = XcsbClient.Initialized();
 var window = client.NewId();
-client.CreateWindowChecked(
+client.CheckRequest(client.CreateWindow(
     0,
     window,
     client.HandshakeSuccessResponseBody.Screens[0].Root,
@@ -13,19 +13,19 @@ client.CreateWindowChecked(
     client.HandshakeSuccessResponseBody.Screens[0].RootVisualId,
     ValueMask.BackgroundPixel | ValueMask.EventMask,
     [0x00ff00, (uint)(EventMask.ExposureMask | EventMask.KeyReleaseMask | EventMask.KeyPressMask)]
-);
-client.MapWindowChecked(window);
+));
+client.CheckRequest(client.MapWindow(window));
 
-client.ChangeActivePointerGrabChecked(0, 0, (ushort)EventMask.ButtonPressMask);
+client.CheckRequest(client.ChangeActivePointerGrab(0, 0, (ushort)EventMask.ButtonPressMask));
 
 var font = client.NewId();
-client.OpenFontChecked("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
+client.CheckRequest(client.OpenFont("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font));
 
 
 var namedColor = client.AllocNamedColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Red"u8);
 Console.WriteLine($"{namedColor.ExactBlue} {namedColor.ExactGreen} {namedColor.ExactRed}");
 
-client.CloseFontChecked(font);
+client.CheckRequest(client.CloseFont(font));
 
 Debug.Assert(namedColor.VisualRed == namedColor.ExactRed && namedColor.ExactRed == ushort.MaxValue);
 Debug.Assert(namedColor.VisualGreen == namedColor.ExactGreen && namedColor.ExactGreen == 0);
@@ -49,12 +49,12 @@ Array.Copy(originalKeySym[0..keyboardMapping.KeyPerKeyCode], keysyms_per_keycode
 keysyms_per_keycode[0] = 0x0061;
 keysyms_per_keycode[1] = 0x0062;
 
-client.ChangeKeyboardMappingChecked(
+client.CheckRequest(client.ChangeKeyboardMapping(
     1,
     8,
     keyboardMapping.KeyPerKeyCode,
     keysyms_per_keycode
-);
+));
 Console.WriteLine("ChangeKeyboardMapping: Modified one key (dummy)\n");
 
 var queryColor = client.QueryColors(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
@@ -65,7 +65,7 @@ foreach (var color in queryColor.Colors)
 
 
 var font_path_reply = client.GetFontPath();
-client.SetFontPathChecked(font_path_reply.Paths);
+client.CheckRequest(client.SetFontPath(font_path_reply.Paths));
 
 var pattan = "*"u8;
 var listFonts = client.ListFonts(pattan, 10);
