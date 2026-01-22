@@ -10,7 +10,7 @@ internal static class ConnectionHelper
     private static string? _cachedAuthPath;
     private static readonly object AuthPathLock = new();
 
-    internal static XConnection TryConnect(ConnectionDetails connectionDetails,
+    internal static IXConnection TryConnect(ConnectionDetails connectionDetails,
         string display,
         XcbClientConfiguration configuration,
         ref ReadOnlySpan<char> error)
@@ -34,7 +34,7 @@ internal static class ConnectionHelper
         return response;
     }
 
-    internal static XConnection Connect(in ConnectionDetails connectionDetails,
+    internal static IXConnection Connect(in ConnectionDetails connectionDetails,
         string display,
         XcbClientConfiguration configuration,
         Span<byte> name,

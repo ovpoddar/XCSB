@@ -9,7 +9,9 @@ public static class XcsbClient
 {
     public static IXProto Initialized(string? display = null, XcbClientConfiguration? configuration = null)
     {
-        display = string.IsNullOrWhiteSpace(display) ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0" : display;
+        display = string.IsNullOrWhiteSpace(display) 
+            ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0" 
+            : display;
         configuration ??= XcbClientConfiguration.Default;
 
         ReadOnlySpan<char> error = [];

@@ -29,8 +29,8 @@ namespace Xcsb;
 #endif
 internal sealed class XProto : IXProto, IDisposable
 {
-    private XBufferProto? _xBufferProto;
     private bool _disposedValue;
+    private XBufferProto? _xBufferProto;
 
     public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
