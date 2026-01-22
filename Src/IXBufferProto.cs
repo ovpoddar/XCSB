@@ -1,5 +1,4 @@
-﻿using Xcsb.Infrastructure;
-using Xcsb.Infrastructure.VoidProto;
+﻿using Xcsb.Infrastructure.VoidProto;
 
 namespace Xcsb;
 

@@ -2,10 +2,6 @@
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Models;
-using Xcsb.Response.Contract;
-using Xcsb.Response.Replies;
-using Xcsb.Response.Replies.Internals;
 
 
 #if !NETSTANDARD

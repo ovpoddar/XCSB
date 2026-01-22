@@ -1,5 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
@@ -17,7 +16,7 @@ public readonly struct GetKeyboardMappingReply
     internal GetKeyboardMappingReply(Span<byte> response, byte count)
     {
         ref readonly var context = ref response.AsStruct<GetKeyboardMappingResponse>();
-         if (context.ResponseHeader.GetValue() * count != context.Length)
+        if (context.ResponseHeader.GetValue() * count != context.Length)
             throw new InvalidOperationException("Unknown reply");
 
         Reply = context.ResponseHeader.Reply;

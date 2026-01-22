@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-
-namespace Xcsb.Configuration;
+﻿namespace Xcsb.Configuration;
 
 public class ActionDelegates
 {

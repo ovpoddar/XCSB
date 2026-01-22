@@ -1,5 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
@@ -13,7 +12,7 @@ public readonly struct GetImageReply
     public readonly ushort Sequence;
     public readonly uint VisualId;
     public readonly byte[] Data;
-    
+
     internal GetImageReply(Span<byte> response)
     {
         ref readonly var context = ref response.AsStruct<GetImageResponse>();
@@ -26,7 +25,7 @@ public readonly struct GetImageReply
         else
         {
             var cursor = Unsafe.SizeOf<GetImageResponse>();
-            Data = response.Slice(cursor, (int)(context.Length * 4) ).ToArray();
+            Data = response.Slice(cursor, (int)(context.Length * 4)).ToArray();
         }
     }
 }

@@ -2,6 +2,7 @@
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure.Response;
 using Xcsb.Models.String;
+using Xcsb.Response.Errors;
 
 #if !NETSTANDARD
 using System.Numerics;
@@ -176,4 +177,6 @@ public interface IVoidProto
 
     ResponseProto PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
     ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);
+    GenericError? CheckResponseProtoResult(ResponseProto response);
+    void VerifyResponseProtoResult(ResponseProto response);
 }

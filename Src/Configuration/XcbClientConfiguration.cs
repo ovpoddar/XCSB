@@ -1,6 +1,4 @@
-﻿using Xcsb.Helpers;
-
-namespace Xcsb.Configuration;
+﻿namespace Xcsb.Configuration;
 
 public class XcbClientConfiguration
 {

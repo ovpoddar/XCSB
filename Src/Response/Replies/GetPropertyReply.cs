@@ -1,5 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;

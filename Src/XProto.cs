@@ -1,13 +1,14 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using Xcsb.Models.String;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Handshake;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Infrastructure.Response;
+using Xcsb.Models.String;
 using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
@@ -28,10 +29,10 @@ internal sealed class XProto : BaseProtoClient, IXProto
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
 
-    public XProto(Connection connectionResult, ReadOnlySpan<char> failReason) 
+    public XProto(Connection connectionResult, ReadOnlySpan<char> failReason)
         : base(connectionResult)
     {
-        if (connectionResult.HandshakeStatus is not HandshakeStatus.Success || connectionResult.SuccessResponse is null) 
+        if (connectionResult.HandshakeStatus is not HandshakeStatus.Success || connectionResult.SuccessResponse is null)
             throw new UnauthorizedAccessException(failReason.ToString());
 
         _globalId = 0;
@@ -685,6 +686,15 @@ internal sealed class XProto : BaseProtoClient, IXProto
 
     public ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data) =>
         PolyText16Base(drawable, gc, x, y, data);
+
+    public GenericError? CheckResponseProtoResult(ResponseProto response) =>
+        base.ClientConnection.ProtoIn.GetVoidRequestResponse<GenericError>(response);
+
+    public void VerifyResponseProtoResult(ResponseProto response)
+    {
+        var error = base.ClientConnection.ProtoIn.GetVoidRequestResponse<GenericError>(response);
+        if (error.HasValue) throw new XEventException(error.Value);
+    }
 
     public void CreateWindowUnchecked(byte depth, uint window, uint parent, short x, short y, ushort width,
         ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)

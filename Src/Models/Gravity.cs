@@ -1,4 +1,5 @@
 ﻿namespace Xcsb.Models;
+
 public enum Gravity : byte
 {
     BitForget,

@@ -1,5 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
@@ -16,7 +15,7 @@ public readonly struct ListPropertiesReply
 
     internal ListPropertiesReply(Span<byte> response)
     {
-         ref readonly var context = ref response.AsStruct<ListPropertiesResponse>();
+        ref readonly var context = ref response.AsStruct<ListPropertiesResponse>();
         Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
 
