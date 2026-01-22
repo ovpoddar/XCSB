@@ -1,7 +1,7 @@
 ﻿using Xcsb.Infrastructure;
 using Xcsb.Infrastructure.VoidProto;
 using Xcsb.Models;
-using Xcsb.Models.Handshake;
+using Xcsb.Models.ServerConnection.Handshake;
 
 namespace Xcsb;
 

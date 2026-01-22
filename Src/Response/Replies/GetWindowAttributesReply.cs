@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Models;
-using Xcsb.Models.Handshake;
+using Xcsb.Models.ServerConnection.Handshake;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Replies;

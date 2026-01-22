@@ -1,7 +1,7 @@
 ﻿using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Handshake;
+using Xcsb.Models.ServerConnection.Handshake;
 // todo:Reminder. this will work if their is the extension support
 var x11 = XcsbClient.Initialized();
 var rgbValue = x11.HandshakeSuccessResponseBody.Screens[0].Depths.FirstOrDefault(a => a.DepthValue == 32);

@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Models.Handshake;
+﻿namespace Xcsb.Models.ServerConnection.Handshake;
 
 public enum BackingStores : byte
 {

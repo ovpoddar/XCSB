@@ -1,5 +1,5 @@
 ﻿using Xcsb.Configuration;
-using Xcsb.Models.Handshake;
+using Xcsb.Models.ServerConnection.Handshake;
 
 namespace Xcsb.Models.Infrastructure;
 
@@ -10,7 +10,7 @@ internal static class ConnectionHelper
     private static string? _cachedAuthPath;
     private static readonly object AuthPathLock = new();
 
-    internal static Connection TryConnect(ConnectionDetails connectionDetails,
+    internal static XConnection TryConnect(ConnectionDetails connectionDetails,
         string display,
         XcbClientConfiguration configuration,
         ref ReadOnlySpan<char> error)
@@ -34,7 +34,7 @@ internal static class ConnectionHelper
         return response;
     }
 
-    internal static Connection Connect(in ConnectionDetails connectionDetails,
+    internal static XConnection Connect(in ConnectionDetails connectionDetails,
         string display,
         XcbClientConfiguration configuration,
         Span<byte> name,
@@ -102,14 +102,14 @@ internal static class ConnectionHelper
         }
     }
 
-    private static Connection? MakeHandshake(in ConnectionDetails connectionDetails,
+    private static XConnection? MakeHandshake(in ConnectionDetails connectionDetails,
        string display,
        XcbClientConfiguration configuration,
        Span<byte> authName,
        Span<byte> authData,
        ref ReadOnlySpan<char> error)
     {
-        var connection = new Connection(
+        var connection = new XConnection(
             connectionDetails.GetSocketPath(display).ToString(),
             configuration,
             connectionDetails.Protocol);

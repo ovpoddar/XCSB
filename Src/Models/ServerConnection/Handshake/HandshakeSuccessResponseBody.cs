@@ -5,7 +5,7 @@ using Xcsb.Configuration;
 using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
 
-namespace Xcsb.Models.Handshake;
+namespace Xcsb.Models.ServerConnection.Handshake;
 
 public class HandshakeSuccessResponseBody
 {

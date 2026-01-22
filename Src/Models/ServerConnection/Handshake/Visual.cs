@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Xcsb.Models.Handshake;
+namespace Xcsb.Models.ServerConnection.Handshake;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
 public struct Visual

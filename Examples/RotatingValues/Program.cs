@@ -2,7 +2,7 @@
 using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Handshake;
+using Xcsb.Models.ServerConnection.Handshake;
 
 int screen_num = 0;
 using var x = XcsbClient.Initialized();

@@ -5,12 +5,12 @@ using System.Text;
 using Xcsb.Configuration;
 using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
-using Xcsb.Models.Handshake;
+using Xcsb.Models.ServerConnection.Handshake;
 using Xcsb.Requests;
 
 namespace Xcsb.Models.Infrastructure;
 
-internal class Connection : IDisposable
+internal class XConnection : IXConnection, IDisposable
 {
     public Socket Socket { get; }
     public ProtoOut ProtoOut { get; }
@@ -21,7 +21,7 @@ internal class Connection : IDisposable
 
     private bool _disposed;
 
-    public Connection(string path, XcbClientConfiguration configuration, in ProtocolType type)
+    public XConnection(string path, XcbClientConfiguration configuration, in ProtocolType type)
     {
         this.Socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
         Socket.Connect(new UnixDomainSocketEndPoint(path));
@@ -79,7 +79,7 @@ internal class Connection : IDisposable
         }
         catch (Exception)
         {
-            // Socket disposal is handled by Connection.Dispose()
+            // Socket disposal is handled by XConnection.Dispose()
             // The caller (ConnectionHelper.cs) will dispose the context on failure
             return false;
         }

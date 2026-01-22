@@ -2,16 +2,17 @@
 using System.Runtime.CompilerServices;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Handshake;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Infrastructure.Response;
+using Xcsb.Models.ServerConnection.Handshake;
 using Xcsb.Models.String;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -29,7 +30,7 @@ internal sealed class XProto : BaseProtoClient, IXProto
 
     public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
 
-    public XProto(Connection connectionResult, ReadOnlySpan<char> failReason)
+    public XProto(XConnection connectionResult, ReadOnlySpan<char> failReason)
         : base(connectionResult)
     {
         if (connectionResult.HandshakeStatus is not HandshakeStatus.Success || connectionResult.SuccessResponse is null)
