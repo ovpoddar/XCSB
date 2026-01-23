@@ -11,29 +11,30 @@ using Xcsb.Response.Event;
 
 namespace Xcsb.Models.Infrastructure;
 
-internal class XConnection : IXConnection, IDisposable
+internal class XConnection : IXConnection
 {
-    public int GlobalId;
-    public Socket Socket { get; }
-    public ProtoOut ProtoOut { get; }
-    public ProtoIn ProtoIn { get; }
+    private readonly Socket _socket;
+    private readonly object _lock;
+    private bool _disposed;
 
+    public int GlobalId;
     public HandshakeSuccessResponseBody? HandshakeSuccessResponseBody { get; private set; }
     public HandshakeStatus HandshakeStatus { get; private set; }
     public string FailReason { get; private set; } = string.Empty;
+    public bool Connected => this._socket.Connected;
 
-    private bool _disposed;
+    internal ProtoOut ProtoOut { get; }
+    internal ProtoIn ProtoIn { get; }
 
     public XConnection(string path, XcsbClientConfiguration configuration, in ProtocolType type)
     {
-        this.Socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
-        this.Socket.Connect(new UnixDomainSocketEndPoint(path));
-        this.ProtoOut = new ProtoOut(Socket, configuration);
-        this.ProtoIn = new ProtoIn(Socket, configuration);
+        this._lock = new object();
+        this._socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
+        this._socket.Connect(new UnixDomainSocketEndPoint(path));
+        this.ProtoOut = new ProtoOut(_socket, configuration);
+        this.ProtoIn = new ProtoIn(_socket, configuration);
         this.GlobalId = 0;
     }
-
-    public bool Connected => this.Socket.Connected;
 
     public bool EstablishConnection(ReadOnlySpan<byte> authName, ReadOnlySpan<byte> authData)
     {
@@ -123,11 +124,10 @@ internal class XConnection : IXConnection, IDisposable
         }
     }
 
-
     public void WaitForEvent()
     {
         if (!IsEventAvailable())
-            Socket.Poll(-1, SelectMode.SelectRead);
+            _socket.Poll(-1, SelectMode.SelectRead);
     }
 
     public uint NewId() => HandshakeSuccessResponseBody is null
@@ -138,8 +138,7 @@ internal class XConnection : IXConnection, IDisposable
         ProtoIn.ReceivedResponse();
 
     public bool IsEventAvailable() =>
-        !ProtoIn.BufferEvents.IsEmpty || Socket.Available >= Unsafe.SizeOf<GenericEvent>();
-
+        !ProtoIn.BufferEvents.IsEmpty || _socket.Available >= Unsafe.SizeOf<GenericEvent>();
 
     public void Dispose()
     {
@@ -156,7 +155,7 @@ internal class XConnection : IXConnection, IDisposable
         {
             // ProtoIn and ProtoOut only hold references to the Socket, they don't own it.
             // Socket is the only resource that needs disposal.
-            Socket?.Dispose();
+            _socket?.Dispose();
         }
 
         _disposed = true;

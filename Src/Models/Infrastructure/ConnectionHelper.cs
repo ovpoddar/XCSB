@@ -51,6 +51,29 @@ internal static class ConnectionHelper
         return context;
     }
 
+    private static XConnection? MakeHandshake(in ConnectionDetails connectionDetails,
+       string display,
+       XcsbClientConfiguration configuration,
+       Span<byte> authName,
+       Span<byte> authData)
+    {
+        var connection = new XConnection(
+            connectionDetails.GetSocketPath(display).ToString(),
+            configuration,
+            connectionDetails.Protocol);
+        if (!connection.Connected)
+            throw new Exception("Error connecting to X server");
+
+        if (!connection.EstablishConnection(authName, authData))
+        {
+            connection.Dispose();
+            return null;
+        }
+
+        connection.SetUpStatus();
+        return connection;
+    }
+
     private static string GetAuthFilePath()
     {
         Thread.MemoryBarrier();
@@ -104,29 +127,6 @@ internal static class ConnectionHelper
                 && displayName.SequenceEqual(MagicCookie))
                 yield return (displayName, context.GetData(fileStream));
         }
-    }
-
-    private static XConnection? MakeHandshake(in ConnectionDetails connectionDetails,
-       string display,
-       XcsbClientConfiguration configuration,
-       Span<byte> authName,
-       Span<byte> authData)
-    {
-        var connection = new XConnection(
-            connectionDetails.GetSocketPath(display).ToString(),
-            configuration,
-            connectionDetails.Protocol);
-        if (!connection.Connected)
-            throw new Exception("Error connecting to X server");
-
-        if (!connection.EstablishConnection(authName, authData))
-        {
-            connection.Dispose();
-            return null;
-        }
-
-        connection.SetUpStatus();
-        return connection;
     }
 
 }
