@@ -7,6 +7,8 @@ using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.String;
 using Xcsb.Requests;
 using Xcsb.Response.Contract;
+using Xcsb.Handlers.Direct;
+
 
 #if !NETSTANDARD
 using System.Numerics;
@@ -16,7 +18,7 @@ namespace Xcsb;
 
 internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 {
-    public XBufferProto(XProto xProto) : base(xProto.ClientConnection.ProtoIn, xProto.ClientConnection.ProtoOut)
+    public XBufferProto(ProtoIn protoIn, ProtoOut protoOut) : base(protoIn, protoOut)
     {
     }
 

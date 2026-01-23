@@ -5,9 +5,10 @@ using Xcsb.Models;
 const int width = 400;
 const int height = 300;
 
-using var xcsb = XcsbClient.Initialized();
-var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
-var window = xcsb.NewId();
+using var connection = XcsbClient.Connect();
+var xcsb = XcsbClient.Initialized(connection);
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
+var window = connection.NewId();
 
 xcsb.CreateWindowUnchecked(0,
     window,
@@ -19,24 +20,24 @@ xcsb.CreateWindowUnchecked(0,
     [screen.WhitePixel, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask)]
 );
 
-var pixmap = xcsb.NewId();
+var pixmap = connection.NewId();
 xcsb.CreatePixmapUnchecked(screen.RootDepth!.DepthValue,
     pixmap,
     screen.Root,
     width, height);
 
-var gc = xcsb.NewId();
+var gc = connection.NewId();
 xcsb.CreateGCUnchecked(gc, pixmap, GCMask.Foreground | GCMask.Background, [screen.BlackPixel, screen.WhitePixel]);
 
-var cursor = xcsb.NewId();
+var cursor = connection.NewId();
 
-var cursor_pixmap = xcsb.NewId();
-var cursor_mask = xcsb.NewId();
+var cursor_pixmap = connection.NewId();
+var cursor_mask = connection.NewId();
 
 xcsb.CreatePixmapUnchecked(1, cursor_pixmap, screen.Root, 16, 16);
 xcsb.CreatePixmapUnchecked(1, cursor_mask, screen.Root, 16, 16);
 
-var cursor_gc = xcsb.NewId();
+var cursor_gc = connection.NewId();
 xcsb.CreateGCUnchecked(cursor_gc, cursor_pixmap, GCMask.Foreground, [1]);
 
 xcsb.PolySegmentUnchecked(cursor_pixmap, cursor_gc,
@@ -113,7 +114,7 @@ if (windowGeometry is { X: 38, Y: 59 })
         [500, 500]);
 
 var query = xcsb.QueryTree(window);
-if (query.Root != xcsb.HandshakeSuccessResponseBody.Screens[0].Root)
+if (query.Root != connection.HandshakeSuccessResponseBody.Screens[0].Root)
     return;
 
 

@@ -7,32 +7,33 @@ namespace Xcsb;
 
 public static class XcsbClient
 {
-    public static IXProto Initialized(string? display = null, XcbClientConfiguration? configuration = null)
+    public static IXConnection Connect(string? display = null, XcsbClientConfiguration? configuration = null)
     {
-        display = string.IsNullOrWhiteSpace(display) 
-            ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0" 
+        display = string.IsNullOrWhiteSpace(display)
+            ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0"
             : display;
-        configuration ??= XcbClientConfiguration.Default;
+        configuration ??= XcsbClientConfiguration.Default;
 
-        ReadOnlySpan<char> error = [];
         var connectionDetails = GetDisplayConfiguration(display);
-        var connectionResult = ConnectionHelper.TryConnect(connectionDetails, display, configuration, ref error);
-        var result = new XProto(connectionResult, error.ToString());
-        return result;
+        var connectionResult = ConnectionHelper.TryConnect(connectionDetails, display, configuration);
+        return connectionResult;
     }
 
-    public static IXProto Initialized(string display, Span<byte> name, Span<byte> data, XcbClientConfiguration? configuration = null)
+    public static IXConnection Connect(string display, Span<byte> name, Span<byte> data, XcsbClientConfiguration? configuration = null)
     {
         if (string.IsNullOrWhiteSpace(display)) throw new ArgumentNullException(nameof(display));
         if (name.IsEmpty) throw new ArgumentNullException(nameof(name));
         if (data.IsEmpty) throw new ArgumentNullException(nameof(data));
-        configuration ??= XcbClientConfiguration.Default;
+        configuration ??= XcsbClientConfiguration.Default;
 
-        ReadOnlySpan<char> error = [];
         var connectionDetails = GetDisplayConfiguration(display);
-        var connectionResult = ConnectionHelper.Connect(connectionDetails, display, configuration, name, data, ref error);
-        var result = new XProto(connectionResult, error.ToString());
-        return result;
+        var connectionResult = ConnectionHelper.Connect(connectionDetails, display, configuration, name, data);
+        return connectionResult;
+    }
+
+    public static IXProto Initialized(IXConnection connectionResult)
+    {
+        return new XProto(connectionResult);
     }
 
     private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)
@@ -43,11 +44,11 @@ public static class XcsbClient
             ScreenNumber = 0
         };
         if (input.IsEmpty)
-            throw new Exception("Initialized failed");
+            throw new Exception("Connect failed");
 
         var colonIndex = input.LastIndexOf(':');
         if (colonIndex == -1)
-            throw new Exception("Initialized failed");
+            throw new Exception("Connect failed");
 
         if (input[0] == '/')
         {
@@ -78,7 +79,7 @@ public static class XcsbClient
 
         var displayNumberStart = input[(colonIndex + 1)..];
         if (displayNumberStart.Length == 0)
-            throw new Exception("Initialized failed");
+            throw new Exception("Connect failed");
 
         var dotIndex = displayNumberStart.IndexOf('.');
         bool result;
@@ -98,6 +99,6 @@ public static class XcsbClient
             result = task1 && task2;
         }
 
-        return result ? details : throw new Exception("Initialized failed");
+        return result ? details : throw new Exception("Connect failed");
     }
 }

@@ -6,10 +6,10 @@ using Xcsb.Models;
 
 const int WIDTH = 50;
 const int HEIGHT = 50;
-
-var xcsb = XcsbClient.Initialized();
-var window = xcsb.NewId();
-var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
+using var connection = XcsbClient.Connect();
+var xcsb = XcsbClient.Initialized(connection);
+var window = connection.NewId();
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 var extensations = xcsb.ListExtensions();
 Console.Write("available extensions: ");
 foreach (var extensation in extensations.Names)
@@ -38,10 +38,10 @@ xcsb.CreateWindowUnchecked(screen.RootDepth.DepthValue,
 
 xcsb.ChangePropertyUnchecked<byte>(PropertyMode.Replace, window, ATOM.WmName, ATOM.String, Encoding.UTF8.GetBytes("working fixing dodo"));
 
-var gc = xcsb.NewId();
+var gc = connection.NewId();
 xcsb.CreateGCUnchecked(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
 
-var white_gc = xcsb.NewId();
+var white_gc = connection.NewId();
 xcsb.CreateGCUnchecked(white_gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.WhitePixel, 0]);
 
 var requirByte = WIDTH * HEIGHT * 4;

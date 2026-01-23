@@ -18,12 +18,13 @@ internal class XConnection : IXConnection, IDisposable
     public ProtoOut ProtoOut { get; }
     public ProtoIn ProtoIn { get; }
 
-    public HandshakeSuccessResponseBody? SuccessResponse { get; private set; }
+    public HandshakeSuccessResponseBody? HandshakeSuccessResponseBody { get; private set; }
     public HandshakeStatus HandshakeStatus { get; private set; }
+    public string FailReason { get; private set; } = string.Empty;
 
     private bool _disposed;
 
-    public XConnection(string path, XcbClientConfiguration configuration, in ProtocolType type)
+    public XConnection(string path, XcsbClientConfiguration configuration, in ProtocolType type)
     {
         this.Socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
         this.Socket.Connect(new UnixDomainSocketEndPoint(path));
@@ -41,7 +42,7 @@ internal class XConnection : IXConnection, IDisposable
             var request = new HandShakeRequestType((ushort)authName.Length, (ushort)authData.Length);
             var length = authName.Length.AddPadding() + authData.Length.AddPadding() + Marshal.SizeOf<HandShakeRequestType>();
             var writeIndex = 12;
-            if (length < XcbClientConfiguration.StackAllocThreshold)
+            if (length < XcsbClientConfiguration.StackAllocThreshold)
             {
                 Span<byte> scratchBuffer = stackalloc byte[length];
 #if NETSTANDARD
@@ -94,7 +95,7 @@ internal class XConnection : IXConnection, IDisposable
         ProtoIn.Sequence = 0;
     }
 
-    public void SetUpStatus(ref ReadOnlySpan<char> error)
+    public void SetUpStatus()
     {
         Span<byte> tempBuffer = stackalloc byte[Unsafe.SizeOf<HandshakeResponseHead>()];
         this.ProtoIn.ReceiveExact(tempBuffer);
@@ -104,9 +105,9 @@ internal class XConnection : IXConnection, IDisposable
 
         if (response.HandshakeStatus is HandshakeStatus.Success)
         {
-            SuccessResponse = HandshakeSuccessResponseBody.Read(this.ProtoIn,
+            HandshakeSuccessResponseBody = HandshakeSuccessResponseBody.Read(this.ProtoIn,
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
-            error = [];
+            FailReason = string.Empty;
         }
         else
         {
@@ -118,7 +119,7 @@ internal class XConnection : IXConnection, IDisposable
             // todo: stack overflow handler
             Span<byte> buffer = stackalloc byte[dataLength * 4];
             this.ProtoIn.ReceiveExact(buffer);
-            error = Encoding.ASCII.GetString(buffer).TrimEnd();
+            FailReason = Encoding.ASCII.GetString(buffer).TrimEnd();
         }
     }
 
@@ -129,9 +130,9 @@ internal class XConnection : IXConnection, IDisposable
             Socket.Poll(-1, SelectMode.SelectRead);
     }
 
-    public uint NewId() => SuccessResponse is null
+    public uint NewId() => HandshakeSuccessResponseBody is null
         ? throw new InvalidOperationException()
-        : (uint)((SuccessResponse.ResourceIDMask & this.GlobalId++) | SuccessResponse.ResourceIDBase);
+        : (uint)((HandshakeSuccessResponseBody.ResourceIDMask & this.GlobalId++) | HandshakeSuccessResponseBody.ResourceIDBase);
 
     public XEvent GetEvent() =>
         ProtoIn.ReceivedResponse();

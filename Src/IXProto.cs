@@ -5,9 +5,8 @@ using Xcsb.Models.ServerConnection.Handshake;
 
 namespace Xcsb;
 
-public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked, IDisposable
+public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked
 {
-    HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
     IXBufferProto BufferClient { get; }
 
     /// <summary>
@@ -24,10 +23,4 @@ public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidP
     /// stream, which typically means the X server connection has been closed.
     /// </remarks>
     XEvent GetEvent();
-    bool IsEventAvailable();
-    void WaitForEvent();
-    uint NewId();
-
-
-
 }

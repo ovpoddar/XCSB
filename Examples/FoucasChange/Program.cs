@@ -5,17 +5,18 @@ using Xcsb.Response.Event;
 
 
 // Connect to X server
-var x = XcsbClient.Initialized();
+using var connection = XcsbClient.Connect();
+var x = XcsbClient.Initialized(connection);
 
 // Get the first screen
-var screen = x.HandshakeSuccessResponseBody.Screens[0];
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 
 // Define colors for focus states
 uint colorFocused = 0xFF4444;   // Red when focused
 uint colorUnfocused = 0x888888; // Gray when unfocused
 
 // Create first window
-var window1 = x.NewId();
+var window1 = connection.NewId();
 x.CreateWindowUnchecked(screen.RootDepth.DepthValue, window1,
     screen.Root,
     50, 50, 300, 200,
@@ -30,7 +31,7 @@ x.CreateWindowUnchecked(screen.RootDepth.DepthValue, window1,
 x.MapWindowUnchecked(window1);
 
 // Create second window
-var window2 = x.NewId();
+var window2 = connection.NewId();
 x.CreateWindowUnchecked(screen.RootDepth.DepthValue,
     window2,
     screen.Root,
@@ -61,7 +62,7 @@ x.SetInputFocusUnchecked(Xcsb.Models.InputFocusMode.PointerRoot, window1, 0);
 ChangeWindowColor(x, window1, colorFocused);
 ChangeWindowColor(x, window2, colorUnfocused);
 
-var gc = x.NewId();
+var gc = connection.NewId();
 x.CreateGCUnchecked(gc, window1, GCMask.Foreground | GCMask.Background, [screen.BlackPixel, screen.WhitePixel]);
 
 // Track current focused window

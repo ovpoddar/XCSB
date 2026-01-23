@@ -1,5 +1,6 @@
 ﻿using Xcsb.Configuration;
 using Xcsb.Models.ServerConnection.Handshake;
+using Xcsb.Response.Contract;
 
 namespace Xcsb.Models.Infrastructure;
 
@@ -10,12 +11,11 @@ internal static class ConnectionHelper
     private static string? _cachedAuthPath;
     private static readonly object AuthPathLock = new();
 
-    internal static IXConnection TryConnect(ConnectionDetails connectionDetails,
+    internal static XConnection TryConnect(ConnectionDetails connectionDetails,
         string display,
-        XcbClientConfiguration configuration,
-        ref ReadOnlySpan<char> error)
+        XcsbClientConfiguration configuration)
     {
-        var response = MakeHandshake(connectionDetails, display, configuration, [], [], ref error);
+        var response = MakeHandshake(connectionDetails, display, configuration, [], []);
         if (response is not null && response.HandshakeStatus is HandshakeStatus.Success && response.Connected)
             return response;
 
@@ -24,27 +24,31 @@ internal static class ConnectionHelper
 
         foreach (var (authName, authData) in GetAuthInfo(host, dis))
         {
-            response = MakeHandshake(connectionDetails, display, configuration, authName, authData, ref error);
+            response = MakeHandshake(connectionDetails, display, configuration, authName, authData);
             if (response is not null && response.HandshakeStatus is HandshakeStatus.Success && response.Connected)
                 return response;
         }
 
         if (response is null)
             throw new UnauthorizedAccessException();
+
+        if (configuration.ShouldCrashOnFailConnection)
+            throw new Exception(response.FailReason.ToString());
         return response;
     }
 
-    internal static IXConnection Connect(in ConnectionDetails connectionDetails,
+    internal static XConnection Connect(in ConnectionDetails connectionDetails,
         string display,
-        XcbClientConfiguration configuration,
+        XcsbClientConfiguration configuration,
         Span<byte> name,
-        Span<byte> data,
-        ref ReadOnlySpan<char> error)
+        Span<byte> data)
     {
-        var context = MakeHandshake(connectionDetails, display, configuration, name, data, ref error);
-        return context is null
-            ? throw new UnauthorizedAccessException()
-            : context;
+        var context = MakeHandshake(connectionDetails, display, configuration, name, data)
+            ?? throw new UnauthorizedAccessException();
+
+        if (configuration.ShouldCrashOnFailConnection && context.HandshakeStatus is not HandshakeStatus.Success)
+            throw new Exception(context.FailReason.ToString());
+        return context;
     }
 
     private static string GetAuthFilePath()
@@ -104,10 +108,9 @@ internal static class ConnectionHelper
 
     private static XConnection? MakeHandshake(in ConnectionDetails connectionDetails,
        string display,
-       XcbClientConfiguration configuration,
+       XcsbClientConfiguration configuration,
        Span<byte> authName,
-       Span<byte> authData,
-       ref ReadOnlySpan<char> error)
+       Span<byte> authData)
     {
         var connection = new XConnection(
             connectionDetails.GetSocketPath(display).ToString(),
@@ -122,7 +125,7 @@ internal static class ConnectionHelper
             return null;
         }
 
-        connection.SetUpStatus(ref error);
+        connection.SetUpStatus();
         return connection;
     }
 

@@ -5,12 +5,13 @@ using Xcsb.Models;
 using Xcsb.Models.ServerConnection.Handshake;
 
 int screen_num = 0;
-using var x = XcsbClient.Initialized();
+var connection = XcsbClient.Connect();
+var x = XcsbClient.Initialized(connection);
 
-var screen = x.HandshakeSuccessResponseBody.Screens[0];
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
 
-var win = x.NewId();
+var win = connection.NewId();
 x.CreateWindowUnchecked(screen.RootDepth!.DepthValue,
     win,
     root,
@@ -37,10 +38,10 @@ Console.WriteLine($"Grab status {grabResult.Status}");
 x.UngrabPointerUnchecked(0);
 Console.WriteLine("Ungrab pointer completed.");
 
-var fontId = x.NewId();
+var fontId = connection.NewId();
 x.OpenFontUnchecked("fixed", fontId);
 
-var _gc = x.NewId();
+var _gc = connection.NewId();
 x.CreateGCUnchecked(_gc, win, GCMask.Foreground | GCMask.Background | GCMask.Font, [screen.BlackPixel, screen.WhitePixel, fontId]);
 
 x.ImageText8Unchecked(win, _gc, 10, 40, "the background will change"u8);
@@ -81,7 +82,7 @@ foreach (var atom in atoms)
 
 x.ImageText8Unchecked(win, _gc, 10, 40, "Change the GC's foreground red to white"u8);
 Thread.Sleep(5000);
-var gc = x.NewId();
+var gc = connection.NewId();
 x.CreateGCUnchecked(gc, win, GCMask.Foreground, [0xFF0000]);
 var rect = new Rectangle()
 {
@@ -101,8 +102,8 @@ x.PolyFillRectangleUnchecked(win, gc, [rect]);
 x.FreeGCUnchecked(gc);
 Thread.Sleep(3000);
 
-var gc1 = x.NewId();
-var gc2 = x.NewId();
+var gc1 = connection.NewId();
+var gc2 = connection.NewId();
 x.CreateGCUnchecked(gc1, win, GCMask.Foreground, [0x0000FF]);
 x.CreateGCUnchecked(gc2, win, 0, []);
 rect.X -= 15;
@@ -160,9 +161,9 @@ Console.WriteLine("Access control disabled");
 Thread.Sleep(1500);
 
 
-var font = x.NewId();
+var font = connection.NewId();
 x.OpenFontUnchecked("cursor", font);
-var cursor = x.NewId();
+var cursor = connection.NewId();
 x.CreateGlyphCursorUnchecked(cursor, font, font, 'D', 69, 0, 0, 0, 65535, 65535, 65535);
 
 Console.WriteLine("Created cursor with ID: {0}", cursor);
@@ -185,7 +186,7 @@ Console.WriteLine("Selection owner cleared");
 
 x.SetCloseDownModeUnchecked(CloseDownMode.Destroy);
 
-x.Dispose();
+connection.Dispose();
 return 0;
 
 

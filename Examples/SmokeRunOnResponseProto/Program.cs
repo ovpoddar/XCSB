@@ -3,14 +3,15 @@ using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models;
 
-var client = XcsbClient.Initialized();
-var window = client.NewId();
+using var connection = XcsbClient.Connect();
+var client = XcsbClient.Initialized(connection);
+var window = connection.NewId();
 client.CreateWindowChecked(
     0,
     window,
-    client.HandshakeSuccessResponseBody.Screens[0].Root,
+    connection.HandshakeSuccessResponseBody.Screens[0].Root,
     0, 0, 600, 800, 0, ClassType.InputOutput,
-    client.HandshakeSuccessResponseBody.Screens[0].RootVisualId,
+    connection.HandshakeSuccessResponseBody.Screens[0].RootVisualId,
     ValueMask.BackgroundPixel | ValueMask.EventMask,
     [0x00ff00, (uint)(EventMask.ExposureMask | EventMask.KeyReleaseMask | EventMask.KeyPressMask)]
 );
@@ -18,11 +19,11 @@ client.MapWindowChecked(window);
 
 client.ChangeActivePointerGrabChecked(0, 0, (ushort)EventMask.ButtonPressMask);
 
-var font = client.NewId();
+var font = connection.NewId();
 client.OpenFontChecked("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", font);
 
 
-var namedColor = client.AllocNamedColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Red"u8);
+var namedColor = client.AllocNamedColor(connection.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Red"u8);
 Console.WriteLine($"{namedColor.ExactBlue} {namedColor.ExactGreen} {namedColor.ExactRed}");
 
 client.CloseFontChecked(font);
@@ -35,12 +36,12 @@ var detailsFont = client.ListFontsWithInfo("*"u8, 5);
 foreach (var item in detailsFont)
     Console.WriteLine(item.Name);
 
-var lookUpColor = client.LookupColor(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Light Yellow"u8);
+var lookUpColor = client.LookupColor(connection.HandshakeSuccessResponseBody.Screens[0].DefaultColormap, "Light Yellow"u8);
 Debug.Assert(lookUpColor.VisualRed == lookUpColor.ExactRed && lookUpColor.ExactRed == ushort.MaxValue);
 Debug.Assert(lookUpColor.VisualGreen == lookUpColor.ExactGreen && lookUpColor.ExactGreen == ushort.MaxValue);
 
-var keyboardMapping = client.GetKeyboardMapping(client.HandshakeSuccessResponseBody.MinKeyCode,
-    (byte)(client.HandshakeSuccessResponseBody.MaxKeyCode - client.HandshakeSuccessResponseBody.MinKeyCode + 1));
+var keyboardMapping = client.GetKeyboardMapping(connection.HandshakeSuccessResponseBody.MinKeyCode,
+    (byte)(connection.HandshakeSuccessResponseBody.MaxKeyCode - connection.HandshakeSuccessResponseBody.MinKeyCode + 1));
 
 var originalKeySym = keyboardMapping.Keysyms;
 Console.WriteLine(string.Join(", ", originalKeySym));
@@ -57,7 +58,7 @@ client.ChangeKeyboardMappingChecked(
 );
 Console.WriteLine("ChangeKeyboardMapping: Modified one key (dummy)\n");
 
-var queryColor = client.QueryColors(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
+var queryColor = client.QueryColors(connection.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
     [0x0000, 0x00FF, 0xFF00, 0xFFFF]);
 foreach (var color in queryColor.Colors)
     Console.WriteLine($"Blue: {color.Blue} Green: {color.Green} Red: {color.Red} Reserved: {color.Reserved}");
@@ -72,7 +73,7 @@ var listFonts = client.ListFonts(pattan, 10);
 foreach (var fontName in listFonts.Fonts)
     Console.WriteLine(fontName);
 
-font = client.NewId();
+font = connection.NewId();
 client.OpenFontUnchecked("fixed", font);
 var font_info = client.QueryFont(font);
 Console.WriteLine($"QueryFont: Max bounds width:  {font_info.MaxBounds.CharacterWidth}\n");
@@ -86,7 +87,7 @@ Console.WriteLine($"GetMotionEvents: {motion.Events.Length} events");
 var screensaver = client.GetScreenSaver();
 Console.WriteLine($"GetScreenSaver: Timeout: {screensaver.Timeout}");
 
-queryColor = client.QueryColors(client.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
+queryColor = client.QueryColors(connection.HandshakeSuccessResponseBody.Screens[0].DefaultColormap,
      [0x0000, 0x00FF, 0xFF00, 0xFFFF]);
 foreach (var color in queryColor.Colors)
     Console.WriteLine($"Blue: {color.Blue} Green: {color.Green} Red: {color.Red} Reserved: {color.Reserved}");

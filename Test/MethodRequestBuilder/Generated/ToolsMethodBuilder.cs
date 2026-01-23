@@ -13,7 +13,6 @@ var compiler = GetCCompiler();
 var monitorFile = GenerateMonitorFile(compiler);
 using var fileStream = File.Open("./BufferVoidMethodsTest.Generated.cs", FileMode.OpenOrCreate);
 
-// No Parameter Methods Set Up
 IBuilder[] noParamMethod = [
     new MethodDetails1("NoParameter", "GrabServer", [""], [], false),
     new MethodDetails1("NoParameter", "UngrabServer", [""], [], false),
@@ -117,10 +116,12 @@ namespace MethodRequestBuilder.Test.Generated;
 [Collection("Sequential Execution of Generated Methods")]
 public class VoidMethodsTest : IDisposable
 {
+    private readonly IXConnection _connect;
     private readonly IXProto _xProto;
     public VoidMethodsTest()
     {
-        _xProto = XcsbClient.Initialized();
+        _connect = XcsbClient.Connect();
+        _xProto = XcsbClient.Initialized(_connect);
     }
 
 """u8);
@@ -132,7 +133,7 @@ fileStream.Write(
 """
 
     public void Dispose() => 
-        _xProto.Dispose();
+        _connect.Dispose();
 }
 #nullable restore
 
@@ -732,8 +733,8 @@ int main()
         name = "window";
         return
 $$"""
-            var {{name}} = _xProto.NewId();
-            var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+            var {{name}} = _connect.NewId();
+            var screen = _connect.HandshakeSuccessResponseBody.Screens[0];
             _xProto.CreateWindowChecked(0, {{name}}, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
                         screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
 """;
@@ -807,11 +808,11 @@ file class MethodDetails2Dynamic : MethodDetails2
         {
             DynamicType.Gc =>
 $"""
-    var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
-    var window = _xProto.NewId();
+    var screen = _connect.HandshakeSuccessResponseBody.Screens[0];
+    var window = _connect.NewId();
     _xProto.CreateWindowChecked(0, window, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
                     screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
-    var {name} = _xProto.NewId();
+    var {name} = _connect.NewId();
     _xProto.CreateGCChecked({name}, window, (Xcsb.Masks.GCMask)(4|8), [screen.BlackPixel, screen.WhitePixel]);
 """,
             _ => throw new NullReferenceException()
@@ -931,9 +932,9 @@ $$"""
 
         // assert
         Assert.NotNull(buffer);
-        Assert.Equal(params0, _xProto.HandshakeSuccessResponseBody.Screens[0].RootDepth!.DepthValue);
-        Assert.Equal(params1, _xProto.NewId());
-        Assert.Equal(params2, _xProto.HandshakeSuccessResponseBody.Screens[0].Root);
+        Assert.Equal(params0, _connect.HandshakeSuccessResponseBody.Screens[0].RootDepth!.DepthValue);
+        Assert.Equal(params1, _connect.NewId());
+        Assert.Equal(params2, _connect.HandshakeSuccessResponseBody.Screens[0].Root);
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
@@ -1015,8 +1016,8 @@ $$"""
 
         // assert
         Assert.NotNull(buffer);
-        Assert.Equal(params0, _xProto.NewId());
-        Assert.Equal(params1, _xProto.NewId());
+        Assert.Equal(params0, _connect.NewId());
+        Assert.Equal(params1, _connect.NewId());
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
@@ -1104,9 +1105,9 @@ $$"""
 
         // assert
         Assert.NotNull(buffer);
-        Assert.Equal(params1, _xProto.NewId());
-        Assert.Equal(params2, _xProto.NewId());
-        Assert.Equal(params3, _xProto.HandshakeSuccessResponseBody.Screens[0].RootVisualId);
+        Assert.Equal(params1, _connect.NewId());
+        Assert.Equal(params2, _connect.NewId());
+        Assert.Equal(params3, _connect.HandshakeSuccessResponseBody.Screens[0].RootVisualId);
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
@@ -1193,8 +1194,8 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var cursor_pixmap = _xProto.NewId();
-        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
+        var cursor_pixmap = _connect.NewId();
+        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _connect.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (item, ParamSignature.Length - 1))}});
@@ -1232,8 +1233,8 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var cursor_pixmap = _xProto.NewId();
-        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _xProto.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
+        var cursor_pixmap = _connect.NewId();
+        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _connect.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (item, ParamSignature.Length - 1))}});
@@ -1318,13 +1319,13 @@ $$"""
     {
         return IsXcbStr != STRType.XcbColorItem ?
 @"
-        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
-        var gc = _xProto.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+        var root = _connect.HandshakeSuccessResponseBody.Screens[0].Root;
+        var gc = _connect.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_connect.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
 " :
 @"
-        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
-        var cmap = _xProto.NewId();
+        var screen = _connect.HandshakeSuccessResponseBody.Screens[0];
+        var cmap = _connect.NewId();
         _xProto.CreateColormapChecked(0, cmap, screen.Root, screen.RootVisualId);
 ";
     }
@@ -1428,9 +1429,9 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var root = _xProto.HandshakeSuccessResponseBody.Screens[0].Root;
-        var gc = _xProto.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_xProto.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
+        var root = _connect.HandshakeSuccessResponseBody.Screens[0].Root;
+        var gc = _connect.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_connect.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
         {{base.GetItems()}}
 
         // act
@@ -1609,30 +1610,30 @@ $$"""
             ImplType.Id =>
 $"""
 
-        var item{name} = _xProto.NewId();
+        var item{name} = _connect.NewId();
 """,
             ImplType.ColorMap =>
 $"""
 
-        var item{name} = _xProto.NewId();
+        var item{name} = _connect.NewId();
         _xProto.CreateColormapChecked(0, item{name}, screen.Root, screen.RootVisualId);
 """,
             ImplType.GC =>
 $"""
 
-        var item{name} = _xProto.NewId();
+        var item{name} = _connect.NewId();
         _xProto.CreateColormapChecked(0, item{name}, window, screen.RootVisualId);
 """,
             ImplType.Window =>
 $"""
 
-        var item{name} = _xProto.NewId();
+        var item{name} = _connect.NewId();
         _xProto.CreateWindowChecked(0, item{name}, screen.Root, 0, 0, 640, 480, 0,  Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, (Xcsb.Masks.ValueMask)(2 | 2048),  [screen.WhitePixel, 32768 | 1 ]);
 """,
             ImplType.CursorFont =>
 $"""
 
-        var item{name} = _xProto.NewId();
+        var item{name} = _connect.NewId();
         _xProto.OpenFontChecked("cursor", item{name});
 """,
             ImplType.Root =>
@@ -1653,23 +1654,23 @@ $"""
             ImplType.FontId =>
 $"""
 
-        var item{name} = _xProto.NewId();
+        var item{name} = _connect.NewId();
         _xProto.OpenFontChecked("fixed", item{name});
 """,
             ImplType.PixmapId =>
 $"""
 
-        var item{name} = _xProto.NewId();
+        var item{name} = _connect.NewId();
         _xProto.CreatePixmapChecked(screen.RootDepth!.DepthValue, item{name}, screen.Root, 1, 1);
 """,
             ImplType.CursorId =>
 $"""
 
-        var item{name} = _xProto.NewId();
+        var item{name} = _connect.NewId();
 
-        var srcPixmap = _xProto.NewId();
+        var srcPixmap = _connect.NewId();
         _xProto.CreatePixmapChecked(1, srcPixmap, window, 8, 8);
-        var maskPixmap = _xProto.NewId();
+        var maskPixmap = _connect.NewId();
         _xProto.CreatePixmapChecked(1, maskPixmap, window, 8, 8);
         
         _xProto.CreateCursorChecked(item{name}, srcPixmap, maskPixmap, 0, 0, 0, 65535, 65535, 65535, 0, 0);
@@ -1752,7 +1753,7 @@ $$"""
         var field = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        var screen = _connect.HandshakeSuccessResponseBody.Screens[0];
         {{WriteMembers(GetCsImpl)}}
         
 
@@ -1875,7 +1876,7 @@ $$"""
 
         // assert
         Assert.NotNull(buffer);
-        Assert.Equal(params1, _xProto.NewId());
+        Assert.Equal(params1, _connect.NewId());
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
@@ -2134,7 +2135,7 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var screen = _xProto.HandshakeSuccessResponseBody.Screens[0];
+        var screen = _connect.HandshakeSuccessResponseBody.Screens[0];
         {{WriteMembers(GetCsImpl)}}
 
         // act
@@ -2268,8 +2269,8 @@ $$"""
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var bufferClient = (XBufferProto)_xProto.BufferClient;
-        var keyboardMapping = _xProto.GetKeyboardMapping(_xProto.HandshakeSuccessResponseBody.MinKeyCode,
-            (byte)(_xProto.HandshakeSuccessResponseBody.MaxKeyCode - _xProto.HandshakeSuccessResponseBody.MinKeyCode + 1));
+        var keyboardMapping = _xProto.GetKeyboardMapping(_connect.HandshakeSuccessResponseBody.MinKeyCode,
+            (byte)(_connect.HandshakeSuccessResponseBody.MaxKeyCode - _connect.HandshakeSuccessResponseBody.MinKeyCode + 1));
         var itms = Newtonsoft.Json.JsonConvert.DeserializeObject<uint[]>(params2);
 
         var keysyms_per_keycode = new uint[keyboardMapping.KeyPerKeyCode];

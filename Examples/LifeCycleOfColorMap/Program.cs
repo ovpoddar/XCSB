@@ -3,20 +3,21 @@ using Xcsb;
 using Xcsb.Masks;
 using Xcsb.Models;
 
-var x = XcsbClient.Initialized();
+using var connection = XcsbClient.Connect();
+var x = XcsbClient.Initialized(connection);
 
-var screen = x.HandshakeSuccessResponseBody.Screens[0];
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
 
 x.GrabServerChecked();
 
-var colormap = x.NewId();
+var colormap = connection.NewId();
 x.CreateColormapChecked(Xcsb.Models.ColormapAlloc.None,
     colormap,
     root,
     screen.RootVisualId);
 
-var win = x.NewId();
+var win = connection.NewId();
 x.CreateWindowChecked(screen.RootDepth!.DepthValue,
     win,
     root,
@@ -47,7 +48,7 @@ x.DestroyWindowChecked(win);
 
 
 Thread.Sleep(1500);
-win = x.NewId();
+win = connection.NewId();
 x.CreateWindowChecked(screen.RootDepth.DepthValue,
     win,
     root,
@@ -59,7 +60,7 @@ x.MapWindowChecked(win);
 Console.WriteLine("Reloading.");
 Thread.Sleep(1500);
 
-var sub = x.NewId();
+var sub = connection.NewId();
 x.CreateWindowChecked(0,
     sub, win,
     20, 20, 500, 250, 2,
@@ -70,7 +71,7 @@ Console.WriteLine("Subwindow created.");
 
 Thread.Sleep(5000);
 
-var sub1 = x.NewId();
+var sub1 = connection.NewId();
 x.CreateWindowChecked(0,
     sub1, win,
     30, 30, 500, 250, 2,
@@ -84,13 +85,13 @@ x.ReparentWindowChecked(sub, sub1, 0, 0);
 Thread.Sleep(millisecondsTimeout: 5000);
 
 
-var colormap1 = x.NewId();
+var colormap1 = connection.NewId();
 x.CreateColormapChecked(Xcsb.Models.ColormapAlloc.None,
     colormap1,
     root,
     screen.RootVisualId);
 
-var cmap = x.NewId();
+var cmap = connection.NewId();
 x.CopyColormapAndFreeChecked(cmap, colormap1);
 Console.WriteLine("Copied colormap and freed old one.");
 Thread.Sleep(100);

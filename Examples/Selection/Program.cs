@@ -1,11 +1,12 @@
 ﻿using Xcsb;
 using Xcsb.Models;
 
-var x = XcsbClient.Initialized();
-var root = x.HandshakeSuccessResponseBody.Screens[0].Root;
+using var connection = XcsbClient.Connect();
+var x = XcsbClient.Initialized(connection);
+var root = connection.HandshakeSuccessResponseBody.Screens[0].Root;
 x.SetSelectionOwnerChecked(root, ATOM.Primary, 0);
 var owner = x.GetSelectionOwner(ATOM.Primary);
 Console.WriteLine($"{owner.Owner} == {root} ");
 
-var resultListInstalledColormaps = x.ListInstalledColormaps(x.NewId());
+var resultListInstalledColormaps = x.ListInstalledColormaps(connection.NewId());
 Console.WriteLine(string.Join(", ", resultListInstalledColormaps.Colormap));

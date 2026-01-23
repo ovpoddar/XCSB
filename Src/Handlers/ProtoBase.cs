@@ -9,20 +9,20 @@ namespace Xcsb.Handlers;
 
 internal abstract class ProtoBase
 {
-    internal readonly XcbClientConfiguration Configuration;
+    internal readonly XcsbClientConfiguration Configuration;
     internal readonly Socket Socket;
     internal readonly ConcurrentQueue<GenericEvent> BufferEvents;
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
 
-    protected ProtoBase(Socket socket, XcbClientConfiguration configuration)
+    protected ProtoBase(Socket socket, XcsbClientConfiguration configuration)
         : this(socket, null, configuration)
     { }
 
-    protected ProtoBase(ProtoBase proto, XcbClientConfiguration configuration)
+    protected ProtoBase(ProtoBase proto, XcsbClientConfiguration configuration)
         : this(proto.Socket, proto, configuration)
     { }
 
-    private ProtoBase(Socket socket, ProtoBase? proto, XcbClientConfiguration configuration)
+    private ProtoBase(Socket socket, ProtoBase? proto, XcsbClientConfiguration configuration)
     {
         Socket = socket;
         BufferEvents = proto?.BufferEvents ?? new ConcurrentQueue<GenericEvent>();

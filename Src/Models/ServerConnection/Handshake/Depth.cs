@@ -33,7 +33,7 @@ public class Depth
     private static int SetVisual(Depth depth, ProtoIn protoIn)
     {
         var requireByte = Marshal.SizeOf<Visual>() * depth.Visuals.Length;
-        if (requireByte < XcbClientConfiguration.StackAllocThreshold)
+        if (requireByte < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requireByte];
             protoIn.ReceiveExact(scratchBuffer);

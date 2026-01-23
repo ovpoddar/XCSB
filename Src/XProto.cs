@@ -27,26 +27,22 @@ namespace Xcsb;
 #if !NETSTANDARD
 [SkipLocalsInit]
 #endif
-internal sealed class XProto : IXProto, IDisposable
+internal sealed class XProto : IXProto
 {
-    private bool _disposedValue;
     private XBufferProto? _xBufferProto;
-
-    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(this);
-    public HandshakeSuccessResponseBody HandshakeSuccessResponseBody { get; }
+    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(ClientConnection.ProtoIn, ClientConnection.ProtoOut);
 
     internal readonly XConnection ClientConnection;
 
-    public XProto(IXConnection connection, ReadOnlySpan<char> failReason)
+    public XProto(IXConnection connection)
     {
         if (connection is not XConnection clientConnection)
             throw new ArgumentNullException(nameof(connection));
 
         ClientConnection = clientConnection;
         ClientConnection.SequenceReset();
-        if (ClientConnection.HandshakeStatus is not HandshakeStatus.Success || ClientConnection.SuccessResponse is null)
-            throw new UnauthorizedAccessException(failReason.ToString());
-        HandshakeSuccessResponseBody = ClientConnection.SuccessResponse;
+        if (ClientConnection.HandshakeStatus is not HandshakeStatus.Success || ClientConnection.HandshakeSuccessResponseBody is null)
+            throw new UnauthorizedAccessException(ClientConnection.FailReason);
     }
 
     public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
@@ -427,8 +423,8 @@ internal sealed class XProto : IXProto, IDisposable
     }
 
     public uint NewId() =>
-        (uint)((HandshakeSuccessResponseBody.ResourceIDMask & this.ClientConnection.GlobalId++) |
-               HandshakeSuccessResponseBody.ResourceIDBase);
+        (uint)((ClientConnection.HandshakeSuccessResponseBody!.ResourceIDMask & this.ClientConnection.GlobalId++) |
+               ClientConnection.HandshakeSuccessResponseBody!.ResourceIDBase);
 
     public XEvent GetEvent() =>
         this.ClientConnection.ProtoIn.ReceivedResponse();
@@ -1722,7 +1718,7 @@ internal sealed class XProto : IXProto, IDisposable
 
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1783,7 +1779,7 @@ internal sealed class XProto : IXProto, IDisposable
 
         var request = new ChangeGCType(gc, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1809,7 +1805,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new ChangeHostsType(mode, family, address.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1835,7 +1831,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new ChangeKeyboardControlType(mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1862,7 +1858,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1904,7 +1900,7 @@ internal sealed class XProto : IXProto, IDisposable
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
         var request = new ChangePropertyType(mode, window, property, type, args.Length, size);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -1961,7 +1957,7 @@ internal sealed class XProto : IXProto, IDisposable
 
         var request = new ConfigureWindowType(window, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2048,7 +2044,7 @@ internal sealed class XProto : IXProto, IDisposable
 
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2094,7 +2090,7 @@ internal sealed class XProto : IXProto, IDisposable
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2135,7 +2131,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2175,7 +2171,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2248,7 +2244,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new ImageText16Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 
@@ -2282,7 +2278,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new ImageText8Type(drawable, gc, x, y, text.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2338,7 +2334,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new NoOperationType(args.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2364,7 +2360,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new OpenFontType(fontId, (ushort)fontName.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -2396,7 +2392,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new PolyArcType(drawable, gc, arcs.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2422,7 +2418,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2448,7 +2444,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2474,7 +2470,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2500,7 +2496,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2526,7 +2522,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2552,7 +2548,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new PolySegmentType(drawable, gc, segments.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2579,7 +2575,7 @@ internal sealed class XProto : IXProto, IDisposable
         var request = new PolyText16Type(drawable, gc, x, y, data.Sum(a => a.Count));
         var requiredBuffer = request.Length * 4;
         var writIndex = 16;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -2617,7 +2613,7 @@ internal sealed class XProto : IXProto, IDisposable
         var request = new PolyText8Type(drawable, gc, x, y, data.Sum(a => a.Count));
         var requiredBuffer = request.Length * 4;
         var writIndex = 16;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -2655,7 +2651,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2697,7 +2693,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2738,7 +2734,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2771,7 +2767,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2800,7 +2796,7 @@ internal sealed class XProto : IXProto, IDisposable
         var request = new SetFontPathType((ushort)length, strPaths.Sum(a => a.Length + 1).AddPadding());
         var requiredBuffer = request.Length * 4;
         var writIndex = 8;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -2864,7 +2860,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new StoreColorsType(colormapId, item.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -2890,7 +2886,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new StoreNamedColorType(mode, colormapId, pixels, name.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -3005,7 +3001,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new InternAtomType(onlyIfExist, atomName.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 #if NETSTANDARD
@@ -3130,7 +3126,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new QueryTextExtentsType(font, stringForQuery.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
 
@@ -3164,7 +3160,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new ListFontsType(pattern.Length, maxNames);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -3193,7 +3189,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new ListFontsWithInfoType(pattan.Length, maxNames);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -3245,7 +3241,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new AllocNamedColorType(colorMap, name.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -3288,7 +3284,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new QueryColorsType(colorMap, pixels.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -3315,7 +3311,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new LookupColorType(colorMap, name.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -3349,7 +3345,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new QueryExtensionType((ushort)name.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(ref request, 8, name);
@@ -3377,7 +3373,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new SetModifierMappingType(keycodes.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -3425,7 +3421,7 @@ internal sealed class XProto : IXProto, IDisposable
     {
         var request = new SetPointerMappingType(maps.Length);
         var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < XcbClientConfiguration.StackAllocThreshold)
+        if (requiredBuffer < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(
@@ -3475,20 +3471,4 @@ internal sealed class XProto : IXProto, IDisposable
         ClientConnection.ProtoOut.Send(ref request);
         return new ResponseProto(ClientConnection.ProtoOut.Sequence, true);
     }
-
-    private void Dispose(bool disposing)
-    {
-        if (_disposedValue) return;
-        if (disposing)
-            ClientConnection?.Dispose();
-        _disposedValue = true;
-    }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
 }
