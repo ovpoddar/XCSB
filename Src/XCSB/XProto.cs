@@ -9,6 +9,7 @@ using Xcsb.Models;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Infrastructure.Exceptions;
 using Xcsb.Models.Infrastructure.Response;
+using Xcsb.Models.ServerConnection.Contracts;
 using Xcsb.Models.ServerConnection.Handshake;
 using Xcsb.Models.String;
 using Xcsb.Requests;
@@ -17,6 +18,7 @@ using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
+
 
 #if !NETSTANDARD
 using System.Numerics;
@@ -33,14 +35,11 @@ internal sealed class XProto : IXProto
     private const int _bigRequestLength = 262140;
     public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(ClientConnection.ProtoIn, ClientConnection.ProtoOut);
     
-    internal readonly XConnection ClientConnection;
+    internal readonly IXConnectionInternal ClientConnection;
 
-    public XProto(IXConnection connection)
+    public XProto(IXConnectionInternal connection)
     {
-        if (connection is not XConnection clientConnection)
-            throw new ArgumentNullException(nameof(connection));
-
-        ClientConnection = clientConnection;
+        ClientConnection = connection;
         ClientConnection.SequenceReset();
         if (ClientConnection.HandshakeStatus is not HandshakeStatus.Success || ClientConnection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(ClientConnection.FailReason);

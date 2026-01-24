@@ -5,13 +5,14 @@ using System.Text;
 using Xcsb.Configuration;
 using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
+using Xcsb.Models.ServerConnection.Contracts;
 using Xcsb.Models.ServerConnection.Handshake;
 using Xcsb.Requests;
 using Xcsb.Response.Event;
 
 namespace Xcsb.Models.Infrastructure;
 
-internal class XConnection : IXConnection
+internal class XConnection : IXConnectionInternal
 {
     private readonly Socket _socket;
     private readonly object _lock;
@@ -23,8 +24,8 @@ internal class XConnection : IXConnection
     public string FailReason { get; private set; } = string.Empty;
     public bool Connected => this._socket.Connected;
 
-    internal ProtoOut ProtoOut { get; }
-    internal ProtoIn ProtoIn { get; }
+    public ProtoOut ProtoOut { get; }
+    public ProtoIn ProtoIn { get; }
 
     public XConnection(string path, XcsbClientConfiguration configuration, in ProtocolType type)
     {
@@ -133,9 +134,6 @@ internal class XConnection : IXConnection
     public uint NewId() => HandshakeSuccessResponseBody is null
         ? throw new InvalidOperationException()
         : (uint)((HandshakeSuccessResponseBody.ResourceIDMask & this.GlobalId++) | HandshakeSuccessResponseBody.ResourceIDBase);
-
-    public XEvent GetEvent() =>
-        ProtoIn.ReceivedResponse();
 
     public bool IsEventAvailable() =>
         !ProtoIn.BufferEvents.IsEmpty || _socket.Available >= Unsafe.SizeOf<GenericEvent>();

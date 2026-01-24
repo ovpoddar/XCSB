@@ -2,6 +2,7 @@
 using Xcsb.Configuration;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure;
+using Xcsb.Models.ServerConnection.Contracts;
 
 namespace Xcsb;
 
@@ -33,7 +34,7 @@ public static class XcsbClient
 
     public static IXProto Initialized(IXConnection connectionResult)
     {
-        return new XProto(connectionResult);
+        return new XProto((IXConnectionInternal)connectionResult);
     }
 
     private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)

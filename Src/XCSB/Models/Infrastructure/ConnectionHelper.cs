@@ -1,4 +1,5 @@
 ﻿using Xcsb.Configuration;
+using Xcsb.Models.ServerConnection.Contracts;
 using Xcsb.Models.ServerConnection.Handshake;
 using Xcsb.Response.Contract;
 
@@ -11,7 +12,7 @@ internal static class ConnectionHelper
     private static string? _cachedAuthPath;
     private static readonly object AuthPathLock = new();
 
-    internal static XConnection TryConnect(ConnectionDetails connectionDetails,
+    internal static IXConnectionInternal TryConnect(ConnectionDetails connectionDetails,
         string display,
         XcsbClientConfiguration configuration)
     {
@@ -37,7 +38,7 @@ internal static class ConnectionHelper
         return response;
     }
 
-    internal static XConnection Connect(in ConnectionDetails connectionDetails,
+    internal static IXConnectionInternal Connect(in ConnectionDetails connectionDetails,
         string display,
         XcsbClientConfiguration configuration,
         Span<byte> name,
