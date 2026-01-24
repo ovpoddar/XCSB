@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Models.Infrastructure.Response;
+﻿namespace Xcsb.Extension.Generic.Event.Response;
 
 public readonly ref struct ResponseProto
 {

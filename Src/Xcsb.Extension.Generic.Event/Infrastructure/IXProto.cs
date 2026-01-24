@@ -1,7 +1,6 @@
 ﻿using Xcsb.Extension.Generic.Event.Infrastructure.ResponceProto;
 using Xcsb.Extension.Generic.Event.Infrastructure.VoidProto;
 using Xcsb.Models;
-using Xcsb.Models.ServerConnection.Handshake;
 
 namespace Xcsb.Extension.Generic.Event.Infrastructure;
 

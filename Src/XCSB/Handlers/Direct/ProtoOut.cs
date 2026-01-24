@@ -14,10 +14,6 @@ internal class ProtoOut : ProtoBase
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Send<T>(scoped ref T value) where T : unmanaged =>
-        this.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)), SocketFlags.None);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SendExact(scoped in ReadOnlySpan<byte> buffer) =>
         this.SendExact(buffer, SocketFlags.None);
 

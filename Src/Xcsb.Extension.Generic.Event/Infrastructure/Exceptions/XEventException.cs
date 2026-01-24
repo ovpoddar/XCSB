@@ -1,6 +1,6 @@
 ﻿using Xcsb.Response.Errors;
 
-namespace Xcsb.Models.Infrastructure.Exceptions;
+namespace Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
 
 public sealed class XEventException : Exception
 {

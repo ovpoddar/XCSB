@@ -1,15 +1,14 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Extension.Generic.Event.Infrastructure;
+using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
+using Xcsb.Extension.Generic.Event.Masks;
+using Xcsb.Extension.Generic.Event.Models.String;
+using Xcsb.Extension.Generic.Event.Requests;
+using Xcsb.Extension.Generic.Event.Response.Contract;
+using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
 using Xcsb.Models;
-using Xcsb.Models.Infrastructure.Exceptions;
-using Xcsb.Models.String;
-using Xcsb.Requests;
-using Xcsb.Response.Contract;
-using Xcsb.Handlers.Direct;
-using Xcsb.Extension.Generic.Event.Infrastructure;
-using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Extension.Generic.Event.Requests;
 
 #if !NETSTANDARD
 using System.Numerics;

@@ -1,7 +1,7 @@
-﻿using Xcsb.Handlers.Buffered;
+﻿using Xcsb.Extension.Generic.Event.Handlers.Buffered;
 using Xcsb.Handlers.Direct;
 
-namespace Xcsb.Response.Contract;
+namespace Xcsb.Extension.Generic.Event.Response.Contract;
 
 internal class BaseBufferProtoClient
 {
