@@ -2,7 +2,7 @@
 using Xcsb.Helpers;
 using Xcsb.Models;
 
-namespace Xcsb.Requests;
+namespace Xcsb.Extension.Generic.Event.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 internal readonly struct InternAtomType(bool onlyIfExist, int atomNameLength)

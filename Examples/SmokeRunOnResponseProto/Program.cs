@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Xcsb;
 using Xcsb.Extension.Generic.Event;
-using Xcsb.Masks;
+using Xcsb.Extension.Generic.Event.Masks;
 using Xcsb.Models;
 
 using var connection = XcsbClient.Connect();

@@ -1,8 +1,9 @@
-﻿using Xcsb.Masks;
+﻿using Xcsb.Extension.Generic.Event.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure.Response;
 using Xcsb.Models.String;
 using Xcsb.Response.Errors;
+
 
 
 #if !NETSTANDARD

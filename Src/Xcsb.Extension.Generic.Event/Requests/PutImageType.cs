@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Xcsb.Helpers;
 using Xcsb.Models;
 
-namespace Xcsb.Requests;
+namespace Xcsb.Extension.Generic.Event.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]

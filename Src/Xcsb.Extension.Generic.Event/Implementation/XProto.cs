@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Configuration;
 using Xcsb.Helpers;
-using Xcsb.Masks;
+using Xcsb.Extension.Generic.Event.Masks;
 using Xcsb.Models;
 using Xcsb.Models.Infrastructure;
 using Xcsb.Models.Infrastructure.Exceptions;
@@ -16,10 +16,12 @@ using Xcsb.Requests;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
-using Xcsb.Response.Replies;
-using Xcsb.Response.Replies.Internals;
+using Xcsb.Extension.Generic.Event.Response.Replies;
+using Xcsb.Extension.Generic.Event.Response.Replies.Internals;
 using Xcsb.Extension.Generic.Event.Infrastructure;
 using Xcsb.Handlers.Direct;
+using Xcsb.Extension.Generic.Event.ExtendedHelper;
+using Xcsb.Extension.Generic.Event.Requests;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -33,6 +35,8 @@ internal sealed class XProto : IXProto
 {
     private XBufferProto? _xBufferProto;
     private const int _bigRequestLength = 262140;
+    private readonly ProtoInExtended _protoInExtended;
+
     public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(ClientConnection.ProtoIn, ClientConnection.ProtoOut);
     
     internal readonly IXConnectionInternal ClientConnection;
@@ -40,9 +44,9 @@ internal sealed class XProto : IXProto
     public XProto(IXConnectionInternal connection)
     {
         ClientConnection = connection;
-        ClientConnection.SequenceReset();
         if (ClientConnection.HandshakeStatus is not HandshakeStatus.Success || ClientConnection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(ClientConnection.FailReason);
+        _protoInExtended = new ProtoInExtended(ClientConnection.ProtoIn); //Todo: can be more organised with interface and staffs will think about them after api finalized
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WaitForEvent() =>
@@ -256,7 +260,7 @@ internal sealed class XProto : IXProto
     public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
     {
         var cookie = ListFontsWithInfoBase(pattan, maxNames);
-        var (result, error) = this.ClientConnection.ProtoIn.ReceivedResponseArray(cookie.Id, maxNames);
+        var (result, error) = this._protoInExtended.ReceivedResponseArray(cookie.Id, maxNames);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result;

@@ -1,5 +1,5 @@
-﻿using Xcsb.Models;
-using Xcsb.Response.Replies;
+﻿using Xcsb.Extension.Generic.Event.Response.Replies;
+using Xcsb.Models;
 
 namespace Xcsb.Extension.Generic.Event.Infrastructure.ResponceProto;
 

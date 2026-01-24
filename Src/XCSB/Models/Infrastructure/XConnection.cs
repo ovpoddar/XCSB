@@ -8,7 +8,6 @@ using Xcsb.Helpers;
 using Xcsb.Models.ServerConnection.Contracts;
 using Xcsb.Models.ServerConnection.Handshake;
 using Xcsb.Requests;
-using Xcsb.Response.Event;
 
 namespace Xcsb.Models.Infrastructure;
 
@@ -89,12 +88,6 @@ internal class XConnection : IXConnectionInternal
             // The caller (ConnectionHelper.cs) will dispose the context on failure
             return false;
         }
-    }
-
-    public void SequenceReset()
-    {
-        ProtoOut.Sequence = 0;
-        ProtoIn.Sequence = 0;
     }
 
     public void SetUpStatus()

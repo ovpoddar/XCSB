@@ -2,7 +2,7 @@
 using System.Text;
 using Xcsb;
 using Xcsb.Extension.Generic.Event;
-using Xcsb.Masks;
+using Xcsb.Extension.Generic.Event.Masks;
 using Xcsb.Models;
 
 const int WIDTH = 50;

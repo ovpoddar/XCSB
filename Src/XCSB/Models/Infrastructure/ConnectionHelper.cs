@@ -1,7 +1,6 @@
 ﻿using Xcsb.Configuration;
 using Xcsb.Models.ServerConnection.Contracts;
 using Xcsb.Models.ServerConnection.Handshake;
-using Xcsb.Response.Contract;
 
 namespace Xcsb.Models.Infrastructure;
 
@@ -72,6 +71,8 @@ internal static class ConnectionHelper
         }
 
         connection.SetUpStatus();
+        connection.ProtoOut.Sequence = 0;
+        connection.ProtoIn.Sequence = 0;
         return connection;
     }
 

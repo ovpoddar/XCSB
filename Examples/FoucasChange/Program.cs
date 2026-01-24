@@ -1,7 +1,7 @@
 ﻿using Xcsb;
 using Xcsb.Extension.Generic.Event;
 using Xcsb.Extension.Generic.Event.Infrastructure;
-using Xcsb.Masks;
+using Xcsb.Extension.Generic.Event.Masks;
 using Xcsb.Models;
 using Xcsb.Response.Event;
 
@@ -198,6 +198,6 @@ return;
 
 static void ChangeWindowColor(IXProto x, uint win, uint color)
 {
-    x.ChangeWindowAttributesUnchecked(win, Xcsb.Masks.ValueMask.BackgroundPixel, [color]);
+    x.ChangeWindowAttributesUnchecked(win, ValueMask.BackgroundPixel, [color]);
     x.ClearAreaUnchecked(false, win, 0, 0, 0, 0);
 }

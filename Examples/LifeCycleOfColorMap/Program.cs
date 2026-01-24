@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Xcsb;
 using Xcsb.Extension.Generic.Event;
-using Xcsb.Masks;
+using Xcsb.Extension.Generic.Event.Masks;
 using Xcsb.Models;
 
 using var connection = XcsbClient.Connect();
@@ -24,7 +24,7 @@ x.CreateWindowChecked(screen.RootDepth!.DepthValue,
     root,
     0, 0, 500, 500,
     0, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
-    Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask | Xcsb.Masks.ValueMask.Colormap,
+    ValueMask.BackgroundPixel | ValueMask.EventMask | ValueMask.Colormap,
     [screen.WhitePixel, (uint)EventMask.ExposureMask, colormap]);
 
 x.InstallColormapChecked(colormap);
@@ -55,7 +55,7 @@ x.CreateWindowChecked(screen.RootDepth.DepthValue,
     root,
     0, 0, 500, 500,
     0, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
-    Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask,
+    ValueMask.BackgroundPixel | ValueMask.EventMask,
     [screen.WhitePixel, (uint)EventMask.ExposureMask]);
 x.MapWindowChecked(win);
 Console.WriteLine("Reloading.");
