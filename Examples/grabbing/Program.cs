@@ -1,10 +1,11 @@
 ﻿using Xcsb;
+using Xcsb.Extension.Generic.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Response.Event;
 
 using var connection = XcsbClient.Connect();
-var con = XcsbClient.Initialized(connection);
+var con = connection.Initialized();
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 var colormap = screen.DefaultColormap;
 var window = connection.NewId();

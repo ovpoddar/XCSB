@@ -18,13 +18,15 @@ using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
+using Xcsb.Extension.Generic.Event.Infrastructure;
+using Xcsb.Handlers.Direct;
 
 
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb;
+namespace Xcsb.Extension.Generic.Event.Implementation;
 
 #if !NETSTANDARD
 [SkipLocalsInit]
@@ -44,6 +46,13 @@ internal sealed class XProto : IXProto
         if (ClientConnection.HandshakeStatus is not HandshakeStatus.Success || ClientConnection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(ClientConnection.FailReason);
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void WaitForEvent() =>
+        ClientConnection.ProtoIn.WaitForEventArrival();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsEventAvailable() =>
+        ClientConnection.ProtoIn.HasEventToProcesses();
 
     public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
     {

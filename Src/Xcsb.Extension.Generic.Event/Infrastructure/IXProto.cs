@@ -1,9 +1,9 @@
-﻿using Xcsb.Infrastructure;
-using Xcsb.Infrastructure.VoidProto;
+﻿using Xcsb.Extension.Generic.Event.Infrastructure.ResponceProto;
+using Xcsb.Extension.Generic.Event.Infrastructure.VoidProto;
 using Xcsb.Models;
 using Xcsb.Models.ServerConnection.Handshake;
 
-namespace Xcsb;
+namespace Xcsb.Extension.Generic.Event.Infrastructure;
 
 public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked
 {
@@ -23,4 +23,6 @@ public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidP
     /// stream, which typically means the X server connection has been closed.
     /// </remarks>
     XEvent GetEvent();
+    bool IsEventAvailable();
+    void WaitForEvent();
 }

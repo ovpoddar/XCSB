@@ -1,13 +1,14 @@
 ﻿using System.Buffers;
 using System.Text;
 using Xcsb;
+using Xcsb.Extension.Generic.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
 const int WIDTH = 50;
 const int HEIGHT = 50;
 using var connection = XcsbClient.Connect();
-var xcsb = XcsbClient.Initialized(connection);
+var xcsb = connection.Initialized();
 var window = connection.NewId();
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 var lazyXcsb = xcsb.BufferClient;

@@ -151,6 +151,14 @@ internal class ProtoIn : ProtoBase
                 : null;
     }
 
+    public bool HasEventToProcesses() =>
+        !BufferEvents.IsEmpty || Socket.Available >= Unsafe.SizeOf<GenericEvent>();
+
+    public void WaitForEventArrival()
+    {
+        if (!HasEventToProcesses())
+            Socket.Poll(-1, SelectMode.SelectRead);
+    }
     public (ListFontsWithInfoReply[], GenericError?) ReceivedResponseArray(int sequence, int maxNames, int timeOut = 1000)
     {
         while (true)

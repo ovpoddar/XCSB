@@ -1,4 +1,5 @@
 ﻿using Xcsb;
+using Xcsb.Extension.Generic.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
@@ -6,7 +7,7 @@ const int width = 400;
 const int height = 300;
 
 using var connection = XcsbClient.Connect();
-var xcsb = XcsbClient.Initialized(connection);
+var xcsb = connection.Initialized();
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 var window = connection.NewId();
 

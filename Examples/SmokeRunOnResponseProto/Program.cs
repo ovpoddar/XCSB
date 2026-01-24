@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using Xcsb;
+using Xcsb.Extension.Generic.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
 using var connection = XcsbClient.Connect();
-var client = XcsbClient.Initialized(connection);
+var client = connection.Initialized();
 var window = connection.NewId();
 client.CreateWindowChecked(
     0,

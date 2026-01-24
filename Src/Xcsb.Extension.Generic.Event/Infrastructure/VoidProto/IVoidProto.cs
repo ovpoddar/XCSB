@@ -4,11 +4,12 @@ using Xcsb.Models.Infrastructure.Response;
 using Xcsb.Models.String;
 using Xcsb.Response.Errors;
 
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb.Infrastructure;
+namespace Xcsb.Extension.Generic.Event.Infrastructure.VoidProto;
 
 public interface IVoidProto
 {

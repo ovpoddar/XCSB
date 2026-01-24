@@ -125,18 +125,10 @@ internal class XConnection : IXConnectionInternal
         }
     }
 
-    public void WaitForEvent()
-    {
-        if (!IsEventAvailable())
-            _socket.Poll(-1, SelectMode.SelectRead);
-    }
 
     public uint NewId() => HandshakeSuccessResponseBody is null
         ? throw new InvalidOperationException()
         : (uint)((HandshakeSuccessResponseBody.ResourceIDMask & this.GlobalId++) | HandshakeSuccessResponseBody.ResourceIDBase);
-
-    public bool IsEventAvailable() =>
-        !ProtoIn.BufferEvents.IsEmpty || _socket.Available >= Unsafe.SizeOf<GenericEvent>();
 
     public void Dispose()
     {

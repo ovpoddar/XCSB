@@ -110,6 +110,7 @@ fileStream.Write(
 // IT WILL BE OVERWRITTEN WHEN GENERATING
 #nullable enable
 using Xcsb;
+using Xcsb.Extension.Generic.Event;
 
 namespace MethodRequestBuilder.Test.Generated;
 

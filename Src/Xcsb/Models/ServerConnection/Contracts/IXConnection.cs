@@ -10,7 +10,5 @@ public interface IXConnection : IDisposable
     HandshakeSuccessResponseBody? HandshakeSuccessResponseBody { get; }
     string FailReason { get; }
 
-    bool IsEventAvailable();
-    void WaitForEvent();
     uint NewId();
 }

@@ -32,11 +32,6 @@ public static class XcsbClient
         return connectionResult;
     }
 
-    public static IXProto Initialized(IXConnection connectionResult)
-    {
-        return new XProto((IXConnectionInternal)connectionResult);
-    }
-
     private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)
     {
         var details = new ConnectionDetails

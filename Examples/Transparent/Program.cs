@@ -1,10 +1,11 @@
 ﻿using Xcsb;
+using Xcsb.Extension.Generic.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.ServerConnection.Handshake;
 // todo:Reminder. this will work if their is the extension support
 using var connection = XcsbClient.Connect();
-var x11 = XcsbClient.Initialized(connection);
+var x11 = connection.Initialized();
 var rgbValue = connection.HandshakeSuccessResponseBody.Screens[0].Depths.FirstOrDefault(a => a.DepthValue == 32);
 var visual = rgbValue?.Visuals.LastOrDefault(a => a.Class == VisualClass.TrueColor).VisualId;
 

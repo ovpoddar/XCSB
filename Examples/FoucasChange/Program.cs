@@ -1,4 +1,6 @@
 ﻿using Xcsb;
+using Xcsb.Extension.Generic.Event;
+using Xcsb.Extension.Generic.Event.Infrastructure;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Response.Event;
@@ -6,7 +8,7 @@ using Xcsb.Response.Event;
 
 // Connect to X server
 using var connection = XcsbClient.Connect();
-var x = XcsbClient.Initialized(connection);
+var x = connection.Initialized();
 
 // Get the first screen
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];

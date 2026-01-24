@@ -1,8 +1,9 @@
 ﻿using Xcsb;
+using Xcsb.Extension.Generic.Event;
 using Xcsb.Models;
 
 using var connection = XcsbClient.Connect();
-var x = XcsbClient.Initialized(connection);
+var x = connection.Initialized();
 var root = connection.HandshakeSuccessResponseBody.Screens[0].Root;
 x.SetSelectionOwnerChecked(root, ATOM.Primary, 0);
 var owner = x.GetSelectionOwner(ATOM.Primary);

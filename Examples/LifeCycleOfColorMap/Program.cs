@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using Xcsb;
+using Xcsb.Extension.Generic.Event;
 using Xcsb.Masks;
 using Xcsb.Models;
 
 using var connection = XcsbClient.Connect();
-var x = XcsbClient.Initialized(connection);
+var x = connection.Initialized();
 
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
