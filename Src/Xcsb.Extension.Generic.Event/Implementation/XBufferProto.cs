@@ -8,13 +8,13 @@ using Xcsb.Models.String;
 using Xcsb.Requests;
 using Xcsb.Response.Contract;
 using Xcsb.Handlers.Direct;
-
+using Xcsb.Extension.Generic.Event.Infrastructure;
 
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb;
+namespace Xcsb.Extension.Generic.Event.Implementation;
 
 internal class XBufferProto : BaseBufferProtoClient, IXBufferProto
 {

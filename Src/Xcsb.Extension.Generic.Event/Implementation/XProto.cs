@@ -20,8 +20,6 @@ using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
 using Xcsb.Extension.Generic.Event.Infrastructure;
 using Xcsb.Handlers.Direct;
-
-
 #if !NETSTANDARD
 using System.Numerics;
 #endif
