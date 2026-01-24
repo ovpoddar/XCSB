@@ -2,11 +2,12 @@
 using Xcsb.Models;
 using Xcsb.Models.String;
 
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb.Infrastructure.VoidProto;
+namespace Xcsb.Extension.Generic.Event.Infrastructure.VoidProto;
 
 public interface IVoidBufferProto
 {

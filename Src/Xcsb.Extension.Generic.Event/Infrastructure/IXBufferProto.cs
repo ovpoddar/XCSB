@@ -1,4 +1,4 @@
-﻿using Xcsb.Infrastructure.VoidProto;
+﻿using Xcsb.Extension.Generic.Event.Infrastructure.VoidProto;
 
 namespace Xcsb.Extension.Generic.Event.Infrastructure;
 
