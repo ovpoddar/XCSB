@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Extension.Generic.Event.Handlers.Direct;
 using Xcsb.Handlers;
-using Xcsb.Handlers.Direct;
 
 namespace Xcsb.Extension.Generic.Event.Handlers.Buffered;
 

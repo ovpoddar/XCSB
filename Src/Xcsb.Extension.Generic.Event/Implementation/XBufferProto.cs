@@ -7,7 +7,6 @@ using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
 using Xcsb.Extension.Generic.Event.Masks;
 using Xcsb.Extension.Generic.Event.Models.String;
 using Xcsb.Extension.Generic.Event.Requests;
-using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
 using Xcsb.Models;
 #if !NETSTANDARD
