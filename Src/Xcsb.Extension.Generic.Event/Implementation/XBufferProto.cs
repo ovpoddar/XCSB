@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Extension.Generic.Event.Handlers.Buffered;
+using Xcsb.Extension.Generic.Event.Handlers.Direct;
 using Xcsb.Extension.Generic.Event.Infrastructure;
 using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
 using Xcsb.Extension.Generic.Event.Masks;
@@ -20,7 +21,7 @@ internal sealed class XBufferProto : IXBufferProto
     private readonly BufferProtoOut _bufferProtoOut;
     private readonly BufferProtoIn _bufferProtoIn;
 
-    public XBufferProto(ProtoIn protoIn, ProtoOut protoOut)
+    public XBufferProto(ProtoInExtended protoIn, ProtoOutExtended protoOut)
     {
         _bufferProtoOut = new BufferProtoOut(protoOut);
         _bufferProtoIn = new BufferProtoIn(protoIn);
@@ -260,6 +261,21 @@ internal sealed class XBufferProto : IXBufferProto
 
     public void Flush() =>
         FlushBase(false);
+
+    private void FlushBase(bool shouldThorw)
+    {
+        try
+        {
+            _bufferProtoIn.ProtoIn.FlushSocket();
+            var outProtoSequence = _bufferProtoOut.Sequence;
+            _bufferProtoOut.Flush();
+            _bufferProtoIn.FlushSocket(_bufferProtoIn.ProtoIn.Sequence, outProtoSequence, shouldThorw);
+        }
+        finally
+        {
+            _bufferProtoOut.Reset();
+        }
+    }
 
     public void ForceScreenSaver(ForceScreenSaverMode mode)
     {
@@ -618,20 +634,5 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
         _bufferProtoOut.Add(ref request);
-    }
-
-    internal void FlushBase(bool shouldThorw)
-    {
-        try
-        {
-            _bufferProtoIn.ProtoIn.FlushSocket();
-            var outProtoSequence = _bufferProtoOut.Sequence;
-            _bufferProtoOut.Flush();
-            _bufferProtoIn.FlushSocket(_bufferProtoIn.ProtoIn.Sequence, outProtoSequence, shouldThorw);
-        }
-        finally
-        {
-            _bufferProtoOut.Reset();
-        }
     }
 }

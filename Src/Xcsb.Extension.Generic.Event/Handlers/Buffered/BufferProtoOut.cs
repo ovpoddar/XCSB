@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Extension.Generic.Event.Handlers.Direct;
 using Xcsb.Handlers;
 using Xcsb.Handlers.Direct;
 
@@ -9,12 +10,12 @@ namespace Xcsb.Extension.Generic.Event.Handlers.Buffered;
 internal sealed class BufferProtoOut : ProtoBase
 {
     private readonly List<byte> _buffer;
-    private readonly ProtoOut _protoOut;
+    private readonly ProtoOutExtended _protoOut;
     private int _requestLength;
 
     public int Sequence => _protoOut.Sequence;
 
-    public BufferProtoOut(ProtoOut protoOut) : base(protoOut, protoOut.Configuration)
+    public BufferProtoOut(ProtoOutExtended protoOut) : base(protoOut, protoOut.Configuration)
     {
         _protoOut = protoOut;
         _buffer = new List<byte>();

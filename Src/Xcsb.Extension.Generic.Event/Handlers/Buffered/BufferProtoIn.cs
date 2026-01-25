@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using Xcsb.Extension.Generic.Event.Handlers.Direct;
 using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
 using Xcsb.Handlers;
 using Xcsb.Handlers.Direct;
@@ -12,9 +13,9 @@ namespace Xcsb.Extension.Generic.Event.Handlers.Buffered;
 
 internal sealed class BufferProtoIn : ProtoBase
 {
-    internal readonly ProtoIn ProtoIn;
+    internal readonly ProtoInExtended ProtoIn;
 
-    public BufferProtoIn(ProtoIn protoIn) : base(protoIn, protoIn.Configuration)
+    public BufferProtoIn(ProtoInExtended protoIn) : base(protoIn, protoIn.Configuration)
     {
         ProtoIn = protoIn;
     }
