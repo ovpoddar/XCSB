@@ -10,7 +10,7 @@ using Xcsb.Response.Event;
 
 namespace Xcsb.Extension.Generic.Event.Handlers.Buffered;
 
-internal class BufferProtoIn : ProtoBase
+internal sealed class BufferProtoIn : ProtoBase
 {
     internal readonly ProtoIn ProtoIn;
 

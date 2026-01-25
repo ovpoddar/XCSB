@@ -6,7 +6,7 @@ using Xcsb.Handlers.Direct;
 
 namespace Xcsb.Extension.Generic.Event.Handlers.Buffered;
 
-internal class BufferProtoOut : ProtoBase
+internal sealed class BufferProtoOut : ProtoBase
 {
     private readonly List<byte> _buffer;
     private readonly ProtoOut _protoOut;
