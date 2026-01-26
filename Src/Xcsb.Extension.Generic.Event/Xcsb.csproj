@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\XCSB\Xcsb.csproj" />
+		<ProjectReference Include="..\XCSB\Xcsb.Connection.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

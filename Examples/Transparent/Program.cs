@@ -1,8 +1,9 @@
 ﻿using Xcsb;
-using Xcsb.Extension.Generic.Event;
-using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Extension.Generic.Event.Models;
-using Xcsb.Models.ServerConnection.Handshake;
+using Xcsb.Connection;
+using Xcsb.Connection.Models.Handshake;
+using Xcsb.Masks;
+using Xcsb.Models;
+
 // todo:Reminder. this will work if their is the extension support
 using var connection = XcsbClient.Connect();
 var x11 = connection.Initialized();

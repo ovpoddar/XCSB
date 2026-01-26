@@ -1,4 +1,4 @@
-namespace Xcsb.Models;
+namespace Xcsb.Connection.Models;
 
 internal readonly struct DataRange
 {

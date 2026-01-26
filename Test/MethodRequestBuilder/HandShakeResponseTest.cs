@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Xcsb;
+using Xcsb.Connection;
 
 namespace MethodRequestBuilder.Test;
 

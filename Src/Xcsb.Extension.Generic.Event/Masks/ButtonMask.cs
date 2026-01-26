@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Extension.Generic.Event.Masks;
+﻿namespace Xcsb.Masks;
 
 [Flags]
 public enum ButtonMask

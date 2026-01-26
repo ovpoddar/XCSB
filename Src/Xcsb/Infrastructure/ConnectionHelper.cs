@@ -1,8 +1,10 @@
-﻿using Xcsb.Configuration;
-using Xcsb.Models.ServerConnection.Contracts;
-using Xcsb.Models.ServerConnection.Handshake;
+﻿using Xcsb.Connection;
+using Xcsb.Connection.Configuration;
+using Xcsb.Connection.Models;
+using Xcsb.Connection.Models.Handshake;
+using Xcsb.Models;
 
-namespace Xcsb.Models.Infrastructure;
+namespace Xcsb.Connection.Infrastructure;
 
 internal static class ConnectionHelper
 {

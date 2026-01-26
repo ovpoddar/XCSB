@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Xcsb.Extension.Generic.Event.Response.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1)]
 public unsafe struct ClientMessageData

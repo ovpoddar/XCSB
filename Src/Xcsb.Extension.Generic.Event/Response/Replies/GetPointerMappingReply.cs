@@ -1,9 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
-using Xcsb.Extension.Generic.Event.Response.Contract;
-using Xcsb.Extension.Generic.Event.Response.Replies.Internals;
 using Xcsb.Helpers;
+using Xcsb.Response.Contract;
+using Xcsb.Response.Replies.Internals;
 
-namespace Xcsb.Extension.Generic.Event.Response.Replies;
+namespace Xcsb.Response.Replies;
 
 public readonly struct GetPointerMappingReply
 {

@@ -1,9 +1,9 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Configuration;
-using Xcsb.Handlers;
-using Xcsb.Helpers;
+using Xcsb.Connection.Configuration;
+using Xcsb.Connection.Handlers;
+using Xcsb.Connection.Helpers;
 
-namespace Xcsb.Models.ServerConnection.Handshake;
+namespace Xcsb.Connection.Models.Handshake;
 
 public class Depth
 {

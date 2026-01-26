@@ -1,14 +1,14 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using Xcsb.Extension.Generic.Event.Handlers.Direct;
 using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
-using Xcsb.Extension.Generic.Event.Response.Contract;
-using Xcsb.Extension.Generic.Event.Response.Errors;
-using Xcsb.Extension.Generic.Event.Response.Event;
+using Xcsb.Handlers;
+using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
+using Xcsb.Response.Event;
 
-namespace Xcsb.Extension.Generic.Event.Handlers.Buffered;
+namespace Xcsb.Handlers.Buffered;
 
 internal sealed class BufferProtoIn : ProtoBase
 {

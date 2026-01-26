@@ -1,7 +1,7 @@
-﻿using Xcsb.Handlers;
-using Xcsb.Models.ServerConnection.Handshake;
+﻿using Xcsb.Connection.Handlers;
+using Xcsb.Connection.Models.Handshake;
 
-namespace Xcsb.Models.ServerConnection.Contracts;
+namespace Xcsb.Connection;
 
 internal interface IXConnectionInternal : IXConnection
 {

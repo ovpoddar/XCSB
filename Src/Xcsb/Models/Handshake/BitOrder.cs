@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Models.ServerConnection.Handshake;
+﻿namespace Xcsb.Connection.Models.Handshake;
 
 public enum BitOrder : byte
 {

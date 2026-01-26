@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Extension.Generic.Event.Response.Contract;
 using Xcsb.Helpers;
+using Xcsb.Response.Contract;
 
-namespace Xcsb.Extension.Generic.Event.Response.Errors;
+namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
 public unsafe struct GenericError : IXError

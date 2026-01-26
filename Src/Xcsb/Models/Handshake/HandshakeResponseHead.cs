@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Xcsb.Models.ServerConnection.Handshake;
+namespace Xcsb.Connection.Models.Handshake;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 8)]
 internal struct HandshakeResponseHead

@@ -1,8 +1,8 @@
-﻿using Xcsb.Extension.Generic.Event.Implementation;
-using Xcsb.Extension.Generic.Event.Infrastructure;
-using Xcsb.Models.ServerConnection.Contracts;
+﻿using Xcsb.Connection;
+using Xcsb.Extension.Generic.Event.Implementation;
+using Xcsb.Infrastructure;
 
-namespace Xcsb.Extension.Generic.Event
+namespace Xcsb
 {
     public static class GenericExtensation
     {

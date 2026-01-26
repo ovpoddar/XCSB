@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Xcsb.Extension.Generic.Event.Models;
+namespace Xcsb.Models;
 
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]

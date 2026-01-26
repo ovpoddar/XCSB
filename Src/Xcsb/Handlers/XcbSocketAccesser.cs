@@ -1,9 +1,9 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using Xcsb.Configuration;
-using Xcsb.Helpers;
+using Xcsb.Connection.Configuration;
+using Xcsb.Connection.Helpers;
 
-namespace Xcsb.Handlers;
+namespace Xcsb.Connection.Handlers;
 
 internal abstract class XcbSocketAccesser
 {

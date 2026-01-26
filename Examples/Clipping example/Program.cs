@@ -1,7 +1,7 @@
 ﻿using Xcsb;
-using Xcsb.Extension.Generic.Event;
-using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Extension.Generic.Event.Models;
+using Xcsb.Connection;
+using Xcsb.Masks;
+using Xcsb.Models;
 
 const int width = 400;
 const int height = 300;

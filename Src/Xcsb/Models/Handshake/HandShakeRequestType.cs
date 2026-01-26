@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Xcsb.Requests;
+namespace Xcsb.Connection.Models.Handshake;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]

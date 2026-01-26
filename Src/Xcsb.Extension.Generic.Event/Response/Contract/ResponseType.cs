@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Extension.Generic.Event.Response.Contract;
+﻿namespace Xcsb.Response.Contract;
 
 public enum ResponseType : byte
 {

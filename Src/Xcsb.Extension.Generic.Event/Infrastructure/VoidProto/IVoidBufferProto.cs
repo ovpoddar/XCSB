@@ -1,6 +1,20 @@
-﻿using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Extension.Generic.Event.Models;
-using Xcsb.Extension.Generic.Event.Models.String;
+﻿using Xcsb.Masks;
+
+
+
+<<<<<<< TODO: Unmerged change from project 'Xcsb (net8.0)', Before:
+=======
+using Xcsb.Models;
+>>>>>>> After
+using Xcsb.Models;
+
+<<<<<<< TODO: Unmerged change from project 'Xcsb (net8.0)', Before:
+=======
+using Xcsb.Models.String;
+>>>>>>> After
+using Xcsb.Models.String;
+
+
 
 
 
@@ -10,7 +24,7 @@ using Xcsb.Extension.Generic.Event.Models.String;
 using System.Numerics;
 #endif
 
-namespace Xcsb.Extension.Generic.Event.Infrastructure.VoidProto;
+namespace Xcsb.Infrastructure.VoidProto;
 
 public interface IVoidBufferProto
 {

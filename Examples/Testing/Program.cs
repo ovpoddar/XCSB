@@ -1,3 +1,3 @@
 ﻿using Xcsb.Extension.Generic.Event;
 
-var c = Xcsb.XcsbClient.Connect();
+var c = Xcsb.Connection.XcsbClient.Connect();

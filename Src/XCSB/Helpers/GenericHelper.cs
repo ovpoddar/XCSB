@@ -3,12 +3,27 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+<<<<<<< TODO: Unmerged change from project 'Xcsb.Connection (net8.0)', Before:
+=======
+using Xcsb;
+using Xcsb.Helpers;
+using Xcsb.Connection.Helpers;
+>>>>>>> After
+
+<<<<<<< TODO: Unmerged change from project 'Xcsb.Connection (net9.0)', Before:
+=======
+using Xcsb.Connection.Helpers;
+using Xcsb;
+using Xcsb.Helpers;
+>>>>>>> After
+
+
 
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb.Helpers;
+namespace Xcsb.Connection.Helpers;
 
 internal static class GenericHelper
 {

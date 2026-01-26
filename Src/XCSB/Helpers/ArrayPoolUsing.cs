@@ -1,7 +1,7 @@
 ﻿using System.Buffers;
 using System.Runtime.CompilerServices;
 
-namespace Xcsb.Helpers;
+namespace Xcsb.Connection.Helpers;
 
 internal struct ArrayPoolUsing<T> : IDisposable
 {

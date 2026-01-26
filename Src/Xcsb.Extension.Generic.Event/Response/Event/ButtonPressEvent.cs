@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Extension.Generic.Event.Models;
-using Xcsb.Extension.Generic.Event.Response.Contract;
+using Xcsb.Models;
+using Xcsb.Response.Contract;
 
-namespace Xcsb.Extension.Generic.Event.Response.Event;
+namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ButtonPressEvent : IXEvent

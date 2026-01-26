@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Extension.Generic.Event.Response.Contract;
-using Xcsb.Extension.Generic.Event.Response.Event;
+using Xcsb.Response.Contract;
+using Xcsb.Response.Event;
 
-namespace Xcsb.Extension.Generic.Event.Response.Replies;
+namespace Xcsb.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct QueryPointerReply : IXReply

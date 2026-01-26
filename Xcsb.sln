@@ -38,9 +38,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Test.env.Dockerfile = Test.env.Dockerfile
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb", "Src\XCSB\Xcsb.csproj", "{4C5054CC-FAAC-ABFC-5B1C-FA2EB23EFE0F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Connection", "Src\XCSB\Xcsb.Connection.csproj", "{4C5054CC-FAAC-ABFC-5B1C-FA2EB23EFE0F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Extension.Generic.Event", "Src\Xcsb.Extension.Generic.Event\Xcsb.Extension.Generic.Event.csproj", "{46B03B1E-CF8B-4C80-AB66-9628AC6F9F60}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb", "Src\Xcsb.Extension.Generic.Event\Xcsb.csproj", "{46B03B1E-CF8B-4C80-AB66-9628AC6F9F60}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Examples\Testing\Testing.csproj", "{58CEC74F-FF93-4EC2-A527-6A8E46786A13}"
 EndProject

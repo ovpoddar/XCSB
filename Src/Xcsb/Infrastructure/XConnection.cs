@@ -2,14 +2,13 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using Xcsb.Configuration;
-using Xcsb.Handlers;
-using Xcsb.Helpers;
-using Xcsb.Models.ServerConnection.Contracts;
-using Xcsb.Models.ServerConnection.Handshake;
-using Xcsb.Requests;
+using Xcsb.Connection;
+using Xcsb.Connection.Configuration;
+using Xcsb.Connection.Handlers;
+using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Models.Handshake;
 
-namespace Xcsb.Models.Infrastructure;
+namespace Xcsb.Connection.Infrastructure;
 
 internal class XConnection : IXConnectionInternal
 {

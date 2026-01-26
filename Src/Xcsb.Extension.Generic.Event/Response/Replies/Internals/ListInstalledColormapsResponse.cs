@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Extension.Generic.Event.Response.Contract;
+using Xcsb.Response.Contract;
 
-namespace Xcsb.Extension.Generic.Event.Response.Replies.Internals;
+namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct ListInstalledColormapsResponse : IXReply

@@ -1,4 +1,4 @@
-﻿using Xcsb.Helpers;
+﻿using Xcsb.Connection.Helpers;
 
 namespace MethodRequestBuilder.Test;
 

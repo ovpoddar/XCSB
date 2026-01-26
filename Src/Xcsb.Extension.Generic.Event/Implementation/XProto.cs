@@ -1,27 +1,49 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using Xcsb.Extension.Generic.Event.Handlers.Direct;
-using Xcsb.Extension.Generic.Event.Infrastructure;
 using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
-using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Extension.Generic.Event.Models;
-using Xcsb.Extension.Generic.Event.Models.String;
 using Xcsb.Extension.Generic.Event.Requests;
-using Xcsb.Extension.Generic.Event.Response;
-using Xcsb.Extension.Generic.Event.Response.Errors;
-using Xcsb.Extension.Generic.Event.Response.Replies;
-using Xcsb.Extension.Generic.Event.Response.Replies.Internals;
+using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
-using Xcsb.Models.ServerConnection.Contracts;
-using Xcsb.Models.ServerConnection.Handshake;
+using Xcsb.Infrastructure;
+using Xcsb.Masks;
+using Xcsb.Models;
+using Xcsb.Models.Handshake;
+
+<<<<<<< TODO: Unmerged change from project 'Xcsb (net8.0)', Before:
+=======
+using Xcsb.Models.String;
+>>>>>>> After
+using Xcsb.Models.String;
+using Xcsb.Response;
+using Xcsb.Response.Errors;
+using Xcsb.Response.Replies;
+
+
+
+<<<<<<< TODO: Unmerged change from project 'Xcsb (net8.0)', Before:
+=======
+using Xcsb.Response.Replies.Internals;
+>>>>>>> After
+using Xcsb.Response.Replies.Internals;
+
+
+
+
+
+
+
+
+
+
+
 
 
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb.Extension.Generic.Event.Implementation;
+namespace Xcsb.Implementation;
 
 #if !NETSTANDARD
 [SkipLocalsInit]

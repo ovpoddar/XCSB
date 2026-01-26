@@ -1,7 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace Xcsb.Models;
+namespace Xcsb.Connection.Models;
 
 internal ref struct ConnectionDetails
 {

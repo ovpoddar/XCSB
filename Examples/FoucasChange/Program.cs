@@ -1,9 +1,9 @@
 ﻿using Xcsb;
-using Xcsb.Extension.Generic.Event;
-using Xcsb.Extension.Generic.Event.Infrastructure;
-using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Extension.Generic.Event.Models;
-using Xcsb.Extension.Generic.Event.Response.Event;
+using Xcsb.Connection;
+using Xcsb.Infrastructure;
+using Xcsb.Masks;
+using Xcsb.Models;
+using Xcsb.Response.Event;
 
 
 

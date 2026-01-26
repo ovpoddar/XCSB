@@ -1,6 +1,6 @@
-﻿using Xcsb.Extension.Generic.Event.Infrastructure.VoidProto;
+﻿using Xcsb.Infrastructure.VoidProto;
 
-namespace Xcsb.Extension.Generic.Event.Infrastructure;
+namespace Xcsb.Infrastructure;
 
 public interface IXBufferProto : IVoidBufferProto
 {

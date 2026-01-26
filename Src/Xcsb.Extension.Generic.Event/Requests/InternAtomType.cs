@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Extension.Generic.Event.Models;
 using Xcsb.Helpers;
+using Xcsb.Models;
 
-namespace Xcsb.Extension.Generic.Event.Requests;
+namespace Xcsb.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 internal readonly struct InternAtomType(bool onlyIfExist, int atomNameLength)

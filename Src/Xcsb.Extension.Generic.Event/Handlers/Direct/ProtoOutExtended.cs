@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Handlers;
 
-namespace Xcsb.Extension.Generic.Event.Handlers.Direct;
+namespace Xcsb.Handlers.Direct;
 
 internal sealed class ProtoOutExtended : ProtoBase
 {

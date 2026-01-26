@@ -1,9 +1,9 @@
 ﻿using System.Text;
 using Xcsb;
-using Xcsb.Extension.Generic.Event;
-using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Extension.Generic.Event.Models;
-using Xcsb.Models.ServerConnection.Handshake;
+using Xcsb.Connection;
+using Xcsb.Connection.Models.Handshake;
+using Xcsb.Masks;
+using Xcsb.Models;
 
 int screen_num = 0;
 var connection = XcsbClient.Connect();

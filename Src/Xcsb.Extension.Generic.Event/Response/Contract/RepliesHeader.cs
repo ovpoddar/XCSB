@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
-using Xcsb.Extension.Generic.Event.Models;
+using Xcsb.Models;
 
-namespace Xcsb.Extension.Generic.Event.Response.Contract;
+namespace Xcsb.Response.Contract;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 internal readonly struct RepliesHeader

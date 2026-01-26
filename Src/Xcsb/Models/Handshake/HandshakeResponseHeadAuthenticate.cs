@@ -1,13 +1,11 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Xcsb.Models.ServerConnection.Handshake;
+namespace Xcsb.Connection.Models.Handshake;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
-internal struct HandshakeResponseHeadFailed
+internal unsafe struct HandshakeResponseHeadAuthenticate
 {
     public HandshakeStatus HandshakeStatus;
-    public byte ReasonLength;
-    public short MajorVersion;
-    public short MinorVersion;
+    public fixed byte Pad[5];
     public short AdditionalDataLength;
 }

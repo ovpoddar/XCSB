@@ -1,5 +1,4 @@
-﻿using Xcsb.Extension.Generic.Event.Response.Contract;
-using Xcsb.Extension.Generic.Event.Response.Event;
+﻿using Xcsb.Response.Event;
 
 namespace Xcsb.Response.Contract;
 

@@ -1,10 +1,9 @@
 ﻿using System.Net.Sockets;
-using Xcsb.Configuration;
-using Xcsb.Models;
-using Xcsb.Models.Infrastructure;
-using Xcsb.Models.ServerConnection.Contracts;
+using Xcsb.Connection.Configuration;
+using Xcsb.Connection.Infrastructure;
+using Xcsb.Connection.Models;
 
-namespace Xcsb;
+namespace Xcsb.Connection;
 
 public static class XcsbClient
 {

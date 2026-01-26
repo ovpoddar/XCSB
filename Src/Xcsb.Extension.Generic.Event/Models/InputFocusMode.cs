@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Extension.Generic.Event.Models;
+﻿namespace Xcsb.Models;
 
 public enum InputFocusMode : byte
 {

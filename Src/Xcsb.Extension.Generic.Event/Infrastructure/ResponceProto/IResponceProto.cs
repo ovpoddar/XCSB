@@ -1,7 +1,7 @@
-﻿using Xcsb.Extension.Generic.Event.Models;
-using Xcsb.Extension.Generic.Event.Response.Replies;
+﻿using Xcsb.Models;
+using Xcsb.Response.Replies;
 
-namespace Xcsb.Extension.Generic.Event.Infrastructure.ResponceProto;
+namespace Xcsb.Infrastructure.ResponceProto;
 
 public interface IResponseProto
 {

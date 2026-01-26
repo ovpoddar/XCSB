@@ -1,8 +1,8 @@
-﻿using Xcsb.Extension.Generic.Event.Infrastructure.ResponceProto;
-using Xcsb.Extension.Generic.Event.Infrastructure.VoidProto;
-using Xcsb.Extension.Generic.Event.Models;
+﻿using Xcsb.Infrastructure.ResponceProto;
+using Xcsb.Infrastructure.VoidProto;
+using Xcsb.Models;
 
-namespace Xcsb.Extension.Generic.Event.Infrastructure;
+namespace Xcsb.Infrastructure;
 
 public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked
 {

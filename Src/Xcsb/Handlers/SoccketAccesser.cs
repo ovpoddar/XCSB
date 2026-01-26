@@ -1,8 +1,8 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using Xcsb.Configuration;
+using Xcsb.Connection.Configuration;
 
-namespace Xcsb.Handlers;
+namespace Xcsb.Connection.Handlers;
 
 internal sealed class SoccketAccesser : XcbSocketAccesser
 {

@@ -1,4 +1,4 @@
-namespace Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
+namespace Xcsb.Infrastructure.Exceptions;
 
 public sealed class InsufficientDataException : Exception
 {

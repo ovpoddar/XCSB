@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Extension.Generic.Event.Models;
+﻿namespace Xcsb.Models;
 
 public struct Rectangle(short x, short y, ushort width, ushort height)
 {

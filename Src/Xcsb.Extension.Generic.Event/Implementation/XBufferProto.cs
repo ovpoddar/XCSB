@@ -1,20 +1,37 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
-using Xcsb.Extension.Generic.Event.Handlers.Buffered;
-using Xcsb.Extension.Generic.Event.Handlers.Direct;
-using Xcsb.Extension.Generic.Event.Infrastructure;
 using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
-using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Extension.Generic.Event.Models;
-using Xcsb.Extension.Generic.Event.Models.String;
 using Xcsb.Extension.Generic.Event.Requests;
+using Xcsb.Handlers.Buffered;
+using Xcsb.Handlers.Direct;
 using Xcsb.Helpers;
+using Xcsb.Infrastructure;
+using Xcsb.Masks;
+
+
+
+<<<<<<< TODO: Unmerged change from project 'Xcsb (net8.0)', Before:
+=======
+using Xcsb.Models;
+>>>>>>> After
+using Xcsb.Models;
+
+<<<<<<< TODO: Unmerged change from project 'Xcsb (net8.0)', Before:
+=======
+using Xcsb.Models.String;
+>>>>>>> After
+using Xcsb.Models.String;
+
+
+
+
+
 
 #if !NETSTANDARD
 using System.Numerics;
 #endif
 
-namespace Xcsb.Extension.Generic.Event.Implementation;
+namespace Xcsb.Implementation;
 
 internal sealed class XBufferProto : IXBufferProto
 {

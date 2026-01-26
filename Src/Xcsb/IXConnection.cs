@@ -1,6 +1,6 @@
-﻿using Xcsb.Models.ServerConnection.Handshake;
+﻿using Xcsb.Connection.Models.Handshake;
 
-namespace Xcsb.Models.ServerConnection.Contracts;
+namespace Xcsb.Connection;
 
 public interface IXConnection : IDisposable
 {

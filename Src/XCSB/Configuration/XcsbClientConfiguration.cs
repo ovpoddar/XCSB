@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Configuration;
+﻿namespace Xcsb.Connection.Configuration;
 
 public class XcsbClientConfiguration
 {

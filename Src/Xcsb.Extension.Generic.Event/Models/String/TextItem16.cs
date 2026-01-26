@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Xcsb.Extension.Generic.Event.Models.String
+namespace Xcsb.Models.String
 {
     public struct TextItem16
     {

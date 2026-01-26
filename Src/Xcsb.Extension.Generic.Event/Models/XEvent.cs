@@ -1,10 +1,9 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Extension.Generic.Event.Response.Contract;
-using Xcsb.Extension.Generic.Event.Response.Errors;
-using Xcsb.Extension.Generic.Event.Response.Event;
 using Xcsb.Response.Contract;
+using Xcsb.Response.Errors;
+using Xcsb.Response.Event;
 
-namespace Xcsb.Extension.Generic.Event.Models;
+namespace Xcsb.Models;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
 public unsafe struct XEvent
