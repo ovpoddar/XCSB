@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Configuration;
-using Xcsb.Handlers.Direct;
+using Xcsb.Handlers;
 using Xcsb.Helpers;
 using Xcsb.Models.ServerConnection.Contracts;
 using Xcsb.Models.ServerConnection.Handshake;
@@ -23,16 +23,14 @@ internal class XConnection : IXConnectionInternal
     public string FailReason { get; private set; } = string.Empty;
     public bool Connected => this._socket.Connected;
 
-    public ProtoOut ProtoOut { get; }
-    public ProtoIn ProtoIn { get; }
+    public SoccketAccesser Accesser { get; }
 
     public XConnection(string path, XcsbClientConfiguration configuration, in ProtocolType type)
     {
         this._lock = new object();
         this._socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
         this._socket.Connect(new UnixDomainSocketEndPoint(path));
-        this.ProtoOut = new ProtoOut(_socket, configuration);
-        this.ProtoIn = new ProtoIn(_socket, configuration);
+        this.Accesser = new SoccketAccesser(_socket, configuration);
         this.GlobalId = 0;
     }
 
@@ -59,7 +57,7 @@ internal class XConnection : IXConnectionInternal
                 authData.CopyTo(scratchBuffer[writeIndex..]);
                 writeIndex += authData.Length;
                 scratchBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
-                ProtoOut.SendExact(scratchBuffer);
+                this.Accesser.SendExact(scratchBuffer);
             }
             else
             {
@@ -78,7 +76,7 @@ internal class XConnection : IXConnectionInternal
                 authData.CopyTo(workingBuffer[writeIndex..]);
                 writeIndex += authData.Length;
                 workingBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
-                ProtoOut.SendExact(workingBuffer);
+                this.Accesser.SendExact(workingBuffer);
             }
             return true;
         }
@@ -93,14 +91,14 @@ internal class XConnection : IXConnectionInternal
     public void SetUpStatus()
     {
         Span<byte> tempBuffer = stackalloc byte[Unsafe.SizeOf<HandshakeResponseHead>()];
-        this.ProtoIn.ReceiveExact(tempBuffer);
+        this.Accesser.Received(tempBuffer);
         ref readonly var response = ref tempBuffer.AsStruct<HandshakeResponseHead>();
 
         HandshakeStatus = response.HandshakeStatus;
 
         if (response.HandshakeStatus is HandshakeStatus.Success)
         {
-            HandshakeSuccessResponseBody = HandshakeSuccessResponseBody.Read(this.ProtoIn,
+            HandshakeSuccessResponseBody = HandshakeSuccessResponseBody.Read(this.Accesser,
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
             FailReason = string.Empty;
         }
@@ -113,7 +111,7 @@ internal class XConnection : IXConnectionInternal
 
             // todo: stack overflow handler
             Span<byte> buffer = stackalloc byte[dataLength * 4];
-            this.ProtoIn.ReceiveExact(buffer);
+            this.Accesser.Received(buffer);
             FailReason = Encoding.ASCII.GetString(buffer).TrimEnd();
         }
     }

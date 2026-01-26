@@ -71,8 +71,6 @@ internal static class ConnectionHelper
         }
 
         connection.SetUpStatus();
-        connection.ProtoOut.Sequence = 0;
-        connection.ProtoIn.Sequence = 0;
         return connection;
     }
 

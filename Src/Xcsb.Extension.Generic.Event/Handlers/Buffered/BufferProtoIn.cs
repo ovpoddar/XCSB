@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using Xcsb.Extension.Generic.Event.Handlers.Direct;
 using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
-using Xcsb.Handlers;
 using Xcsb.Helpers;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;

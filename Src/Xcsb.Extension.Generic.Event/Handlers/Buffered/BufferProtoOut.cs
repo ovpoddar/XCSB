@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Extension.Generic.Event.Handlers.Direct;
-using Xcsb.Handlers;
 
 namespace Xcsb.Extension.Generic.Event.Handlers.Buffered;
 
@@ -55,10 +54,11 @@ internal sealed class BufferProtoOut : ProtoBase
         _requestLength = 0;
     }
 
-    protected override void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
+    public override void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
     {
         base.SendExact(in buffer, socketFlags);
         _protoOut.Sequence += _requestLength;
     }
+
 
 }

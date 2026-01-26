@@ -1,5 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Handlers.Direct;
+using Xcsb.Handlers;
 using Xcsb.Helpers;
 
 namespace Xcsb.Models.ServerConnection.Handshake;
@@ -28,10 +28,10 @@ public class Screen
     public required Depth[] Depths;
 #endif
 
-    internal static Screen Read(ProtoIn protoIn, ref int currentlyRead)
+    internal static Screen Read(SoccketAccesser soccketAccesser, ref int currentlyRead)
     {
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_screen>()];
-        protoIn.ReceiveExact(scratchBuffer);
+        soccketAccesser.Received(scratchBuffer);
         currentlyRead += scratchBuffer.Length;
 
         ref readonly var screen = ref scratchBuffer.AsStruct<_screen>();
@@ -56,7 +56,7 @@ public class Screen
         };
 
         for (var i = 0; i < result.Depths.Length; i++)
-            result.Depths[i] = Depth.Read(protoIn, ref currentlyRead);
+            result.Depths[i] = Depth.Read(soccketAccesser, ref currentlyRead);
         return result;
     }
 }

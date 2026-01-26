@@ -6,7 +6,7 @@ using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
 using Xcsb.Extension.Generic.Event.Response;
 using Xcsb.Extension.Generic.Event.Response.Replies;
 using Xcsb.Extension.Generic.Event.Response.Replies.Internals;
-using Xcsb.Handlers.Direct;
+using Xcsb.Handlers;
 using Xcsb.Helpers;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
@@ -15,10 +15,17 @@ using Xcsb.Response.Event;
 
 namespace Xcsb.Extension.Generic.Event.Handlers.Direct;
 
-internal sealed class ProtoInExtended : ProtoIn
+internal sealed class ProtoInExtended : ProtoBase
 {
-    internal ProtoInExtended(ProtoIn protoIn) : base(protoIn.Socket, protoIn.Configuration)
+    internal int Sequence
     {
+        get { return base.ReceivedSequence; }
+        set { base.ReceivedSequence = value; }
+    }
+
+    internal ProtoInExtended(SoccketAccesser soccketAccesser) : base(soccketAccesser.Socket, soccketAccesser.Configuration)
+    {
+        Sequence = 0;
     }
 
 
