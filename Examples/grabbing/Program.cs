@@ -1,8 +1,8 @@
 ﻿using Xcsb;
 using Xcsb.Extension.Generic.Event;
 using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Models;
-using Xcsb.Response.Event;
+using Xcsb.Extension.Generic.Event.Models;
+using Xcsb.Extension.Generic.Event.Response.Event;
 
 using var connection = XcsbClient.Connect();
 var con = connection.Initialized();
@@ -11,7 +11,7 @@ var colormap = screen.DefaultColormap;
 var window = connection.NewId();
 var demoActive = false;
 con.CreateWindowUnchecked(0, window, screen.Root,
-    100, 100, 500, 400, 2, Xcsb.Models.ClassType.InputOutput,
+    100, 100, 500, 400, 2, ClassType.InputOutput,
     screen.RootVisualId, ValueMask.BackgroundPixel | ValueMask.EventMask,
     [
         screen.WhitePixel,

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Extension.Generic.Event.Models;
 using Xcsb.Helpers;
-using Xcsb.Models;
 
 namespace Xcsb.Extension.Generic.Event.Requests;
 

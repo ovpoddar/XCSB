@@ -1,5 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Response.Contract;
+using Xcsb.Extension.Generic.Event.Response.Contract;
 
 namespace Xcsb.Extension.Generic.Event.Response.Replies.Internals;
 

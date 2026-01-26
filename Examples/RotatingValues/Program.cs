@@ -2,7 +2,7 @@
 using Xcsb;
 using Xcsb.Extension.Generic.Event;
 using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Models;
+using Xcsb.Extension.Generic.Event.Models;
 using Xcsb.Models.ServerConnection.Handshake;
 
 int screen_num = 0;
@@ -17,7 +17,7 @@ x.CreateWindowUnchecked(screen.RootDepth!.DepthValue,
     win,
     root,
     0, 0, 300, 200,
-    1, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
+    1, ClassType.InputOutput, screen.RootVisualId,
     0, []);
 x.MapWindowUnchecked(win);
 

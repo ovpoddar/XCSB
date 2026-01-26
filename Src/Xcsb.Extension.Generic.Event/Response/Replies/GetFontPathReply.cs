@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Xcsb.Extension.Generic.Event.Response.Contract;
 using Xcsb.Extension.Generic.Event.Response.Replies.Internals;
 using Xcsb.Helpers;
-using Xcsb.Response.Contract;
 
 namespace Xcsb.Extension.Generic.Event.Response.Replies;
 

@@ -2,8 +2,9 @@
 using Xcsb.Extension.Generic.Event;
 using Xcsb.Extension.Generic.Event.Infrastructure;
 using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Models;
-using Xcsb.Response.Event;
+using Xcsb.Extension.Generic.Event.Models;
+using Xcsb.Extension.Generic.Event.Response.Event;
+
 
 
 // Connect to X server
@@ -23,7 +24,7 @@ x.CreateWindowUnchecked(screen.RootDepth.DepthValue, window1,
     screen.Root,
     50, 50, 300, 200,
     2,
-    Xcsb.Models.ClassType.InputOutput,
+    ClassType.InputOutput,
     screen.RootVisualId,
     ValueMask.BackgroundPixel | ValueMask.EventMask,
     [colorFocused, (uint)(EventMask.KeyPressMask | EventMask.KeyReleaseMask |EventMask.ButtonPressMask
@@ -39,7 +40,7 @@ x.CreateWindowUnchecked(screen.RootDepth.DepthValue,
     screen.Root,
     400, 50, 600, 500,
     2,
-    Xcsb.Models.ClassType.InputOutput,
+    ClassType.InputOutput,
     screen.RootVisualId,
     ValueMask.BackgroundPixel | ValueMask.EventMask,
     [colorUnfocused, (uint)(
@@ -60,7 +61,7 @@ Console.Write("Press 'q' to quit\n\n");
 Thread.Sleep(1000);
 
 // Initially set focus to first window
-x.SetInputFocusUnchecked(Xcsb.Models.InputFocusMode.PointerRoot, window1, 0);
+x.SetInputFocusUnchecked(InputFocusMode.PointerRoot, window1, 0);
 ChangeWindowColor(x, window1, colorFocused);
 ChangeWindowColor(x, window2, colorUnfocused);
 
@@ -97,14 +98,14 @@ while (isRunning)
                     if (currentFocus == window1)
                     {
                         currentFocus = window2;
-                        x.SetInputFocusUnchecked(Xcsb.Models.InputFocusMode.PointerRoot, window2, 0);
+                        x.SetInputFocusUnchecked(InputFocusMode.PointerRoot, window2, 0);
                         ChangeWindowColor(x, window1, colorUnfocused);
                         ChangeWindowColor(x, window2, colorFocused);
                     }
                     else
                     {
                         currentFocus = window1;
-                        x.SetInputFocusUnchecked(Xcsb.Models.InputFocusMode.PointerRoot, window1, 0);
+                        x.SetInputFocusUnchecked(InputFocusMode.PointerRoot, window1, 0);
                         ChangeWindowColor(x, window1, colorFocused);
                         ChangeWindowColor(x, window2, colorUnfocused);
                     }
@@ -145,7 +146,7 @@ while (isRunning)
             {
                 // Set focus to the clicked window and update colors
                 var buttonPressEvent = evnt.As<ButtonPressEvent>();
-                x.SetInputFocusUnchecked(Xcsb.Models.InputFocusMode.PointerRoot, buttonPressEvent.EventWindow, 0);
+                x.SetInputFocusUnchecked(InputFocusMode.PointerRoot, buttonPressEvent.EventWindow, 0);
 
                 // Update colors immediately
                 if (buttonPressEvent.EventWindow == window1)
@@ -181,7 +182,7 @@ while (isRunning)
             var poient = new Xcsb.Models.Point(
                 (ushort)motionEvent.EventX,
                 (ushort)motionEvent.EventY);
-            x.PolyPointUnchecked(Xcsb.Models.CoordinateMode.Origin, motionEvent.Window, gc, [poient]);
+            x.PolyPointUnchecked(CoordinateMode.Origin, motionEvent.Window, gc, [poient]);
             if (motionEvent.Window == window1)
             {
                 motionEvent.Window = window2;

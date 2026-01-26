@@ -1,6 +1,6 @@
 ﻿using Xcsb.Extension.Generic.Event.Infrastructure.ResponceProto;
 using Xcsb.Extension.Generic.Event.Infrastructure.VoidProto;
-using Xcsb.Models;
+using Xcsb.Extension.Generic.Event.Models;
 
 namespace Xcsb.Extension.Generic.Event.Infrastructure;
 

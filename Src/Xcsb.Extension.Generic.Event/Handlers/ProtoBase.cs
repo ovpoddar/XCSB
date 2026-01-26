@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
 using Xcsb.Configuration;
+using Xcsb.Extension.Generic.Event.Response.Event;
 using Xcsb.Handlers;
-using Xcsb.Response.Event;
 
 namespace Xcsb.Extension.Generic.Event.Handlers;
 

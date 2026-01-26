@@ -1,6 +1,7 @@
 ﻿using Xcsb.Extension.Generic.Event.Masks;
+using Xcsb.Extension.Generic.Event.Models;
 using Xcsb.Extension.Generic.Event.Models.String;
-using Xcsb.Models;
+
 
 
 

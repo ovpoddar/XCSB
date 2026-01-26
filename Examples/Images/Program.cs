@@ -3,7 +3,7 @@ using System.Text;
 using Xcsb;
 using Xcsb.Extension.Generic.Event;
 using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Models;
+using Xcsb.Extension.Generic.Event.Models;
 
 const int WIDTH = 50;
 const int HEIGHT = 50;

@@ -2,7 +2,7 @@
 using Xcsb;
 using Xcsb.Extension.Generic.Event;
 using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Models;
+using Xcsb.Extension.Generic.Event.Models;
 
 using var connection = XcsbClient.Connect();
 var x = connection.Initialized();
@@ -13,7 +13,7 @@ var root = screen.Root;
 x.GrabServerChecked();
 
 var colormap = connection.NewId();
-x.CreateColormapChecked(Xcsb.Models.ColormapAlloc.None,
+x.CreateColormapChecked(ColormapAlloc.None,
     colormap,
     root,
     screen.RootVisualId);
@@ -23,7 +23,7 @@ x.CreateWindowChecked(screen.RootDepth!.DepthValue,
     win,
     root,
     0, 0, 500, 500,
-    0, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
+    0, ClassType.InputOutput, screen.RootVisualId,
     ValueMask.BackgroundPixel | ValueMask.EventMask | ValueMask.Colormap,
     [screen.WhitePixel, (uint)EventMask.ExposureMask, colormap]);
 
@@ -54,7 +54,7 @@ x.CreateWindowChecked(screen.RootDepth.DepthValue,
     win,
     root,
     0, 0, 500, 500,
-    0, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
+    0, ClassType.InputOutput, screen.RootVisualId,
     ValueMask.BackgroundPixel | ValueMask.EventMask,
     [screen.WhitePixel, (uint)EventMask.ExposureMask]);
 x.MapWindowChecked(win);
@@ -65,7 +65,7 @@ var sub = connection.NewId();
 x.CreateWindowChecked(0,
     sub, win,
     20, 20, 500, 250, 2,
-    Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [0xff0000]);
+    ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [0xff0000]);
 x.MapWindowChecked(sub);
 
 Console.WriteLine("Subwindow created.");
@@ -76,7 +76,7 @@ var sub1 = connection.NewId();
 x.CreateWindowChecked(0,
     sub1, win,
     30, 30, 500, 250, 2,
-    Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [screen.WhitePixel]);
+    ClassType.InputOutput, screen.RootVisualId, ValueMask.BackgroundPixel, [screen.WhitePixel]);
 x.MapSubwindowsChecked(sub);
 Console.WriteLine("Subwindow mapped.");
 
@@ -87,7 +87,7 @@ Thread.Sleep(millisecondsTimeout: 5000);
 
 
 var colormap1 = connection.NewId();
-x.CreateColormapChecked(Xcsb.Models.ColormapAlloc.None,
+x.CreateColormapChecked(ColormapAlloc.None,
     colormap1,
     root,
     screen.RootVisualId);

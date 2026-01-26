@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Models;
+﻿namespace Xcsb.Extension.Generic.Event.Models;
 
 public struct Arc(ushort x, ushort y, short width, short height, ushort angle1, ushort angle2)
 {

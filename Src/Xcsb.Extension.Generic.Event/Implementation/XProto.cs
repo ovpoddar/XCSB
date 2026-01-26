@@ -5,16 +5,18 @@ using Xcsb.Extension.Generic.Event.Handlers.Direct;
 using Xcsb.Extension.Generic.Event.Infrastructure;
 using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
 using Xcsb.Extension.Generic.Event.Masks;
+using Xcsb.Extension.Generic.Event.Models;
 using Xcsb.Extension.Generic.Event.Models.String;
 using Xcsb.Extension.Generic.Event.Requests;
 using Xcsb.Extension.Generic.Event.Response;
+using Xcsb.Extension.Generic.Event.Response.Errors;
 using Xcsb.Extension.Generic.Event.Response.Replies;
 using Xcsb.Extension.Generic.Event.Response.Replies.Internals;
 using Xcsb.Helpers;
-using Xcsb.Models;
 using Xcsb.Models.ServerConnection.Contracts;
 using Xcsb.Models.ServerConnection.Handshake;
-using Xcsb.Response.Errors;
+
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif

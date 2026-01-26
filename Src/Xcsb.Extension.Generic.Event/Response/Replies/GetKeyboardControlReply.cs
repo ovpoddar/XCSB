@@ -1,6 +1,6 @@
-﻿using Xcsb.Extension.Generic.Event.Response.Replies.Internals;
-using Xcsb.Models;
-using Xcsb.Response.Contract;
+﻿using Xcsb.Extension.Generic.Event.Models;
+using Xcsb.Extension.Generic.Event.Response.Contract;
+using Xcsb.Extension.Generic.Event.Response.Replies.Internals;
 
 namespace Xcsb.Extension.Generic.Event.Response.Replies;
 

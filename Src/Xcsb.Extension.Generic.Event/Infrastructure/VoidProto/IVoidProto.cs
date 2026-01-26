@@ -1,8 +1,10 @@
 ﻿using Xcsb.Extension.Generic.Event.Masks;
+using Xcsb.Extension.Generic.Event.Models;
 using Xcsb.Extension.Generic.Event.Models.String;
 using Xcsb.Extension.Generic.Event.Response;
-using Xcsb.Models;
-using Xcsb.Response.Errors;
+using Xcsb.Extension.Generic.Event.Response.Errors;
+
+
 
 
 

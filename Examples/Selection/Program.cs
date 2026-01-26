@@ -1,6 +1,6 @@
 ﻿using Xcsb;
 using Xcsb.Extension.Generic.Event;
-using Xcsb.Models;
+using Xcsb.Extension.Generic.Event.Models;
 
 using var connection = XcsbClient.Connect();
 var x = connection.Initialized();

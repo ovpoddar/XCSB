@@ -1,7 +1,7 @@
 ﻿using Xcsb;
 using Xcsb.Extension.Generic.Event;
 using Xcsb.Extension.Generic.Event.Masks;
-using Xcsb.Models;
+using Xcsb.Extension.Generic.Event.Models;
 using Xcsb.Models.ServerConnection.Handshake;
 // todo:Reminder. this will work if their is the extension support
 using var connection = XcsbClient.Connect();

@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Models;
+﻿namespace Xcsb.Extension.Generic.Event.Models;
 
 public enum FontDraw : byte
 {

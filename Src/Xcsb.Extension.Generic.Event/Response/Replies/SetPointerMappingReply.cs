@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Models;
-using Xcsb.Response.Contract;
+using Xcsb.Extension.Generic.Event.Models;
+using Xcsb.Extension.Generic.Event.Response.Contract;
 
 namespace Xcsb.Extension.Generic.Event.Response.Replies;
 

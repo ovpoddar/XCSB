@@ -5,10 +5,11 @@ using Xcsb.Extension.Generic.Event.Handlers.Direct;
 using Xcsb.Extension.Generic.Event.Infrastructure;
 using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
 using Xcsb.Extension.Generic.Event.Masks;
+using Xcsb.Extension.Generic.Event.Models;
 using Xcsb.Extension.Generic.Event.Models.String;
 using Xcsb.Extension.Generic.Event.Requests;
 using Xcsb.Helpers;
-using Xcsb.Models;
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif

@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Models;
+﻿namespace Xcsb.Extension.Generic.Event.Models;
 
 public struct Segment(ushort x1, ushort y1, ushort x2, ushort y2)
 {
