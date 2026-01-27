@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Src\Xcsb.Extension.Generic.Event\Xcsb.csproj" />
+	<ProjectReference Include="..\..\Src\Xcsb\Xcsb.csproj" />
     <Compile Remove="**\Tools*.cs" />
     <Folder Include="Generated\" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Xcsb.Connection.Helpers;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 

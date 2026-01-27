@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 

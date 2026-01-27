@@ -1,3 +1,5 @@
-﻿using Xcsb.Extension.Generic.Event;
+﻿using Xcsb;
+using Xcsb.Connection;
 
-var c = Xcsb.Connection.XcsbClient.Connect();
+using var c = XcsbClient.Connect();
+var d = c.Initialized();

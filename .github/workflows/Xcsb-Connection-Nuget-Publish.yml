@@ -1,0 +1,21 @@
+name: Build and Publish to nuget
+on: workflow_dispatch
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout @v2
+      - name: Setting Up dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Cleaning project
+        run: dotnet clean ./Src/Xcsb.Connection/Xcsb.Connection.csproj
+      - name: Building Project
+        run: dotnet build ./Src/Xcsb.Connection/Xcsb.Connection.csproj -c Release
+      - name: Pack Project
+        run: dotnet pack ./Src/Xcsb.Connection/Xcsb.Connection.csproj -c Release -o ./output --no-restore
+      - name: Publish to Nuget pack
+        run: dotnet nuget push ./output/Xcsb.*.nupkg --skip-duplicate -k ${{ secrets.NUGET_PERMANANT_API_KEY }} -s https://api.nuget.org/v3/index.json 
