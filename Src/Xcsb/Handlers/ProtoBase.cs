@@ -6,7 +6,7 @@ using Xcsb.Response.Event;
 
 namespace Xcsb.Handlers;
 
-internal abstract class ProtoBase : XcbSocketAccesser
+internal abstract class ProtoBase : XcsbSocketAccesser
 {
     internal readonly ConcurrentQueue<GenericEvent> BufferEvents;
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;

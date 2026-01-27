@@ -4,7 +4,7 @@ using Xcsb.Connection.Configuration;
 
 namespace Xcsb.Connection.Handlers;
 
-internal sealed class SoccketAccesser : XcbSocketAccesser
+internal sealed class SoccketAccesser : XcsbSocketAccesser
 {
     public SoccketAccesser(Socket socket, XcsbClientConfiguration configuration) : base(socket, configuration)
     { }

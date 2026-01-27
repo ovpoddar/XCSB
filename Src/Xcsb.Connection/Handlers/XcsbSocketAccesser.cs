@@ -5,14 +5,14 @@ using Xcsb.Connection.Helpers;
 
 namespace Xcsb.Connection.Handlers;
 
-internal abstract class XcbSocketAccesser
+internal abstract class XcsbSocketAccesser
 {
     internal readonly XcsbClientConfiguration Configuration;
     internal readonly Socket Socket;
     internal int ReceivedSequence = 0;
     internal int SendSequence = 0;
 
-    protected XcbSocketAccesser(Socket socket, XcsbClientConfiguration configuration)
+    protected XcsbSocketAccesser(Socket socket, XcsbClientConfiguration configuration)
     {
         Socket = socket;
         Configuration = configuration;
