@@ -1,7 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Handlers;
+using Xcsb.Connection.Handlers;
 
 namespace Xcsb.Handlers.Direct;
 

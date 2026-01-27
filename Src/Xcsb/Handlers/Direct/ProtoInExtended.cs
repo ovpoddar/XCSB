@@ -2,9 +2,9 @@
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
-using Xcsb.Handlers;
-using Xcsb.Helpers;
+using Xcsb.Connection.Handlers;
+using Xcsb.Connection.Helpers;
+using Xcsb.Infrastructure.Exceptions;
 using Xcsb.Models;
 using Xcsb.Response;
 using Xcsb.Response.Contract;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
 using Xcsb.Connection.Configuration;
+using Xcsb.Connection.Handlers;
 using Xcsb.Response.Event;
 
 namespace Xcsb.Handlers;

@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Xcsb.Connection\Xcsb.Connection.csproj" />
 		<ProjectReference Include="..\XCSB\Xcsb.Connection.csproj" />
 	</ItemGroup>
 

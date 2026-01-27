@@ -1,9 +1,8 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using Xcsb.Extension.Generic.Event.Infrastructure.Exceptions;
-using Xcsb.Handlers;
+using Xcsb.Connection.Helpers;
 using Xcsb.Handlers.Direct;
-using Xcsb.Helpers;
+using Xcsb.Infrastructure.Exceptions;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Errors;
 using Xcsb.Response.Event;

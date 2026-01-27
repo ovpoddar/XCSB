@@ -1,15 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Text;
-
-<<<<<<< TODO: Unmerged change from project 'Xcsb.Connection (net8.0)', Before:
-#if NETSTANDARD
-=======
 using Xcsb.Connection.Models;
-#if NETSTANDARD
->>>>>>> After
-using Xcsb.Connection.Models;
-
 #if NETSTANDARD
 using Xcsb.Helpers;
 #endif
