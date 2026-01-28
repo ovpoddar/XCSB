@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Response;
+﻿namespace Xcsb.Connection.Response;
 
 public readonly ref struct ResponseProto
 {

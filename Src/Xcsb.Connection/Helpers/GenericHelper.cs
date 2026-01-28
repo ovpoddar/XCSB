@@ -2,8 +2,6 @@
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Connection.Helpers;
-using Xcsb;
 #if !NETSTANDARD
 using System.Numerics;
 #endif

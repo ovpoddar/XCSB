@@ -15,6 +15,7 @@ using Xcsb.Response.Replies.Internals;
 using Xcsb.Connection;
 using Xcsb.Connection.Models.Handshake;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response;
 #if !NETSTANDARD
 using System.Numerics;
 #endif

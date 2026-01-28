@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using Xcsb.Connection;
 using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;

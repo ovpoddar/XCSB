@@ -1,8 +1,6 @@
-﻿using Xcsb.Connection;
-using Xcsb.Connection.Configuration;
+﻿using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Models.Handshake;
-using Xcsb.Models;
 
 namespace Xcsb.Connection.Infrastructure;
 
