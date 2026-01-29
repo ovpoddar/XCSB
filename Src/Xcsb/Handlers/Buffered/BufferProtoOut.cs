@@ -5,7 +5,7 @@ using Xcsb.Handlers.Direct;
 
 namespace Xcsb.Handlers.Buffered;
 
-internal sealed class BufferProtoOut : ProtoBase
+internal sealed class BufferProtoOut
 {
     private readonly List<byte> _buffer;
     private readonly ProtoOutExtended _protoOut;
@@ -13,7 +13,7 @@ internal sealed class BufferProtoOut : ProtoBase
 
     public int Sequence => _protoOut.Sequence;
 
-    public BufferProtoOut(ProtoOutExtended protoOut) : base(protoOut, protoOut.Configuration)
+    public BufferProtoOut(ProtoOutExtended protoOut)
     {
         _protoOut = protoOut;
         _buffer = new List<byte>();
@@ -54,9 +54,9 @@ internal sealed class BufferProtoOut : ProtoBase
         _requestLength = 0;
     }
 
-    public override void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
+    public void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
     {
-        base.SendExact(in buffer, socketFlags);
+        _protoOut.SendExact(in buffer, socketFlags);
         _protoOut.Sequence += _requestLength;
     }
 

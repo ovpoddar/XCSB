@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Collections.Concurrent;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -12,7 +13,8 @@ namespace Xcsb.Connection.Infrastructure;
 internal class XConnection : IXConnectionInternal
 {
     private readonly Socket _socket;
-    private readonly object _lock;
+    private readonly ConcurrentQueue<byte[]> _bufferEvents;
+    private readonly ConcurrentDictionary<int, byte[]> _replyBuffer;
     private bool _disposed;
 
     public int GlobalId;
@@ -20,15 +22,15 @@ internal class XConnection : IXConnectionInternal
     public HandshakeStatus HandshakeStatus { get; private set; }
     public string FailReason { get; private set; } = string.Empty;
     public bool Connected => this._socket.Connected;
-
     public SoccketAccesser Accesser { get; }
 
     public XConnection(string path, XcsbClientConfiguration configuration, in ProtocolType type)
     {
-        this._lock = new object();
         this._socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
         this._socket.Connect(new UnixDomainSocketEndPoint(path));
-        this.Accesser = new SoccketAccesser(_socket, configuration);
+        this._replyBuffer = new ConcurrentDictionary<int, byte[]>();
+        this._bufferEvents = new ConcurrentQueue<byte[]>();
+        this.Accesser = new SoccketAccesser(_socket, _bufferEvents, _replyBuffer, configuration);
         this.GlobalId = 0;
     }
 

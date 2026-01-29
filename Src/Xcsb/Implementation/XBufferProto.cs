@@ -9,13 +9,6 @@ using Xcsb.Models;
 using Xcsb.Models.String;
 using Xcsb.Requests;
 using Xcsb.Connection.Helpers;
-
-
-
-
-
-
-
 #if !NETSTANDARD
 using System.Numerics;
 #endif

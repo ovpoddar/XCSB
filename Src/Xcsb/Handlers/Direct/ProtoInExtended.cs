@@ -15,16 +15,19 @@ using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Handlers.Direct;
 
-internal sealed class ProtoInExtended : ProtoBase
+internal sealed class ProtoInExtended
 {
+    internal readonly SoccketAccesser _soccketAccesser;
+
     internal int Sequence
     {
-        get { return base.ReceivedSequence; }
-        set { base.ReceivedSequence = value; }
+        get { return _soccketAccesser.ReceivedSequence; }
+        set { _soccketAccesser.ReceivedSequence = value; }
     }
 
-    internal ProtoInExtended(SoccketAccesser soccketAccesser) : base(soccketAccesser.Socket, soccketAccesser.Configuration)
+    internal ProtoInExtended(SoccketAccesser soccketAccesser)
     {
+        _soccketAccesser = soccketAccesser;
         Sequence = 0;
     }
 
@@ -35,13 +38,13 @@ internal sealed class ProtoInExtended : ProtoBase
         {
             if (sequence > Sequence)
             {
-                if (Socket.Available == 0)
-                    Socket.Poll(timeOut, SelectMode.SelectRead);
+                if (_soccketAccesser.Socket.Available == 0)
+                    _soccketAccesser.Socket.Poll(timeOut, SelectMode.SelectRead);
                 FlushSocket();
                 continue;
             }
 
-            if (!ReplyBuffer.Remove(sequence, out var reply))
+            if (!_soccketAccesser.ReplyBuffer.Remove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
             var response = reply.AsSpan().AsStruct<ListFontsWithInfoResponse>();
@@ -79,7 +82,7 @@ internal sealed class ProtoInExtended : ProtoBase
 
         while (true)
         {
-            _ = Received(headerBuffer);
+            _ = _soccketAccesser.Received(headerBuffer);
             var packet = ComputeResponse(ref headerBuffer).AsSpan();
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
@@ -103,7 +106,7 @@ internal sealed class ProtoInExtended : ProtoBase
         if (Sequence < response.Id)
             FlushSocket();
 
-        var hasAnyData = ReplyBuffer.Remove(response.Id, out var buffer);
+        var hasAnyData = _soccketAccesser.ReplyBuffer.Remove(response.Id, out var buffer);
         return hasAnyData
             ? buffer.AsSpan().AsStruct<T>()
             : response.HasReturn
@@ -113,11 +116,11 @@ internal sealed class ProtoInExtended : ProtoBase
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
-        if (this.Socket.Available == 0)
-            Socket.Poll(1000, SelectMode.SelectRead);
+        if (this._soccketAccesser.Socket.Available == 0)
+            _soccketAccesser.Socket.Poll(1000, SelectMode.SelectRead);
 
         FlushSocket();
-        if (!ReplyBuffer.Remove(sequence, out var response))
+        if (!_soccketAccesser.ReplyBuffer.Remove(sequence, out var response))
             return;
 
         var error = response.AsSpan().AsStruct<GenericError>();
@@ -141,13 +144,13 @@ internal sealed class ProtoInExtended : ProtoBase
         {
             if (sequence > Sequence)
             {
-                if (Socket.Available == 0)
-                    Socket.Poll(timeOut, SelectMode.SelectRead);
+                if (_soccketAccesser.Socket.Available == 0)
+                    _soccketAccesser.Socket.Poll(timeOut, SelectMode.SelectRead);
                 FlushSocket();
                 continue;
             }
 
-            if (!ReplyBuffer.Remove(sequence, out var reply))
+            if (!_soccketAccesser.ReplyBuffer.Remove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
             var response = reply.AsSpan().AsStruct<T>();
@@ -161,35 +164,35 @@ internal sealed class ProtoInExtended : ProtoBase
     //todo: update the code so only XEvent gets return;
     public XEvent ReceivedResponse()
     {
-        if (BufferEvents.TryDequeue(out var result))
-            return result.As<XEvent>();
+        if (_soccketAccesser.BufferEvents.TryDequeue(out var result))
+            return result.AsSpan().AsStruct<GenericEvent>().As<XEvent>();
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
 
-        if (!Socket.Poll(-1, SelectMode.SelectRead))
+        if (!_soccketAccesser.Socket.Poll(-1, SelectMode.SelectRead))
             return scratchBuffer.ToStruct<XEvent>();
 
-        var totalRead = Received(scratchBuffer, false);
+        var totalRead = _soccketAccesser.Received(scratchBuffer, false);
         return totalRead == 0
             ? scratchBuffer.Make<XEvent, LastEvent>(new LastEvent(Sequence))
             : scratchBuffer.ToStruct<XEvent>();
     }
 
     public bool HasEventToProcesses() =>
-        !BufferEvents.IsEmpty || Socket.Available >= Unsafe.SizeOf<GenericEvent>();
+        !_soccketAccesser.BufferEvents.IsEmpty || _soccketAccesser.Socket.Available >= Unsafe.SizeOf<GenericEvent>();
 
     public void WaitForEventArrival()
     {
         if (!HasEventToProcesses())
-            Socket.Poll(-1, SelectMode.SelectRead);
+            _soccketAccesser.Socket.Poll(-1, SelectMode.SelectRead);
     }
 
     internal void FlushSocket()
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
         Span<byte> buffer = stackalloc byte[bufferSize];
-        while (Socket.Available != 0)
+        while (_soccketAccesser.Socket.Available != 0)
         {
-            _ = Received(buffer);
+            _ = _soccketAccesser.Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = content.GetResponseType();
             switch (responseType)
@@ -197,13 +200,13 @@ internal sealed class ProtoInExtended : ProtoBase
                 case XResponseType.Event:
                 case XResponseType.Notify:
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue(content.As<GenericEvent>());
+                    _soccketAccesser.BufferEvents.Enqueue(buffer.ToArray());
                     break;
                 case XResponseType.Error:
-                    ReplyBuffer[content.Sequence] = buffer.ToArray();
+                    _soccketAccesser.ReplyBuffer[content.Sequence] = buffer.ToArray();
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
+                    _soccketAccesser.ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -224,9 +227,9 @@ internal sealed class ProtoInExtended : ProtoBase
         using var result = new ArrayPoolUsing<byte>(32 + replySize);
         buffer.CopyTo(result[..32]);
 
-        _ = Received(result[32..result.Length]);
+        _ = _soccketAccesser.Received(result[32..result.Length]);
 
-        if (!ReplyBuffer.TryRemove(content.Sequence, out var response))
+        if (!_soccketAccesser.ReplyBuffer.TryRemove(content.Sequence, out var response))
             return result;
 
         replySize = result.Length + response.Length;

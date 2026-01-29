@@ -5,16 +5,18 @@ using Xcsb.Connection.Handlers;
 
 namespace Xcsb.Handlers.Direct;
 
-internal sealed class ProtoOutExtended : ProtoBase
+internal sealed class ProtoOutExtended
 {
+    internal readonly SoccketAccesser _soccketAccesser;
 
     public int Sequence
     {
-        get { return base.SendSequence; }
-        set { base.SendSequence = value; }
+        get { return _soccketAccesser.SendSequence; }
+        set { _soccketAccesser.SendSequence = value; }
     }
-    internal ProtoOutExtended(SoccketAccesser soccketAccesser) : base(soccketAccesser.Socket, soccketAccesser.Configuration)
+    internal ProtoOutExtended(SoccketAccesser soccketAccesser)
     {
+        _soccketAccesser = soccketAccesser;
         Sequence = 0;
     }
 
@@ -22,9 +24,9 @@ internal sealed class ProtoOutExtended : ProtoBase
     public void Send<T>(scoped ref T value) where T : unmanaged =>
         this.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)), SocketFlags.None);
 
-    public override void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
+    public void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
     {
-        base.SendExact(in buffer, socketFlags);
+        _soccketAccesser.SendExact(in buffer, socketFlags);
         Sequence++;
     }
 }
