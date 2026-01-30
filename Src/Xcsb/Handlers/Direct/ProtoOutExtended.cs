@@ -22,11 +22,10 @@ internal sealed class ProtoOutExtended
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Send<T>(scoped ref T value) where T : unmanaged =>
-        this.SendExact(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)), SocketFlags.None);
+        _soccketAccesser.SendRequest(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)), SocketFlags.None);
 
-    public void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
-    {
-        _soccketAccesser.SendExact(in buffer, socketFlags);
-        Sequence++;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SendExact(scoped in ReadOnlySpan<byte> buffer) =>
+        _soccketAccesser.SendRequest(buffer, SocketFlags.None);
+
 }

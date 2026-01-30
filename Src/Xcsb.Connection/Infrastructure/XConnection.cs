@@ -57,7 +57,7 @@ internal class XConnection : IXConnectionInternal
                 authData.CopyTo(scratchBuffer[writeIndex..]);
                 writeIndex += authData.Length;
                 scratchBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
-                this.Accesser.SendExact(scratchBuffer);
+                this.Accesser.SendData(scratchBuffer,  SocketFlags.None);
             }
             else
             {
@@ -76,7 +76,7 @@ internal class XConnection : IXConnectionInternal
                 authData.CopyTo(workingBuffer[writeIndex..]);
                 writeIndex += authData.Length;
                 workingBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
-                this.Accesser.SendExact(workingBuffer);
+                this.Accesser.SendData(workingBuffer, SocketFlags.None);
             }
             return true;
         }

@@ -16,7 +16,7 @@ internal sealed class SoccketAccesser
     internal int SendSequence = 0;
 
     public SoccketAccesser(Socket socket,
-        ConcurrentQueue<byte[]> bufferEvents, 
+        ConcurrentQueue<byte[]> bufferEvents,
         ConcurrentDictionary<int, byte[]> replyBuffer,
         XcsbClientConfiguration configuration)
     {
@@ -26,11 +26,19 @@ internal sealed class SoccketAccesser
         this.Configuration = configuration;
     }
 
-    public void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
+#region Send
+    public void SendData(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
         Socket.SendExact(buffer, socketFlags);
         Configuration.OnSendRequest?.Invoke(buffer);
     }
+
+    public void SendRequest(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
+    {
+        SendData(in buffer, socketFlags);
+        SendSequence++;
+    }
+#endregion
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Received(scoped in Span<byte> buffer, bool readAll = true)

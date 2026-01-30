@@ -45,7 +45,7 @@ internal sealed class BufferProtoOut
 #else
         CollectionsMarshal.AsSpan(_buffer);
 #endif
-        this.SendExact(buffer, SocketFlags.None);
+        this.SendExact(buffer);
     }
 
     internal void Reset()
@@ -54,9 +54,9 @@ internal sealed class BufferProtoOut
         _requestLength = 0;
     }
 
-    public void SendExact(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags = SocketFlags.None)
+    public void SendExact(scoped in ReadOnlySpan<byte> buffer)
     {
-        _protoOut.SendExact(in buffer, socketFlags);
+        _protoOut.SendExact(in buffer);
         _protoOut.Sequence += _requestLength;
     }
 
