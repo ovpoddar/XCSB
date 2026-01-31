@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Response.Contract;
+﻿namespace Xcsb.Connection.Response.Contract;
 
 internal enum XResponseType
 {

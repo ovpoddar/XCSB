@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Infrastructure.Exceptions;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
@@ -203,7 +204,7 @@ internal sealed class ProtoInExtended
                     _soccketAccesser.BufferEvents.Enqueue(buffer.ToArray());
                     break;
                 case XResponseType.Error:
-                    _soccketAccesser.ReplyBuffer[content.Sequence] = buffer.ToArray();
+                    _soccketAccesser.ReplyBuffer[content.Sequence] = buffer.ToArray(); // always 32 byte
                     break;
                 case XResponseType.Reply:
                     _soccketAccesser.ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);

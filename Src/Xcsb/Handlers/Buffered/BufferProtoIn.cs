@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Handlers.Direct;
 using Xcsb.Infrastructure.Exceptions;
 using Xcsb.Response.Contract;
