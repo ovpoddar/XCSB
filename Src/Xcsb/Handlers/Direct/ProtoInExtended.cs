@@ -13,6 +13,7 @@ using Xcsb.Response.Contract;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
+using static Xcsb.Connection.Configuration.ActionDelegates;
 
 namespace Xcsb.Handlers.Direct;
 
@@ -84,7 +85,7 @@ internal sealed class ProtoInExtended
         while (true)
         {
             _ = _soccketAccesser.Received(headerBuffer);
-            var packet = ComputeResponse(ref headerBuffer).AsSpan();
+            var packet = _soccketAccesser.ComputeResponse(ref headerBuffer).AsSpan();
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
             Debug.Assert(response.ResponseHeader.Sequence == sequence);
@@ -102,18 +103,7 @@ internal sealed class ProtoInExtended
 
     }
 
-    public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct
-    {
-        if (Sequence < response.Id)
-            FlushSocket();
-
-        var hasAnyData = _soccketAccesser.ReplyBuffer.Remove(response.Id, out var buffer);
-        return hasAnyData
-            ? buffer.AsSpan().AsStruct<T>()
-            : response.HasReturn
-                ? throw new InvalidOperationException()
-                : null;
-    }
+   
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
@@ -135,31 +125,8 @@ internal sealed class ProtoInExtended
 
     public (T?, GenericError?) ReceivedResponse<T>(int sequence, int timeout = 1000) where T : unmanaged, IXReply
     {
-        var (result, error) = ReceivedResponseSpan<T>(sequence, timeout);
+        var (result, error) = _soccketAccesser.ReceivedResponseSpan<T>(sequence, timeout);
         return (result?.AsSpan().ToStruct<T>(), error);
-    }
-
-    public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply
-    {
-        while (true)
-        {
-            if (sequence > Sequence)
-            {
-                if (_soccketAccesser.Socket.Available == 0)
-                    _soccketAccesser.Socket.Poll(timeOut, SelectMode.SelectRead);
-                FlushSocket();
-                continue;
-            }
-
-            if (!_soccketAccesser.ReplyBuffer.Remove(sequence, out var reply))
-                throw new Exception("Should not happen.");
-
-            var response = reply.AsSpan().AsStruct<T>();
-            return response.Verify(sequence)
-                ? (reply, null)
-                : (null, reply.AsSpan().ToStruct<GenericError>());
-
-        }
     }
 
     //todo: update the code so only XEvent gets return;
@@ -187,56 +154,12 @@ internal sealed class ProtoInExtended
             _soccketAccesser.Socket.Poll(-1, SelectMode.SelectRead);
     }
 
-    internal void FlushSocket()
-    {
-        var bufferSize = Unsafe.SizeOf<XResponse>();
-        Span<byte> buffer = stackalloc byte[bufferSize];
-        while (_soccketAccesser.Socket.Available != 0)
-        {
-            _ = _soccketAccesser.Received(buffer);
-            ref readonly var content = ref buffer.AsStruct<XResponse>();
-            var responseType = content.GetResponseType();
-            switch (responseType)
-            {
-                case XResponseType.Event:
-                case XResponseType.Notify:
-                case XResponseType.Unknown:
-                    _soccketAccesser.BufferEvents.Enqueue(buffer.ToArray()); // can very with extensation
-                    break;
-                case XResponseType.Error:
-                    _soccketAccesser.ReplyBuffer[content.Sequence] = buffer.ToArray(); // always 32 byte
-                    break;
-                case XResponseType.Reply:
-                    _soccketAccesser.ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer); //can very
-                    break;
-                default:
-                    throw new Exception(string.Join(", ", buffer.ToArray()));
-            }
-        }
-    }
+    internal void FlushSocket() =>
+        _soccketAccesser.FlushSocket();
 
-    internal byte[] ComputeResponse(ref Span<byte> buffer)
-    {
-        ref readonly var content = ref buffer.AsStruct<RepliesHeader>();
-        if (content.Sequence > Sequence)
-            Sequence = content.Sequence;
+    public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply =>
+        _soccketAccesser.ReceivedResponseSpan<T>(sequence, timeOut);
 
-        var replySize = (int)(content.Length * 4);
-        if (replySize == 0)
-            return buffer.ToArray();
-
-        using var result = new ArrayPoolUsing<byte>(32 + replySize);
-        buffer.CopyTo(result[..32]);
-
-        _ = _soccketAccesser.Received(result[32..result.Length]);
-
-        if (!_soccketAccesser.ReplyBuffer.TryRemove(content.Sequence, out var response))
-            return result;
-
-        replySize = result.Length + response.Length;
-        using var scratchBuffer = new ArrayPoolUsing<byte>(replySize);
-        response.CopyTo(scratchBuffer);
-        result[0..result.Length].CopyTo(scratchBuffer[response.Length..]);
-        return scratchBuffer;
-    }
+    public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct =>
+        _soccketAccesser.GetVoidRequestResponse<T>(response);
 }

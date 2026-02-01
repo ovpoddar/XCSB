@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Connection.Helpers;
+using Xcsb.Response.Contract;
 
 namespace Xcsb.Connection.Response.Contract;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
 internal unsafe struct XResponseNew : IXBaseResponse
 {
-    [FieldOffset(0)] private byte _replyType;
+    [FieldOffset(0)] public readonly byte ReplyType;
     [FieldOffset(0)] private fixed byte _data[32];
     [FieldOffset(2)] public readonly ushort Sequence;
     [FieldOffset(4)] public readonly uint Length;
@@ -19,7 +20,7 @@ internal unsafe struct XResponseNew : IXBaseResponse
         return this.Sequence == sequence;
     }
 
-    internal readonly XResponseType GetResponseType() => this._replyType switch
+    internal readonly XResponseType GetResponseType() => this.ReplyType switch
     {
         0 => XResponseType.Error,
         1 => XResponseType.Reply,

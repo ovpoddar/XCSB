@@ -3,7 +3,10 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
+using Xcsb.Connection.Response.Errors;
+using static Xcsb.Connection.Configuration.ActionDelegates;
 
 namespace Xcsb.Connection.Handlers;
 
@@ -64,7 +67,7 @@ internal sealed class SoccketAccesser
         Span<byte> buffer = stackalloc byte[bufferSize];
         while (Socket.Available != 0)
         {
-            _ = Socket.Receive(buffer);
+            _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponseNew>();
             switch (content.GetResponseType())
             {
@@ -79,15 +82,17 @@ internal sealed class SoccketAccesser
                     break;
                 case XResponseType.Unknown:
                 case XResponseType.Event:
-                    BufferEvents.Enqueue(ComputeResponse(ref buffer));
+                    BufferEvents.Enqueue(content.ReplyType == 35
+                        ? ComputeResponse(ref buffer)
+                        : buffer.ToArray());
                     break;
                 default:
-                    throw new NotSupportedException();
+                    throw new Exception(string.Join(", ", buffer.ToArray()));
             }
         }
     }
 
-    private byte[] ComputeResponse(ref Span<byte> buffer)
+    public byte[] ComputeResponse(ref Span<byte> buffer)
     {
         ref readonly var content = ref buffer.AsStruct<XResponseNew>();
         if (content.Sequence > ReceivedSequence)
@@ -110,5 +115,42 @@ internal sealed class SoccketAccesser
         response.CopyTo(scratchBuffer);
         result[0..result.Length].CopyTo(scratchBuffer[response.Length..]);
         return scratchBuffer;
+    }
+
+
+    public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply
+    {
+        while (true)
+        {
+            if (sequence > ReceivedSequence)
+            {
+                if (Socket.Available == 0)
+                    Socket.Poll(timeOut, SelectMode.SelectRead);
+                FlushSocket();
+                continue;
+            }
+
+            if (!ReplyBuffer.Remove(sequence, out var reply))
+                throw new Exception("Should not happen.");
+
+            var response = reply.AsSpan().AsStruct<T>();
+            return response.Verify(sequence)
+                ? (reply, null)
+                : (null, reply.AsSpan().ToStruct<GenericError>());
+
+        }
+    }
+
+    public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct
+    {
+        if (ReceivedSequence < response.Id)
+            FlushSocket();
+
+        var hasAnyData = ReplyBuffer.Remove(response.Id, out var buffer);
+        return hasAnyData
+            ? buffer.AsSpan().AsStruct<T>()
+            : response.HasReturn
+                ? throw new InvalidOperationException()
+                : null;
     }
 }
