@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
 using Xcsb.Response.Contract;
@@ -9,7 +10,7 @@ namespace Xcsb.Models;
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
 public unsafe struct XEvent
 {
-    [FieldOffset(0)] private XResponse _response;
+    [FieldOffset(0)] private XResponseNew _response;
     [FieldOffset(0)] private XEventType _eventType;
     [FieldOffset(1)] private ErrorCode _errorType;
 
@@ -41,21 +42,21 @@ public unsafe struct XEvent
         };
 
     public readonly unsafe ref readonly T As<T>() where T : struct =>
-        ref _response.As<T>();
+        ref _response.Bytes.AsStruct<T>();
 
     public readonly GenericError? Error =>
         _response.GetResponseType() != XResponseType.Error
             ? null
-            : _response.As<GenericError>();
+            : _response.Bytes.AsStruct<GenericError>();
 
     public readonly GenericEvent? Event =>
         _response.GetResponseType() is XResponseType.Event or XResponseType.Notify
             ? null
-            : _response.As<GenericEvent>();
+            : _response.Bytes.AsStruct<GenericEvent>();
 
     public Span<byte> GetRawResponse()
     {
-        return this.ReplyType != XEventType.Unknown ? [] : _response.bytes;
+        return this.ReplyType != XEventType.Unknown ? [] : _response.Bytes;
     }
 
 }

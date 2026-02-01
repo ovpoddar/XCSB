@@ -81,7 +81,7 @@ internal sealed class ProtoInExtended
             cursor += responseLength;
         }
 
-        Span<byte> headerBuffer = stackalloc byte[(Unsafe.SizeOf<XResponse>())];
+        Span<byte> headerBuffer = stackalloc byte[(Unsafe.SizeOf<XResponseNew>())];
 
         while (true)
         {
