@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-using Xcsb.Connection.Helpers;
-using Xcsb.Response.Contract;
+﻿using System.Runtime.InteropServices;
 
 namespace Xcsb.Connection.Response.Contract;
 

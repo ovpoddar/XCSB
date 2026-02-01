@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
@@ -156,6 +157,10 @@ internal sealed class ProtoInExtended
 
     internal void FlushSocket() =>
         _soccketAccesser.FlushSocket();
+
+
+    internal void FlushSocket(int outProtoSequence, bool shouldThrowOnError) =>
+        _soccketAccesser.FlushSocket(outProtoSequence, shouldThrowOnError);
 
     public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply =>
         _soccketAccesser.ReceivedResponseSpan<T>(sequence, timeOut);

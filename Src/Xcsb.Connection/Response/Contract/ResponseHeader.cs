@@ -1,8 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Connection.Response.Contract;
 
-namespace Xcsb.Response.Contract;
+namespace Xcsb.Connection.Response.Contract;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
 public readonly struct ResponseHeader<T> where T : unmanaged

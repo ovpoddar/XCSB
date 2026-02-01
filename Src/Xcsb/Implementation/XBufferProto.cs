@@ -268,7 +268,8 @@ internal sealed class XBufferProto : IXBufferProto
             _bufferProtoIn.ProtoIn.FlushSocket();
             var outProtoSequence = _bufferProtoOut.Sequence;
             _bufferProtoOut.Flush();
-            _bufferProtoIn.FlushSocket(_bufferProtoIn.ProtoIn.Sequence, outProtoSequence, shouldThorw);
+            _bufferProtoIn.FlushSocket(outProtoSequence, shouldThorw);
+            _bufferProtoIn.ProtoIn.Sequence += _bufferProtoIn.ProtoIn.Sequence;
         }
         finally
         {

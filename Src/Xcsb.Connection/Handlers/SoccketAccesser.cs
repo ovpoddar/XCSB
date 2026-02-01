@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
@@ -80,10 +81,12 @@ internal sealed class SoccketAccesser
                 case XResponseType.Reply:
                     ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
                     break;
-                case XResponseType.Unknown:
                 case XResponseType.Event:
+                    BufferEvents.Enqueue(buffer.ToArray());
+                    break;
+                case XResponseType.Unknown:
                     BufferEvents.Enqueue(content.ReplyType == 35
-                        ? ComputeResponse(ref buffer)
+                        ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
                         : buffer.ToArray());
                     break;
                 default:
@@ -92,10 +95,51 @@ internal sealed class SoccketAccesser
         }
     }
 
-    public byte[] ComputeResponse(ref Span<byte> buffer)
+
+    public void FlushSocket(int outProtoSequence, bool shouldThrowOnError)
+    {
+        var bufferSize = Unsafe.SizeOf<XResponseNew>();
+        Span<byte> buffer = stackalloc byte[bufferSize];
+        while (Socket.Available != 0)
+        {
+            _ = Received(buffer);
+            ref readonly var content = ref buffer.AsStruct<XResponseNew>();
+            switch (content.GetResponseType())
+            {
+                case XResponseType.Error:
+                    //ReplyBuffer[content.Sequence] = buffer.ToArray();
+                    if (ReceivedSequence > outProtoSequence)
+                        ReplyBuffer[content.Sequence] = buffer.ToArray();
+                    else
+                    {
+                        if (shouldThrowOnError)
+                            throw new XEventException(buffer.ToStruct<GenericError>());
+                    }
+                    break;
+                case XResponseType.Notify:
+                    BufferEvents.Enqueue(buffer.ToArray());
+                    break;
+                case XResponseType.Reply:
+                    ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
+                    break;
+                case XResponseType.Event:
+                    BufferEvents.Enqueue(buffer.ToArray());
+                    break;
+                case XResponseType.Unknown:
+                    BufferEvents.Enqueue(content.ReplyType == 35
+                        ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
+                        : buffer.ToArray());
+                    break;
+                default:
+                    throw new Exception(string.Join(", ", buffer.ToArray()));
+            }
+        }
+    }
+
+    public byte[] ComputeResponse(ref Span<byte> buffer, bool updateSequence = true)
     {
         ref readonly var content = ref buffer.AsStruct<XResponseNew>();
-        if (content.Sequence > ReceivedSequence)
+        if (updateSequence && content.Sequence > ReceivedSequence)
             ReceivedSequence = content.Sequence;
 
         var replySize = (int)(content.Length * 4);

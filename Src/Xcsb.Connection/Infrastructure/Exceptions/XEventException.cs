@@ -1,6 +1,6 @@
 ﻿using Xcsb.Connection.Response.Errors;
 
-namespace Xcsb.Infrastructure.Exceptions;
+namespace Xcsb.Connection.Infrastructure.Exceptions;
 
 public sealed class XEventException : Exception
 {

@@ -1,21 +1,14 @@
-﻿using System;
-using Xcsb;
+﻿using Xcsb;
 using Xcsb.Connection;
-using Xcsb.Connection.Configuration;
 using Xcsb.Infrastructure;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Response.Event;
-using static Xcsb.Connection.Configuration.ActionDelegates;
 
 
 
 // Connect to X server
-using var connection = XcsbClient.Connect(configuration: new XcsbClientConfiguration
-{
-    OnReceivedReply = Write,
-    OnSendRequest = Read
-});
+using var connection = XcsbClient.Connect();
 var x = connection.Initialized();
 
 // Get the first screen
@@ -59,10 +52,10 @@ x.CreateWindowUnchecked(screen.RootDepth.DepthValue,
 // Map both windows
 x.MapWindowUnchecked(window2);
 
-//Console.Write("Two windows created. Watch backgrounds change with focus!\n");
-//Console.Write("Gray = unfocused, Red = focused\n");
-//Console.Write("Click on windows or press Tab to switch focus\n");
-//Console.Write("Press 'q' to quit\n\n");
+Console.Write("Two windows created. Watch backgrounds change with focus!\n");
+Console.Write("Gray = unfocused, Red = focused\n");
+Console.Write("Click on windows or press Tab to switch focus\n");
+Console.Write("Press 'q' to quit\n\n");
 
 // Wait a moment for windows to be mapped
 Thread.Sleep(1000);
@@ -85,7 +78,7 @@ var resultTranslateCoordinates = x.TranslateCoordinates(
     window1,
      window2,
     100, 100);
-//Console.WriteLine($"10, 10 trnsalate to  {resultTranslateCoordinates.DestinationX}, {resultTranslateCoordinates.DestinationY}"); 
+Console.WriteLine($"10, 10 trnsalate to  {resultTranslateCoordinates.DestinationX}, {resultTranslateCoordinates.DestinationY}"); ;
 // Event loop to demonstrate focus changes
 var isRunning = true;
 while (isRunning)
@@ -208,19 +201,4 @@ static void ChangeWindowColor(IXProto x, uint win, uint color)
 {
     x.ChangeWindowAttributesUnchecked(win, ValueMask.BackgroundPixel, [color]);
     x.ClearAreaUnchecked(false, win, 0, 0, 0, 0);
-}
-
-static void Write(in ReadOnlySpan<byte> data)
-{
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine(string.Join(", ", data.ToArray()));
-    Console.ResetColor();
-}
-
-
-static void Read(in ReadOnlySpan<byte> data)
-{
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine(string.Join(", ", data.ToArray()));
-    Console.ResetColor();
 }

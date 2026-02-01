@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
-using Xcsb.Response.Contract;
 
 namespace Xcsb.Connection.Response.Errors;
 
