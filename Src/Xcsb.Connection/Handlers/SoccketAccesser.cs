@@ -107,7 +107,6 @@ internal sealed class SoccketAccesser
             switch (content.GetResponseType())
             {
                 case XResponseType.Error:
-                    //ReplyBuffer[content.Sequence] = buffer.ToArray();
                     if (ReceivedSequence > outProtoSequence)
                         ReplyBuffer[content.Sequence] = buffer.ToArray();
                     else

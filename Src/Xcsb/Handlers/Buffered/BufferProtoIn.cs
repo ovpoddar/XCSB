@@ -13,18 +13,23 @@ namespace Xcsb.Handlers.Buffered;
 
 internal sealed class BufferProtoIn
 {
-    internal readonly ProtoInExtended ProtoIn;
+    private readonly ProtoInExtended _protoIn;
 
     public BufferProtoIn(ProtoInExtended protoIn)
     {
-        ProtoIn = protoIn;
+        _protoIn = protoIn;
     }
 
     internal void FlushSocket(int outProtoSequence, bool shouldThrowOnError)
     {
-        if (ProtoIn._soccketAccesser.Socket.Available == 0)
-            ProtoIn._soccketAccesser.Socket.Poll(1000, SelectMode.SelectRead);
+        var currentLength = _protoIn.Sequence;
+        if (_protoIn._soccketAccesser.Socket.Available == 0)
+            _protoIn._soccketAccesser.Socket.Poll(1000, SelectMode.SelectRead);
 
-        ProtoIn.FlushSocket(outProtoSequence, shouldThrowOnError);
+        _protoIn.FlushSocket(outProtoSequence, shouldThrowOnError);
+        _protoIn.Sequence += currentLength;
     }
+
+    internal void FlushSocket() =>
+        _protoIn?.FlushSocket();
 }
