@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
@@ -13,7 +14,7 @@ public readonly struct GetInputFocusReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.Reply &&
+        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
                Length == 0;
     }
 

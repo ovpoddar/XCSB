@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
@@ -16,6 +17,6 @@ public struct SelectionNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.SelectionNotify && ResponseHeader.GetValue() == 0;
+        return (ResponseType)ResponseHeader.Reply == ResponseType.SelectionNotify && ResponseHeader.GetValue() == 0;
     }
 }

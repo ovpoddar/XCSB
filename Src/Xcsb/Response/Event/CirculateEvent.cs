@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
@@ -14,6 +15,6 @@ public struct CirculateNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.CirculateNotify && ResponseHeader.GetValue() == 0 && _pad1 == 0;
+        return (ResponseType)ResponseHeader.Reply == ResponseType.CirculateNotify && ResponseHeader.GetValue() == 0 && _pad1 == 0;
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Response.Errors;
+using Xcsb.Connection.Response.Errors;
 using Xcsb.Response.Event;
 
 namespace Xcsb.Response.Contract;

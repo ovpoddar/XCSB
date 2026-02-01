@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
@@ -28,7 +29,7 @@ public readonly struct ListFontsWithInfoReply
     internal ListFontsWithInfoReply(ref readonly ListFontsWithInfoResponse response, Span<byte> buffer)
     {
 
-        Reply = response.ResponseHeader.Reply;
+        Reply = (ResponseType)response.ResponseHeader.Reply;
         Sequence = response.ResponseHeader.Sequence;
         MinBounds = response.MinBounds;
         MaxBounds = response.MaxBounds;

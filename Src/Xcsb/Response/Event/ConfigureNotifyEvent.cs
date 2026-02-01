@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
@@ -20,7 +21,7 @@ public struct ConfigureNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.ConfigureNotify
+        return (ResponseType)ResponseHeader.Reply == ResponseType.ConfigureNotify
             && ResponseHeader.GetValue() == 0;
     }
 }

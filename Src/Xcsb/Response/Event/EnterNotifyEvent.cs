@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
@@ -23,6 +24,6 @@ public struct EnterNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.EnterNotify;
+        return (ResponseType)ResponseHeader.Reply == ResponseType.EnterNotify;
     }
 }

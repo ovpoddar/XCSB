@@ -16,7 +16,7 @@ public readonly struct ListFontsReply
     {
 
         ref readonly var context = ref response.AsStruct<ListFontsResponse>();
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         if (context.NumberOfFonts == 0)
             Fonts = [];

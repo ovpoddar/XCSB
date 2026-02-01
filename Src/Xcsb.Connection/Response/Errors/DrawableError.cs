@@ -1,10 +1,11 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Errors;
+namespace Xcsb.Connection.Response.Errors;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct FontError : IXError
+public readonly struct DrawableError : IXError
 {
     public readonly ResponseHeader<ErrorCode> ResponseHeader;
     public readonly uint BadResourceId;
@@ -13,6 +14,6 @@ public readonly struct FontError : IXError
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.Error && ResponseHeader.Sequence == sequence;
+        return ResponseHeader.GetResponseType() == XResponseType.Error && ResponseHeader.Sequence == sequence;
     }
 }

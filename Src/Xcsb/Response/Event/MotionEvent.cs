@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
@@ -21,6 +22,6 @@ public struct MotionNotifyEvent : IXEvent
     public bool IsSameScreen => _sameScreen == 1;
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.MotionNotify;
+        return (ResponseType)ResponseHeader.Reply == ResponseType.MotionNotify;
     }
 }

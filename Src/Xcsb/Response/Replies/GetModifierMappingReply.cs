@@ -16,7 +16,7 @@ public struct GetModifierMappingReply
     internal GetModifierMappingReply(Span<byte> response)
     {
         ref readonly var context = ref response.AsStruct<GetModifierMappingResponse>();
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         KeycodesPerModifier = context.ResponseHeader.GetValue();
         Sequence = context.ResponseHeader.Sequence;
         if (KeycodesPerModifier == 0)

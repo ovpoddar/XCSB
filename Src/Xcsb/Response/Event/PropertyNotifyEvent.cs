@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
@@ -14,7 +15,7 @@ public struct PropertyNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.PropertyNotify
+        return (ResponseType)ResponseHeader.Reply == ResponseType.PropertyNotify
             && ResponseHeader.GetValue() == 0;
     }
 }

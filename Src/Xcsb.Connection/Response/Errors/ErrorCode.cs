@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Response.Errors;
+﻿namespace Xcsb.Connection.Response.Errors;
 
 public enum ErrorCode : byte
 {

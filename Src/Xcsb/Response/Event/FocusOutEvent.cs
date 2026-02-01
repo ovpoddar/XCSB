@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
@@ -13,6 +14,6 @@ public struct FocusOutEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.FocusOut;// && this.ResponseHeader.Sequence == sequence;
+        return (ResponseType)ResponseHeader.Reply == ResponseType.FocusOut;// && this.ResponseHeader.Sequence == sequence;
     }
 }

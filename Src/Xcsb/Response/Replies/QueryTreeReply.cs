@@ -18,7 +18,7 @@ public readonly struct QueryTreeReply
     {
         ref readonly var context = ref response.AsStruct<QueryTreeResponse>();
 
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         Root = context.Root;
         Parent = context.Parent;

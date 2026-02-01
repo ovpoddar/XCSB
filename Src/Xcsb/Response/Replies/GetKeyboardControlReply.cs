@@ -1,4 +1,5 @@
-﻿using Xcsb.Models;
+﻿using System;
+using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
@@ -21,7 +22,7 @@ public struct GetKeyboardControlReply
     {
         unsafe
         {
-            Reply = result.ResponseHeader.Reply;
+            Reply = (ResponseType)result.ResponseHeader.Reply;
             AutoRepeatMode = result.ResponseHeader.GetValue();
             Sequence = result.ResponseHeader.Sequence;
             Length = result.Length;

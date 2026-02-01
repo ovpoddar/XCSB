@@ -27,7 +27,7 @@ public struct QueryFontReply
     internal QueryFontReply(Span<byte> response)
     {
         ref readonly var context = ref response.AsStruct<QueryFontResponse>();
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         MinBounds = context.MinBounds;
         MaxBounds = context.MaxBounds;

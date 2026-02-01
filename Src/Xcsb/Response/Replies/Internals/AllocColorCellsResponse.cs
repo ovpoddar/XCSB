@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Replies.Internals;
@@ -13,7 +14,7 @@ internal readonly struct AllocColorCellsResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.Reply &&
+        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
                Length == NumberOfPixels + NumberOfMasks;
     }
 }

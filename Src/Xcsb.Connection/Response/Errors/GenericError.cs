@@ -1,8 +1,9 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Errors;
+namespace Xcsb.Connection.Response.Errors;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
 public unsafe struct GenericError : IXError
@@ -14,7 +15,7 @@ public unsafe struct GenericError : IXError
 
     public readonly bool Verify(in int sequence)
     {
-        if (this.ResponseHeader.Reply != ResponseType.Error)
+        if (ResponseHeader.GetResponseType() != XResponseType.Error)
             return false;
 
         var errorType = this.ResponseHeader.GetValue();

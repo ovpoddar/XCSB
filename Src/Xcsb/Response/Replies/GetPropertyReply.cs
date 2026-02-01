@@ -16,7 +16,7 @@ public readonly struct GetPropertyReply
     internal GetPropertyReply(Span<byte> response)
     {
         ref readonly var context = ref response.AsStruct<GetPropertyResponse>();
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Format = context.ResponseHeader.GetValue();
         Sequence = context.ResponseHeader.Sequence;
         Type = context.Type;

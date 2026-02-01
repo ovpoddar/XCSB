@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
@@ -15,6 +16,6 @@ public struct ColorMapNotifyEvent : IXEvent
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.ColormapNotify;
+        return (ResponseType)ResponseHeader.Reply == ResponseType.ColormapNotify;
     }
 }

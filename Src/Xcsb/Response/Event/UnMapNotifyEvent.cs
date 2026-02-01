@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
@@ -15,6 +16,6 @@ public struct UnMapNotifyEvent : IXEvent
     public readonly bool FromConfigure => _fromConfigure == 1;
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.UnMapNotify && ResponseHeader.GetValue() == 0;
+        return (ResponseType)ResponseHeader.Reply == ResponseType.UnMapNotify && ResponseHeader.GetValue() == 0;
     }
 }

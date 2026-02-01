@@ -16,7 +16,7 @@ public struct AllocColorCellsReply
     internal AllocColorCellsReply(Span<byte> response)
     {
         ref readonly var context = ref response.AsStruct<AllocColorCellsResponse>();
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
 
         var cursor = Unsafe.SizeOf<AllocColorCellsReply>();

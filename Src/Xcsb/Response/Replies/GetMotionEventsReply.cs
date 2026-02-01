@@ -16,7 +16,7 @@ public readonly struct GetMotionEventsReply
     internal GetMotionEventsReply(Span<byte> response)
     {
         ref readonly var context = ref response.AsStruct<GetMotionEventsResponse>();
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         if (context.NumberOfEvents == 0)
             Events = [];

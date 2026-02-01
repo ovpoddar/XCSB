@@ -9,13 +9,14 @@ using Xcsb.Models;
 using Xcsb.Models.String;
 using Xcsb.Requests;
 using Xcsb.Response;
-using Xcsb.Response.Errors;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
 using Xcsb.Connection;
 using Xcsb.Connection.Models.Handshake;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Errors;
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif

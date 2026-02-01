@@ -1,8 +1,9 @@
 ﻿using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Errors;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
-using Xcsb.Response.Errors;
+
 
 #if !NETSTANDARD
 using System.Numerics;

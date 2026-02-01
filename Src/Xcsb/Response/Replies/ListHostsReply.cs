@@ -18,7 +18,7 @@ public readonly struct ListHostsReply
     internal ListHostsReply(Span<byte> response)
     {
         ref readonly var context = ref response.AsStruct<ListHostsResponse>();
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Mode = context.ResponseHeader.GetValue();
         Sequence = context.ResponseHeader.Sequence;
         NumberOfHosts = context.NumberOfHosts;

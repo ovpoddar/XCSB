@@ -15,7 +15,7 @@ public readonly struct GetAtomNameReply
     internal GetAtomNameReply(Span<byte> response)
     {
         ref readonly var context = ref response.AsStruct<GetAtomNameResponse>();
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
 
         if (context.Length == 0)

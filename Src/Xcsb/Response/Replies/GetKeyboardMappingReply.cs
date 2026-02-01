@@ -19,7 +19,7 @@ public readonly struct GetKeyboardMappingReply
         if (context.ResponseHeader.GetValue() * count != context.Length)
             throw new InvalidOperationException("Unknown reply");
 
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         KeyPerKeyCode = context.ResponseHeader.GetValue();
 

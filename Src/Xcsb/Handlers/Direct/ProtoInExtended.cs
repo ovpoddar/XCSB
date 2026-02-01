@@ -6,10 +6,10 @@ using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
+using Xcsb.Connection.Response.Errors;
 using Xcsb.Infrastructure.Exceptions;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
-using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
@@ -201,13 +201,13 @@ internal sealed class ProtoInExtended
                 case XResponseType.Event:
                 case XResponseType.Notify:
                 case XResponseType.Unknown:
-                    _soccketAccesser.BufferEvents.Enqueue(buffer.ToArray());
+                    _soccketAccesser.BufferEvents.Enqueue(buffer.ToArray()); // can very with extensation
                     break;
                 case XResponseType.Error:
                     _soccketAccesser.ReplyBuffer[content.Sequence] = buffer.ToArray(); // always 32 byte
                     break;
                 case XResponseType.Reply:
-                    _soccketAccesser.ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
+                    _soccketAccesser.ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer); //can very
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));

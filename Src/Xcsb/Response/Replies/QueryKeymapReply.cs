@@ -1,4 +1,5 @@
-﻿using Xcsb.Response.Contract;
+﻿using System;
+using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
@@ -11,7 +12,7 @@ public struct QueryKeymapReply
 
     internal unsafe QueryKeymapReply(QueryKeymapResponse response)
     {
-        Reply = response.ResponseHeader.Reply;
+        Reply = (ResponseType)response.ResponseHeader.Reply;
         Sequence = response.ResponseHeader.Sequence;
         new Span<byte>(response.Keys, 32)
             .CopyTo(keys);

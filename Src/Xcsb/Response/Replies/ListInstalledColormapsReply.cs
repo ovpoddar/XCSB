@@ -16,7 +16,7 @@ public struct ListInstalledColormapsReply
     {
         ref readonly var context = ref response.AsStruct<ListInstalledColormapsResponse>();
 
-        Reply = context.ResponseHeader.Reply;
+        Reply = (ResponseType)context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         if (context.Length == 0)
             Colormap = [];
