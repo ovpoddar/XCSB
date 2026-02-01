@@ -20,7 +20,7 @@ internal unsafe struct XResponseNew : IXBaseResponse
         0 => XResponseType.Error,
         1 => XResponseType.Reply,
         11 => XResponseType.Notify,
-        2 and <= 34 or 36 => XResponseType.Event,
+        > 2 and <= 34 or 36 => XResponseType.Event,
         _ => XResponseType.Unknown
     };
 

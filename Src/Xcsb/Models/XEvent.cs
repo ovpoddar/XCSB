@@ -18,6 +18,7 @@ public unsafe struct XEvent
     public readonly XEventType ReplyType =>
         (_response.GetResponseType(), _errorType) switch
         {
+            (XResponseType.Event or XResponseType.Notify, _) => _eventType,
             (XResponseType.Error, ErrorCode.Request) => XEventType.RequestError,
             (XResponseType.Error, ErrorCode.Value) => XEventType.ValueError,
             (XResponseType.Error, ErrorCode.Window) => XEventType.WindowError,
@@ -35,9 +36,6 @@ public unsafe struct XEvent
             (XResponseType.Error, ErrorCode.Name) => XEventType.NameError,
             (XResponseType.Error, ErrorCode.Length) => XEventType.LengthError,
             (XResponseType.Error, ErrorCode.Implementation) => XEventType.ImplementationError,
-            (XResponseType.Error, var unknown) => throw new ArgumentOutOfRangeException(nameof(_errorType), unknown,
-                null),
-            (XResponseType.Event or XResponseType.Notify, _) => _eventType,
             _ => XEventType.Unknown,
         };
 
