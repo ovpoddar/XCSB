@@ -28,7 +28,7 @@ internal readonly struct ListFontsWithInfoResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply  == ResponseType.Reply &&
+        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
                _pad0 == 0 && _pad1 == 0;
     }
 

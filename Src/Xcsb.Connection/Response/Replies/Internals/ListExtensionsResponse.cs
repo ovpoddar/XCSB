@@ -1,8 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Connection.Response.Contract;
-using Xcsb.Response.Contract;
 
-namespace Xcsb.Response.Replies.Internals;
+namespace Xcsb.Connection.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct ListExtensionsResponse : IXReply
@@ -12,7 +11,7 @@ internal readonly struct ListExtensionsResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.GetResponseType() == XResponseType.Reply &&
                Length * 4 >= NumberOfExtensions;
     }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using Xcsb.Models;
+﻿using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 

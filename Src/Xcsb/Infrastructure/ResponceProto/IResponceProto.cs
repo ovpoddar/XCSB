@@ -39,8 +39,6 @@ public interface IResponseProto
     QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels);
     LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name);
     QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height);
-    QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name);
-    ListExtensionsReply ListExtensions();
     SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes);
     GetModifierMappingReply GetModifierMapping();
     GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count);

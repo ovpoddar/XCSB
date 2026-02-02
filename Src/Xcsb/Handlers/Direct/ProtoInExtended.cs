@@ -8,13 +8,10 @@ using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
-using Xcsb.Infrastructure.Exceptions;
 using Xcsb.Models;
-using Xcsb.Response.Contract;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
-using static Xcsb.Connection.Configuration.ActionDelegates;
 
 namespace Xcsb.Handlers.Direct;
 
@@ -104,7 +101,7 @@ internal sealed class ProtoInExtended
 
     }
 
-   
+
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
@@ -155,16 +152,19 @@ internal sealed class ProtoInExtended
             _soccketAccesser.Socket.Poll(-1, SelectMode.SelectRead);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void FlushSocket() =>
         _soccketAccesser.FlushSocket();
 
-
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void FlushSocket(int outProtoSequence, bool shouldThrowOnError) =>
         _soccketAccesser.FlushSocket(outProtoSequence, shouldThrowOnError);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply =>
         _soccketAccesser.ReceivedResponseSpan<T>(sequence, timeOut);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct =>
         _soccketAccesser.GetVoidRequestResponse<T>(response);
 }

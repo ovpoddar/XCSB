@@ -23,6 +23,7 @@ internal class XConnection : IXConnectionInternal
     public string FailReason { get; private set; } = string.Empty;
     public bool Connected => this._socket.Connected;
     public SoccketAccesser Accesser { get; }
+    public IXExtensation Extensation { get; }
 
     public XConnection(string path, XcsbClientConfiguration configuration, in ProtocolType type)
     {
@@ -31,6 +32,7 @@ internal class XConnection : IXConnectionInternal
         this._replyBuffer = new ConcurrentDictionary<int, byte[]>();
         this._bufferEvents = new ConcurrentQueue<byte[]>();
         this.Accesser = new SoccketAccesser(_socket, _bufferEvents, _replyBuffer, configuration);
+        this.Extensation = new XcsbExtensation(this.Accesser);
         this.GlobalId = 0;
     }
 
@@ -57,7 +59,7 @@ internal class XConnection : IXConnectionInternal
                 authData.CopyTo(scratchBuffer[writeIndex..]);
                 writeIndex += authData.Length;
                 scratchBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
-                this.Accesser.SendData(scratchBuffer,  SocketFlags.None);
+                this.Accesser.SendData(scratchBuffer, SocketFlags.None);
             }
             else
             {

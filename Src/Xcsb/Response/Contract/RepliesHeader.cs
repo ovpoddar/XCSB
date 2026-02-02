@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using Xcsb.Models;
 
 namespace Xcsb.Response.Contract;
 

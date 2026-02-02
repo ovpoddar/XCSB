@@ -28,7 +28,7 @@ internal readonly struct QueryFontResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply  == ResponseType.Reply &&
+        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
                _pad1 == 0 && _pad2 == 0 && Length > 7;
     }
 

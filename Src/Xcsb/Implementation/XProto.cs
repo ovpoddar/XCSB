@@ -1,6 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Connection;
+using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Infrastructure.Exceptions;
+using Xcsb.Connection.Models.Handshake;
+using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Errors;
 using Xcsb.Handlers.Direct;
 using Xcsb.Infrastructure;
 using Xcsb.Infrastructure.Exceptions;
@@ -8,15 +14,8 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
 using Xcsb.Requests;
-using Xcsb.Response;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
-using Xcsb.Connection;
-using Xcsb.Connection.Models.Handshake;
-using Xcsb.Connection.Helpers;
-using Xcsb.Connection.Response;
-using Xcsb.Connection.Response.Errors;
-using Xcsb.Connection.Infrastructure.Exceptions;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -234,15 +233,6 @@ internal sealed class XProto : IXProto
             : result!.Value;
     }
 
-    public ListExtensionsReply ListExtensions()
-    {
-        var cookie = ListExtensionsBase();
-        var (result, error) = this._protoInExtended.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListExtensionsReply(result);
-    }
-
     public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
     {
         var cookie = ListFontsBase(pattern, maxNames);
@@ -313,17 +303,6 @@ internal sealed class XProto : IXProto
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new QueryColorsReply(result);
-    }
-
-    public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name)
-    {
-        if (name.Length > ushort.MaxValue)
-            throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
-        var cookie = QueryExtensionBase(name);
-        var (result, error) = this._protoInExtended.ReceivedResponse<QueryExtensionReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
     }
 
     public QueryFontReply QueryFont(uint fontId)
@@ -3329,34 +3308,6 @@ internal sealed class XProto : IXProto
     private ResponseProto QueryBestSizeBase(QueryShapeOf shape, uint drawable, ushort width, ushort height)
     {
         var request = new QueryBestSizeType(shape, drawable, width, height);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
-    }
-
-    private ResponseProto QueryExtensionBase(ReadOnlySpan<byte> name)
-    {
-        var request = new QueryExtensionType((ushort)name.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(ref request, 8, name);
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(ref request, 8, name);
-            _protoOutExtended.SendExact(workingBuffer);
-        }
-
-        return new ResponseProto(_protoOutExtended.Sequence, true);
-    }
-
-    private ResponseProto ListExtensionsBase()
-    {
-        var request = new ListExtensionsType();
         _protoOutExtended.Send(ref request);
         return new ResponseProto(_protoOutExtended.Sequence, true);
     }

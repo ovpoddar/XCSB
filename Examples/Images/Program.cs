@@ -11,12 +11,12 @@ using var connection = XcsbClient.Connect();
 var xcsb = connection.Initialized();
 var window = connection.NewId();
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];
-var extensations = xcsb.ListExtensions();
+var extensations = connection.Extensation.ListExtensions();
 Console.Write("available extensions: ");
 foreach (var extensation in extensations.Names)
     Console.WriteLine($"    {extensation}");
 
-var extension = xcsb.QueryExtension(Encoding.UTF8.GetBytes(extensations.Names[5]));
+var extension = connection.Extensation.QueryExtension(Encoding.UTF8.GetBytes(extensations.Names[5]));
 Console.WriteLine(extension.FirstEvent);
 
 var rootProprityes = xcsb.ListProperties(screen.Root);

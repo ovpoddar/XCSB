@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Connection.Helpers;
 using Xcsb.Handlers.Buffered;
 using Xcsb.Handlers.Direct;
 using Xcsb.Infrastructure;
@@ -8,7 +9,6 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
 using Xcsb.Requests;
-using Xcsb.Connection.Helpers;
 #if !NETSTANDARD
 using System.Numerics;
 #endif

@@ -2,21 +2,20 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using Xcsb.Connection.Helpers;
-using Xcsb.Response.Contract;
-using Xcsb.Response.Replies.Internals;
+using Xcsb.Connection.Response.Replies.Internals;
 
-namespace Xcsb.Response.Replies;
+namespace Xcsb.Connection.Response.Replies;
 
 public readonly struct ListExtensionsReply
 {
-    public readonly ResponseType Reply;
+    public readonly byte Reply;
     public readonly ushort Sequence;
     public readonly string[] Names;
 
     internal ListExtensionsReply(Span<byte> response)
     {
         ref readonly var context = ref response.AsStruct<ListExtensionsResponse>();
-        Reply = (ResponseType)context.ResponseHeader.Reply;
+        Reply = context.ResponseHeader.Reply;
         Sequence = context.ResponseHeader.Sequence;
         if (context.ResponseHeader.GetValue() == 0)
             Names = [];

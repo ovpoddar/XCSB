@@ -7,7 +7,6 @@ using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
-using static Xcsb.Connection.Configuration.ActionDelegates;
 
 namespace Xcsb.Connection.Handlers;
 
@@ -16,7 +15,7 @@ internal sealed class SoccketAccesser
     internal readonly ConcurrentQueue<byte[]> BufferEvents;
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
     internal readonly XcsbClientConfiguration Configuration;
-    internal readonly Socket Socket;
+    internal readonly Socket Socket; // TODO: make this privet and remove all direct access to this.
     internal int ReceivedSequence = 0;
     internal int SendSequence = 0;
 
@@ -45,6 +44,7 @@ internal sealed class SoccketAccesser
     }
     #endregion
 
+    #region received
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Received(scoped in Span<byte> buffer, bool readAll = true)
     {
@@ -196,4 +196,5 @@ internal sealed class SoccketAccesser
                 ? throw new InvalidOperationException()
                 : null;
     }
+    #endregion
 }

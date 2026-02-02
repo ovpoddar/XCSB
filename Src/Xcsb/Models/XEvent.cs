@@ -2,7 +2,6 @@
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
-using Xcsb.Response.Contract;
 using Xcsb.Response.Event;
 
 namespace Xcsb.Models;

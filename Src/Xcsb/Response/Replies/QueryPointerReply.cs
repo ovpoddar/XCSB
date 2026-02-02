@@ -22,7 +22,7 @@ public readonly struct QueryPointerReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply  == ResponseType.Reply &&
+        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
                Length == 0;
     }
 }
