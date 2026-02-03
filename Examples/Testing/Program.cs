@@ -16,9 +16,7 @@ var hasExt = c.Extensation.QueryExtension("BIG-REQUESTS"u8);
 if (!hasExt.Present || c.HandshakeSuccessResponseBody == null)
     return;
 
-var z = c.GetSendRequestSequence();
 c.SendRequest([hasExt.MajorOpcode, 0, 1, (byte)hasExt.Length]);
-z = c.GetSendRequestSequence();
 var window = c.NewId();
 var gc = c.NewId();
 var d = c.Initialized();
@@ -27,11 +25,9 @@ d.CreateWindowChecked(c.HandshakeSuccessResponseBody.Screens[0].RootDepth.DepthV
     Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask,
     [c.HandshakeSuccessResponseBody.Screens[0].BlackPixel, (uint)EventMask.ExposureMask]);
 
-z = c.GetSendRequestSequence();
 d.CreateGCChecked(gc, window, GCMask.Foreground | GCMask.GraphicsExposures,
     [c.HandshakeSuccessResponseBody.Screens[0].BlackPixel, 0]);
 
-z = c.GetSendRequestSequence();
 d.MapWindowChecked(window);
 
 
