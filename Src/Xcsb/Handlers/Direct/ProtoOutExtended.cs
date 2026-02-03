@@ -17,7 +17,6 @@ internal sealed class ProtoOutExtended
     internal ProtoOutExtended(SoccketAccesser soccketAccesser)
     {
         _soccketAccesser = soccketAccesser;
-        Sequence = 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

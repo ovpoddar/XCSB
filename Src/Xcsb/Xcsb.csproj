@@ -6,6 +6,7 @@
 		<LangVersion>latest</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<Authors>Ov Poddar</Authors>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -28,7 +28,6 @@ internal sealed class ProtoInExtended
     internal ProtoInExtended(SoccketAccesser soccketAccesser)
     {
         _soccketAccesser = soccketAccesser;
-        Sequence = 0;
     }
 
 
