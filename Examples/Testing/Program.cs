@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Xcsb;
 using Xcsb.Connection;
 using Xcsb.Connection.Models.Handshake;
+using Xcsb.Extension.BigRequests;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.SockAccesser;
@@ -12,11 +13,10 @@ const int HEIGHT = 500;
 var data = new byte[250007 * 4];
 
 using var c = XcsbClient.Connect();
-var hasExt = c.Extensation.QueryExtension("BIG-REQUESTS"u8);
-if (!hasExt.Present || c.HandshakeSuccessResponseBody == null)
+var hasExt = c.Extensation.BigRequest();
+if (hasExt is null || c.HandshakeSuccessResponseBody == null)
     return;
 
-c.SendRequest([hasExt.MajorOpcode, 0, 1, (byte)hasExt.Length]);
 var window = c.NewId();
 var gc = c.NewId();
 var d = c.Initialized();
@@ -56,6 +56,7 @@ while (true)
 
     if (evnt.ReplyType == Xcsb.Models.XEventType.Expose)
     {
+        hasExt.BigRequestsEnable();
         c.SendRequest(data);
     }
 }

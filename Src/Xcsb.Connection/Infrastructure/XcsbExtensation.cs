@@ -1,18 +1,26 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections;
+using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Request;
 using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Contract;
+using Xcsb.Connection.Response.Errors;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Connection.Response.Replies.Internals;
 
 namespace Xcsb.Connection.Infrastructure;
 
-internal sealed class XcsbExtensation : IXExtensation
+internal sealed class XcsbExtensation : IXExtensationInternal
 {
-    private SoccketAccesser _accesser;
+    private readonly SoccketAccesser _accesser;
     private int _bigRequestLength = 262140;
+    private readonly ConcurrentDictionary<string, QueryExtensionReply> _extensitionReply = new ConcurrentDictionary<string, QueryExtensionReply>();
+
+    public SoccketAccesser Transport => _accesser;
+
     public XcsbExtensation(SoccketAccesser accesser)
     {
         _accesser = accesser;
@@ -67,4 +75,9 @@ internal sealed class XcsbExtensation : IXExtensation
         return new ResponseProto(_accesser.SendSequence, true);
     }
 
+    public void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply) =>
+        _extensitionReply.TryAdd(name.ToString(), reply);
+
+    public bool IsExtensationEnable(string name) =>
+        _extensitionReply.ContainsKey(name);
 }

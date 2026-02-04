@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
     <ProjectReference Include="..\..\Src\Xcsb.SockAccesser\Xcsb.SockAccesser.csproj" />
     <ProjectReference Include="..\..\Src\Xcsb\Xcsb.csproj" />
   </ItemGroup>

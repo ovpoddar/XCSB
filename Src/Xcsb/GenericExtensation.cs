@@ -6,9 +6,16 @@ namespace Xcsb
 {
     public static class GenericExtensation
     {
+        private static IXProto? _globalProto;
+        private static readonly object _lock = new();
         public static IXProto Initialized(this IXConnection xConnection)
         {
-            return new XProto((IXConnectionInternal)xConnection);
+            lock (_lock)
+            {
+                if (_globalProto is null) 
+                    _globalProto = new XProto((IXConnectionInternal)xConnection);
+                return _globalProto;
+            }
         }
     }
 }
