@@ -3,3 +3,4 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xcsb")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xcsb.SockAccesser")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xcsb.Extension.BigRequests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xcsb.Extension.Randr")]

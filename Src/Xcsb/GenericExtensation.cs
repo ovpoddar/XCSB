@@ -12,8 +12,7 @@ namespace Xcsb
         {
             lock (_lock)
             {
-                if (_globalProto is null) 
-                    _globalProto = new XProto((IXConnectionInternal)xConnection);
+                _globalProto ??= new XProto((IXConnectionInternal)xConnection);
                 return _globalProto;
             }
         }

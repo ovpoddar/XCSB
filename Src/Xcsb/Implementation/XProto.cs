@@ -1998,8 +1998,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto CreateCursorBase(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
-        ushort foreBlue,
-        ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
+        ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue, ushort x, ushort y)
     {
         var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
@@ -2038,8 +2037,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto CreateGlyphCursorBase(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
-        ushort charMask,
-        ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+        ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
     {
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
@@ -2055,8 +2053,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto CreateWindowBase(byte depth, uint window, uint parent, short x, short y, ushort width,
-        ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
     {
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
@@ -2186,8 +2183,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto GrabButtonBase(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
-        GrabMode keyboardMode,
-        uint confineTo, uint cursor, Button button, ModifierMask modifiers)
+        GrabMode keyboardMode, uint confineTo, uint cursor, Button button, ModifierMask modifiers)
     {
         var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
@@ -2196,8 +2192,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto GrabKeyBase(bool exposures, uint grabWindow, ModifierMask mask, byte keycode,
-        GrabMode pointerMode,
-        GrabMode keyboardMode)
+        GrabMode pointerMode, GrabMode keyboardMode)
     {
         var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
         _protoOutExtended.Send(ref request);
@@ -2616,9 +2611,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto PutImageBase(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height,
-        short x,
-        short y,
-        byte leftPad, byte depth, Span<byte> data)
+        short x, short y, byte leftPad, byte depth, Span<byte> data)
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         var requiredBuffer = request.Length * 4;
@@ -2645,8 +2638,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto RecolorCursorBase(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue,
-        ushort backRed,
-        ushort backGreen, ushort backBlue)
+        ushort backRed, ushort backGreen, ushort backBlue)
     {
         var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
         _protoOutExtended.Send(ref request);
@@ -2936,8 +2928,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto WarpPointerBase(uint srcWindow, uint destinationWindow, short srcX, short srcY,
-        ushort srcWidth,
-        ushort srcHeight, short destinationX, short destinationY)
+        ushort srcWidth, ushort srcHeight, short destinationX, short destinationY)
     {
         var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
@@ -3193,8 +3184,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto GetImageBase(ImageFormat format, uint drawable, ushort x, ushort y, ushort width,
-        ushort height,
-        uint planeMask)
+        ushort height, uint planeMask)
     {
         var request = new GetImageType(format, drawable, x, y, width, height, planeMask);
         _protoOutExtended.Send(ref request);
@@ -3243,8 +3233,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto AllocColorPlanesBase(bool contiguous, uint colorMap, ushort colors, ushort reds,
-        ushort greens,
-        ushort blues)
+        ushort greens, ushort blues)
     {
         var request = new AllocColorPlanesType(contiguous, colorMap, colors, reds, greens, blues);
         _protoOutExtended.Send(ref request);

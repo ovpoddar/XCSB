@@ -21,8 +21,7 @@ namespace Xcsb.Extension.BigRequests
 
             lock (ExtensationName)
             {
-                if (_request is null)
-                    _request = new BigRequestProto(response, extensationInternal);
+                _request ??= new BigRequestProto(response, extensationInternal);
                 return _request;
             }
         }

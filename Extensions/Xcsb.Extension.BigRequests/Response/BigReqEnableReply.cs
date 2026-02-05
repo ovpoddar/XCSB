@@ -7,9 +7,8 @@ using Xcsb.Connection.Response.Contract;
 namespace Xcsb.Extension.BigRequests.Response;
 
 [StructLayout(LayoutKind.Sequential, Size = 32)]
-public struct BigReqEnableReply : IXReply
+public readonly struct BigReqEnableReply : IXReply
 {
-
     public readonly ResponseHeader<byte> ResponseHeader;
     public readonly uint Length;
     public readonly uint MaximumRequestLength;

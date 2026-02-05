@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
+    <ProjectReference Include="..\..\Extensions\Xcsb.Extension.Randr\Xcsb.Extension.Randr.csproj" />
     <ProjectReference Include="..\..\Src\Xcsb.SockAccesser\Xcsb.SockAccesser.csproj" />
     <ProjectReference Include="..\..\Src\Xcsb\Xcsb.csproj" />
   </ItemGroup>

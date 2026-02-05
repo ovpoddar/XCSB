@@ -12,10 +12,10 @@ using Xcsb.Extension.BigRequests.Response;
 
 namespace Xcsb.Extension.BigRequests;
 
-internal class BigRequestProto : IBigRequest
+internal sealed class BigRequestProto : IBigRequest
 {
-    private IXExtensationInternal _extensation;
-    private QueryExtensionReply _response;
+    private readonly IXExtensationInternal _extensation;
+    private readonly QueryExtensionReply _response;
 
     public BigRequestProto(QueryExtensionReply response, IXExtensationInternal extensation)
     {
