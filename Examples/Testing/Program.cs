@@ -5,6 +5,7 @@ using Xcsb.Connection;
 using Xcsb.Connection.Models.Handshake;
 using Xcsb.Extension.BigRequests;
 using Xcsb.Extension.Damage;
+using Xcsb.Extension.Damage.Models;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.SockAccesser;
@@ -34,7 +35,12 @@ d.CreateGCChecked(gc, window, GCMask.Foreground | GCMask.GraphicsExposures,
 
 d.MapWindowChecked(window);
 
-
+var damage = c.NewId();
+s.Create(
+    damage,
+    window,
+    ReportLevel.NonEmpty
+);
 var req = data.AsSpan().Slice(0, 28);
 var re = new PollyStruct(window, gc, WIDTH, HEIGHT, c.HandshakeSuccessResponseBody.Screens[0].RootDepth.DepthValue);
 Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(req), re);

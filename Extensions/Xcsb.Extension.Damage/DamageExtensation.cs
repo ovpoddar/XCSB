@@ -6,18 +6,31 @@ namespace Xcsb.Extension.Damage
     public static class DamageExtensation
     {
         internal const string ExtensationName = "DAMAGE";
+        internal static uint ExtensationMajorVersion = 1;
+        internal static uint ExtensationMinorVersion = 1;
+        private static IDamageRequest? _request;
+
         public static IDamageRequest? Damage(this IXExtensation extensation)
         {
 
             if (extensation is not IXExtensationInternal extensationInternal)
                 return null;
-            
+
             var response = extensationInternal.QueryExtension("DAMAGE"u8);
             if (!response.Present) return null;
 
             lock (ExtensationName)
             {
-                return null;
+                if (_request == null)
+                {
+                    var request = new DamageRequestProto(response, extensationInternal);
+                    var versionNegostion = request.QueryVersion(ExtensationMajorVersion, ExtensationMinorVersion);
+                    ExtensationMajorVersion = versionNegostion.MajorVersion;
+                    ExtensationMinorVersion = versionNegostion.MinorVersion;
+                    _request = request;
+                }
+
+                return _request;
             }
         }
     }

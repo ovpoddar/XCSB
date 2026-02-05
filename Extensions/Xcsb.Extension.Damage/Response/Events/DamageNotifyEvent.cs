@@ -3,7 +3,7 @@ using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 
-namespace Xcsb.Extension.Damage.Events;
+namespace Xcsb.Extension.Damage.Response.Events;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public class DamageNotifyEvent : IXEvent
