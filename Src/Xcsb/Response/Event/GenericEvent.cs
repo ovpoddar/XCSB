@@ -64,52 +64,52 @@ public unsafe struct GenericEvent : IXEvent
     }
 
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         fixed (byte* ptr = _data)
         {
             return Reply switch
             {
-                EventType.KeyPress => new Span<byte>(ptr, 32).AsStruct<KeyPressEvent>().Verify(in sequence),
-                EventType.KeyRelease => new Span<byte>(ptr, 32).AsStruct<KeyReleaseEvent>().Verify(in sequence),
-                EventType.ButtonPress => new Span<byte>(ptr, 32).AsStruct<ButtonPressEvent>().Verify(in sequence),
-                EventType.ButtonRelease => new Span<byte>(ptr, 32).AsStruct<ButtonReleaseEvent>().Verify(in sequence),
-                EventType.MotionNotify => new Span<byte>(ptr, 32).AsStruct<MotionNotifyEvent>().Verify(in sequence),
-                EventType.EnterNotify => new Span<byte>(ptr, 32).AsStruct<EnterNotifyEvent>().Verify(in sequence),
-                EventType.LeaveNotify => new Span<byte>(ptr, 32).AsStruct<LeaveNotifyEvent>().Verify(in sequence),
-                EventType.FocusIn => new Span<byte>(ptr, 32).AsStruct<FocusInEvent>().Verify(in sequence),
-                EventType.FocusOut => new Span<byte>(ptr, 32).AsStruct<FocusOutEvent>().Verify(in sequence),
-                EventType.KeymapNotify => new Span<byte>(ptr, 32).AsStruct<KeymapNotifyEvent>().Verify(in sequence),
-                EventType.Expose => new Span<byte>(ptr, 32).AsStruct<ExposeEvent>().Verify(in sequence),
-                EventType.GraphicsExpose => new Span<byte>(ptr, 32).AsStruct<GraphicsExposeEvent>().Verify(in sequence),
-                EventType.NoExpose => new Span<byte>(ptr, 32).AsStruct<NoExposeEvent>().Verify(in sequence),
+                EventType.KeyPress => new Span<byte>(ptr, 32).AsStruct<KeyPressEvent>().Verify(),
+                EventType.KeyRelease => new Span<byte>(ptr, 32).AsStruct<KeyReleaseEvent>().Verify(),
+                EventType.ButtonPress => new Span<byte>(ptr, 32).AsStruct<ButtonPressEvent>().Verify(),
+                EventType.ButtonRelease => new Span<byte>(ptr, 32).AsStruct<ButtonReleaseEvent>().Verify(),
+                EventType.MotionNotify => new Span<byte>(ptr, 32).AsStruct<MotionNotifyEvent>().Verify(),
+                EventType.EnterNotify => new Span<byte>(ptr, 32).AsStruct<EnterNotifyEvent>().Verify(),
+                EventType.LeaveNotify => new Span<byte>(ptr, 32).AsStruct<LeaveNotifyEvent>().Verify(),
+                EventType.FocusIn => new Span<byte>(ptr, 32).AsStruct<FocusInEvent>().Verify(),
+                EventType.FocusOut => new Span<byte>(ptr, 32).AsStruct<FocusOutEvent>().Verify(),
+                EventType.KeymapNotify => new Span<byte>(ptr, 32).AsStruct<KeymapNotifyEvent>().Verify(),
+                EventType.Expose => new Span<byte>(ptr, 32).AsStruct<ExposeEvent>().Verify(),
+                EventType.GraphicsExpose => new Span<byte>(ptr, 32).AsStruct<GraphicsExposeEvent>().Verify(),
+                EventType.NoExpose => new Span<byte>(ptr, 32).AsStruct<NoExposeEvent>().Verify(),
                 EventType.VisibilityNotify => new Span<byte>(ptr, 32).AsStruct<VisibilityNotifyEvent>()
-                    .Verify(in sequence),
-                EventType.CreateNotify => new Span<byte>(ptr, 32).AsStruct<CreateNotifyEvent>().Verify(in sequence),
-                EventType.DestroyNotify => new Span<byte>(ptr, 32).AsStruct<DestroyNotifyEvent>().Verify(in sequence),
-                EventType.UnMapNotify => new Span<byte>(ptr, 32).AsStruct<UnMapNotifyEvent>().Verify(in sequence),
-                EventType.MapNotify => new Span<byte>(ptr, 32).AsStruct<MapNotifyEvent>().Verify(in sequence),
-                EventType.MapRequest => new Span<byte>(ptr, 32).AsStruct<MapRequestEvent>().Verify(in sequence),
-                EventType.ReParentNotify => new Span<byte>(ptr, 32).AsStruct<ReParentNotifyEvent>().Verify(in sequence),
+                    .Verify(),
+                EventType.CreateNotify => new Span<byte>(ptr, 32).AsStruct<CreateNotifyEvent>().Verify(),
+                EventType.DestroyNotify => new Span<byte>(ptr, 32).AsStruct<DestroyNotifyEvent>().Verify(),
+                EventType.UnMapNotify => new Span<byte>(ptr, 32).AsStruct<UnMapNotifyEvent>().Verify(),
+                EventType.MapNotify => new Span<byte>(ptr, 32).AsStruct<MapNotifyEvent>().Verify(),
+                EventType.MapRequest => new Span<byte>(ptr, 32).AsStruct<MapRequestEvent>().Verify(),
+                EventType.ReParentNotify => new Span<byte>(ptr, 32).AsStruct<ReParentNotifyEvent>().Verify(),
                 EventType.ConfigureNotify => new Span<byte>(ptr, 32).AsStruct<ConfigureNotifyEvent>()
-                    .Verify(in sequence),
+                    .Verify(),
                 EventType.ConfigureRequest => new Span<byte>(ptr, 32).AsStruct<ConfigureRequestEvent>()
-                    .Verify(in sequence),
-                EventType.GravityNotify => new Span<byte>(ptr, 32).AsStruct<GravityNotifyEvent>().Verify(in sequence),
-                EventType.ResizeRequest => new Span<byte>(ptr, 32).AsStruct<ResizeRequestEvent>().Verify(in sequence),
+                    .Verify(),
+                EventType.GravityNotify => new Span<byte>(ptr, 32).AsStruct<GravityNotifyEvent>().Verify(),
+                EventType.ResizeRequest => new Span<byte>(ptr, 32).AsStruct<ResizeRequestEvent>().Verify(),
                 EventType.CirculateNotify => new Span<byte>(ptr, 32).AsStruct<CirculateNotifyEvent>()
-                    .Verify(in sequence),
+                    .Verify(),
                 EventType.CirculateRequest => new Span<byte>(ptr, 32).AsStruct<CirculateRequestEvent>()
-                    .Verify(in sequence),
-                EventType.PropertyNotify => new Span<byte>(ptr, 32).AsStruct<PropertyNotifyEvent>().Verify(in sequence),
-                EventType.SelectionClear => new Span<byte>(ptr, 32).AsStruct<SelectionClearEvent>().Verify(in sequence),
+                    .Verify(),
+                EventType.PropertyNotify => new Span<byte>(ptr, 32).AsStruct<PropertyNotifyEvent>().Verify(),
+                EventType.SelectionClear => new Span<byte>(ptr, 32).AsStruct<SelectionClearEvent>().Verify(),
                 EventType.SelectionRequest => new Span<byte>(ptr, 32).AsStruct<SelectionRequestEvent>()
-                    .Verify(in sequence),
+                    .Verify(),
                 EventType.SelectionNotify => new Span<byte>(ptr, 32).AsStruct<SelectionNotifyEvent>()
-                    .Verify(in sequence),
-                EventType.ColormapNotify => new Span<byte>(ptr, 32).AsStruct<ColorMapNotifyEvent>().Verify(in sequence),
-                EventType.ClientMessage => new Span<byte>(ptr, 32).AsStruct<ClientMessageEvent>().Verify(in sequence),
-                EventType.MappingNotify => new Span<byte>(ptr, 32).AsStruct<MappingNotifyEvent>().Verify(in sequence),
+                    .Verify(),
+                EventType.ColormapNotify => new Span<byte>(ptr, 32).AsStruct<ColorMapNotifyEvent>().Verify(),
+                EventType.ClientMessage => new Span<byte>(ptr, 32).AsStruct<ClientMessageEvent>().Verify(),
+                EventType.MappingNotify => new Span<byte>(ptr, 32).AsStruct<MappingNotifyEvent>().Verify(),
                 _ => true
             };
         }

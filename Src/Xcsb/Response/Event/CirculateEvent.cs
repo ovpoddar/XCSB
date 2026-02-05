@@ -13,7 +13,7 @@ public struct CirculateNotifyEvent : IXEvent
     private readonly uint _pad1;
     public Place Place;
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.CirculateNotify && ResponseHeader.GetValue() == 0 && _pad1 == 0;
     }

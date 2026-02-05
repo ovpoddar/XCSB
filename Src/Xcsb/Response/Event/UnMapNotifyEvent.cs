@@ -14,7 +14,7 @@ public struct UnMapNotifyEvent : IXEvent
 
 
     public readonly bool FromConfigure => _fromConfigure == 1;
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.UnMapNotify && ResponseHeader.GetValue() == 0;
     }

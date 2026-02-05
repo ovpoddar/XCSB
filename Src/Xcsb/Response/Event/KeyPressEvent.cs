@@ -23,7 +23,7 @@ public struct KeyPressEvent : IXEvent
 
     public byte Detail => ResponseHeader.GetValue();
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.KeyPress;
     }

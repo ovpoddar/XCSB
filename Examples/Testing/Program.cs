@@ -4,6 +4,7 @@ using Xcsb;
 using Xcsb.Connection;
 using Xcsb.Connection.Models.Handshake;
 using Xcsb.Extension.BigRequests;
+using Xcsb.Extension.Damage;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.SockAccesser;
@@ -16,6 +17,9 @@ using var c = XcsbClient.Connect();
 var hasExt = c.Extensation.BigRequest();
 if (hasExt is null || c.HandshakeSuccessResponseBody == null)
     return;
+
+var s = c.Extensation.Damage();
+if (s is null) return;
 
 var window = c.NewId();
 var gc = c.NewId();

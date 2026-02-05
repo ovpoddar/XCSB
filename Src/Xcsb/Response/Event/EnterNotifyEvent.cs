@@ -22,7 +22,7 @@ public struct EnterNotifyEvent : IXEvent
 
     public bool IsSameScreenFocus => _sameScreenFocus == 1;
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.EnterNotify;
     }

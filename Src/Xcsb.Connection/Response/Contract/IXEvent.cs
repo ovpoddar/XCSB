@@ -1,5 +1,6 @@
 ﻿namespace Xcsb.Connection.Response.Contract;
 
-internal interface IXEvent : IXBaseResponse
+internal interface IXEvent
 {
+    bool Verify();
 }

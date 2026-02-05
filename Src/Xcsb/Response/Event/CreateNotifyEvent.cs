@@ -19,7 +19,7 @@ public struct CreateNotifyEvent
 
     public bool OverrideRedirect => _overrideRedirect == 1;
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.CreateNotify && //this.ResponseHeader.Sequence == sequence &&
                ResponseHeader.GetValue() == 0;

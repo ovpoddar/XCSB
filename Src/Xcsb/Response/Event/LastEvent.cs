@@ -6,7 +6,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct LastEvent(int sequence) : IXEvent
 {
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return true;
     }

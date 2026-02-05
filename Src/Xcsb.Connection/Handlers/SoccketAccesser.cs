@@ -157,7 +157,7 @@ internal sealed class SoccketAccesser
         using var scratchBuffer = new ArrayPoolUsing<byte>(replySize);
         response.CopyTo(scratchBuffer);
         result[0..result.Length].CopyTo(scratchBuffer[response.Length..]);
-        return scratchBuffer;
+        return scratchBuffer.Slice(0, replySize).ToArray();
     }
 
 
@@ -177,7 +177,7 @@ internal sealed class SoccketAccesser
                 throw new Exception("Should not happen.");
 
             var response = reply.AsSpan().AsStruct<T>();
-            return response.Verify(sequence)
+            return response.Verify(in sequence)
                 ? (reply, null)
                 : (null, reply.AsSpan().ToStruct<GenericError>());
 

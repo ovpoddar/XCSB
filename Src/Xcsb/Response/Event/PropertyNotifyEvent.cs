@@ -13,7 +13,7 @@ public struct PropertyNotifyEvent : IXEvent
     public uint Time;
     public NotifyState State;
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.PropertyNotify
             && ResponseHeader.GetValue() == 0;

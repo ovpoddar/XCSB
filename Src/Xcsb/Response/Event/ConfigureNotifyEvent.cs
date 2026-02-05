@@ -19,7 +19,7 @@ public struct ConfigureNotifyEvent : IXEvent
     public byte OverrideRedirect;
 
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.ConfigureNotify
             && ResponseHeader.GetValue() == 0;

@@ -20,7 +20,7 @@ public struct MotionNotifyEvent : IXEvent
     private sbyte _sameScreen;
 
     public bool IsSameScreen => _sameScreen == 1;
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.MotionNotify;
     }

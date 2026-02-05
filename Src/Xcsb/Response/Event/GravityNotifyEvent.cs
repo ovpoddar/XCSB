@@ -14,7 +14,7 @@ public struct GravityNotifyEvent : IXEvent
     public short Y;
 
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.GravityNotify && ResponseHeader.GetValue() == 0;
     }

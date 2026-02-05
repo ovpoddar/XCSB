@@ -12,7 +12,7 @@ public struct FocusOutEvent : IXEvent
     public NotifyMode Mode;
 
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.FocusOut;// && this.ResponseHeader.Sequence == sequence;
     }

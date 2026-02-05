@@ -13,7 +13,7 @@ public struct SelectionClearEvent : IXEvent
     public uint Owner;
     public ATOM Selection;
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.SelectionClear && ResponseHeader.GetValue() == 0;
     }

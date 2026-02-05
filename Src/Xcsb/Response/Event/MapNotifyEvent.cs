@@ -12,7 +12,7 @@ public struct MapNotifyEvent : IXEvent
     public uint Window;
     public bool OverrideRedirect;
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.MapNotify
             && ResponseHeader.GetValue() == 0;

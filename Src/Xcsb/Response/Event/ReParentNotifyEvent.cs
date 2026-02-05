@@ -15,7 +15,7 @@ public struct ReParentNotifyEvent : IXEvent
     public short Y;
     public bool OverrideRedirect;
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.ReParentNotify && ResponseHeader.GetValue() == 0;
     }

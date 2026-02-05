@@ -20,7 +20,7 @@ public struct LeaveNotifyEvent : IXEvent
     public NotifyMode Mode;
     public byte SameScreenFocus; // 1 true, 0 false
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.LeaveNotify;
     }

@@ -22,7 +22,7 @@ public struct ButtonPressEvent : IXEvent
     public bool IsSameScreen => _isSameScreen == 1;
     public Button Detail => ResponseHeader.GetValue();
 
-    public bool Verify(in int sequence)
+    public bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.ButtonPress;
     }
