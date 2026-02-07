@@ -20,7 +20,7 @@ public struct ButtonReleaseEvent : IXEvent
     private sbyte _isSameScreen;
     public bool IsSameScreen => _isSameScreen == 1;
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.ButtonRelease;
     }

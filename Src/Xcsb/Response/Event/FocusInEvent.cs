@@ -12,7 +12,7 @@ public struct FocusInEvent : IXEvent
     public NotifyMode Mode;
 
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.FocusIn;
     }

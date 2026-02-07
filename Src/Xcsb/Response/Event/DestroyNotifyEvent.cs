@@ -12,7 +12,7 @@ public struct DestroyNotifyEvent : IXEvent
     public uint Window;
 
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.DestroyNotify && ResponseHeader.GetValue() == 0;
     }

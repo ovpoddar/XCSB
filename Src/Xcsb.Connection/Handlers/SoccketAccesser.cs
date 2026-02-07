@@ -64,12 +64,12 @@ internal sealed class SoccketAccesser
 
     public void FlushSocket()
     {
-        var bufferSize = Unsafe.SizeOf<XResponseNew>();
+        var bufferSize = Unsafe.SizeOf<XResponse>();
         Span<byte> buffer = stackalloc byte[bufferSize];
         while (Socket.Available != 0)
         {
             _ = Received(buffer);
-            ref readonly var content = ref buffer.AsStruct<XResponseNew>();
+            ref readonly var content = ref buffer.AsStruct<XResponse>();
             switch (content.GetResponseType())
             {
                 case XResponseType.Error:
@@ -98,12 +98,12 @@ internal sealed class SoccketAccesser
 
     public void FlushSocket(int outProtoSequence, bool shouldThrowOnError)
     {
-        var bufferSize = Unsafe.SizeOf<XResponseNew>();
+        var bufferSize = Unsafe.SizeOf<XResponse>();
         Span<byte> buffer = stackalloc byte[bufferSize];
         while (Socket.Available != 0)
         {
             _ = Received(buffer);
-            ref readonly var content = ref buffer.AsStruct<XResponseNew>();
+            ref readonly var content = ref buffer.AsStruct<XResponse>();
             switch (content.GetResponseType())
             {
                 case XResponseType.Error:
@@ -137,7 +137,7 @@ internal sealed class SoccketAccesser
 
     public byte[] ComputeResponse(ref Span<byte> buffer, bool updateSequence = true)
     {
-        ref readonly var content = ref buffer.AsStruct<XResponseNew>();
+        ref readonly var content = ref buffer.AsStruct<XResponse>();
         if (updateSequence && content.Sequence > ReceivedSequence)
             ReceivedSequence = content.Sequence;
 

@@ -17,7 +17,7 @@ public struct GraphicsExposeEvent : IXEvent
     public ushort Count;
     public byte MajorOpcode;
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.GraphicsExpose && ResponseHeader.GetValue() == 0;
     }

@@ -3,12 +3,16 @@ using System.Runtime.InteropServices;
 using Xcsb;
 using Xcsb.Connection;
 using Xcsb.Connection.Models.Handshake;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.BigRequests;
 using Xcsb.Extension.Damage;
 using Xcsb.Extension.Damage.Models;
+using Xcsb.Extension.Damage.Response.Events;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Response.Event;
 using Xcsb.SockAccesser;
+using static System.Net.Mime.MediaTypeNames;
 
 const int WIDTH = 500;
 const int HEIGHT = 500;
@@ -68,6 +72,12 @@ while (true)
     {
         hasExt.BigRequestsEnable();
         c.SendRequest(data);
+    }
+    if (evnt.ReplyType == XEventType.Unknown)
+    {
+        var damag = evnt.As<GenericEvent>().As<DamageNotifyEvent>();
+        Console.WriteLine($"{damag.ResponseHeader} {damag.Drawable} {damag.Damage} {damag.Timestamp} {damag.Area} {damag.Geometry}");
+
     }
 }
 

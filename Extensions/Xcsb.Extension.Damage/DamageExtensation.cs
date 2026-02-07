@@ -23,6 +23,7 @@ namespace Xcsb.Extension.Damage
             {
                 if (_request == null)
                 {
+                    extensationInternal.ActivateExtensation(ExtensationName, response, 1, 1);
                     var request = new DamageRequestProto(response, extensationInternal);
                     var versionNegostion = request.QueryVersion(ExtensationMajorVersion, ExtensationMinorVersion);
                     ExtensationMajorVersion = versionNegostion.MajorVersion;

@@ -14,7 +14,7 @@ public struct ClientMessageEvent : IXEvent
     public ClientMessageData Data;
 
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.ClientMessage;
     }

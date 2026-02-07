@@ -18,7 +18,7 @@ public struct ConfigureRequestEvent : IXEvent
     public ushort BorderWidth;
     public ushort ValueMask;
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.ConfigureRequest;
     }

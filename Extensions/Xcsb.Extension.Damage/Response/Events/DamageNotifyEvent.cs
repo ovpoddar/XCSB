@@ -6,7 +6,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Extension.Damage.Response.Events;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public class DamageNotifyEvent : IXEvent
+public readonly struct DamageNotifyEvent : IXEvent
 {
     public readonly ResponseHeader<byte> ResponseHeader;
     public readonly uint Drawable;

@@ -12,7 +12,7 @@ public struct NoExposeEvent : IXEvent
     public ushort MinorOpcode;
     public byte MajorOpcode;
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.NoExpose && ResponseHeader.GetValue() == 0;
     }

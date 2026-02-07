@@ -12,7 +12,7 @@ public struct MappingNotifyEvent : IXEvent
     public byte FirstKeyCode;
     public byte Count;
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.MappingNotify && ResponseHeader.GetValue() == 0;
     }

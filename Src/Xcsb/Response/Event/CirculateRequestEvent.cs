@@ -14,7 +14,7 @@ public struct CirculateRequestEvent : IXEvent
     public Place Place;
 
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.CirculateRequest && ResponseHeader.GetValue() == 0 && _pad1 == 0;
     }

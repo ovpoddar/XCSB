@@ -16,7 +16,7 @@ public struct ExposeEvent : IXEvent
     public ushort Count;
 
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.Expose && ResponseHeader.GetValue() == 0;
     }

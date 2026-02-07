@@ -14,7 +14,7 @@ public unsafe struct GenericEvent : IXEvent
 
     [FieldOffset(0)] private fixed byte _data[32];
 
-    internal readonly ref readonly T As<T>() where T : struct
+    public readonly ref readonly T As<T>() where T : struct
     {
         var isNotValid = Reply switch
         {
@@ -53,7 +53,7 @@ public unsafe struct GenericEvent : IXEvent
             EventType.MappingNotify when typeof(T) == typeof(MappingNotifyEvent) => false,
             _ when typeof(T) == typeof(GenericEvent) => false,
             _ when typeof(T) == typeof(XEvent) => false,
-            _ => true
+            _ => false,
         };
 
         if (Reply is > EventType.KeyPress or not < EventType.LastEvent && isNotValid)
@@ -62,7 +62,6 @@ public unsafe struct GenericEvent : IXEvent
         fixed (byte* ptr = _data)
             return ref new Span<byte>(ptr, 32).AsStruct<T>();
     }
-
 
     public bool Verify()
     {

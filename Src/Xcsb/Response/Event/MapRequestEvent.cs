@@ -11,7 +11,7 @@ public struct MapRequestEvent : IXEvent
     public uint Parent;
     public uint Window;
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.MapRequest && ResponseHeader.GetValue() == 0;
     }

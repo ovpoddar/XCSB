@@ -14,7 +14,7 @@ public struct ColorMapNotifyEvent : IXEvent
     public ColormapState State;
 
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.ColormapNotify;
     }

@@ -15,7 +15,7 @@ public struct SelectionNotifyEvent : IXEvent
     public ATOM Target;
     public ATOM Property;
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.SelectionNotify && ResponseHeader.GetValue() == 0;
     }

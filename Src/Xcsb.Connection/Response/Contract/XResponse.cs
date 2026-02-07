@@ -3,7 +3,7 @@
 namespace Xcsb.Connection.Response.Contract;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
-internal unsafe struct XResponseNew : IXBaseResponse
+internal unsafe struct XResponse : IXBaseResponse
 {
     [FieldOffset(0)] public readonly byte ReplyType;
     [FieldOffset(0)] private fixed byte _data[32];

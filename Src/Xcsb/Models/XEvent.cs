@@ -9,7 +9,7 @@ namespace Xcsb.Models;
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
 public unsafe struct XEvent
 {
-    [FieldOffset(0)] private XResponseNew _response;
+    [FieldOffset(0)] private XResponse _response;
     [FieldOffset(0)] private XEventType _eventType;
     [FieldOffset(1)] private ErrorCode _errorType;
 

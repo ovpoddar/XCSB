@@ -14,6 +14,7 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
 using Xcsb.Requests;
+using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
 #if !NETSTANDARD
@@ -31,6 +32,7 @@ internal sealed class XProto : IXProto
     private const int _bigRequestLength = 262140;
     private readonly ProtoInExtended _protoInExtended;
     private readonly ProtoOutExtended _protoOutExtended;
+    private readonly IXExtensationInternal _extensationInternal;
 
     public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(_protoInExtended, _protoOutExtended);
 
@@ -40,6 +42,10 @@ internal sealed class XProto : IXProto
             throw new UnauthorizedAccessException(connection.FailReason);
         _protoInExtended = new ProtoInExtended(connection.Accesser); //Todo: can be more organised with interface and staffs will think about them after api finalized
         _protoOutExtended = new ProtoOutExtended(connection.Accesser);
+
+        if (connection.Extensation is not IXExtensationInternal extensationInternal)
+            throw new InvalidOperationException("Extensation is not initialized");
+        _extensationInternal = extensationInternal;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -400,8 +406,15 @@ internal sealed class XProto : IXProto
             : result!.Value;
     }
 
-    public XEvent GetEvent() =>
-        this._protoInExtended.ReceivedResponse();
+    public XEvent GetEvent()
+    {
+        var response = this._protoInExtended.ReceivedResponse();
+        if (Enum.IsDefined(typeof(EventType), response.Reply))
+            return response.As<XEvent>();
+
+        _extensationInternal.CanHandleEvent((byte)response.Reply);
+        return response.As<XEvent>();
+    }
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
         ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
@@ -516,13 +529,13 @@ internal sealed class XProto : IXProto
         FreePixmapBase(pixmapId);
 
     public ResponseProto CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args) =>
-        CreateGCBase(gc, drawable, mask, args);
+        CreateGcBase(gc, drawable, mask, args);
 
     public ResponseProto ChangeGC(uint gc, GCMask mask, Span<uint> args) =>
-        ChangeGCBase(gc, mask, args);
+        ChangeGcBase(gc, mask, args);
 
     public ResponseProto CopyGC(uint srcGc, uint dstGc, GCMask mask) =>
-        CopyGCBase(srcGc, dstGc, mask);
+        CopyGcBase(srcGc, dstGc, mask);
 
     public ResponseProto SetDashes(uint gc, ushort dashOffset, Span<byte> dashes) =>
         SetDashesBase(gc, dashOffset, dashes);
@@ -532,7 +545,7 @@ internal sealed class XProto : IXProto
         SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
 
     public ResponseProto FreeGC(uint gc) =>
-        FreeGCBase(gc);
+        FreeGcBase(gc);
 
     public ResponseProto ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height) =>
         ClearAreaBase(exposures, window, x, y, width, height);
@@ -895,19 +908,19 @@ internal sealed class XProto : IXProto
 
     public void CreateGCUnchecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
-        var cookie = this.CreateGCBase(gc, drawable, mask, args);
+        var cookie = this.CreateGcBase(gc, drawable, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void ChangeGCUnchecked(uint gc, GCMask mask, Span<uint> args)
     {
-        var cookie = this.ChangeGCBase(gc, mask, args);
+        var cookie = this.ChangeGcBase(gc, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void CopyGCUnchecked(uint srcGc, uint dstGc, GCMask mask)
     {
-        var cookie = this.CopyGCBase(srcGc, dstGc, mask);
+        var cookie = this.CopyGcBase(srcGc, dstGc, mask);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
@@ -926,7 +939,7 @@ internal sealed class XProto : IXProto
 
     public void FreeGCUnchecked(uint gc)
     {
-        var cookie = this.FreeGCBase(gc);
+        var cookie = this.FreeGcBase(gc);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
@@ -1401,19 +1414,19 @@ internal sealed class XProto : IXProto
 
     public void CreateGCChecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
-        var cookie = this.CreateGCBase(gc, drawable, mask, args);
+        var cookie = this.CreateGcBase(gc, drawable, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void ChangeGCChecked(uint gc, GCMask mask, Span<uint> args)
     {
-        var cookie = this.ChangeGCBase(gc, mask, args);
+        var cookie = this.ChangeGcBase(gc, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void CopyGCChecked(uint srcGc, uint dstGc, GCMask mask)
     {
-        var cookie = this.CopyGCBase(srcGc, dstGc, mask);
+        var cookie = this.CopyGcBase(srcGc, dstGc, mask);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
@@ -1432,7 +1445,7 @@ internal sealed class XProto : IXProto
 
     public void FreeGCChecked(uint gc)
     {
-        var cookie = this.FreeGCBase(gc);
+        var cookie = this.FreeGcBase(gc);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
@@ -1743,7 +1756,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto ChangeGCBase(uint gc, GCMask mask, Span<uint> args)
+    private ResponseProto ChangeGcBase(uint gc, GCMask mask, Span<uint> args)
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
@@ -1974,7 +1987,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto CopyGCBase(uint srcGc, uint dstGc, GCMask mask)
+    private ResponseProto CopyGcBase(uint srcGc, uint dstGc, GCMask mask)
     {
         var request = new CopyGCType(srcGc, dstGc, mask);
         _protoOutExtended.Send(ref request);
@@ -2006,7 +2019,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto CreateGCBase(uint gc, uint drawable, GCMask mask, Span<uint> args)
+    private ResponseProto CreateGcBase(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
 
         if (mask.CountFlags() != args.Length)
@@ -2168,7 +2181,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto FreeGCBase(uint gc)
+    private ResponseProto FreeGcBase(uint gc)
     {
         var request = new FreeGCType(gc);
         _protoOutExtended.Send(ref request);

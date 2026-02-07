@@ -12,7 +12,7 @@ public struct ResizeRequestEvent : IXEvent
     public ushort Width;
     public ushort Height;
 
-    public bool Verify()
+    public readonly bool Verify()
     {
         return (ResponseType)ResponseHeader.Reply == ResponseType.ResizeRequest && ResponseHeader.GetValue() == 0;
     }

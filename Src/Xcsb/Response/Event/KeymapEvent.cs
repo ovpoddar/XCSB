@@ -9,7 +9,7 @@ public unsafe struct KeymapNotifyEvent : IXEvent
 {
     public readonly ResponseType Reply;
     public fixed byte Keys[31];
-    public bool Verify()
+    public readonly bool Verify()
     {
         return Reply == ResponseType.KeymapNotify;
     }

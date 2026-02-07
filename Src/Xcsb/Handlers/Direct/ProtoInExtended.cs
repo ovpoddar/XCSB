@@ -21,8 +21,8 @@ internal sealed class ProtoInExtended
 
     internal int Sequence
     {
-        get { return _soccketAccesser.ReceivedSequence; }
-        set { _soccketAccesser.ReceivedSequence = value; }
+        get => _soccketAccesser.ReceivedSequence;
+        set => _soccketAccesser.ReceivedSequence = value;
     }
 
     internal ProtoInExtended(SoccketAccesser soccketAccesser)
@@ -77,7 +77,7 @@ internal sealed class ProtoInExtended
             cursor += responseLength;
         }
 
-        Span<byte> headerBuffer = stackalloc byte[(Unsafe.SizeOf<XResponseNew>())];
+        Span<byte> headerBuffer = stackalloc byte[(Unsafe.SizeOf<XResponse>())];
 
         while (true)
         {
@@ -127,19 +127,19 @@ internal sealed class ProtoInExtended
     }
 
     //todo: update the code so only XEvent gets return;
-    public XEvent ReceivedResponse()
+    public GenericEvent ReceivedResponse()
     {
         if (_soccketAccesser.BufferEvents.TryDequeue(out var result))
-            return result.AsSpan().AsStruct<GenericEvent>().As<XEvent>();
-        Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<XEvent>()];
+            return result.AsSpan().AsStruct<GenericEvent>();
+        Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<GenericEvent>()];
 
         if (!_soccketAccesser.Socket.Poll(-1, SelectMode.SelectRead))
-            return scratchBuffer.ToStruct<XEvent>();
+            return scratchBuffer.ToStruct<GenericEvent>();
 
         var totalRead = _soccketAccesser.Received(scratchBuffer, false);
         return totalRead == 0
-            ? scratchBuffer.Make<XEvent, LastEvent>(new LastEvent(Sequence))
-            : scratchBuffer.ToStruct<XEvent>();
+            ? scratchBuffer.Make<GenericEvent, LastEvent>(new LastEvent(Sequence))
+            : scratchBuffer.ToStruct<GenericEvent>();
     }
 
     public bool HasEventToProcesses() =>

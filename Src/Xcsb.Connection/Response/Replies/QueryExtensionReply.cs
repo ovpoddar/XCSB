@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Models;
 using Xcsb.Connection.Response.Contract;
 
 namespace Xcsb.Connection.Response.Replies;
@@ -19,4 +20,14 @@ public readonly struct QueryExtensionReply : IXReply
         return ResponseHeader.GetResponseType() == XResponseType.Reply &&
                Length == 0;
     }
+}
+
+internal struct ExtensationDetails
+{
+    public ResponseHeader<byte> ResponseHeader;
+    public byte MajorOpcode;
+    public byte FirstEvent;
+    public byte FirstError;
+    public int EventLenght;
+    public int ErrorLenght;
 }
