@@ -2291,130 +2291,75 @@ internal sealed class XProto : IXProto
     private ResponseProto PolyFillRectangleBase(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-        }
-
+        var bigRequest = new PolyFillRectangleBigType(drawable, gc, rectangles.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<Rectangle, byte>(rectangles));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
     private ResponseProto PolyLineBase(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Point, byte>(points));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Point, byte>(points));
-        }
-
+        var bigRequest = new PolyLineBigType(coordinate, drawable, gc, points.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<Point, byte>(points));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
     private ResponseProto PolyPointBase(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
     {
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Point, byte>(points));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Point, byte>(points));
-        }
-
+        var bigRequest = new PolyPointBigType(coordinate, drawable, gc, points.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<Point, byte>(points));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
     private ResponseProto PolyRectangleBase(uint drawable, uint gc, Span<Rectangle> rectangles)
     {
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-        }
-
+        var bigRequest = new PolyRectangleBigType(drawable, gc, rectangles.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<Rectangle, byte>(rectangles));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
     private ResponseProto PolySegmentBase(uint drawable, uint gc, Span<Segment> segments)
     {
         var request = new PolySegmentType(drawable, gc, segments.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Segment, byte>(segments));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Segment, byte>(segments));
-        }
-
+        var bigRequest = new PolySegmentBigType(drawable, gc, segments.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<Segment, byte>(segments));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
@@ -2527,26 +2472,15 @@ internal sealed class XProto : IXProto
     private ResponseProto RotatePropertiesBase(uint window, ushort delta, Span<ATOM> properties)
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<ATOM, byte>(properties));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<ATOM, byte>(properties));
-        }
-
+        var bigRequest = new RotatePropertiesBigType(window, properties.Length, delta);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<ATOM, byte>(properties));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
@@ -2568,26 +2502,15 @@ internal sealed class XProto : IXProto
         Span<Rectangle> rectangles)
     {
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-        }
-
+        var bigRequest = new SetClipRectanglesBigType(ordering, gc, clipX, clipY, rectangles.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<Rectangle, byte>(rectangles));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
@@ -2601,26 +2524,15 @@ internal sealed class XProto : IXProto
     private ResponseProto SetDashesBase(uint gc, ushort dashOffset, Span<byte> dashes)
     {
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                dashes);
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                dashes);
-        }
-
+        var bigRequest = new SetDashesBigType(gc, dashOffset, dashes.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            dashes);
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
@@ -2694,26 +2606,15 @@ internal sealed class XProto : IXProto
     private ResponseProto StoreColorsBase(uint colormapId, Span<ColorItem> item)
     {
         var request = new StoreColorsType(colormapId, item.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<ColorItem, byte>(item));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<ColorItem, byte>(item));
-        }
-
+        var bigRequest = new StoreColorsBigType(colormapId, item.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            8,
+            request.Length * 4,
+            ref bigRequest,
+            12,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<ColorItem, byte>(item));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
