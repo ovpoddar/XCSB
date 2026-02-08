@@ -1,12 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml.Linq;
 using Xcsb.Connection;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Models.Handshake;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Errors;
+using Xcsb.Extension.BigRequests;
 using Xcsb.Handlers.Direct;
 using Xcsb.Infrastructure;
 using Xcsb.Infrastructure.Exceptions;
@@ -14,6 +16,7 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
 using Xcsb.Requests;
+using Xcsb.Requests.BigExtensation;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
@@ -29,7 +32,7 @@ namespace Xcsb.Implementation;
 internal sealed class XProto : IXProto
 {
     private XBufferProto? _xBufferProto;
-    private const int _bigRequestLength = 262140;
+    private static uint _bigRequestLength = 262140;
     private readonly ProtoInExtended _protoInExtended;
     private readonly ProtoOutExtended _protoOutExtended;
     private readonly IXExtensationInternal _extensationInternal;
@@ -38,9 +41,12 @@ internal sealed class XProto : IXProto
 
     public XProto(IXConnectionInternal connection)
     {
-        if (connection.HandshakeStatus is not HandshakeStatus.Success || connection.HandshakeSuccessResponseBody is null)
+        if (connection.HandshakeStatus is not HandshakeStatus.Success ||
+            connection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(connection.FailReason);
-        _protoInExtended = new ProtoInExtended(connection.Accesser); //Todo: can be more organised with interface and staffs will think about them after api finalized
+        _protoInExtended =
+            new ProtoInExtended(connection
+                .Accesser); //Todo: can be more organised with interface and staffs will think about them after api finalized
         _protoOutExtended = new ProtoOutExtended(connection.Accesser);
 
         if (connection.Extensation is not IXExtensationInternal extensationInternal)
@@ -1701,28 +1707,16 @@ internal sealed class XProto : IXProto
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
 
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(workingBuffer);
-        }
-
-        return new ResponseProto(_protoOutExtended.Sequence);
+        var bigRequest = new ChangeWindowAttributesBigType(window, mask, args.Length);
+        return SendWithBigRequestIfNeed(
+            request,
+            12,
+            request.Length * 4,
+            bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<uint, byte>(args)
+        );
     }
 
     private ResponseProto DestroyWindowBase(uint window)
@@ -1876,7 +1870,7 @@ internal sealed class XProto : IXProto
         Span<T> args)
         where T : struct
 #if !NETSTANDARD
-            , INumber<T>
+        , INumber<T>
 #endif
     {
         var size = Marshal.SizeOf<T>();
@@ -2021,7 +2015,6 @@ internal sealed class XProto : IXProto
 
     private ResponseProto CreateGcBase(uint gc, uint drawable, GCMask mask, Span<uint> args)
     {
-
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
 
@@ -2050,7 +2043,8 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto CreateGlyphCursorBase(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
-        ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen, ushort backBlue)
+        ushort charMask, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed, ushort backGreen,
+        ushort backBlue)
     {
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
@@ -2627,27 +2621,15 @@ internal sealed class XProto : IXProto
         short x, short y, byte leftPad, byte depth, Span<byte> data)
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                24,
-                data);
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                24,
-                data);
-        }
-
-        return new ResponseProto(_protoOutExtended.Sequence);
+        var bigRequest = new PutImageBigType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
+        return SendWithBigRequestIfNeed(
+            request,
+            24,
+            request.Length * 4,
+            bigRequest, 28,
+            bigRequest.Length * 4,
+            data
+        );
     }
 
     private ResponseProto RecolorCursorBase(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue,
@@ -3415,5 +3397,81 @@ internal sealed class XProto : IXProto
         var request = new ListHostsType();
         _protoOutExtended.Send(ref request);
         return new ResponseProto(_protoOutExtended.Sequence, true);
+    }
+
+    const int _minStackSupport = 512;
+
+    private ResponseProto SendWithBigRequestIfNeed<TS, TB>(
+        TS request,
+        int requestLength,
+        int requestSize,
+        TB bigRequest,
+        int bigRequestLength,
+        uint bigRequestSize,
+        ReadOnlySpan<byte> data) where TS : unmanaged where TB : unmanaged
+    {
+        if (bigRequestSize < ushort.MaxValue)
+        {
+            if (requestSize < _minStackSupport)
+            {
+                Span<byte> scratchBuffer = stackalloc byte[requestSize];
+                scratchBuffer.WriteRequest(
+                    ref request,
+                    requestLength,
+                    data);
+                _protoOutExtended.SendExact(scratchBuffer);
+            }
+            else
+            {
+                using var scratchBuffer = new ArrayPoolUsing<byte>(requestSize);
+                var workingBuffer = scratchBuffer[..requestSize];
+                workingBuffer.WriteRequest(
+                    ref request,
+                    requestLength,
+                    data);
+                _protoOutExtended.SendExact(workingBuffer);
+            }
+        }
+        else
+        {
+            EnableBigRequestIfNeeded();
+            if (bigRequestSize > int.MaxValue)
+            {
+                var buffer = new byte[bigRequestSize]
+                    .AsSpan();
+
+                Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(buffer), bigRequest);
+                data.CopyTo(buffer[bigRequestLength..]);
+                var remainder = data.Length.Padding();
+                if (remainder != 0)
+                {
+                    // might need another slice
+                    buffer.Slice(bigRequestLength + data.Length, remainder).Clear();
+                    _protoOutExtended.SendExact(buffer);
+                }
+            }
+            else
+            {
+                using var scratchBuffer = new ArrayPoolUsing<byte>((int)bigRequestSize);
+                var workingBuffer = scratchBuffer[..(int)bigRequestSize];
+                workingBuffer.WriteRequest(
+                    ref bigRequest,
+                    bigRequestLength,
+                    data);
+                _protoOutExtended.SendExact(workingBuffer);
+
+            }
+        }
+
+        return new ResponseProto(_protoOutExtended.Sequence, true);
+    }
+
+    private void EnableBigRequestIfNeeded()
+    {
+        if (_extensationInternal.IsExtensationEnable(BigRequestExtensation.ExtensationName)) return;
+        var request = _extensationInternal.BigRequest() 
+            ?? throw new InvalidOperationException("BigRequest is not supported");
+        var response = request.BigRequestsEnable();
+        _bigRequestLength = response.MaximumRequestLength;
     }
 }

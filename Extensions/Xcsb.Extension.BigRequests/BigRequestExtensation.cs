@@ -8,7 +8,7 @@ namespace Xcsb.Extension.BigRequests
 
     public static class BigRequestExtensation
     {
-        internal const string ExtensationName = "BIG-REQUESTS";
+        public const string ExtensationName = "BIG-REQUESTS";
         private static IBigRequest? _request;
 
         public static IBigRequest? BigRequest(this IXExtensation extensation)

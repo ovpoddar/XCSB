@@ -3,11 +3,11 @@ using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
 using Xcsb.Models;
 
-namespace Xcsb.Requests;
+namespace Xcsb.Requests.BigExtensation;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 28)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct PutImageType(
+internal readonly struct PutImageBigType(
     ImageFormatBitmap format,
     uint drawable,
     uint gc,
@@ -21,7 +21,8 @@ internal readonly struct PutImageType(
 {
     public readonly Opcode OpCode = Opcode.PutImage;
     public readonly ImageFormatBitmap Format = format;
-    public readonly ushort Length = (ushort)(6 + (dataLength.AddPadding() / 4));
+    private readonly ushort _pad = 0;
+    public readonly uint Length = (uint)(7 + (dataLength.AddPadding() / 4));
     public readonly uint Drawable = drawable;
     public readonly uint Gc = gc;
     public readonly ushort Width = width;

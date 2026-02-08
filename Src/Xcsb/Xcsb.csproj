@@ -10,6 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
 		<ProjectReference Include="..\Xcsb.Connection\Xcsb.Connection.csproj" />
 	</ItemGroup>
 

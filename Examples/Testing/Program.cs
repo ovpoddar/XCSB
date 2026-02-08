@@ -16,11 +16,10 @@ using static System.Net.Mime.MediaTypeNames;
 
 const int WIDTH = 500;
 const int HEIGHT = 500;
-var data = new byte[250007 * 4];
+const int FACTOR = 4;
 
 using var c = XcsbClient.Connect();
-var hasExt = c.Extensation.BigRequest();
-if (hasExt is null || c.HandshakeSuccessResponseBody == null)
+if (c.HandshakeSuccessResponseBody == null)
     return;
 
 var s = c.Extensation.Damage();
@@ -38,18 +37,7 @@ d.CreateGCChecked(gc, window, GCMask.Foreground | GCMask.GraphicsExposures,
     [c.HandshakeSuccessResponseBody.Screens[0].BlackPixel, 0]);
 
 d.MapWindowChecked(window);
-
-var damage = c.NewId();
-s.Create(
-    damage,
-    window,
-    ReportLevel.NonEmpty
-);
-var req = data.AsSpan().Slice(0, 28);
-var re = new PollyStruct(window, gc, WIDTH, HEIGHT, c.HandshakeSuccessResponseBody.Screens[0].RootDepth.DepthValue);
-Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(req), re);
-
-var body = data.AsSpan().Slice(28);
+var body = new byte[WIDTH * HEIGHT * 4];
 for (var y = 0; y < HEIGHT; y++)
 {
     for (var x = 0; x < WIDTH; x++)
@@ -62,6 +50,21 @@ for (var y = 0; y < HEIGHT; y++)
     }
 }
 
+var w = WIDTH / FACTOR;
+var h = HEIGHT / FACTOR;
+var body1 = new byte[w * h * 4];
+for (var y = 0; y < h; y++)
+{
+    for (var x = 0; x < w; x++)
+    {
+        var index = (y * w + x) * 4;
+        body1[index + 0] = (byte)(((x + y) * 255) / w + h);
+        body1[index + 1] = (byte)(y * 255 / w);
+        body1[index + 2] = (byte)(x * 255 / h);
+        body1[index + 3] = 0;
+    }
+}
+
 while (true)
 {
     var evnt = d.GetEvent();
@@ -70,8 +73,26 @@ while (true)
 
     if (evnt.ReplyType == Xcsb.Models.XEventType.Expose)
     {
-        hasExt.BigRequestsEnable();
-        c.SendRequest(data);
+        d.PutImageChecked(ImageFormatBitmap.ZPixmap,
+            window,
+            gc,
+            WIDTH,
+            HEIGHT,
+            0,
+            0,
+            0,
+            c.HandshakeSuccessResponseBody.Screens[0].RootDepth.DepthValue,
+            body);
+        d.PutImageChecked(ImageFormatBitmap.ZPixmap,
+            window,
+            gc,
+            (ushort)w,
+            (ushort)h,
+            0, 0,
+            0,
+            c.HandshakeSuccessResponseBody.Screens[0].RootDepth.DepthValue,
+            body1
+            );
     }
     if (evnt.ReplyType == XEventType.Unknown)
     {
@@ -79,23 +100,4 @@ while (true)
         Console.WriteLine($"{damag.ResponseHeader} {damag.Drawable} {damag.Damage} {damag.Timestamp} {damag.Area} {damag.Geometry}");
 
     }
-}
-
-
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 28)]
-file struct PollyStruct(uint drawable, uint gc, ushort width, ushort height, byte depth)
-{
-    public readonly byte OpCode = 72;
-    public readonly byte Format = 2;
-    public readonly ushort Length = 0;
-    public readonly uint Len = 250007;
-    public readonly uint Drawable = drawable;
-    public readonly uint Gc = gc;
-    public readonly ushort Width = width;
-    public readonly ushort Height = height;
-    public readonly short X = 0;
-    public readonly short Y = 0;
-    public readonly byte LeftPad = 0;
-    public readonly byte Depth = depth;
-    private readonly ushort _pad = 0;
 }
