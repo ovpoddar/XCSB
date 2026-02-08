@@ -1708,15 +1708,17 @@ internal sealed class XProto : IXProto
 
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         var bigRequest = new ChangeWindowAttributesBigType(window, mask, args.Length);
-        return SendWithBigRequestIfNeed(
-            request,
+        SendWithBigRequestIfNeed(
+            ref request,
             12,
             request.Length * 4,
-            bigRequest,
+            ref bigRequest,
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(args)
         );
+
+        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private ResponseProto DestroyWindowBase(uint window)
@@ -1756,106 +1758,66 @@ internal sealed class XProto : IXProto
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
 
         var request = new ChangeGCType(gc, mask, args.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(workingBuffer);
-        }
+        var bigRequest = new ChangeGCBigType(gc, mask, args.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<uint, byte>(args));
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private ResponseProto ChangeHostsBase(HostMode mode, Family family, Span<byte> address)
     {
         var request = new ChangeHostsType(mode, family, address.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                8,
-                address);
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                8,
-                address);
-        }
-
-        return new ResponseProto(_protoOutExtended.Sequence);
+        var bigRequest = new ChangeHostsBigType(mode, family, address.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            8,
+            request.Length * 4,
+            ref bigRequest,
+            12,
+            bigRequest.Length * 4,
+            address
+        );
+        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private ResponseProto ChangeKeyboardControlBase(KeyboardControlMask mask, Span<uint> args)
     {
         var request = new ChangeKeyboardControlType(mask, args.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<uint, byte>(args));
-        }
-
-        return new ResponseProto(_protoOutExtended.Sequence);
+        var bigRequest = new ChangeKeyboardControlBigType(mask, args.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            8,
+            request.Length * 4,
+            ref bigRequest,
+            12,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<uint, byte>(args)
+        );
+        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private ResponseProto ChangeKeyboardMappingBase(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
         Span<uint> keysym)
     {
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<uint, byte>(keysym));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<uint, byte>(keysym));
-        }
-
-        return new ResponseProto(_protoOutExtended.Sequence);
+        var bigRequest = new ChangeKeyboardMappingBigType(keycodeCount, firstKeycode, keysymsPerKeycode);
+        SendWithBigRequestIfNeed(
+            ref request,
+            8,
+            request.Length * 4,
+            ref bigRequest,
+            12,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<uint, byte>(keysym)
+        );
+        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private ResponseProto ChangePointerControlBase(Acceleration? acceleration, ushort? threshold)
@@ -1877,27 +1839,18 @@ internal sealed class XProto : IXProto
         if (size is not 1 and not 2 and not 4)
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
         var request = new ChangePropertyType(mode, window, property, type, args.Length, size);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                24,
-                MemoryMarshal.Cast<T, byte>(args));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                24,
-                MemoryMarshal.Cast<T, byte>(args));
-        }
+        var bigRequest = new ChangePropertyBigType(mode, window, property, type, args.Length, size);
+        SendWithBigRequestIfNeed(
+            ref request,
+            24,
+            request.Length * 4,
+            ref bigRequest,
+            28,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<T, byte>(args)
+        );
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private ResponseProto ChangeSaveSetBase(ChangeSaveSetMode changeSaveSetMode, uint window)
@@ -1934,27 +1887,17 @@ internal sealed class XProto : IXProto
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
 
         var request = new ConfigureWindowType(window, mask, args.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(args));
-        }
-
-        return new ResponseProto(_protoOutExtended.Sequence);
+        var bigRequest = new ConfigureWindowBigType(window, mask, args.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<uint, byte>(args)
+        );
+        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private ResponseProto ConvertSelectionBase(uint requestor, ATOM selection, ATOM target, ATOM property,
@@ -2019,27 +1962,16 @@ internal sealed class XProto : IXProto
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
 
         var request = new CreateGCType(gc, drawable, mask, args.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                16,
-                MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                16,
-                MemoryMarshal.Cast<uint, byte>(args));
-        }
-
-        return new ResponseProto(_protoOutExtended.Sequence);
+        var bigRequest = new CreateGCBigType(gc, drawable, mask, args.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            16,
+            request.Length * 4,
+            ref bigRequest,
+            20,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<uint, byte>(args));
+        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private ResponseProto CreateGlyphCursorBase(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
@@ -2105,26 +2037,15 @@ internal sealed class XProto : IXProto
         Span<Point> points)
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                16,
-                MemoryMarshal.Cast<Point, byte>(points));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                16,
-                MemoryMarshal.Cast<Point, byte>(points));
-        }
-
+        var bigRequest = new FillPolyBigType(drawable, gc, shape,coordinate, points.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            16,
+            request.Length * 4,
+            ref bigRequest,
+            20,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<Point, byte>(points));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
@@ -2622,14 +2543,16 @@ internal sealed class XProto : IXProto
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         var bigRequest = new PutImageBigType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
-        return SendWithBigRequestIfNeed(
-            request,
+        SendWithBigRequestIfNeed(
+            ref request,
             24,
             request.Length * 4,
-            bigRequest, 28,
+            ref bigRequest,
+            28,
             bigRequest.Length * 4,
             data
         );
+        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private ResponseProto RecolorCursorBase(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue,
@@ -3401,11 +3324,11 @@ internal sealed class XProto : IXProto
 
     const int _minStackSupport = 512;
 
-    private ResponseProto SendWithBigRequestIfNeed<TS, TB>(
-        TS request,
+    private void SendWithBigRequestIfNeed<TS, TB>(
+        ref TS request,
         int requestLength,
         int requestSize,
-        TB bigRequest,
+        ref TB bigRequest,
         int bigRequestLength,
         uint bigRequestSize,
         ReadOnlySpan<byte> data) where TS : unmanaged where TB : unmanaged
@@ -3435,23 +3358,9 @@ internal sealed class XProto : IXProto
         else
         {
             EnableBigRequestIfNeeded();
-            if (bigRequestSize > int.MaxValue)
+            if (_bigRequestLength > bigRequestSize)
             {
-                var buffer = new byte[bigRequestSize]
-                    .AsSpan();
 
-                Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(buffer), bigRequest);
-                data.CopyTo(buffer[bigRequestLength..]);
-                var remainder = data.Length.Padding();
-                if (remainder != 0)
-                {
-                    // might need another slice
-                    buffer.Slice(bigRequestLength + data.Length, remainder).Clear();
-                    _protoOutExtended.SendExact(buffer);
-                }
-            }
-            else
-            {
                 using var scratchBuffer = new ArrayPoolUsing<byte>((int)bigRequestSize);
                 var workingBuffer = scratchBuffer[..(int)bigRequestSize];
                 workingBuffer.WriteRequest(
@@ -3459,18 +3368,19 @@ internal sealed class XProto : IXProto
                     bigRequestLength,
                     data);
                 _protoOutExtended.SendExact(workingBuffer);
-
+            }
+            else
+            {
+                throw new NotImplementedException("todo send in chunks");
             }
         }
-
-        return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
     private void EnableBigRequestIfNeeded()
     {
         if (_extensationInternal.IsExtensationEnable(BigRequestExtensation.ExtensationName)) return;
-        var request = _extensationInternal.BigRequest() 
-            ?? throw new InvalidOperationException("BigRequest is not supported");
+        var request = _extensationInternal.BigRequest()
+                      ?? throw new InvalidOperationException("BigRequest is not supported");
         var response = request.BigRequestsEnable();
         _bigRequestLength = response.MaximumRequestLength;
     }
