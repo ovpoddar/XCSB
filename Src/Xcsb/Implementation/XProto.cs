@@ -2037,7 +2037,7 @@ internal sealed class XProto : IXProto
         Span<Point> points)
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
-        var bigRequest = new FillPolyBigType(drawable, gc, shape,coordinate, points.Length);
+        var bigRequest = new FillPolyBigType(drawable, gc, shape, coordinate, points.Length);
         SendWithBigRequestIfNeed(
             ref request,
             16,
@@ -2066,26 +2066,15 @@ internal sealed class XProto : IXProto
     private ResponseProto FreeColorsBase(uint colormapId, uint planeMask, Span<uint> pixels)
     {
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(pixels));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<uint, byte>(pixels));
-        }
-
+        var bigRequest = new FreeColorsBigType(colormapId, planeMask, pixels.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<uint, byte>(pixels));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
@@ -2171,28 +2160,15 @@ internal sealed class XProto : IXProto
     private ResponseProto ImageText8Base(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
     {
         var request = new ImageText8Type(drawable, gc, x, y, text.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                16,
-                text
-            );
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                16,
-                text
-            );
-        }
-
+        var bigRequest = new ImageText8BigType(drawable, gc, x, y, text.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            16,
+            request.Length * 4,
+            ref bigRequest,
+            20,
+            bigRequest.Length * 4,
+            text);
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
@@ -2285,52 +2261,30 @@ internal sealed class XProto : IXProto
     private ResponseProto PolyArcBase(uint drawable, uint gc, Span<Arc> arcs)
     {
         var request = new PolyArcType(drawable, gc, arcs.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Arc, byte>(arcs));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Arc, byte>(arcs));
-        }
-
+        var bigRequest = new PolyArcBigType(drawable, gc, arcs.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<Arc, byte>(arcs));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
     private ResponseProto PolyFillArcBase(uint drawable, uint gc, Span<Arc> arcs)
     {
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Arc, byte>(arcs));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                12,
-                MemoryMarshal.Cast<Arc, byte>(arcs));
-        }
-
+        var bigRequest = new PolyFillArcBigType(drawable, gc, arcs.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            12,
+            request.Length * 4,
+            ref bigRequest,
+            16,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<Arc, byte>(arcs));
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
@@ -3360,7 +3314,6 @@ internal sealed class XProto : IXProto
             EnableBigRequestIfNeeded();
             if (_bigRequestLength > bigRequestSize)
             {
-
                 using var scratchBuffer = new ArrayPoolUsing<byte>((int)bigRequestSize);
                 var workingBuffer = scratchBuffer[..(int)bigRequestSize];
                 workingBuffer.WriteRequest(
