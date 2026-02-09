@@ -2,13 +2,14 @@
 using System.Runtime.InteropServices;
 using Xcsb.Models;
 
-namespace Xcsb.Requests;
+namespace Xcsb.Requests.BigExtensation;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct SetModifierMappingType(int keycodesLength)
+internal readonly struct SetModifierMappingBigType(int keycodesLength)
 {
     public readonly Opcode Opcode = Opcode.SetModifierMapping;
     public readonly byte KeycodesPerModifier = (byte)keycodesLength;
-    public readonly ushort Length = (ushort)(1 + 2 * keycodesLength);
+    private readonly ushort _pad = 0;
+    public readonly uint Length = (uint)(2 + 2 * keycodesLength);
 }

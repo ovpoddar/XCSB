@@ -3016,27 +3016,15 @@ internal sealed class XProto : IXProto
     private ResponseProto QueryColorsBase(uint colorMap, Span<uint> pixels)
     {
         var request = new QueryColorsType(colorMap, pixels.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<uint, byte>(pixels));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                8,
-                MemoryMarshal.Cast<uint, byte>(pixels));
-            _protoOutExtended.SendExact(workingBuffer);
-        }
-
+        var bigRequest = new QueryColorsBigType(colorMap, pixels.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            8,
+            request.Length * 4,
+            ref bigRequest,
+            12,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<uint, byte>(pixels));
         return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
@@ -3077,27 +3065,15 @@ internal sealed class XProto : IXProto
     private ResponseProto SetModifierMappingBase(Span<ulong> keycodes)
     {
         var request = new SetModifierMappingType(keycodes.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                4,
-                MemoryMarshal.Cast<ulong, byte>(keycodes));
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchbuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchbuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                4,
-                MemoryMarshal.Cast<ulong, byte>(keycodes));
-            _protoOutExtended.SendExact(workingBuffer);
-        }
-
+        var bigRequest = new SetModifierMappingBigType(keycodes.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            4,
+            request.Length * 4,
+            ref bigRequest,
+            8,
+            bigRequest.Length * 4,
+            MemoryMarshal.Cast<ulong, byte>(keycodes));
         return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
@@ -3125,27 +3101,15 @@ internal sealed class XProto : IXProto
     private ResponseProto SetPointerMappingBase(Span<byte> maps)
     {
         var request = new SetPointerMappingType(maps.Length);
-        var requiredBuffer = request.Length * 4;
-        if (requiredBuffer < _bigRequestLength)
-        {
-            Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
-            scratchBuffer.WriteRequest(
-                ref request,
-                4,
-                maps);
-            _protoOutExtended.SendExact(scratchBuffer);
-        }
-        else
-        {
-            using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
-            var workingBuffer = scratchBuffer[..requiredBuffer];
-            workingBuffer.WriteRequest(
-                ref request,
-                4,
-                maps);
-            _protoOutExtended.SendExact(workingBuffer[..requiredBuffer]);
-        }
-
+        var bigRequest = new SetPointerMappingBigType(maps.Length);
+        SendWithBigRequestIfNeed(
+            ref request,
+            4,
+            request.Length * 4,
+            ref bigRequest,
+            8,
+            bigRequest.Length * 4,
+            maps);
         return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
