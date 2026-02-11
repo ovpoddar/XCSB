@@ -110,19 +110,18 @@ fileStream.Write(
 // IT WILL BE OVERWRITTEN WHEN GENERATING
 #nullable enable
 using Xcsb;
-using Xcsb.Extension.Generic.Event;
 
 namespace MethodRequestBuilder.Test.Generated;
 
 [Collection("Sequential Execution of Generated Methods")]
 public class VoidMethodsTest : IDisposable
 {
-    private readonly IXConnection _connect;
-    private readonly IXProto _xProto;
+    private readonly Xcsb.Connection.IXConnection _connect;
+    private readonly Xcsb.Infrastructure.IXProto _xProto;
     public VoidMethodsTest()
     {
-        _connect = XcsbClient.Connect();
-        _xProto = XcsbClient.Initialized(_connect);
+        _connect = Xcsb.Connection.XcsbClient.Connect();
+        _xProto = _connect.Initialized();
     }
 
 """u8);
@@ -771,7 +770,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
         {{WriteUpValueOfCsSetup(out var typeName)}}
 
         {{GetItems(out var name)}}
@@ -925,7 +924,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
 
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
@@ -1009,7 +1008,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
 
         // act
         bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
@@ -1098,7 +1097,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
 
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
@@ -1194,7 +1193,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
         var cursor_pixmap = _connect.NewId();
         _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _connect.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
@@ -1233,7 +1232,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
         var cursor_pixmap = _connect.NewId();
         _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _connect.HandshakeSuccessResponseBody.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
@@ -1283,7 +1282,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
         {{GetCsSpeicalContent()}}
         {{GetItems()}}
 
@@ -1429,7 +1428,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
         var root = _connect.HandshakeSuccessResponseBody.Screens[0].Root;
         var gc = _connect.NewId();
         _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_connect.HandshakeSuccessResponseBody.Screens[0].BlackPixel]);
@@ -1753,7 +1752,7 @@ $$"""
     {
         var field = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
         var screen = _connect.HandshakeSuccessResponseBody.Screens[0];
         {{WriteMembers(GetCsImpl)}}
         
@@ -1869,7 +1868,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
 
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
@@ -2010,7 +2009,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
         var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{{base.ParamSignature[0]}}>(params0);
 
         // act
@@ -2135,7 +2134,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
         var screen = _connect.HandshakeSuccessResponseBody.Screens[0];
         {{WriteMembers(GetCsImpl)}}
 
@@ -2269,7 +2268,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
         var keyboardMapping = _xProto.GetKeyboardMapping(_connect.HandshakeSuccessResponseBody.MinKeyCode,
             (byte)(_connect.HandshakeSuccessResponseBody.MaxKeyCode - _connect.HandshakeSuccessResponseBody.MinKeyCode + 1));
         var itms = Newtonsoft.Json.JsonConvert.DeserializeObject<uint[]>(params2);
@@ -2382,7 +2381,7 @@ $$"""
         // arrange
         var workingField = typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var bufferClient = (XBufferProto)_xProto.BufferClient;
+        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
 
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length)}});
