@@ -138,6 +138,8 @@ internal class XConnection : IXConnectionInternal
         {
             // ProtoIn and ProtoOut only hold references to the Socket, they don't own it.
             // Socket is the only resource that needs disposal.
+            Accesser.BufferEvents.Clear();
+            Accesser.ReplyBuffer.Clear();
             _socket?.Dispose();
         }
 

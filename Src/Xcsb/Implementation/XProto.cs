@@ -44,9 +44,7 @@ internal sealed class XProto : IXProto
         if (connection.HandshakeStatus is not HandshakeStatus.Success ||
             connection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(connection.FailReason);
-        _protoInExtended =
-            new ProtoInExtended(connection
-                .Accesser); //Todo: can be more organised with interface and staffs will think about them after api finalized
+        _protoInExtended = new ProtoInExtended(connection.Accesser); //Todo: can be more organised with interface and staffs will think about them after api finalized
         _protoOutExtended = new ProtoOutExtended(connection.Accesser);
 
         if (connection.Extensation is not IXExtensationInternal extensationInternal)

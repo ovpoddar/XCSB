@@ -114,16 +114,8 @@ using Xcsb;
 namespace MethodRequestBuilder.Test.Generated;
 
 [Collection("Sequential Execution of Generated Methods")]
-public class VoidMethodsTest : IDisposable
+public class VoidMethodsTest
 {
-    private readonly Xcsb.Connection.IXConnection _connect;
-    private readonly Xcsb.Infrastructure.IXProto _xProto;
-    public VoidMethodsTest()
-    {
-        _connect = Xcsb.Connection.XcsbClient.Connect();
-        _xProto = _connect.Initialized();
-    }
-
     private static readonly System.Reflection.FieldInfo WorkingField =
         typeof(Xcsb.Handlers.Buffered.BufferProtoOut)
             .GetField("_buffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
@@ -142,8 +134,6 @@ public class VoidMethodsTest : IDisposable
 fileStream.Write(
 """
 
-    public void Dispose() => 
-        _connect.Dispose();
 }
 #nullable restore
 
@@ -200,21 +190,21 @@ static void hex_dump(const void *buf, size_t len) {
 
 ssize_t write(int fd, const void *buf, size_t count) {
     hex_dump(buf, count);
-    return real_write(fd, buf, count);
+return real_write(fd, buf, count);
 }
 
 ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
     for (int i = 0; i < iovcnt; ++i) {
-        hex_dump(iov[i].iov_base, iov[i].iov_len);
-    }
-    return real_writev(fd, iov, iovcnt);
+    hex_dump(iov[i].iov_base, iov[i].iov_len);
+}
+return real_writev(fd, iov, iovcnt);
 }
 
 ssize_t sendmsg(int fd, const struct msghdr *msg, int flags) {
     for (int i = 0; i < msg->msg_iovlen; ++i) {
-        hex_dump(msg->msg_iov[i].iov_base, msg->msg_iov[i].iov_len);
-    }
-    return real_sendmsg(fd, msg, flags);
+    hex_dump(msg->msg_iov[i].iov_base, msg->msg_iov[i].iov_len);
+}
+return real_sendmsg(fd, msg, flags);
 }
                     
 """);
@@ -743,8 +733,8 @@ int main()
         name = "window";
         return
 $$"""
-            var {{name}} = _connect.NewId();
-            var screen = _connect.HandshakeSuccessResponseBody!.Screens[0];
+            var {{name}} = connect.NewId();
+            var screen = connect.HandshakeSuccessResponseBody!.Screens[0];
             _xProto.CreateWindowChecked(0, {{name}}, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
                         screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
 """;
@@ -778,7 +768,9 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
         {{WriteUpValueOfCsSetup(out var typeName)}}
@@ -796,6 +788,7 @@ $$"""
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -818,11 +811,11 @@ file class MethodDetails2Dynamic : MethodDetails2
         {
             DynamicType.Gc =>
 $"""
-    var screen = _connect.HandshakeSuccessResponseBody!.Screens[0];
-    var window = _connect.NewId();
+    var screen = connect.HandshakeSuccessResponseBody!.Screens[0];
+    var window = connect.NewId();
     _xProto.CreateWindowChecked(0, window, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
                     screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
-    var {name} = _connect.NewId();
+    var {name} = connect.NewId();
     _xProto.CreateGCChecked({name}, window, (Xcsb.Masks.GCMask)(4|8), [screen.BlackPixel, screen.WhitePixel]);
 """,
             _ => throw new NullReferenceException()
@@ -932,7 +925,9 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
 
@@ -942,13 +937,14 @@ $$"""
 
         // assert
         Assert.NotNull(buffer);
-        Assert.Equal(params0, _connect.HandshakeSuccessResponseBody!.Screens[0].RootDepth!.DepthValue);
-        Assert.Equal(params1, _connect.NewId());
-        Assert.Equal(params2, _connect.HandshakeSuccessResponseBody!.Screens[0].Root);
+        Assert.Equal(params0, connect.HandshakeSuccessResponseBody!.Screens[0].RootDepth!.DepthValue);
+        Assert.Equal(params1, connect.NewId());
+        Assert.Equal(params2, connect.HandshakeSuccessResponseBody!.Screens[0].Root);
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -1016,7 +1012,9 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
 
@@ -1026,12 +1024,13 @@ $$"""
 
         // assert
         Assert.NotNull(buffer);
-        Assert.Equal(params0, _connect.NewId());
-        Assert.Equal(params1, _connect.NewId());
+        Assert.Equal(params0, connect.NewId());
+        Assert.Equal(params1, connect.NewId());
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -1105,7 +1104,9 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
 
@@ -1115,13 +1116,14 @@ $$"""
 
         // assert
         Assert.NotNull(buffer);
-        Assert.Equal(params1, _connect.NewId());
-        Assert.Equal(params2, _connect.NewId());
-        Assert.Equal(params3, _connect.HandshakeSuccessResponseBody!.Screens[0].RootVisualId);
+        Assert.Equal(params1, connect.NewId());
+        Assert.Equal(params2, connect.NewId());
+        Assert.Equal(params3, connect.HandshakeSuccessResponseBody!.Screens[0].RootVisualId);
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -1201,11 +1203,13 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
-        var cursor_pixmap = _connect.NewId();
-        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _connect.HandshakeSuccessResponseBody!.Screens[0].Root, 16, 16);
+        var cursor_pixmap = connect.NewId();
+        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, connect.HandshakeSuccessResponseBody!.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (item, ParamSignature.Length - 1))}});
@@ -1218,6 +1222,7 @@ $$"""
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -1240,11 +1245,13 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
-        var cursor_pixmap = _connect.NewId();
-        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, _connect.HandshakeSuccessResponseBody!.Screens[0].Root, 16, 16);
+        var cursor_pixmap = connect.NewId();
+        _xProto.CreatePixmapUnchecked(1, cursor_pixmap, connect.HandshakeSuccessResponseBody!.Screens[0].Root, 16, 16);
         {{WriteCast(out var item)}}
         // act
         bufferClient.{{MethodName}}({{FillPassingParameter(ParamSignature.Length, (item, ParamSignature.Length - 1))}});
@@ -1257,6 +1264,7 @@ $$"""
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -1290,7 +1298,9 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
         {{GetCsSpeicalContent()}}
@@ -1307,6 +1317,7 @@ $$"""
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -1329,13 +1340,13 @@ $$"""
     {
         return IsXcbStr != STRType.XcbColorItem ?
 @"
-        var root = _connect.HandshakeSuccessResponseBody!.Screens[0].Root;
-        var gc = _connect.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
+        var root = connect.HandshakeSuccessResponseBody!.Screens[0].Root;
+        var gc = connect.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
 " :
 @"
-        var screen = _connect.HandshakeSuccessResponseBody!.Screens[0];
-        var cmap = _connect.NewId();
+        var screen = connect.HandshakeSuccessResponseBody!.Screens[0];
+        var cmap = connect.NewId();
         _xProto.CreateColormapChecked(0, cmap, screen.Root, screen.RootVisualId);
 ";
     }
@@ -1436,12 +1447,14 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
-        var root = _connect.HandshakeSuccessResponseBody!.Screens[0].Root;
-        var gc = _connect.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [_connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
+        var root = connect.HandshakeSuccessResponseBody!.Screens[0].Root;
+        var gc = connect.NewId();
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
         {{base.GetItems()}}
 
         // act
@@ -1456,6 +1469,7 @@ $$"""
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -1620,30 +1634,30 @@ $$"""
             ImplType.Id =>
 $"""
 
-        var item{name} = _connect.NewId();
+        var item{name} = connect.NewId();
 """,
             ImplType.ColorMap =>
 $"""
 
-        var item{name} = _connect.NewId();
+        var item{name} = connect.NewId();
         _xProto.CreateColormapChecked(0, item{name}, screen.Root, screen.RootVisualId);
 """,
             ImplType.GC =>
 $"""
 
-        var item{name} = _connect.NewId();
+        var item{name} = connect.NewId();
         _xProto.CreateColormapChecked(0, item{name}, window, screen.RootVisualId);
 """,
             ImplType.Window =>
 $"""
 
-        var item{name} = _connect.NewId();
+        var item{name} = connect.NewId();
         _xProto.CreateWindowChecked(0, item{name}, screen.Root, 0, 0, 640, 480, 0,  Xcsb.Models.ClassType.InputOutput, screen.RootVisualId, (Xcsb.Masks.ValueMask)(2 | 2048),  [screen.WhitePixel, 32768 | 1 ]);
 """,
             ImplType.CursorFont =>
 $"""
 
-        var item{name} = _connect.NewId();
+        var item{name} = connect.NewId();
         _xProto.OpenFontChecked("cursor", item{name});
 """,
             ImplType.Root =>
@@ -1664,23 +1678,23 @@ $"""
             ImplType.FontId =>
 $"""
 
-        var item{name} = _connect.NewId();
+        var item{name} = connect.NewId();
         _xProto.OpenFontChecked("fixed", item{name});
 """,
             ImplType.PixmapId =>
 $"""
 
-        var item{name} = _connect.NewId();
+        var item{name} = connect.NewId();
         _xProto.CreatePixmapChecked(screen.RootDepth!.DepthValue, item{name}, screen.Root, 1, 1);
 """,
             ImplType.CursorId =>
 $"""
 
-        var item{name} = _connect.NewId();
+        var item{name} = connect.NewId();
 
-        var srcPixmap = _connect.NewId();
+        var srcPixmap = connect.NewId();
         _xProto.CreatePixmapChecked(1, srcPixmap, window, 8, 8);
-        var maskPixmap = _connect.NewId();
+        var maskPixmap = connect.NewId();
         _xProto.CreatePixmapChecked(1, maskPixmap, window, 8, 8);
         
         _xProto.CreateCursorChecked(item{name}, srcPixmap, maskPixmap, 0, 0, 0, 65535, 65535, 65535, 0, 0);
@@ -1761,10 +1775,12 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
-        var screen = _connect.HandshakeSuccessResponseBody!.Screens[0];
+        var screen = connect.HandshakeSuccessResponseBody!.Screens[0];
         {{WriteMembers(GetCsImpl)}}
         
         // act
@@ -1778,6 +1794,7 @@ $$"""
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 """));
     }
@@ -1876,7 +1893,9 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
 
@@ -1886,11 +1905,12 @@ $$"""
 
         // assert
         Assert.NotNull(buffer);
-        Assert.Equal(params1, _connect.NewId());
+        Assert.Equal(params1, connect.NewId());
         Assert.NotNull(expectedResult);
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -2017,7 +2037,9 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
         var items = Newtonsoft.Json.JsonConvert.DeserializeObject<{{base.ParamSignature[0]}}>(params0);
@@ -2032,6 +2054,7 @@ $$"""
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
@@ -2142,10 +2165,12 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
-        var screen = _connect.HandshakeSuccessResponseBody!.Screens[0];
+        var screen = connect.HandshakeSuccessResponseBody!.Screens[0];
         {{WriteMembers(GetCsImpl)}}
 
         // act
@@ -2159,6 +2184,7 @@ $$"""
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
 {{base.WrittingAsserts(this.Parameters[0])}}
+        buffer.Clear();
     }
 
 """));
@@ -2276,11 +2302,13 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{GetTestMethodSignature(ParamSignature)}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
-        var keyboardMapping = _xProto.GetKeyboardMapping(_connect.HandshakeSuccessResponseBody!.MinKeyCode,
-            (byte)(_connect.HandshakeSuccessResponseBody!.MaxKeyCode - _connect.HandshakeSuccessResponseBody!.MinKeyCode + 1));
+        var keyboardMapping = _xProto.GetKeyboardMapping(connect.HandshakeSuccessResponseBody!.MinKeyCode,
+            (byte)(connect.HandshakeSuccessResponseBody!.MaxKeyCode - connect.HandshakeSuccessResponseBody!.MinKeyCode + 1));
         var itms = Newtonsoft.Json.JsonConvert.DeserializeObject<uint[]>(params2);
 
         var keysyms_per_keycode = new uint[keyboardMapping.KeyPerKeyCode];
@@ -2299,6 +2327,7 @@ $$"""
         Assert.True(expectedResult.SequenceEqual(buffer));
         Assert.Equal(keyboardMapping.KeyPerKeyCode, params1);
         Assert.Equal((uint)keyboardMapping.Keysyms.Length, params0);
+        buffer.Clear();
     }
 
 """));
@@ -2389,7 +2418,9 @@ $$"""
     public void {{Categories.ToSnakeCase()}}_{{MethodName.ToSnakeCase()}}_test({{methodSignature}}byte[] expectedResult)
     {
         // arrange
-        var bufferClient = (Xcsb.Implementation.XBufferProto)_xProto.BufferClient;
+        using var connect = Xcsb.Connection.XcsbClient.Connect();
+        var _xProto = connect.Initialized();
+        var bufferClient = _xProto.BufferClient;
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
 
@@ -2403,6 +2434,7 @@ $$"""
         Assert.NotEmpty(buffer);
         Assert.NotEmpty(expectedResult);
         Assert.True(expectedResult.SequenceEqual(buffer));
+        buffer.Clear();
     }
 
 """));
