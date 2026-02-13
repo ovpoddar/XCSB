@@ -18,6 +18,7 @@ internal sealed class XcsbExtensation : IXExtensationInternal
     private readonly SoccketAccesser _accesser;
     private int _bigRequestLength = 262140;
     private readonly ConcurrentDictionary<string, ExtensationDetails> _extensitionReply = new ConcurrentDictionary<string, ExtensationDetails>();
+    private readonly ConcurrentDictionary<Type, object> _store = new ConcurrentDictionary<Type, object>();
 
     public SoccketAccesser Transport => _accesser;
 
@@ -114,5 +115,20 @@ internal sealed class XcsbExtensation : IXExtensationInternal
             return true;
         }
         return false;
+    }
+
+    public T GetOrCreate<T>(Func<T> factory) where T : class
+    {
+        if (_store.TryGetValue(typeof(T), out var existing))
+            return (T)existing;
+
+        var value = factory();
+        _store[typeof(T)] = value;
+        return value;
+    }
+
+    public void Clear()
+    {
+        _store.Clear();
     }
 }

@@ -17,4 +17,6 @@ internal interface IXExtensationInternal : IXExtensation
     bool CanHandleEvent(byte replyType);
     bool CanHandleError(byte replyType);
 
+    T GetOrCreate<T>(Func<T> factory) where T : class;
+    void Clear();
 }

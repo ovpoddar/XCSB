@@ -8,7 +8,6 @@ namespace Xcsb.Extension.Damage
         internal const string ExtensationName = "DAMAGE";
         internal static uint ExtensationMajorVersion = 1;
         internal static uint ExtensationMinorVersion = 1;
-        private static IDamageRequest? _request;
 
         public static IDamageRequest? Damage(this IXExtensation extensation)
         {
@@ -19,20 +18,15 @@ namespace Xcsb.Extension.Damage
             var response = extensationInternal.QueryExtension("DAMAGE"u8);
             if (!response.Present) return null;
 
-            lock (ExtensationName)
+            return extensationInternal.GetOrCreate(() =>
             {
-                if (_request == null)
-                {
-                    extensationInternal.ActivateExtensation(ExtensationName, response, 1, 1);
-                    var request = new DamageRequestProto(response, extensationInternal);
-                    var versionNegostion = request.QueryVersion(ExtensationMajorVersion, ExtensationMinorVersion);
-                    ExtensationMajorVersion = versionNegostion.MajorVersion;
-                    ExtensationMinorVersion = versionNegostion.MinorVersion;
-                    _request = request;
-                }
-
-                return _request;
-            }
+                extensationInternal.ActivateExtensation(ExtensationName, response, 1, 1);
+                var request = new DamageRequestProto(response, extensationInternal);
+                var versionNegostion = request.QueryVersion(ExtensationMajorVersion, ExtensationMinorVersion);
+                ExtensationMajorVersion = versionNegostion.MajorVersion;
+                ExtensationMinorVersion = versionNegostion.MinorVersion;
+                return request;
+            });
         }
     }
 }

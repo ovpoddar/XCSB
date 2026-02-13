@@ -140,6 +140,8 @@ internal class XConnection : IXConnectionInternal
             // Socket is the only resource that needs disposal.
             Accesser.BufferEvents.Clear();
             Accesser.ReplyBuffer.Clear();
+            if (Extensation is IXExtensationInternal extensationInternal)
+                extensationInternal.Clear();
             _socket?.Dispose();
         }
 

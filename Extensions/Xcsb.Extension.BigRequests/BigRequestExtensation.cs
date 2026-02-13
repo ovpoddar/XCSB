@@ -9,8 +9,6 @@ namespace Xcsb.Extension.BigRequests
     public static class BigRequestExtensation
     {
         public const string ExtensationName = "BIG-REQUESTS";
-        private static IBigRequest? _request;
-
         public static IBigRequest? BigRequest(this IXExtensation extensation)
         {
             if (extensation is not IXExtensationInternal extensationInternal)
@@ -18,12 +16,7 @@ namespace Xcsb.Extension.BigRequests
 
             var response = extensationInternal.QueryExtension("BIG-REQUESTS"u8);
             if (!response.Present) return null;
-
-            lock (ExtensationName)
-            {
-                _request ??= new BigRequestProto(response, extensationInternal);
-                return _request;
-            }
+            return extensationInternal.GetOrCreate(() => new BigRequestProto(response, extensationInternal));
         }
     }
 }
