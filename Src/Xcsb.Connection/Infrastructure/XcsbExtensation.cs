@@ -15,22 +15,21 @@ namespace Xcsb.Connection.Infrastructure;
 
 internal sealed class XcsbExtensation : IXExtensationInternal
 {
-    private readonly SoccketAccesser _accesser;
     private int _bigRequestLength = 262140;
     private readonly ConcurrentDictionary<string, ExtensationDetails> _extensitionReply = new ConcurrentDictionary<string, ExtensationDetails>();
-    private readonly ConcurrentDictionary<Type, object> _store = new ConcurrentDictionary<Type, object>();
+    private readonly ConcurrentDictionary<Type, Lazy<object>> _store = new ConcurrentDictionary<Type, Lazy<object>>();
 
-    public SoccketAccesser Transport => _accesser;
+    public SoccketAccesser Transport { get; }
 
     public XcsbExtensation(SoccketAccesser accesser)
     {
-        _accesser = accesser;
+        Transport = accesser;
     }
 
     public ListExtensionsReply ListExtensions()
     {
         var cookie = ListExtensionsBase();
-        var (result, error) = this._accesser.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
+        var (result, error) = this.Transport.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListExtensionsReply(result);
@@ -39,8 +38,8 @@ internal sealed class XcsbExtensation : IXExtensationInternal
     private ResponseProto ListExtensionsBase()
     {
         var request = new ListExtensionsType();
-        _accesser.SendRequest(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)), System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_accesser.SendSequence, true);
+        Transport.SendRequest(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)), System.Net.Sockets.SocketFlags.None);
+        return new ResponseProto(Transport.SendSequence, true);
     }
 
     public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name)
@@ -48,7 +47,7 @@ internal sealed class XcsbExtensation : IXExtensationInternal
         if (name.Length > ushort.MaxValue)
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
         var cookie = QueryExtensionBase(name);
-        var (result, error) = this._accesser.ReceivedResponseSpan<QueryExtensionReply>(cookie.Id);
+        var (result, error) = this.Transport.ReceivedResponseSpan<QueryExtensionReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().ToStruct<QueryExtensionReply>();
@@ -63,17 +62,17 @@ internal sealed class XcsbExtensation : IXExtensationInternal
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(ref request, 8, name);
-            _accesser.SendRequest(scratchBuffer, System.Net.Sockets.SocketFlags.None);
+            Transport.SendRequest(scratchBuffer, System.Net.Sockets.SocketFlags.None);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
             var workingBuffer = scratchBuffer[..requiredBuffer];
             workingBuffer.WriteRequest(ref request, 8, name);
-            _accesser.SendRequest(workingBuffer, System.Net.Sockets.SocketFlags.None);
+            Transport.SendRequest(workingBuffer, System.Net.Sockets.SocketFlags.None);
         }
 
-        return new ResponseProto(_accesser.SendSequence, true);
+        return new ResponseProto(Transport.SendSequence, true);
     }
 
     public void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply, int newError, int newEvent)
@@ -119,12 +118,8 @@ internal sealed class XcsbExtensation : IXExtensationInternal
 
     public T GetOrCreate<T>(Func<T> factory) where T : class
     {
-        if (_store.TryGetValue(typeof(T), out var existing))
-            return (T)existing;
-
-        var value = factory();
-        _store[typeof(T)] = value;
-        return value;
+        var lazy = _store.GetOrAdd(typeof(T), new Lazy<object>(factory, LazyThreadSafetyMode.ExecutionAndPublication));
+        return (T)lazy.Value;
     }
 
     public void Clear()
