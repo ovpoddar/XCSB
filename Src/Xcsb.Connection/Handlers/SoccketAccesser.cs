@@ -12,10 +12,11 @@ namespace Xcsb.Connection.Handlers;
 
 internal sealed class SoccketAccesser
 {
+    private readonly XcsbClientConfiguration _configuration;
+    private readonly Socket _socket;
+    
     internal readonly ConcurrentQueue<byte[]> BufferEvents;
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
-    internal readonly XcsbClientConfiguration Configuration;
-    internal readonly Socket Socket; // TODO: make this privet and remove all direct access to this.
     internal int ReceivedSequence = 0;
     internal int SendSequence = 0;
 
@@ -24,17 +25,18 @@ internal sealed class SoccketAccesser
         ConcurrentDictionary<int, byte[]> replyBuffer,
         XcsbClientConfiguration configuration)
     {
-        this.Socket = socket;
+        this._socket = socket;
         this.BufferEvents = bufferEvents;
         this.ReplyBuffer = replyBuffer;
-        this.Configuration = configuration;
+        this._configuration = configuration;
     }
 
     #region Send
+
     public void SendData(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
-        Socket.SendExact(buffer, socketFlags);
-        Configuration.OnSendRequest?.Invoke(buffer);
+        _socket.SendExact(buffer, socketFlags);
+        _configuration.OnSendRequest?.Invoke(buffer);
     }
 
     public void SendRequest(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
@@ -42,22 +44,24 @@ internal sealed class SoccketAccesser
         SendData(in buffer, socketFlags);
         SendSequence++;
     }
+
     #endregion
 
     #region received
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Received(scoped in Span<byte> buffer, bool readAll = true)
     {
         if (readAll)
         {
-            Socket.ReceiveExact(buffer);
-            Configuration.OnReceivedReply?.Invoke(buffer);
+            _socket.ReceiveExact(buffer);
+            _configuration.OnReceivedReply?.Invoke(buffer);
             return buffer.Length;
         }
         else
         {
-            var totalRead = Socket.Receive(buffer);
-            Configuration.OnReceivedReply?.Invoke(buffer);
+            var totalRead = _socket.Receive(buffer);
+            _configuration.OnReceivedReply?.Invoke(buffer);
             return totalRead;
         }
     }
@@ -66,7 +70,7 @@ internal sealed class SoccketAccesser
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
         Span<byte> buffer = stackalloc byte[bufferSize];
-        while (Socket.Available != 0)
+        while (_socket.Available != 0)
         {
             _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
@@ -100,7 +104,7 @@ internal sealed class SoccketAccesser
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
         Span<byte> buffer = stackalloc byte[bufferSize];
-        while (Socket.Available != 0)
+        while (_socket.Available != 0)
         {
             _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
@@ -114,6 +118,7 @@ internal sealed class SoccketAccesser
                         if (shouldThrowOnError)
                             throw new XEventException(buffer.ToStruct<GenericError>());
                     }
+
                     break;
                 case XResponseType.Notify:
                     BufferEvents.Enqueue(buffer.ToArray());
@@ -161,14 +166,15 @@ internal sealed class SoccketAccesser
     }
 
 
-    public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply
+    public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000)
+        where T : unmanaged, IXReply
     {
         while (true)
         {
             if (sequence > ReceivedSequence)
             {
-                if (Socket.Available == 0)
-                    Socket.Poll(timeOut, SelectMode.SelectRead);
+                if (_socket.Available == 0)
+                    _socket.Poll(timeOut, SelectMode.SelectRead);
                 FlushSocket();
                 continue;
             }
@@ -180,7 +186,6 @@ internal sealed class SoccketAccesser
             return response.Verify(in sequence)
                 ? (reply, null)
                 : (null, reply.AsSpan().ToStruct<GenericError>());
-
         }
     }
 
@@ -196,5 +201,11 @@ internal sealed class SoccketAccesser
                 ? throw new InvalidOperationException()
                 : null;
     }
+
     #endregion
+
+    public bool PollRead(int timeout = -1) =>
+        _socket.Poll(timeout, SelectMode.SelectRead);
+    
+    public int AvailableData => _socket.Available;
 }

@@ -15,8 +15,8 @@ internal sealed class BufferProtoIn
     internal void FlushSocket(int outProtoSequence, bool shouldThrowOnError)
     {
         var currentLength = _protoIn.Sequence;
-        if (_protoIn._soccketAccesser.Socket.Available == 0)
-            _protoIn._soccketAccesser.Socket.Poll(1000, SelectMode.SelectRead);
+        if (_protoIn._soccketAccesser.AvailableData == 0)
+            _protoIn._soccketAccesser.PollRead(1000);
 
         _protoIn.FlushSocket(outProtoSequence, shouldThrowOnError);
         _protoIn.Sequence += currentLength;

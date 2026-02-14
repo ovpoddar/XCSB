@@ -37,8 +37,8 @@ internal sealed class ProtoInExtended
         {
             if (sequence > Sequence)
             {
-                if (_soccketAccesser.Socket.Available == 0)
-                    _soccketAccesser.Socket.Poll(timeOut, SelectMode.SelectRead);
+                if (_soccketAccesser.AvailableData == 0)
+                    _soccketAccesser.PollRead(timeOut);
                 FlushSocket();
                 continue;
             }
@@ -104,8 +104,8 @@ internal sealed class ProtoInExtended
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
-        if (this._soccketAccesser.Socket.Available == 0)
-            _soccketAccesser.Socket.Poll(1000, SelectMode.SelectRead);
+        if (this._soccketAccesser.AvailableData == 0)
+            _soccketAccesser.PollRead(1000);
 
         FlushSocket();
         if (!_soccketAccesser.ReplyBuffer.Remove(sequence, out var response))
@@ -133,7 +133,7 @@ internal sealed class ProtoInExtended
             return result.AsSpan().AsStruct<GenericEvent>();
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<GenericEvent>()];
 
-        if (!_soccketAccesser.Socket.Poll(-1, SelectMode.SelectRead))
+        if (!_soccketAccesser.PollRead())
             return scratchBuffer.ToStruct<GenericEvent>();
 
         var totalRead = _soccketAccesser.Received(scratchBuffer, false);
@@ -143,12 +143,12 @@ internal sealed class ProtoInExtended
     }
 
     public bool HasEventToProcesses() =>
-        !_soccketAccesser.BufferEvents.IsEmpty || _soccketAccesser.Socket.Available >= Unsafe.SizeOf<GenericEvent>();
+        !_soccketAccesser.BufferEvents.IsEmpty || _soccketAccesser.AvailableData >= Unsafe.SizeOf<GenericEvent>();
 
     public void WaitForEventArrival()
     {
         if (!HasEventToProcesses())
-            _soccketAccesser.Socket.Poll(-1, SelectMode.SelectRead);
+            _soccketAccesser.PollRead();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

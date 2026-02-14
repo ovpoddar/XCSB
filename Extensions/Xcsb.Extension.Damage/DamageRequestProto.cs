@@ -15,8 +15,8 @@ namespace Xcsb.Extension.Damage;
 
 internal sealed class DamageRequestProto : IDamageRequest
 {
-    private QueryExtensionReply _response;
-    private IXExtensationInternal _extensationInternal;
+    private readonly QueryExtensionReply _response;
+    private readonly IXExtensationInternal _extensationInternal;
 
     public DamageRequestProto(QueryExtensionReply response, IXExtensationInternal extensationInternal)
     {
