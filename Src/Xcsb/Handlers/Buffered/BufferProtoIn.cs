@@ -1,5 +1,4 @@
-﻿using System.Net.Sockets;
-using Xcsb.Handlers.Direct;
+﻿using Xcsb.Handlers.Direct;
 
 namespace Xcsb.Handlers.Buffered;
 
@@ -23,5 +22,5 @@ internal sealed class BufferProtoIn
     }
 
     internal void FlushSocket() =>
-        _protoIn?.FlushSocket();
+        _protoIn.FlushSocket();
 }

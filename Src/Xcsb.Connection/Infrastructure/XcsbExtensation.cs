@@ -1,13 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Request;
 using Xcsb.Connection.Response;
-using Xcsb.Connection.Response.Contract;
-using Xcsb.Connection.Response.Errors;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Connection.Response.Replies.Internals;
 

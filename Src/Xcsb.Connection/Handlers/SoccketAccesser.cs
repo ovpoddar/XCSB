@@ -14,7 +14,7 @@ internal sealed class SoccketAccesser
 {
     private readonly XcsbClientConfiguration _configuration;
     private readonly Socket _socket;
-    
+
     internal readonly ConcurrentQueue<byte[]> BufferEvents;
     internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
     internal int ReceivedSequence = 0;
@@ -206,6 +206,6 @@ internal sealed class SoccketAccesser
 
     public bool PollRead(int timeout = -1) =>
         _socket.Poll(timeout, SelectMode.SelectRead);
-    
+
     public int AvailableData => _socket.Available;
 }

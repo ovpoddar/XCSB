@@ -11,7 +11,7 @@ internal readonly struct ChangeGCBigType(uint gc, GCMask mask, int argsLength)
 {
     public readonly Opcode opcode = Opcode.ChangeGC;
     private readonly byte _pad0 = 0;
-    private readonly ushort _pad =0;
+    private readonly ushort _pad = 0;
     public readonly uint Length = (uint)(4 + argsLength);
     public readonly uint Gc = gc;
     public readonly GCMask Mask = mask;

@@ -53,7 +53,7 @@ internal sealed class BufferProtoOut
         _requestLength = 0;
     }
 
-    public void SendExact(scoped in ReadOnlySpan<byte> buffer)
+    private void SendExact(scoped in ReadOnlySpan<byte> buffer)
     {
         _protoOut.SendExact(in buffer);
         _protoOut.Sequence += _requestLength;

@@ -10,7 +10,7 @@ internal readonly struct PolyFillRectangleBigType(uint drawable, uint gc, int re
 {
     public readonly Opcode opcode = Opcode.PolyFillRectangle;
     private readonly byte _pad0 = 0;
-    private readonly ushort _pad =0;
+    private readonly ushort _pad = 0;
     public readonly uint Length = (uint)(4 + 2 * rectanglesLength);
     public readonly uint Drawable = drawable;
     public readonly uint GC = gc;

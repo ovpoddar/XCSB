@@ -1,12 +1,9 @@
-﻿using System.Net;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Xcsb.Connection;
-using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Replies;
-using Xcsb.Connection.Response.Replies.Internals;
 using Xcsb.Extension.BigRequests.Requests;
 using Xcsb.Extension.BigRequests.Response;
 

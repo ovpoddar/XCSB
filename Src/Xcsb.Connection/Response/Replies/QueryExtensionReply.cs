@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Xcsb.Connection.Models;
 using Xcsb.Connection.Response.Contract;
 
 namespace Xcsb.Connection.Response.Replies;
