@@ -138,7 +138,7 @@ void demo_store_color()
     Console.WriteLine("=== StoreNamedColor Demo ===\n");
     var cookie = con.AllocColor(colormap, 65535, 0, 0);
     Console.WriteLine("StoreNamedColor: Red color allocated, Pixel value: %u\n", cookie.Pixel);
-    con.ChangeGCUnchecked(gc, GCMask.Foreground, [cookie.Pixel]);
+    con.ChangeGCUnchecked(gc, GcMask.Foreground, [cookie.Pixel]);
     con.PolyFillRectangleUnchecked(window, gc, [new Rectangle() { X = 300, Y = 50, Width = 80, Height = 30 }]);
 }
 
@@ -166,11 +166,11 @@ void show_help()
 
 void draw_interface()
 {
-    con.ChangeGCUnchecked(gc, GCMask.Foreground, [screen.WhitePixel]);
+    con.ChangeGCUnchecked(gc, GcMask.Foreground, [screen.WhitePixel]);
     con.PolyFillRectangleUnchecked(window, gc, [
         new Rectangle() { X = 0, Y = 0, Width = 500, Height = 400 }
     ]);
-    con.ChangeGCUnchecked(gc, GCMask.Foreground, [screen.BlackPixel]);
+    con.ChangeGCUnchecked(gc, GcMask.Foreground, [screen.BlackPixel]);
     con.ImageText8Unchecked(window, gc, 20, 30, "XCB System Control Demo"u8);
     con.ImageText8Unchecked(window, gc, 20, 60, "Press number keys (1-6) for demos"u8);
     con.ImageText8Unchecked(window, gc, 20, 90, "Press 'h' for help, 'q' to quit"u8);

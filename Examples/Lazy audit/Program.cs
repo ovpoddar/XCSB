@@ -26,10 +26,10 @@ xcsb.CreateWindowUnchecked(screen.RootDepth.DepthValue,
 lazyXcsb.ChangeProperty<byte>(PropertyMode.Replace, window, ATOM.WmName, ATOM.String, Encoding.UTF8.GetBytes("working fixing dodo"));
 
 var gc = connection.NewId();
-lazyXcsb.CreateGC(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
+lazyXcsb.CreateGC(gc, window, GcMask.Foreground | GcMask.GraphicsExposures, [screen.BlackPixel, 0]);
 
 var white_gc = connection.NewId();
-lazyXcsb.CreateGC(white_gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.WhitePixel, 0]);
+lazyXcsb.CreateGC(white_gc, window, GcMask.Foreground | GcMask.GraphicsExposures, [screen.WhitePixel, 0]);
 
 var requirByte = WIDTH * HEIGHT * 4;
 var data = ArrayPool<byte>.Shared.Rent(requirByte);

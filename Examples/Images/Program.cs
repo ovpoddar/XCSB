@@ -40,10 +40,10 @@ xcsb.CreateWindowUnchecked(screen.RootDepth.DepthValue,
 xcsb.ChangePropertyUnchecked<byte>(PropertyMode.Replace, window, ATOM.WmName, ATOM.String, Encoding.UTF8.GetBytes("working fixing dodo"));
 
 var gc = connection.NewId();
-xcsb.CreateGCUnchecked(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
+xcsb.CreateGCUnchecked(gc, window, GcMask.Foreground | GcMask.GraphicsExposures, [screen.BlackPixel, 0]);
 
 var white_gc = connection.NewId();
-xcsb.CreateGCUnchecked(white_gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.WhitePixel, 0]);
+xcsb.CreateGCUnchecked(white_gc, window, GcMask.Foreground | GcMask.GraphicsExposures, [screen.WhitePixel, 0]);
 
 var requirByte = WIDTH * HEIGHT * 4;
 var data = ArrayPool<byte>.Shared.Rent(requirByte);

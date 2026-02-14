@@ -33,7 +33,7 @@ d.CreateWindowChecked(c.HandshakeSuccessResponseBody.Screens[0].RootDepth.DepthV
     Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask,
     [c.HandshakeSuccessResponseBody.Screens[0].BlackPixel, (uint)EventMask.ExposureMask]);
 
-d.CreateGCChecked(gc, window, GCMask.Foreground | GCMask.GraphicsExposures,
+d.CreateGCChecked(gc, window, GcMask.Foreground | GcMask.GraphicsExposures,
     [c.HandshakeSuccessResponseBody.Screens[0].BlackPixel, 0]);
 
 d.MapWindowChecked(window);

@@ -43,7 +43,7 @@ var fontId = connection.NewId();
 x.OpenFontUnchecked("fixed", fontId);
 
 var _gc = connection.NewId();
-x.CreateGCUnchecked(_gc, win, GCMask.Foreground | GCMask.Background | GCMask.Font, [screen.BlackPixel, screen.WhitePixel, fontId]);
+x.CreateGCUnchecked(_gc, win, GcMask.Foreground | GcMask.Background | GcMask.Font, [screen.BlackPixel, screen.WhitePixel, fontId]);
 
 x.ImageText8Unchecked(win, _gc, 10, 40, "the background will change"u8);
 Thread.Sleep(5000);
@@ -84,7 +84,7 @@ foreach (var atom in atoms)
 x.ImageText8Unchecked(win, _gc, 10, 40, "Change the GC's foreground red to white"u8);
 Thread.Sleep(5000);
 var gc = connection.NewId();
-x.CreateGCUnchecked(gc, win, GCMask.Foreground, [0xFF0000]);
+x.CreateGCUnchecked(gc, win, GcMask.Foreground, [0xFF0000]);
 var rect = new Rectangle()
 {
     X = 10,
@@ -95,7 +95,7 @@ var rect = new Rectangle()
 x.PolyFillRectangleUnchecked(win, gc, [rect]);
 
 Thread.Sleep(1000);
-x.ChangeGCUnchecked(gc, GCMask.Foreground, [screen.WhitePixel]);
+x.ChangeGCUnchecked(gc, GcMask.Foreground, [screen.WhitePixel]);
 rect.X += 20;
 rect.Y += 60;
 
@@ -105,14 +105,14 @@ Thread.Sleep(3000);
 
 var gc1 = connection.NewId();
 var gc2 = connection.NewId();
-x.CreateGCUnchecked(gc1, win, GCMask.Foreground, [0x0000FF]);
+x.CreateGCUnchecked(gc1, win, GcMask.Foreground, [0x0000FF]);
 x.CreateGCUnchecked(gc2, win, 0, []);
 rect.X -= 15;
 rect.Y -= 65;
 x.PolyFillRectangleUnchecked(win, gc1, [rect]);
 Thread.Sleep(1500);
 
-x.CopyGCUnchecked(gc1, gc2, GCMask.Foreground);
+x.CopyGCUnchecked(gc1, gc2, GcMask.Foreground);
 rect.X += 20;
 rect.Y += 60;
 

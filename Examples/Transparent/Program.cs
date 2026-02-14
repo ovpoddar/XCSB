@@ -27,7 +27,7 @@ x11.MapWindowUnchecked(window);
 
 var isRunning = true;
 var gc = connection.NewId();
-x11.CreateGCUnchecked(gc, window, GCMask.Foreground | GCMask.Background, [white, black]);
+x11.CreateGCUnchecked(gc, window, GcMask.Foreground | GcMask.Background, [white, black]);
 while (isRunning)
 {
     var evnt = x11.GetEvent();

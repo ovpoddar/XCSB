@@ -29,7 +29,7 @@ xcsb.CreatePixmapUnchecked(screen.RootDepth!.DepthValue,
     width, height);
 
 var gc = connection.NewId();
-xcsb.CreateGCUnchecked(gc, pixmap, GCMask.Foreground | GCMask.Background, [screen.BlackPixel, screen.WhitePixel]);
+xcsb.CreateGCUnchecked(gc, pixmap, GcMask.Foreground | GcMask.Background, [screen.BlackPixel, screen.WhitePixel]);
 
 var cursor = connection.NewId();
 
@@ -40,7 +40,7 @@ xcsb.CreatePixmapUnchecked(1, cursor_pixmap, screen.Root, 16, 16);
 xcsb.CreatePixmapUnchecked(1, cursor_mask, screen.Root, 16, 16);
 
 var cursor_gc = connection.NewId();
-xcsb.CreateGCUnchecked(cursor_gc, cursor_pixmap, GCMask.Foreground, [1]);
+xcsb.CreateGCUnchecked(cursor_gc, cursor_pixmap, GcMask.Foreground, [1]);
 
 xcsb.PolySegmentUnchecked(cursor_pixmap, cursor_gc,
 [
@@ -64,7 +64,7 @@ xcsb.RecolorCursorUnchecked(cursor,
 
 xcsb.ChangeWindowAttributesUnchecked(window, ValueMask.Cursor, [cursor]);
 
-xcsb.ChangeGCUnchecked(gc, GCMask.Foreground, [screen.WhitePixel]);
+xcsb.ChangeGCUnchecked(gc, GcMask.Foreground, [screen.WhitePixel]);
 xcsb.PolyFillRectangleUnchecked(pixmap, gc, [new Rectangle { X = 0, Y = 0, Width = width, Height = height }]);
 
 xcsb.SetClipRectanglesUnchecked(ClipOrdering.Unsorted,
@@ -81,15 +81,15 @@ xcsb.SetDashesUnchecked(
     0,
     [10, 5, 3, 7]);
 
-xcsb.ChangeGCUnchecked(gc, GCMask.LineStyle, [1]);
+xcsb.ChangeGCUnchecked(gc, GcMask.LineStyle, [1]);
 
-xcsb.ChangeGCUnchecked(gc, GCMask.Foreground, [screen.BlackPixel]);
+xcsb.ChangeGCUnchecked(gc, GcMask.Foreground, [screen.BlackPixel]);
 
 xcsb.PolyFillRectangleUnchecked(pixmap, gc, [new Rectangle { X = 0, Y = 0, Width = width, Height = height }]);
 
 xcsb.PolyRectangleUnchecked(pixmap, gc, [new Rectangle { X = 5, Y = 5, Width = width - 10, Height = height - 10 }]);
 
-xcsb.ChangeGCUnchecked(gc, GCMask.ClipMask, [0]);
+xcsb.ChangeGCUnchecked(gc, GcMask.ClipMask, [0]);
 
 xcsb.PolyRectangleUnchecked(pixmap, gc, [
     new Rectangle { X = 50, Y = 50, Width = 100, Height = 80 },

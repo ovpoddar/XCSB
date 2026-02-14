@@ -76,9 +76,9 @@ while (isRunning)
             c.OpenFontChecked("fixed", fontId1);
 
             var gc = connection.NewId();
-            c.CreateGCChecked(gc, window, GCMask.Foreground | GCMask.Background | GCMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId]);
+            c.CreateGCChecked(gc, window, GcMask.Foreground | GcMask.Background | GcMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId]);
             var gc1 = connection.NewId();
-            c.CreateGCChecked(gc1, window, GCMask.Foreground | GCMask.Background | GCMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId1]);
+            c.CreateGCChecked(gc1, window, GcMask.Foreground | GcMask.Background | GcMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId1]);
 
             c.ImageText16Checked(window, gc, 10, 15, "this is a utf 16 string");
             c.ImageText8Checked(window, gc, 10, 40, "this is a utf 8 string"u8);
@@ -94,7 +94,7 @@ while (isRunning)
         if (keyPressEvent.Detail == 54) //c
         {
             var gc = connection.NewId();
-            c.CreateGCChecked(gc, window, GCMask.Foreground, [0x00ffffff]);
+            c.CreateGCChecked(gc, window, GcMask.Foreground, [0x00ffffff]);
 
             c.PolyFillRectangleChecked(window, gc, [new Rectangle{
                 X = 0,Y= 0,Width =  500, Height = 500
@@ -109,7 +109,7 @@ while (isRunning)
     else if (Event.ReplyType == XEventType.Expose)
     {
         var gc = connection.NewId();
-        c.CreateGCChecked(gc, window, GCMask.Foreground, [0x00ff0000]);
+        c.CreateGCChecked(gc, window, GcMask.Foreground, [0x00ff0000]);
 
         c.PolyFillRectangleChecked(window, gc, [new Rectangle{
                 X = 0,Y= 0,Width =  500, Height = 500
