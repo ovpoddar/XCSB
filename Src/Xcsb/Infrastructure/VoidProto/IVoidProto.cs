@@ -86,11 +86,11 @@ public interface IVoidProto
 
     ResponseProto FreePixmap(uint pixmapId);
 
-    ResponseProto CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args);
+    ResponseProto CreateGC(uint gc, uint drawable, GcMask mask, Span<uint> args);
 
-    ResponseProto ChangeGC(uint gc, GCMask mask, Span<uint> args);
+    ResponseProto ChangeGC(uint gc, GcMask mask, Span<uint> args);
 
-    ResponseProto CopyGC(uint srcGc, uint dstGc, GCMask mask);
+    ResponseProto CopyGC(uint srcGc, uint dstGc, GcMask mask);
 
     ResponseProto SetDashes(uint gc, ushort dashOffset, Span<byte> dashes);
 

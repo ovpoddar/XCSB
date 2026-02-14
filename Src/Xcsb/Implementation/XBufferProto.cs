@@ -47,7 +47,7 @@ internal sealed class XBufferProto : IXBufferProto
         _bufferProtoOut.Add(ref request);
     }
 
-    public void ChangeGC(uint gc, GCMask mask, Span<uint> args)
+    public void ChangeGC(uint gc, GcMask mask, Span<uint> args)
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
@@ -168,7 +168,7 @@ internal sealed class XBufferProto : IXBufferProto
         _bufferProtoOut.Add(ref request);
     }
 
-    public void CopyGC(uint srcGc, uint dstGc, GCMask mask)
+    public void CopyGC(uint srcGc, uint dstGc, GcMask mask)
     {
         var request = new CopyGCType(srcGc, dstGc, mask);
         _bufferProtoOut.Add(ref request);
@@ -197,7 +197,7 @@ internal sealed class XBufferProto : IXBufferProto
         _bufferProtoOut.Add(ref request);
     }
 
-    public void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args)
+    public void CreateGC(uint gc, uint drawable, GcMask mask, Span<uint> args)
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));

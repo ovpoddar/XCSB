@@ -82,11 +82,11 @@ public interface IVoidProtoUnchecked
 
     void FreePixmapUnchecked(uint pixmapId);
 
-    void CreateGCUnchecked(uint gc, uint drawable, GCMask mask, Span<uint> args);
+    void CreateGCUnchecked(uint gc, uint drawable, GcMask mask, Span<uint> args);
 
-    void ChangeGCUnchecked(uint gc, GCMask mask, Span<uint> args);
+    void ChangeGCUnchecked(uint gc, GcMask mask, Span<uint> args);
 
-    void CopyGCUnchecked(uint srcGc, uint dstGc, GCMask mask);
+    void CopyGCUnchecked(uint srcGc, uint dstGc, GcMask mask);
 
     void SetDashesUnchecked(uint gc, ushort dashOffset, Span<byte> dashes);
 

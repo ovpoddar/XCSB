@@ -1,7 +1,7 @@
 ﻿namespace Xcsb.Masks;
 
 [Flags]
-public enum GCMask : uint
+public enum GcMask : uint
 {
     Function = 1,
     PlaneMask = 2,

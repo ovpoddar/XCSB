@@ -531,13 +531,13 @@ internal sealed class XProto : IXProto
     public ResponseProto FreePixmap(uint pixmapId) =>
         FreePixmapBase(pixmapId);
 
-    public ResponseProto CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args) =>
+    public ResponseProto CreateGC(uint gc, uint drawable, GcMask mask, Span<uint> args) =>
         CreateGcBase(gc, drawable, mask, args);
 
-    public ResponseProto ChangeGC(uint gc, GCMask mask, Span<uint> args) =>
+    public ResponseProto ChangeGC(uint gc, GcMask mask, Span<uint> args) =>
         ChangeGcBase(gc, mask, args);
 
-    public ResponseProto CopyGC(uint srcGc, uint dstGc, GCMask mask) =>
+    public ResponseProto CopyGC(uint srcGc, uint dstGc, GcMask mask) =>
         CopyGcBase(srcGc, dstGc, mask);
 
     public ResponseProto SetDashes(uint gc, ushort dashOffset, Span<byte> dashes) =>
@@ -909,19 +909,19 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void CreateGCUnchecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
+    public void CreateGCUnchecked(uint gc, uint drawable, GcMask mask, Span<uint> args)
     {
         var cookie = this.CreateGcBase(gc, drawable, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void ChangeGCUnchecked(uint gc, GCMask mask, Span<uint> args)
+    public void ChangeGCUnchecked(uint gc, GcMask mask, Span<uint> args)
     {
         var cookie = this.ChangeGcBase(gc, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void CopyGCUnchecked(uint srcGc, uint dstGc, GCMask mask)
+    public void CopyGCUnchecked(uint srcGc, uint dstGc, GcMask mask)
     {
         var cookie = this.CopyGcBase(srcGc, dstGc, mask);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1415,19 +1415,19 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void CreateGCChecked(uint gc, uint drawable, GCMask mask, Span<uint> args)
+    public void CreateGCChecked(uint gc, uint drawable, GcMask mask, Span<uint> args)
     {
         var cookie = this.CreateGcBase(gc, drawable, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void ChangeGCChecked(uint gc, GCMask mask, Span<uint> args)
+    public void ChangeGCChecked(uint gc, GcMask mask, Span<uint> args)
     {
         var cookie = this.ChangeGcBase(gc, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void CopyGCChecked(uint srcGc, uint dstGc, GCMask mask)
+    public void CopyGCChecked(uint srcGc, uint dstGc, GcMask mask)
     {
         var cookie = this.CopyGcBase(srcGc, dstGc, mask);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1749,7 +1749,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto ChangeGcBase(uint gc, GCMask mask, Span<uint> args)
+    private ResponseProto ChangeGcBase(uint gc, GcMask mask, Span<uint> args)
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
@@ -1921,7 +1921,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto CopyGcBase(uint srcGc, uint dstGc, GCMask mask)
+    private ResponseProto CopyGcBase(uint srcGc, uint dstGc, GcMask mask)
     {
         var request = new CopyGCType(srcGc, dstGc, mask);
         _protoOutExtended.Send(ref request);
@@ -1953,7 +1953,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto CreateGcBase(uint gc, uint drawable, GCMask mask, Span<uint> args)
+    private ResponseProto CreateGcBase(uint gc, uint drawable, GcMask mask, Span<uint> args)
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));

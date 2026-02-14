@@ -82,11 +82,11 @@ public interface IVoidBufferProto
 
     void FreePixmap(uint pixmapId);
 
-    void CreateGC(uint gc, uint drawable, GCMask mask, Span<uint> args);
+    void CreateGC(uint gc, uint drawable, GcMask mask, Span<uint> args);
 
-    void ChangeGC(uint gc, GCMask mask, Span<uint> args);
+    void ChangeGC(uint gc, GcMask mask, Span<uint> args);
 
-    void CopyGC(uint srcGc, uint dstGc, GCMask mask);
+    void CopyGC(uint srcGc, uint dstGc, GcMask mask);
 
     void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes);
 
