@@ -111,10 +111,20 @@ internal class XConnection : IXConnectionInternal
                 : response.HandshakeResponseHeadAuthenticate.AdditionalDataLength;
             if (dataLength == 0) throw new NotSupportedException();
 
-            // todo: stack overflow handler
-            Span<byte> buffer = stackalloc byte[dataLength * 4];
-            this.Accesser.Received(buffer);
-            FailReason = Encoding.ASCII.GetString(buffer).TrimEnd();
+            var requiredBuffer = dataLength * 4;
+            if (requiredBuffer < 255)
+            {
+                Span<byte> buffer = stackalloc byte[requiredBuffer];
+                this.Accesser.Received(buffer);
+                FailReason = Encoding.ASCII.GetString(buffer).TrimEnd();
+            }
+            else
+            {
+                using var buffer = new ArrayPoolUsing<byte>(dataLength);
+                var workingBuffer = buffer.Slice(0, dataLength);
+                this.Accesser.Received(workingBuffer);
+                FailReason = Encoding.ASCII.GetString(workingBuffer).TrimEnd();
+            }
         }
     }
 
