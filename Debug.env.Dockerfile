@@ -31,6 +31,6 @@ ENV TEST_RESULTS_DIR=/workspace/TestResults
 
 RUN mkdir -p ${TEST_RESULTS_DIR}
 ENTRYPOINT ["bash", "-c", "Xvfb :99 -screen 0 1280x720x24 -nolisten tcp -ac 2>/tmp/xvfb.log & \
-  export DISPLAY=:99; \
-  for i in {1..50}; do xdpyinfo >/dev/null 2>&1 && break; sleep 0.2; done; \
-  dotnet test --logger \"trx;LogFileName=test_results.trx\" --results-directory \"$TEST_RESULTS_DIR\" || true; exit 0"]
+    export DISPLAY=:99; \
+    for i in {1..50}; do xdpyinfo >/dev/null 2>&1 && break; sleep 0.2; done; \
+    tail -f /dev/null"]
