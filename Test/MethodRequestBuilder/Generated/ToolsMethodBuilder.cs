@@ -30,7 +30,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails2("DependentOnWindow", "RotateProperties", ["$0, 1, new uint[] {30, 1, 37}"], ["uint", "ushort", "uint[]"], false, STRType.XcbAtom),
     new MethodDetails2Dynamic("DependentOnGc", "SetClipRectangles", ["0, $0, 0, 0, [{ \"X\" = 0, \"Y\" = 0, \"Width\" = 500, \"Height\" = 500 }]"], ["Xcsb.Models.ClipOrdering", "uint", "ushort", "ushort", "Xcsb.Models.Rectangle[]"], true, MethodDetails2Dynamic.DynamicType.Gc, STRType.XcbRectangle),
     new MethodDetails4("DependentOnPixmapRootDepthRoot", "CreatePixmap", ["$0, $1, $2, 65535, 65535", "$0, $1, $2, 0, 65535"], ["byte", "uint", "uint", "ushort", "ushort"]),
-    new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GCMask", "uint[]"]),
+    new MethodDetails5("DependentOnWindowId", "CreateGc", ["$0, $1, 1, new uint[] {6}", "$0, $1, 4194304, new uint[] {1}"], ["uint", "uint", "Xcsb.Masks.GcMask", "uint[]"]),
     new MethodDetails6("DependentOnWindowId", "CreateColormap", ["0, $0, $1, $2", "1, $0, $1, $2"], ["Xcsb.Models.ColormapAlloc", "uint", "uint", "uint"]),
     new MethodDetails7("DependentOnColorMap", "FreeColormap", ["$0"], ["uint"]),
     new MethodDetails7("DependentOnColorMap", "InstallColormap", ["$0"], ["uint"]),
@@ -53,7 +53,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails8Valid("DependentOnDrawableGc", "PutImage",["2, $0, $1, 2, 2, 0, 0, 0, 0, new byte[] {255, 0, 0, 255, 255,255,0,255, 255, 0, 0, 255, 255,255,0,255}"], ["Xcsb.Models.ImageFormatBitmap", "uint", "uint", "ushort", "ushort", "short", "short", "byte", "byte", "byte[]"], true, STRType.XcbByte),
     new MethodDetails9("DependentOnWindow", "DestroyWindow", ["$0"], ["uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
     new MethodDetails9("DependentOnColorMapId", "CopyColormapAndFree", ["$0, $1"], ["uint", "uint"], false, STRType.RawBuffer, MethodDetails9.ImplType.ColorMap, MethodDetails9.ImplType.Id),
-    new MethodDetails9("DependentOnGcGc", "CopyGc", ["$0, $1, 4"], ["uint", "uint", "Xcsb.Masks.GCMask"], false,STRType.RawBuffer, MethodDetails9.ImplType.GC, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnGcGc", "CopyGc", ["$0, $1, 4"], ["uint", "uint", "Xcsb.Masks.GcMask"], false,STRType.RawBuffer, MethodDetails9.ImplType.GC, MethodDetails9.ImplType.GC),
     new MethodDetails9("DependentOnWindow", "GrabButton", ["false, $0, 12, 1, 0, 0, 0, 5, 32768", "true, $0, 12, 1, 0, 0, 0, 0, 1"], ["bool", "uint", "ushort", "Xcsb.Models.GrabMode", "Xcsb.Models.GrabMode", "uint", "uint", "Xcsb.Models.Button", "Xcsb.Masks.ModifierMask"], false, STRType.RawBuffer, MethodDetails9.ImplType.Window),
     new MethodDetails9("DependentOnWindowWindow", "ReparentWindow", ["$0, $1, 0, 0"], ["uint", "uint", "short", "short"], false,STRType.RawBuffer, MethodDetails9.ImplType.Window, MethodDetails9.ImplType.Window),
     new MethodDetails9("DependentOnIdGc", "CreateCursor", ["$0, $1, 0, 0, 0, 0, 65535, 65535, 65535, 8, 8"], ["uint", "uint", "uint", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort", "ushort"], false,STRType.RawBuffer, MethodDetails9.ImplType.Id, MethodDetails9.ImplType.GC),
@@ -86,7 +86,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails9("DependentOnCursorId", "ChangeActivePointerGrab", ["$0, 0, 4"], [ "uint", "uint", "ushort" ],false, STRType.RawBuffer, MethodDetails9.ImplType.CursorId),
     new MethodDetails9("DependentOnWindow", "ConfigureWindow", ["$0, 1, new uint[] {100}", "$0, 2, new uint[] {100}", "$0, 4, new uint[] {100}", "$0, 8, new uint[] {100}", "$0, 16, new uint[] {0}", "$0, 64, new uint[] {0}", "$0, 111, new uint[] {100, 100, 500, 500, 0, 0}"], ["uint", "Xcsb.Masks.ConfigureValueMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.Window),
     new MethodDetails9("DependentOnWindow", "ChangeWindowAttributes", ["$0, 1, new uint[] {167772}", "$0, 2, new uint[] {16777215}", "$0, 4, new uint[] {167772}", "$0, 8, new uint[] {16777215}", "$0, 16, new uint[] {1}", "$0, 32, new uint[] {1}", "$0, 64, new uint[] {167772}", "$0, 128, new uint[] {167772}", "$0, 256, new uint[] {167772}", "$0, 512, new uint[] {0}", "$0, 1024, new uint[] {1}", "$0, 2048, new uint[] {32769}", "$0, 4096, new uint[] {1}", "$0, 8192, new uint[] {167772}", "$0, 16384, new uint[] {167772}"], ["uint", "Xcsb.Masks.ValueMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.Window),
-    new MethodDetails9("DependentOnGc", "ChangeGc", ["$0, 4, new uint[] {4294967295}"], ["uint", "Xcsb.Masks.GCMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.GC),
+    new MethodDetails9("DependentOnGc", "ChangeGc", ["$0, 4, new uint[] {4294967295}"], ["uint", "Xcsb.Masks.GcMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.GC),
     new MethodDetails9("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, STRType.XcbByte, MethodDetails9.ImplType.GC),
 #if DOCKERENV
     // AVOIDE RUNNING IN YOU PC IT COULD BE CHANGE YOU KEYBOARD KEYS
@@ -816,7 +816,7 @@ $"""
     _xProto.CreateWindowChecked(0, window, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
                     screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
     var {name} = connect.NewId();
-    _xProto.CreateGCChecked({name}, window, (Xcsb.Masks.GCMask)(4|8), [screen.BlackPixel, screen.WhitePixel]);
+    _xProto.CreateGCChecked({name}, window, (Xcsb.Masks.GcMask)(4|8), [screen.BlackPixel, screen.WhitePixel]);
 """,
             _ => throw new NullReferenceException()
         };
@@ -1342,7 +1342,7 @@ $$"""
 @"
         var root = connect.HandshakeSuccessResponseBody!.Screens[0].Root;
         var gc = connect.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GcMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
 " :
 @"
         var screen = connect.HandshakeSuccessResponseBody!.Screens[0];
@@ -1454,7 +1454,7 @@ $$"""
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
         var root = connect.HandshakeSuccessResponseBody!.Screens[0].Root;
         var gc = connect.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GCMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
+        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GcMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
         {{base.GetItems()}}
 
         // act
