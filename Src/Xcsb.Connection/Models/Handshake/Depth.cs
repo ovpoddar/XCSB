@@ -14,7 +14,7 @@ public class Depth
     public required Visual[] Visuals;
 #endif
 
-    internal static Depth Read(SoccketAccesser soccketAccesser, ref int currentlyRead)
+    internal static Depth Read(ISoccketAccesser soccketAccesser, ref int currentlyRead)
     {
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_Depth>()];
         soccketAccesser.Received(scratchBuffer);
@@ -30,7 +30,7 @@ public class Depth
         return result;
     }
 
-    private static int SetVisual(Depth depth, SoccketAccesser soccketAccesser)
+    private static int SetVisual(Depth depth, ISoccketAccesser soccketAccesser)
     {
         var requireByte = Marshal.SizeOf<Visual>() * depth.Visuals.Length;
         if (requireByte < XcsbClientConfiguration.StackAllocThreshold)

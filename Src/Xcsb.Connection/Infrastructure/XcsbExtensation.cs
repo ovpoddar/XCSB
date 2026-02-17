@@ -16,9 +16,9 @@ internal sealed class XcsbExtensation : IXExtensationInternal
     private readonly ConcurrentDictionary<string, ExtensationDetails> _extensitionReply = new ConcurrentDictionary<string, ExtensationDetails>();
     private readonly ConcurrentDictionary<Type, Lazy<object>> _store = new ConcurrentDictionary<Type, Lazy<object>>();
 
-    public SoccketAccesser Transport { get; }
+    public ISoccketAccesser Transport { get; }
 
-    public XcsbExtensation(SoccketAccesser accesser)
+    public XcsbExtensation(ISoccketAccesser accesser)
     {
         Transport = accesser;
     }

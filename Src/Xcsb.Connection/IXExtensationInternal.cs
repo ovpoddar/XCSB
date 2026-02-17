@@ -5,7 +5,7 @@ namespace Xcsb.Connection;
 
 internal interface IXExtensationInternal : IXExtensation
 {
-    SoccketAccesser Transport { get; }
+    ISoccketAccesser Transport { get; }
 
     void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply, int newError, int newEvent);
     bool IsExtensationEnable(string name);

@@ -10,15 +10,15 @@ using Xcsb.Connection.Response.Errors;
 
 namespace Xcsb.Connection.Handlers;
 
-internal sealed class SoccketAccesser
+internal sealed class SoccketAccesser : ISoccketAccesser
 {
     private readonly XcsbClientConfiguration _configuration;
     private readonly Socket _socket;
 
-    internal readonly ConcurrentQueue<byte[]> BufferEvents;
-    internal readonly ConcurrentDictionary<int, byte[]> ReplyBuffer;
-    internal int ReceivedSequence = 0;
-    internal int SendSequence = 0;
+    private readonly ConcurrentQueue<byte[]> _bufferEvents;
+    private readonly ConcurrentDictionary<int, byte[]> _replyBuffer;
+    private int _receivedSequence = 0;
+    private int _sendSequence = 0;
 
     public SoccketAccesser(Socket socket,
         ConcurrentQueue<byte[]> bufferEvents,
@@ -26,8 +26,8 @@ internal sealed class SoccketAccesser
         XcsbClientConfiguration configuration)
     {
         this._socket = socket;
-        this.BufferEvents = bufferEvents;
-        this.ReplyBuffer = replyBuffer;
+        this._bufferEvents = bufferEvents;
+        this._replyBuffer = replyBuffer;
         this._configuration = configuration;
     }
 
@@ -42,7 +42,7 @@ internal sealed class SoccketAccesser
     public void SendRequest(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
         SendData(in buffer, socketFlags);
-        SendSequence++;
+        _sendSequence++;
     }
 
     #endregion
@@ -77,19 +77,19 @@ internal sealed class SoccketAccesser
             switch (content.GetResponseType())
             {
                 case XResponseType.Error:
-                    ReplyBuffer[content.Sequence] = buffer.ToArray();
+                    _replyBuffer[content.Sequence] = buffer.ToArray();
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue(buffer.ToArray());
+                    _bufferEvents.Enqueue(buffer.ToArray());
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
+                    _replyBuffer[content.Sequence] = ComputeResponse(ref buffer);
                     break;
                 case XResponseType.Event:
-                    BufferEvents.Enqueue(buffer.ToArray());
+                    _bufferEvents.Enqueue(buffer.ToArray());
                     break;
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue(content.ReplyType == 35
+                    _bufferEvents.Enqueue(content.ReplyType == 35
                         ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
                         : buffer.ToArray());
                     break;
@@ -111,8 +111,8 @@ internal sealed class SoccketAccesser
             switch (content.GetResponseType())
             {
                 case XResponseType.Error:
-                    if (ReceivedSequence > outProtoSequence)
-                        ReplyBuffer[content.Sequence] = buffer.ToArray();
+                    if (_receivedSequence > outProtoSequence)
+                        _replyBuffer[content.Sequence] = buffer.ToArray();
                     else
                     {
                         if (shouldThrowOnError)
@@ -121,16 +121,16 @@ internal sealed class SoccketAccesser
 
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue(buffer.ToArray());
+                    _bufferEvents.Enqueue(buffer.ToArray());
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
+                    _replyBuffer[content.Sequence] = ComputeResponse(ref buffer);
                     break;
                 case XResponseType.Event:
-                    BufferEvents.Enqueue(buffer.ToArray());
+                    _bufferEvents.Enqueue(buffer.ToArray());
                     break;
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue(content.ReplyType == 35
+                    _bufferEvents.Enqueue(content.ReplyType == 35
                         ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
                         : buffer.ToArray());
                     break;
@@ -143,8 +143,8 @@ internal sealed class SoccketAccesser
     public byte[] ComputeResponse(ref Span<byte> buffer, bool updateSequence = true)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
-        if (updateSequence && content.Sequence > ReceivedSequence)
-            ReceivedSequence = content.Sequence;
+        if (updateSequence && content.Sequence > _receivedSequence)
+            _receivedSequence = content.Sequence;
 
         var replySize = (int)(content.Length * 4);
         if (replySize == 0)
@@ -155,7 +155,7 @@ internal sealed class SoccketAccesser
 
         _ = Received(result[32..result.Length]);
 
-        if (!ReplyBuffer.TryRemove(content.Sequence, out var response))
+        if (!_replyBuffer.TryRemove(content.Sequence, out var response))
             return result;
 
         replySize = result.Length + response.Length;
@@ -171,7 +171,7 @@ internal sealed class SoccketAccesser
     {
         while (true)
         {
-            if (sequence > ReceivedSequence)
+            if (sequence > _receivedSequence)
             {
                 if (_socket.Available == 0)
                     _socket.Poll(timeOut, SelectMode.SelectRead);
@@ -179,7 +179,7 @@ internal sealed class SoccketAccesser
                 continue;
             }
 
-            if (!ReplyBuffer.Remove(sequence, out var reply))
+            if (!_replyBuffer.Remove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
             var response = reply.AsSpan().AsStruct<T>();
@@ -191,10 +191,10 @@ internal sealed class SoccketAccesser
 
     public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct
     {
-        if (ReceivedSequence < response.Id)
+        if (_receivedSequence < response.Id)
             FlushSocket();
 
-        var hasAnyData = ReplyBuffer.Remove(response.Id, out var buffer);
+        var hasAnyData = _replyBuffer.Remove(response.Id, out var buffer);
         return hasAnyData
             ? buffer.AsSpan().AsStruct<T>()
             : response.HasReturn
@@ -208,4 +208,11 @@ internal sealed class SoccketAccesser
         _socket.Poll(timeout, SelectMode.SelectRead);
 
     public int AvailableData => _socket.Available;
+
+    public ConcurrentQueue<byte[]> BufferEvents => _bufferEvents;
+
+    public ConcurrentDictionary<int, byte[]> ReplyBuffer => _replyBuffer;
+
+    public int ReceivedSequence { get => _receivedSequence; set => _receivedSequence = value; }
+    public int SendSequence { get => _sendSequence; set => _sendSequence = value; }
 }

@@ -22,7 +22,7 @@ internal class XConnection : IXConnectionInternal
     public HandshakeStatus HandshakeStatus { get; private set; }
     public string FailReason { get; private set; } = string.Empty;
     public bool Connected => this._socket.Connected;
-    public SoccketAccesser Accesser { get; }
+    public ISoccketAccesser Accesser { get; }
     public IXExtensation Extensation { get; }
 
     public XConnection(string path, XcsbClientConfiguration configuration, in ProtocolType type)

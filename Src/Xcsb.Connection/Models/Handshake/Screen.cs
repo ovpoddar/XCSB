@@ -28,7 +28,7 @@ public class Screen
     public required Depth[] Depths;
 #endif
 
-    internal static Screen Read(SoccketAccesser soccketAccesser, ref int currentlyRead)
+    internal static Screen Read(ISoccketAccesser soccketAccesser, ref int currentlyRead)
     {
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_screen>()];
         soccketAccesser.Received(scratchBuffer);
