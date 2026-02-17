@@ -7,7 +7,7 @@ namespace Xcsb.Handlers.Direct;
 
 internal sealed class ProtoOutExtended
 {
-    internal readonly SoccketAccesser _soccketAccesser;
+    private readonly SoccketAccesser _soccketAccesser;
 
     public int Sequence
     {

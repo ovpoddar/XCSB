@@ -15,7 +15,7 @@ namespace Xcsb.Handlers.Direct;
 
 internal sealed class ProtoInExtended
 {
-    internal readonly SoccketAccesser _soccketAccesser;
+    private readonly SoccketAccesser _soccketAccesser;
 
     internal int Sequence
     {
@@ -98,7 +98,12 @@ internal sealed class ProtoInExtended
 
     }
 
-
+    public int AvailableData => 
+        _soccketAccesser.AvailableData;
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void PollRead(int timeout) => 
+        _soccketAccesser.PollRead(timeout);
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
