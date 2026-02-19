@@ -7,6 +7,7 @@ using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Models.Handshake;
 using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
 using Xcsb.Extension.BigRequests;
 using Xcsb.Handlers.Direct;
@@ -44,10 +45,11 @@ internal sealed class XProto : IXProto
         if (connection.HandshakeStatus is not HandshakeStatus.Success ||
             connection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(connection.FailReason);
-        connection.Accesser.Foo(
-            new Range(0, 1),
-            new Range(0, 1)
-            );
+        connection.Accesser.RegisterResponse(new Range(0, 1), XResponseType.Error);
+        connection.Accesser.RegisterResponse(new Range(1, 2), XResponseType.Reply);
+        connection.Accesser.RegisterResponse(new Range(11, 12), XResponseType.Notify);
+        connection.Accesser.RegisterResponse(new Range(2, 11), XResponseType.Event);
+        connection.Accesser.RegisterResponse(new Range(12, 35), XResponseType.Event);
         _protoInExtended = new ProtoInExtended(connection.Accesser); //Todo: can be more organised with interface and staffs will think about them after api finalized
         _protoOutExtended = new ProtoOutExtended(connection.Accesser);
 

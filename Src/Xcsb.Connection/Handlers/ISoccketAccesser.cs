@@ -24,5 +24,5 @@ internal interface ISoccketAccesser
     (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply;
     void SendData(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags);
     void SendRequest(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags);
-    void Foo(Range errors, Range events);
+    void RegisterResponse(Range range, XResponseType type);
 }

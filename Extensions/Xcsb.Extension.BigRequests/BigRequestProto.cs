@@ -28,10 +28,7 @@ internal sealed class BigRequestProto : IBigRequest
         if (error.HasValue)
             throw new XEventException(error.Value);
 
-        _extensation.ActivateExtensation(BigRequestExtensation.ExtensationName,
-            _response,
-            new Range(0, 0),
-            new Range(0, 0));
+        _extensation.ActivateExtensation(BigRequestExtensation.ExtensationName, _response, 0, 0);
         return result.AsSpan().ToStruct<BigReqEnableReply>();
     }
 

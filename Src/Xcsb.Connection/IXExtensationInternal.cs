@@ -8,11 +8,7 @@ internal interface IXExtensationInternal : IXExtensation
 {
     ISoccketAccesser Transport { get; }
 
-    void ActivateExtensation(
-        ReadOnlySpan<char> name,
-        QueryExtensionReply reply,
-        Range newError,
-        Range newEvent);
+    void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply, int errors, int events);
     bool IsExtensationEnable(string name);
     // bool CanHandleEvent(byte replyType);
     // bool CanHandleError(byte replyType);

@@ -21,7 +21,7 @@ internal sealed class SoccketAccesser : ISoccketAccesser
     public ConcurrentDictionary<int, byte[]> ReplyBuffer { get; } = new ConcurrentDictionary<int, byte[]>();
     public int ReceivedSequence { get; set; } = 0;
     public int SendSequence { get; set; } = 0;
-    
+
     public SoccketAccesser(Socket socket, XcsbClientConfiguration configuration)
     {
         this._socket = socket;
@@ -29,15 +29,22 @@ internal sealed class SoccketAccesser : ISoccketAccesser
         this._responseMap = new ConcurrentDictionary<int, XResponseType>();
     }
 
-    public void Foo(Range errors, Range events)
+    public void RegisterResponse(Range range, XResponseType type)
     {
-        for (var i = errors.Start.Value; i < errors.End.Value; i++)
-            _responseMap[i] = XResponseType.Error;
-
-        for (var i = events.Start.Value; i < events.End.Value; i++)
-            _responseMap[i] = XResponseType.Event;
+        for (var i = range.Start.Value; i < range.End.Value; i++)
+            _responseMap[i] = type;
     }
-    
+
+
+    private XResponseType GetResponseType(ref readonly XResponse reply)
+    {
+        if (_responseMap.TryGetValue(reply.ReplyType, out var type))
+            return type;
+        return reply.ReplyType == 36 
+            ? XResponseType.Event 
+            : XResponseType.Unknown;
+    }
+
 
     #region Send
 
@@ -80,7 +87,7 @@ internal sealed class SoccketAccesser : ISoccketAccesser
         {
             _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
-            switch (content.GetResponseType())
+            switch (GetResponseType(in content))
             {
                 case XResponseType.Error:
                     ReplyBuffer[content.Sequence] = buffer.ToArray();
@@ -113,7 +120,7 @@ internal sealed class SoccketAccesser : ISoccketAccesser
         {
             _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
-            switch (content.GetResponseType())
+            switch (GetResponseType(in content))
             {
                 case XResponseType.Error:
                     if (ReceivedSequence > outProtoSequence)

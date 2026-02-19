@@ -6,6 +6,7 @@ using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Request;
 using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Connection.Response.Replies.Internals;
 
@@ -74,9 +75,10 @@ internal sealed class XcsbExtensation : IXExtensationInternal
         return new ResponseProto(Transport.SendSequence, true);
     }
 
-    public void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply, Range errors, Range events)
+    public void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply, int errors, int events)
     {
-        Transport.Foo(errors, events);
+        Transport.RegisterResponse(new Range(reply.FirstError, (reply.FirstError + errors)), XResponseType.Error);
+        Transport.RegisterResponse(new Range(reply.FirstEvent, (reply.FirstEvent + events)), XResponseType.Event);
         _extensitionReply.TryAdd(name.ToString(), reply);
     }
 
