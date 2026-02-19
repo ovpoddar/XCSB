@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
+using Xcsb.Connection.Models;
 using Xcsb.Connection.Request;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Replies;
@@ -13,7 +14,8 @@ namespace Xcsb.Connection.Infrastructure;
 internal sealed class XcsbExtensation : IXExtensationInternal
 {
     private int _bigRequestLength = 262140;
-    private readonly ConcurrentDictionary<string, ExtensationDetails> _extensitionReply = new ConcurrentDictionary<string, ExtensationDetails>();
+    private readonly ConcurrentDictionary<string, QueryExtensionReply> _extensitionReply =
+        new ConcurrentDictionary<string, QueryExtensionReply>();
     private readonly ConcurrentDictionary<Type, Lazy<object>> _store = new ConcurrentDictionary<Type, Lazy<object>>();
 
     public ISoccketAccesser Transport { get; }
@@ -72,46 +74,38 @@ internal sealed class XcsbExtensation : IXExtensationInternal
         return new ResponseProto(Transport.SendSequence, true);
     }
 
-    public void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply, int newError, int newEvent)
+    public void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply, Range errors, Range events)
     {
-        var result = new ExtensationDetails
-        {
-            FirstError = reply.FirstError,
-            FirstEvent = reply.FirstEvent,
-            ResponseHeader = reply.ResponseHeader,
-            MajorOpcode = reply.MajorOpcode,
-            ErrorLenght = newError,
-            EventLenght = newEvent,
-        };
-        _extensitionReply.TryAdd(name.ToString(), result);
+        Transport.Foo(errors, events);
+        _extensitionReply.TryAdd(name.ToString(), reply);
     }
 
     public bool IsExtensationEnable(string name) =>
         _extensitionReply.ContainsKey(name);
 
-    public bool CanHandleEvent(byte replyType)
-    {
-        foreach (var item in _extensitionReply.Values)
-        {
-            var i = replyType - item.FirstEvent;
-            if (item.FirstEvent == 0) continue;
-            if (i > 0 && i > item.EventLenght) continue;
-            return true;
-        }
-        return false;
-    }
-
-    public bool CanHandleError(byte replyType)
-    {
-        foreach (var item in _extensitionReply.Values)
-        {
-            var i = replyType - item.FirstError;
-            if (item.FirstEvent == 0) continue;
-            if (i > 0 && i > item.ErrorLenght) continue;
-            return true;
-        }
-        return false;
-    }
+    // public bool CanHandleEvent(byte replyType)
+    // {
+    //     foreach (var item in _extensitionReply.Values)
+    //     {
+    //         var i = replyType - item.FirstEvent;
+    //         if (item.FirstEvent == 0) continue;
+    //         if (i > 0 && i > item.EventLenght) continue;
+    //         return true;
+    //     }
+    //     return false;
+    // }
+    //
+    // public bool CanHandleError(byte replyType)
+    // {
+    //     foreach (var item in _extensitionReply.Values)
+    //     {
+    //         var i = replyType - item.FirstError;
+    //         if (item.FirstEvent == 0) continue;
+    //         if (i > 0 && i > item.ErrorLenght) continue;
+    //         return true;
+    //     }
+    //     return false;
+    // }
 
     public T GetOrCreate<T>(Func<T> factory) where T : class
     {

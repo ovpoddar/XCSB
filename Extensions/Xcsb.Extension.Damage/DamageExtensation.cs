@@ -1,4 +1,5 @@
 ﻿using Xcsb.Connection;
+using Xcsb.Connection.Models;
 
 namespace Xcsb.Extension.Damage
 {
@@ -19,7 +20,10 @@ namespace Xcsb.Extension.Damage
 
             return extensationInternal.GetOrCreate(() =>
             {
-                extensationInternal.ActivateExtensation(ExtensationName, response, 1, 1);
+                extensationInternal.ActivateExtensation(ExtensationName,
+                    response,
+                    new Range(0, 1),
+                    new Range(0, 1));
                 var request = new DamageRequestProto(response, extensationInternal);
                 var versionNegostion = request.QueryVersion(ExtensationMajorVersion, ExtensationMinorVersion);
                 ExtensationMajorVersion = versionNegostion.MajorVersion;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
+using Xcsb.Connection.Models;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
@@ -23,4 +24,5 @@ internal interface ISoccketAccesser
     (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply;
     void SendData(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags);
     void SendRequest(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags);
+    void Foo(Range errors, Range events);
 }

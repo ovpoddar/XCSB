@@ -46,7 +46,7 @@ internal readonly ref struct XAuthority
     {
         var oldPosition = stream.Position;
         Span<byte> result = stackalloc byte[_hostAddress.Length];
-        stream.Seek(_hostAddress.Position, SeekOrigin.Begin);
+        stream.Seek(_hostAddress.Start, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
 
@@ -57,7 +57,7 @@ internal readonly ref struct XAuthority
     {
         var oldPosition = stream.Position;
         Span<byte> result = stackalloc byte[_displayNumber.Length];
-        stream.Seek(_displayNumber.Position, SeekOrigin.Begin);
+        stream.Seek(_displayNumber.Start, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
         return Encoding.ASCII.GetString(result);
@@ -67,7 +67,7 @@ internal readonly ref struct XAuthority
     {
         var oldPosition = stream.Position;
         var result = new byte[_name.Length];
-        stream.Seek(_name.Position, SeekOrigin.Begin);
+        stream.Seek(_name.Start, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
         return result;
@@ -77,7 +77,7 @@ internal readonly ref struct XAuthority
     {
         var oldPosition = stream.Position;
         var result = new byte[_data.Length];
-        stream.Seek(_data.Position, SeekOrigin.Begin);
+        stream.Seek(_data.Start, SeekOrigin.Begin);
         stream.ReadExactly(result);
         stream.Seek(oldPosition, SeekOrigin.Begin);
         return result;

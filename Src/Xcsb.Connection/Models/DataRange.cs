@@ -2,12 +2,12 @@ namespace Xcsb.Connection.Models;
 
 internal readonly struct DataRange
 {
-    public readonly int Position;
+    public readonly int Start;
     public readonly int Length;
 
-    public DataRange(int position, int length)
+    public DataRange(int start, int length)
     {
-        Position = position;
+        Start = start;
         Length = length;
     }
 }

@@ -13,11 +13,9 @@ namespace Xcsb.Connection.Infrastructure;
 internal class XConnection : IXConnectionInternal
 {
     private readonly Socket _socket;
-    private readonly ConcurrentQueue<byte[]> _bufferEvents;
-    private readonly ConcurrentDictionary<int, byte[]> _replyBuffer;
     private bool _disposed;
-
-    public int GlobalId;
+    private int _globalId;
+    
     public HandshakeSuccessResponseBody? HandshakeSuccessResponseBody { get; private set; }
     public HandshakeStatus HandshakeStatus { get; private set; }
     public string FailReason { get; private set; } = string.Empty;
@@ -29,11 +27,9 @@ internal class XConnection : IXConnectionInternal
     {
         this._socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
         this._socket.Connect(new UnixDomainSocketEndPoint(path));
-        this._replyBuffer = new ConcurrentDictionary<int, byte[]>();
-        this._bufferEvents = new ConcurrentQueue<byte[]>();
-        this.Accesser = new SoccketAccesser(_socket, _bufferEvents, _replyBuffer, configuration);
+        this.Accesser = new SoccketAccesser(_socket, configuration);
         this.Extensation = new XcsbExtensation(this.Accesser);
-        this.GlobalId = 0;
+        this._globalId = 0;
     }
 
     public bool EstablishConnection(ReadOnlySpan<byte> authName, ReadOnlySpan<byte> authData)
@@ -131,7 +127,7 @@ internal class XConnection : IXConnectionInternal
 
     public uint NewId() => HandshakeSuccessResponseBody is null
         ? throw new InvalidOperationException()
-        : (uint)((HandshakeSuccessResponseBody.ResourceIDMask & this.GlobalId++) | HandshakeSuccessResponseBody.ResourceIDBase);
+        : (uint)((HandshakeSuccessResponseBody.ResourceIDMask & this._globalId++) | HandshakeSuccessResponseBody.ResourceIDBase);
 
     public void Dispose()
     {

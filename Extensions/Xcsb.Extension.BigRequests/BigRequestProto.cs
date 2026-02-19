@@ -2,6 +2,7 @@
 using Xcsb.Connection;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
+using Xcsb.Connection.Models;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Extension.BigRequests.Requests;
@@ -27,7 +28,10 @@ internal sealed class BigRequestProto : IBigRequest
         if (error.HasValue)
             throw new XEventException(error.Value);
 
-        _extensation.ActivateExtensation(BigRequestExtensation.ExtensationName, _response, 0, 0);
+        _extensation.ActivateExtensation(BigRequestExtensation.ExtensationName,
+            _response,
+            new Range(0, 0),
+            new Range(0, 0));
         return result.AsSpan().ToStruct<BigReqEnableReply>();
     }
 

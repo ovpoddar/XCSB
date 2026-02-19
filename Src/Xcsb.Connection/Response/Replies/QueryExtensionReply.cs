@@ -20,13 +20,3 @@ public readonly struct QueryExtensionReply : IXReply
                Length == 0;
     }
 }
-
-internal struct ExtensationDetails
-{
-    public ResponseHeader<byte> ResponseHeader;
-    public byte MajorOpcode;
-    public byte FirstEvent;
-    public byte FirstError;
-    public int EventLenght;
-    public int ErrorLenght;
-}
