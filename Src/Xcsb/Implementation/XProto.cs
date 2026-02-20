@@ -45,13 +45,13 @@ internal sealed class XProto : IXProto
         if (connection.HandshakeStatus is not HandshakeStatus.Success ||
             connection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(connection.FailReason);
-        connection.Accesser.RegisterResponse(new Range(0, 1), XResponseType.Error);
-        connection.Accesser.RegisterResponse(new Range(1, 2), XResponseType.Reply);
-        connection.Accesser.RegisterResponse(new Range(11, 12), XResponseType.Notify);
-        connection.Accesser.RegisterResponse(new Range(2, 11), XResponseType.Event);
-        connection.Accesser.RegisterResponse(new Range(12, 35), XResponseType.Event);
-        _protoInExtended = new ProtoInExtended(connection.Accesser); //Todo: can be more organised with interface and staffs will think about them after api finalized
-        _protoOutExtended = new ProtoOutExtended(connection.Accesser);
+        connection.Accessor.RegisterResponse(new Range(0, 1), XResponseType.Error);
+        connection.Accessor.RegisterResponse(new Range(1, 2), XResponseType.Reply);
+        connection.Accessor.RegisterResponse(new Range(11, 12), XResponseType.Notify);
+        connection.Accessor.RegisterResponse(new Range(2, 11), XResponseType.Event);
+        connection.Accessor.RegisterResponse(new Range(12, 35), XResponseType.Event);
+        _protoInExtended = new ProtoInExtended(connection.Accessor);
+        _protoOutExtended = new ProtoOutExtended(connection.Accessor);
 
         if (connection.Extensation is not IXExtensationInternal extensationInternal)
             throw new InvalidOperationException("Extensation is not initialized");

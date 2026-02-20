@@ -19,11 +19,11 @@ internal sealed class XcsbExtensation : IXExtensationInternal
         new ConcurrentDictionary<string, QueryExtensionReply>();
     private readonly ConcurrentDictionary<Type, Lazy<object>> _store = new ConcurrentDictionary<Type, Lazy<object>>();
 
-    public ISoccketAccesser Transport { get; }
+    public ISocketAccessor Transport { get; }
 
-    public XcsbExtensation(ISoccketAccesser accesser)
+    public XcsbExtensation(ISocketAccessor accessor)
     {
-        Transport = accesser;
+        Transport = accessor;
     }
 
     public ListExtensionsReply ListExtensions()

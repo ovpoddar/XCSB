@@ -15,17 +15,17 @@ namespace Xcsb.Handlers.Direct;
 
 internal sealed class ProtoInExtended
 {
-    private readonly ISoccketAccesser _soccketAccesser;
+    private readonly ISocketAccessor _socketAccessor;
 
     internal int Sequence
     {
-        get => _soccketAccesser.ReceivedSequence;
-        set => _soccketAccesser.ReceivedSequence = value;
+        get => _socketAccessor.ReceivedSequence;
+        set => _socketAccessor.ReceivedSequence = value;
     }
 
-    internal ProtoInExtended(ISoccketAccesser soccketAccesser)
+    internal ProtoInExtended(ISocketAccessor socketAccessor)
     {
-        _soccketAccesser = soccketAccesser;
+        _socketAccessor = socketAccessor;
     }
 
 
@@ -35,13 +35,13 @@ internal sealed class ProtoInExtended
         {
             if (sequence > Sequence)
             {
-                if (_soccketAccesser.AvailableData == 0)
-                    _soccketAccesser.PollRead(timeOut);
+                if (_socketAccessor.AvailableData == 0)
+                    _socketAccessor.PollRead(timeOut);
                 FlushSocket();
                 continue;
             }
 
-            if (!_soccketAccesser.ReplyBuffer.Remove(sequence, out var reply))
+            if (!_socketAccessor.ReplyBuffer.Remove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
             var response = reply.AsSpan().AsStruct<ListFontsWithInfoResponse>();
@@ -79,8 +79,8 @@ internal sealed class ProtoInExtended
 
         while (true)
         {
-            _ = _soccketAccesser.Received(headerBuffer);
-            var packet = _soccketAccesser.ComputeResponse(ref headerBuffer).AsSpan();
+            _ = _socketAccessor.Received(headerBuffer);
+            var packet = _socketAccessor.ComputeResponse(ref headerBuffer).AsSpan();
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
             Debug.Assert(response.ResponseHeader.Sequence == sequence);
@@ -99,19 +99,19 @@ internal sealed class ProtoInExtended
     }
 
     public int AvailableData => 
-        _soccketAccesser.AvailableData;
+        _socketAccessor.AvailableData;
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void PollRead(int timeout) => 
-        _soccketAccesser.PollRead(timeout);
+        _socketAccessor.PollRead(timeout);
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
-        if (this._soccketAccesser.AvailableData == 0)
-            _soccketAccesser.PollRead(1000);
+        if (this._socketAccessor.AvailableData == 0)
+            _socketAccessor.PollRead(1000);
 
         FlushSocket();
-        if (!_soccketAccesser.ReplyBuffer.Remove(sequence, out var response))
+        if (!_socketAccessor.ReplyBuffer.Remove(sequence, out var response))
             return;
 
         var error = response.AsSpan().AsStruct<GenericError>();
@@ -125,48 +125,48 @@ internal sealed class ProtoInExtended
 
     public (T?, GenericError?) ReceivedResponse<T>(int sequence, int timeout = 1000) where T : unmanaged, IXReply
     {
-        var (result, error) = _soccketAccesser.ReceivedResponseSpan<T>(sequence, timeout);
+        var (result, error) = _socketAccessor.ReceivedResponseSpan<T>(sequence, timeout);
         return (result?.AsSpan().ToStruct<T>(), error);
     }
 
     //todo: update the code so only XEvent gets return;
     public GenericEvent ReceivedResponse()
     {
-        if (_soccketAccesser.BufferEvents.TryDequeue(out var result))
+        if (_socketAccessor.BufferEvents.TryDequeue(out var result))
             return result.AsSpan().AsStruct<GenericEvent>();
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<GenericEvent>()];
 
-        if (!_soccketAccesser.PollRead())
+        if (!_socketAccessor.PollRead())
             return scratchBuffer.ToStruct<GenericEvent>();
 
-        var totalRead = _soccketAccesser.Received(scratchBuffer, false);
+        var totalRead = _socketAccessor.Received(scratchBuffer, false);
         return totalRead == 0
             ? scratchBuffer.Make<GenericEvent, LastEvent>(new LastEvent(Sequence))
             : scratchBuffer.ToStruct<GenericEvent>();
     }
 
     public bool HasEventToProcesses() =>
-        !_soccketAccesser.BufferEvents.IsEmpty || _soccketAccesser.AvailableData >= Unsafe.SizeOf<GenericEvent>();
+        !_socketAccessor.BufferEvents.IsEmpty || _socketAccessor.AvailableData >= Unsafe.SizeOf<GenericEvent>();
 
     public void WaitForEventArrival()
     {
         if (!HasEventToProcesses())
-            _soccketAccesser.PollRead();
+            _socketAccessor.PollRead();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void FlushSocket() =>
-        _soccketAccesser.FlushSocket();
+        _socketAccessor.FlushSocket();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void FlushSocket(int outProtoSequence, bool shouldThrowOnError) =>
-        _soccketAccesser.FlushSocket(outProtoSequence, shouldThrowOnError);
+        _socketAccessor.FlushSocket(outProtoSequence, shouldThrowOnError);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply =>
-        _soccketAccesser.ReceivedResponseSpan<T>(sequence, timeOut);
+        _socketAccessor.ReceivedResponseSpan<T>(sequence, timeOut);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct =>
-        _soccketAccesser.GetVoidRequestResponse<T>(response);
+        _socketAccessor.GetVoidRequestResponse<T>(response);
 }

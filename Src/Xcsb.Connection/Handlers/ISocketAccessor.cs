@@ -7,7 +7,7 @@ using Xcsb.Connection.Response.Errors;
 
 namespace Xcsb.Connection.Handlers;
 
-internal interface ISoccketAccesser
+internal interface ISocketAccessor
 {
     int AvailableData { get; }
     ConcurrentQueue<byte[]> BufferEvents { get; }

@@ -20,15 +20,15 @@ internal class XConnection : IXConnectionInternal
     public HandshakeStatus HandshakeStatus { get; private set; }
     public string FailReason { get; private set; } = string.Empty;
     public bool Connected => this._socket.Connected;
-    public ISoccketAccesser Accesser { get; }
+    public ISocketAccessor Accessor { get; }
     public IXExtensation Extensation { get; }
 
     public XConnection(string path, XcsbClientConfiguration configuration, in ProtocolType type)
     {
         this._socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
         this._socket.Connect(new UnixDomainSocketEndPoint(path));
-        this.Accesser = new SoccketAccesser(_socket, configuration);
-        this.Extensation = new XcsbExtensation(this.Accesser);
+        this.Accessor = new SocketAccessor(_socket, configuration);
+        this.Extensation = new XcsbExtensation(this.Accessor);
         this._globalId = 0;
     }
 
@@ -55,7 +55,7 @@ internal class XConnection : IXConnectionInternal
                 authData.CopyTo(scratchBuffer[writeIndex..]);
                 writeIndex += authData.Length;
                 scratchBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
-                this.Accesser.SendData(scratchBuffer, SocketFlags.None);
+                this.Accessor.SendData(scratchBuffer, SocketFlags.None);
             }
             else
             {
@@ -74,7 +74,7 @@ internal class XConnection : IXConnectionInternal
                 authData.CopyTo(workingBuffer[writeIndex..]);
                 writeIndex += authData.Length;
                 workingBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
-                this.Accesser.SendData(workingBuffer, SocketFlags.None);
+                this.Accessor.SendData(workingBuffer, SocketFlags.None);
             }
             return true;
         }
@@ -89,14 +89,14 @@ internal class XConnection : IXConnectionInternal
     public void SetUpStatus()
     {
         Span<byte> tempBuffer = stackalloc byte[Unsafe.SizeOf<HandshakeResponseHead>()];
-        this.Accesser.Received(tempBuffer);
+        this.Accessor.Received(tempBuffer);
         ref readonly var response = ref tempBuffer.AsStruct<HandshakeResponseHead>();
 
         HandshakeStatus = response.HandshakeStatus;
 
         if (response.HandshakeStatus is HandshakeStatus.Success)
         {
-            HandshakeSuccessResponseBody = HandshakeSuccessResponseBody.Read(this.Accesser,
+            HandshakeSuccessResponseBody = HandshakeSuccessResponseBody.Read(this.Accessor,
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
             FailReason = string.Empty;
         }
@@ -111,14 +111,14 @@ internal class XConnection : IXConnectionInternal
             if (requiredBuffer < 255)
             {
                 Span<byte> buffer = stackalloc byte[requiredBuffer];
-                this.Accesser.Received(buffer);
+                this.Accessor.Received(buffer);
                 FailReason = Encoding.ASCII.GetString(buffer).TrimEnd();
             }
             else
             {
                 using var buffer = new ArrayPoolUsing<byte>(dataLength);
                 var workingBuffer = buffer.Slice(0, dataLength);
-                this.Accesser.Received(workingBuffer);
+                this.Accessor.Received(workingBuffer);
                 FailReason = Encoding.ASCII.GetString(workingBuffer).TrimEnd();
             }
         }
@@ -144,8 +144,8 @@ internal class XConnection : IXConnectionInternal
         {
             // ProtoIn and ProtoOut only hold references to the Socket, they don't own it.
             // Socket is the only resource that needs disposal.
-            Accesser.BufferEvents.Clear();
-            Accesser.ReplyBuffer.Clear();
+            Accessor.BufferEvents.Clear();
+            Accessor.ReplyBuffer.Clear();
             if (Extensation is IXExtensationInternal extensationInternal)
                 extensationInternal.Clear();
             _socket?.Dispose();

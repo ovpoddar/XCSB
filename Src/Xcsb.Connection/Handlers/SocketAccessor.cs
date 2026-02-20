@@ -11,34 +11,39 @@ using Xcsb.Connection.Response.Errors;
 
 namespace Xcsb.Connection.Handlers;
 
-internal sealed class SoccketAccesser : ISoccketAccesser
+internal sealed class SocketAccessor : ISocketAccessor
 {
     private readonly XcsbClientConfiguration _configuration;
     private readonly Socket _socket;
-    private readonly ConcurrentDictionary<int, XResponseType> _responseMap;
+    private static readonly ConcurrentDictionary<int, XResponseType> ResponseMap =
+        new ConcurrentDictionary<int, XResponseType>();
 
     public ConcurrentQueue<byte[]> BufferEvents { get; } = new ConcurrentQueue<byte[]>();
     public ConcurrentDictionary<int, byte[]> ReplyBuffer { get; } = new ConcurrentDictionary<int, byte[]>();
-    public int ReceivedSequence { get; set; } = 0;
-    public int SendSequence { get; set; } = 0;
+    public int ReceivedSequence { get; set; }
+    public int SendSequence { get; set; }
 
-    public SoccketAccesser(Socket socket, XcsbClientConfiguration configuration)
+    static SocketAccessor()
+    {
+        ResponseMap.Clear();        
+    }
+    
+    public SocketAccessor(Socket socket, XcsbClientConfiguration configuration)
     {
         this._socket = socket;
         this._configuration = configuration;
-        this._responseMap = new ConcurrentDictionary<int, XResponseType>();
     }
 
     public void RegisterResponse(Range range, XResponseType type)
     {
         for (var i = range.Start.Value; i < range.End.Value; i++)
-            _responseMap[i] = type;
+            ResponseMap[i] = type;
     }
 
 
     private XResponseType GetResponseType(ref readonly XResponse reply)
     {
-        if (_responseMap.TryGetValue(reply.ReplyType, out var type))
+        if (ResponseMap.TryGetValue(reply.ReplyType, out var type))
             return type;
         return reply.ReplyType == 36 
             ? XResponseType.Event 

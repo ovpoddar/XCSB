@@ -5,7 +5,7 @@ namespace Xcsb.Connection;
 
 internal interface IXConnectionInternal : IXConnection
 {
-    ISoccketAccesser Accesser { get; }
+    ISocketAccessor Accessor { get; }
     HandshakeStatus HandshakeStatus { get; }
 
     bool EstablishConnection(ReadOnlySpan<byte> authName, ReadOnlySpan<byte> authData);
