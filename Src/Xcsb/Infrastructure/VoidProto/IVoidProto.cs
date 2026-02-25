@@ -3,6 +3,7 @@ using Xcsb.Connection.Response.Errors;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
+using Xcsb.Response.Event;
 
 
 #if !NETSTANDARD
@@ -49,7 +50,7 @@ public interface IVoidProto
 
     ResponseProto ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp);
 
-    ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt);
+    ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt);
 
     ResponseProto UngrabPointer(uint time);
 

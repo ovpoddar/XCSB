@@ -1,6 +1,7 @@
 ﻿using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
+using Xcsb.Response.Event;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -45,7 +46,7 @@ public interface IVoidBufferProto
 
     void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp);
 
-    void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt);
+    void SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt);
 
     void UngrabPointer(uint time);
 

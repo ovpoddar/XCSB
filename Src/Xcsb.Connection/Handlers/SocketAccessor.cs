@@ -15,8 +15,8 @@ internal sealed class SocketAccessor : ISocketAccessor
 {
     private readonly XcsbClientConfiguration _configuration;
     private readonly Socket _socket;
-    private static readonly ConcurrentDictionary<int, XResponseType> ResponseMap =
-        new ConcurrentDictionary<int, XResponseType>();
+    private static readonly ConcurrentDictionary<byte, XResponseType> ResponseMap =
+        new ConcurrentDictionary<byte, XResponseType>();
 
     public ConcurrentQueue<byte[]> BufferEvents { get; } = new ConcurrentQueue<byte[]>();
     public ConcurrentDictionary<int, byte[]> ReplyBuffer { get; } = new ConcurrentDictionary<int, byte[]>();
@@ -37,7 +37,7 @@ internal sealed class SocketAccessor : ISocketAccessor
     public void RegisterResponse(Range range, XResponseType type)
     {
         for (var i = range.Start.Value; i < range.End.Value; i++)
-            ResponseMap[i] = type;
+            ResponseMap[(byte)i] = type;
     }
 
 

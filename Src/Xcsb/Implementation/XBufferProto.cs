@@ -9,6 +9,7 @@ using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
 using Xcsb.Requests;
+using Xcsb.Response.Event;
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -499,7 +500,7 @@ internal sealed class XBufferProto : IXBufferProto
         _bufferProtoOut.AddRange(properties);
     }
 
-    public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt)
+    public void SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
     {
         var request = new SendEventType(propagate, destination, eventMask, evnt);
         _bufferProtoOut.Add(ref request);
