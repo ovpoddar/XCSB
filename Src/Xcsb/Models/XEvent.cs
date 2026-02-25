@@ -48,8 +48,8 @@ public unsafe struct XEvent
 
     public readonly GenericEvent? Event =>
         _response.GetResponseType() is XResponseType.Event or XResponseType.Notify
-            ? null
-            : _response.Bytes.AsStruct<GenericEvent>();
+            ? _response.Bytes.AsStruct<GenericEvent>()
+            : null;
 
     public Span<byte> GetRawResponse()
     {
