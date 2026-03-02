@@ -15,7 +15,7 @@ internal class XConnection : IXConnectionInternal
     private readonly Socket _socket;
     private bool _disposed;
     private int _globalId;
-    
+
     public HandshakeSuccessResponseBody? HandshakeSuccessResponseBody { get; private set; }
     public HandshakeStatus HandshakeStatus { get; private set; }
     public string FailReason { get; private set; } = string.Empty;
@@ -99,6 +99,9 @@ internal class XConnection : IXConnectionInternal
             HandshakeSuccessResponseBody = HandshakeSuccessResponseBody.Read(this.Accessor,
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
             FailReason = string.Empty;
+
+            Accessor.RegisterResponse(new Range(0, 1), Response.Contract.XResponseType.Error);
+            Accessor.RegisterResponse(new Range(1, 2), Response.Contract.XResponseType.Reply);
         }
         else
         {

@@ -45,8 +45,6 @@ internal sealed class XProto : IXProto
         if (connection.HandshakeStatus is not HandshakeStatus.Success ||
             connection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(connection.FailReason);
-        connection.Accessor.RegisterResponse(new Range(0, 1), XResponseType.Error);
-        connection.Accessor.RegisterResponse(new Range(1, 2), XResponseType.Reply);
         connection.Accessor.RegisterResponse(new Range(11, 12), XResponseType.Notify);
         connection.Accessor.RegisterResponse(new Range(2, 11), XResponseType.Event);
         connection.Accessor.RegisterResponse(new Range(12, 35), XResponseType.Event);
