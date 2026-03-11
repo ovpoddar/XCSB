@@ -46,7 +46,7 @@ public interface IVoidBufferProto
 
     void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp);
 
-    void SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt);
+    void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt);
 
     void UngrabPointer(uint time);
 

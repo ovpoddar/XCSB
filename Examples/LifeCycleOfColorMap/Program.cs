@@ -3,6 +3,7 @@ using Xcsb;
 using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Response.Event;
 
 using var connection = XcsbClient.Connect();
 var x = connection.Initialized();
@@ -110,7 +111,7 @@ Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Status
 x.UngrabKeyboardUnchecked(0);
 
 var xevnt = x.GetEvent();
-Debug.Assert(xevnt.ReplyType == XEventType.Expose || xevnt.ReplyType == XEventType.MappingNotify);
+Debug.Assert(xevnt.ReplyType == EventType.Expose || xevnt.ReplyType == EventType.MappingNotify);
 // todo: fix this
 Console.WriteLine("all success {0}", !xevnt.Error.HasValue);
 

@@ -2,8 +2,10 @@
 using System.Text;
 using Xcsb;
 using Xcsb.Connection;
+using Xcsb.Connection.Models;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Response.Event;
 
 const int WIDTH = 50;
 const int HEIGHT = 50;
@@ -67,15 +69,15 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.ReplyType == XEventType.LastEvent) return;
+    if (evnt.ReplyType == EventType.LastEvent) return;
 
     if (evnt.Error.HasValue)
     {
-        Console.WriteLine(evnt.Error.Value.ResponseHeader.Reply);
+        Console.WriteLine(evnt.Error.Value.Message);
         isRunning = false;
     }
 
-    if (evnt.ReplyType == XEventType.Expose)
+    if (evnt.ReplyType == EventType.Expose)
     {
         xcsb.PutImageUnchecked(ImageFormatBitmap.ZPixmap,
             window,

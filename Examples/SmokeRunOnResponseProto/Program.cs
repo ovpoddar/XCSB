@@ -3,6 +3,7 @@ using Xcsb;
 using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Response.Event;
 
 using var connection = XcsbClient.Connect();
 var client = connection.Initialized();
@@ -96,15 +97,15 @@ foreach (var color in queryColor.Colors)
 while (true)
 {
     var Event = client.GetEvent();
-    if (Event.ReplyType == XEventType.LastEvent)
+    if (Event.ReplyType == EventType.LastEvent)
         break;
     if (Event.Error.HasValue)
     {
-        Console.WriteLine(Event.Error.Value.ResponseHeader.Reply);
+        Console.WriteLine(Event.Error.Value.Message);
         break;
     }
 
-    if (Event.ReplyType == XEventType.Expose)
+    if (Event.ReplyType == EventType.Expose)
     {
         var getBestWindowSize = client.QueryBestSize(QueryShapeOf.LargestCursor,
             window, 32, 32);

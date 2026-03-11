@@ -15,16 +15,6 @@ internal unsafe struct XResponse : IXBaseResponse
         return this.Sequence == sequence;
     }
 
-    // todo: remove this.
-    internal readonly XResponseType GetResponseType() => this.ReplyType switch
-    {
-        0 => XResponseType.Error,
-        1 => XResponseType.Reply,
-        11 => XResponseType.Notify,
-        >= 2 and <= 34 or 36 => XResponseType.Event,
-        _ => XResponseType.Unknown
-    };
-
     internal readonly unsafe Span<byte> Bytes
     {
         get

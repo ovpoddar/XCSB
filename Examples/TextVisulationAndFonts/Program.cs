@@ -34,14 +34,14 @@ while (isRunning)
 {
     var Event = c.GetEvent();
 
-    if (Event.ReplyType == XEventType.LastEvent) return;
+    if (Event.ReplyType == EventType.LastEvent) return;
     if (Event.Error.HasValue)
     {
-        Console.WriteLine(Event.Error.Value.ResponseHeader.Reply);
+        Console.WriteLine(Event.Error.Value.Message);
         isRunning = false;
         break;
     }
-    else if (Event.ReplyType is XEventType.KeyPress)
+    else if (Event.ReplyType == EventType.KeyPress)
     {
         if (!isExecuted)
         {
@@ -106,7 +106,7 @@ while (isRunning)
         c.BellChecked(100);
         Console.WriteLine($"event {Event.ReplyType} {keyPressEvent.Detail}");
     }
-    else if (Event.ReplyType == XEventType.Expose)
+    else if (Event.ReplyType == EventType.Expose)
     {
         var gc = connection.NewId();
         c.CreateGCChecked(gc, window, GcMask.Foreground, [0x00ff0000]);
@@ -117,7 +117,7 @@ while (isRunning)
 
         c.FreeGCChecked(gc);
     }
-    else if (Event.ReplyType is XEventType.ButtonPress)
+    else if (Event.ReplyType == EventType.ButtonPress)
     {
         if (Event.As<ButtonPressEvent>().Detail == Button.LeftButton)
         {

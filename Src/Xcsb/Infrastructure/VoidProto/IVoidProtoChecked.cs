@@ -46,7 +46,7 @@ public interface IVoidProtoChecked
 
     void ConvertSelectionChecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp);
 
-    void SendEventChecked(bool propagate, uint destination, uint eventMask, GenericEvent evnt);
+    void SendEventChecked(bool propagate, uint destination, uint eventMask, XEvent evnt);
 
     void UngrabPointerChecked(uint time);
 

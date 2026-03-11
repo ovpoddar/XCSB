@@ -9,5 +9,6 @@ x.SetSelectionOwnerChecked(root, ATOM.Primary, 0);
 var owner = x.GetSelectionOwner(ATOM.Primary);
 Console.WriteLine($"{owner.Owner} == {root} ");
 
+//todo: need to check
 var resultListInstalledColormaps = x.ListInstalledColormaps(connection.NewId());
 Console.WriteLine(string.Join(", ", resultListInstalledColormaps.Colormap));

@@ -6,6 +6,8 @@ using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Extension.Damage.Models;
 using Xcsb.Extension.Damage.Requests;
+using Xcsb.Extension.Damage.Response.Errors;
+using Xcsb.Extension.Damage.Response.Events;
 using Xcsb.Extension.Damage.Response.Replies;
 
 namespace Xcsb.Extension.Damage;
@@ -19,6 +21,11 @@ internal sealed class DamageRequestProto : IDamageRequest
     {
         _response = response;
         _extensationInternal = extensationInternal;
+
+        extensationInternal.Transport.RegisterEvent<DamageNotifyEvent>(DamageErrorCode.DamageNotify,
+            (byte?)(response.FirstEvent + DamageErrorCode.DamageNotify));
+        extensationInternal.Transport.RegisterError<BadDamageError>((byte)(response.FirstError + DamageErrorCode.BadDamage),
+            DamageErrorCode.BadDamage);
     }
 
     public void Add(uint drawable, uint region)

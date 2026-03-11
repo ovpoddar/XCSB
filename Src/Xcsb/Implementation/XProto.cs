@@ -21,6 +21,10 @@ using Xcsb.Requests.BigExtensation;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
+using Xcsb.Connection.Handlers;
+using Xcsb.Response.Contract;
+
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
@@ -45,15 +49,49 @@ internal sealed class XProto : IXProto
         if (connection.HandshakeStatus is not HandshakeStatus.Success ||
             connection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(connection.FailReason);
-        connection.Accessor.RegisterResponse(new Range(11, 12), XResponseType.Notify);
-        connection.Accessor.RegisterResponse(new Range(2, 11), XResponseType.Event);
-        connection.Accessor.RegisterResponse(new Range(12, 35), XResponseType.Event);
+        Resister(connection.Accessor);
         _protoInExtended = new ProtoInExtended(connection.Accessor);
         _protoOutExtended = new ProtoOutExtended(connection.Accessor);
 
         if (connection.Extensation is not IXExtensationInternal extensationInternal)
             throw new InvalidOperationException("Extensation is not initialized");
         _extensationInternal = extensationInternal;
+    }
+
+    private static void Resister(ISocketAccessor accessor)
+    {
+        accessor.RegisterEvent<ButtonPressEvent>(EventType.ButtonPress);
+        accessor.RegisterEvent<ButtonReleaseEvent>(EventType.ButtonRelease);
+        accessor.RegisterEvent<CirculateNotifyEvent>(EventType.CirculateNotify);
+        accessor.RegisterEvent<CirculateRequestEvent>(EventType.CirculateRequest);
+        accessor.RegisterEvent<ClientMessageEvent>(EventType.ClientMessage);
+        accessor.RegisterEvent<ColorMapNotifyEvent>(EventType.ColormapNotify);
+        accessor.RegisterEvent<ConfigureNotifyEvent>(EventType.ConfigureNotify);
+        accessor.RegisterEvent<ConfigureRequestEvent>(EventType.ConfigureRequest);
+        accessor.RegisterEvent<DestroyNotifyEvent>(EventType.DestroyNotify);
+        accessor.RegisterEvent<EnterNotifyEvent>(EventType.EnterNotify);
+        accessor.RegisterEvent<ExposeEvent>(EventType.Expose);
+        accessor.RegisterEvent<FocusInEvent>(EventType.FocusIn);
+        accessor.RegisterEvent<FocusOutEvent>(EventType.FocusOut);
+        accessor.RegisterEvent<GraphicsExposeEvent>(EventType.GraphicsExpose);
+        accessor.RegisterEvent<GravityNotifyEvent>(EventType.GravityNotify);
+        accessor.RegisterEvent<KeymapNotifyEvent>(EventType.KeymapNotify);
+        accessor.RegisterEvent<KeyPressEvent>(EventType.KeyPress);
+        accessor.RegisterEvent<KeyReleaseEvent>(EventType.KeyRelease);
+        accessor.RegisterEvent<LeaveNotifyEvent>(EventType.LeaveNotify);
+        accessor.RegisterEvent<MapNotifyEvent>(EventType.MapNotify);
+        accessor.RegisterEvent<MappingNotifyEvent>(EventType.MappingNotify);
+        accessor.RegisterEvent<MapRequestEvent>(EventType.MapRequest);
+        accessor.RegisterEvent<MotionNotifyEvent>(EventType.MotionNotify);
+        accessor.RegisterEvent<NoExposeEvent>(EventType.NoExpose);
+        accessor.RegisterEvent<PropertyNotifyEvent>(EventType.PropertyNotify);
+        accessor.RegisterEvent<ReParentNotifyEvent>(EventType.ReParentNotify);
+        accessor.RegisterEvent<ResizeRequestEvent>(EventType.ResizeRequest);
+        accessor.RegisterEvent<SelectionClearEvent>(EventType.SelectionClear);
+        accessor.RegisterEvent<SelectionNotifyEvent>(EventType.SelectionNotify);
+        accessor.RegisterEvent<SelectionRequestEvent>(EventType.SelectionRequest);
+        accessor.RegisterEvent<UnMapNotifyEvent>(EventType.UnMapNotify);
+        accessor.RegisterEvent<VisibilityNotifyEvent>(EventType.VisibilityNotify);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -414,15 +452,8 @@ internal sealed class XProto : IXProto
             : result!.Value;
     }
 
-    public XEvent GetEvent()
-    {
-        var response = this._protoInExtended.ReceivedResponse();
-        if (Enum.IsDefined(typeof(EventType), response.Reply))
-            return response.As<XEvent>();
-
-        // _extensationInternal.CanHandleEvent((byte)response.Reply);
-        return response.As<XEvent>();
-    }
+    // todo: move to base class
+    public XEvent GetEvent() => this._protoInExtended.ReceivedResponse();
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
         ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
@@ -480,7 +511,7 @@ internal sealed class XProto : IXProto
     public ResponseProto ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp) =>
         ConvertSelectionBase(requestor, selection, target, property, timestamp);
 
-    public ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt) =>
+    public ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt) =>
         SendEventBase(propagate, destination, eventMask, evnt);
 
     public ResponseProto UngrabPointer(uint time) =>
@@ -801,7 +832,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void SendEventUnchecked(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
+    public void SendEventUnchecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
         var cookie = this.SendEventBase(propagate, destination, eventMask, evnt);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1307,7 +1338,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void SendEventChecked(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
+    public void SendEventChecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
         var cookie = this.SendEventBase(propagate, destination, eventMask, evnt);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -2486,9 +2517,9 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto SendEventBase(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
+    private ResponseProto SendEventBase(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
-        var request = new SendEventType(propagate, destination, eventMask, evnt);
+        var request = new SendEventType(propagate, destination, eventMask, evnt.GetRawResponse().AsStruct<XResponse>());
         _protoOutExtended.Send(ref request);
         return new ResponseProto(_protoOutExtended.Sequence);
     }

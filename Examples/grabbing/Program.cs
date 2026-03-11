@@ -29,61 +29,53 @@ bool isRunning = true;
 while (isRunning)
 {
     var evnt = con.GetEvent();
-    if (evnt.ReplyType == XEventType.LastEvent) return 0;
+    if (evnt.ReplyType == EventType.LastEvent) return 0;
     if (evnt.Error.HasValue)
     {
         isRunning = false;
-        Console.WriteLine(evnt.Error.Value.ResponseHeader);
+        Console.WriteLine(evnt.Error.Value.Message);
     }
 
-    switch (evnt.ReplyType)
+    if (evnt.ReplyType == EventType.Expose)
+        draw_interface();
+    
+
+    if (evnt.ReplyType == EventType.KeyPress)
     {
-        case XEventType.Expose:
-            draw_interface();
-            break;
+        var keyPressEvent = evnt.As<KeyPressEvent>();
+        if (keyPressEvent is { Detail: 45, State: KeyButMask.Control })
+        {
+            Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
+            con.AllowEventsUnchecked(EventsMode.SyncKeyboard, keyPressEvent.TimeStamp);
+        }
 
-        case XEventType.KeyPress:
+        switch (keyPressEvent.Detail)
+        {
+            case 10: demo_change_hosts(); break; // 1
+            case 11: demo_keyboard_control(); break; // 2
+            case 12: demo_grab_button(); break; // 3
+            case 13: demo_grab_key(); break; // 4
+            case 14: demo_store_color(); break; // 5
+            case 15: demo_ungrab_all(); break; // 6
+            case 43: show_help(); break; // h
+            case 24:
             {
-                var keyPressEvent = evnt.As<KeyPressEvent>();
-                if (keyPressEvent is { Detail: 45, State: KeyButMask.Control })
-                {
-                    Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
-                    con.AllowEventsUnchecked(EventsMode.SyncKeyboard, keyPressEvent.TimeStamp);
-                    break;
-                }
-
-                switch (keyPressEvent.Detail)
-                {
-                    case 10: demo_change_hosts(); break; // 1
-                    case 11: demo_keyboard_control(); break; // 2
-                    case 12: demo_grab_button(); break; // 3
-                    case 13: demo_grab_key(); break; // 4
-                    case 14: demo_store_color(); break; // 5
-                    case 15: demo_ungrab_all(); break; // 6
-                    case 43: show_help(); break; // h
-                    case 24:
-                        {
-                            demo_ungrab_all();
-                            con.FreeGCUnchecked(gc);
-                            con.KillClientUnchecked(window);
-                            break;
-                        }
-                }
-
+                demo_ungrab_all();
+                con.FreeGCUnchecked(gc);
+                con.KillClientUnchecked(window);
                 break;
             }
+        }
+    }
 
-        case XEventType.ButtonPress:
-            {
-                var bp = evnt.As<ButtonPressEvent>();
-                if (bp is { Detail: Button.RightButton, State: KeyButMask.Control })
-                {
-                    Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
-                    con.AllowEventsUnchecked(EventsMode.SyncPointer, bp.TimeStamp);
-                }
-
-                break;
-            }
+    if (evnt.ReplyType == EventType.ButtonPress)
+    {
+        var bp = evnt.As<ButtonPressEvent>();
+        if (bp is { Detail: Button.RightButton, State: KeyButMask.Control })
+        {
+            Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
+            con.AllowEventsUnchecked(EventsMode.SyncPointer, bp.TimeStamp);
+        }
     }
 }
 

@@ -1,12 +1,15 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
+using Xcsb.Connection.Models;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
+using Xcsb.Models;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
@@ -44,10 +47,10 @@ internal sealed class ProtoInExtended
             if (!_socketAccessor.ReplyBuffer.Remove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
-            var response = reply.AsSpan().AsStruct<ListFontsWithInfoResponse>();
+            var response = reply.Item1.AsSpan().AsStruct<ListFontsWithInfoResponse>();
             return response.Verify(sequence)
-                ? (GetListFontsReply(reply, sequence, maxNames), null)
-                : ([], reply.AsSpan().ToStruct<GenericError>());
+                ? (GetListFontsReply(reply.Item1, sequence, maxNames), null)
+                : ([], reply.Item1.AsSpan().ToStruct<GenericError>());
         }
     }
 
@@ -114,10 +117,9 @@ internal sealed class ProtoInExtended
         if (!_socketAccessor.ReplyBuffer.Remove(sequence, out var response))
             return;
 
-        var error = response.AsSpan().AsStruct<GenericError>();
-        if (!error.Verify(sequence))
-            throw new Exception("Unexpected error found");
-
+        if (response.Item2.ResponseType != XResponseType.Error)
+            throw new Exception($"Unexpected Response Found {response.Item2.ResponseType}");
+        var error = new GenericError(response.Item1.AsSpan().ToStruct<XResponse>(), response.Item2.ErrorMessageAction!);
         if (shouldThrow)
             throw new XEventException(error, name);
     }
@@ -129,20 +131,20 @@ internal sealed class ProtoInExtended
         return (result?.AsSpan().ToStruct<T>(), error);
     }
 
-    //todo: update the code so only XEvent gets return;
-    public GenericEvent ReceivedResponse()
+    public XEvent ReceivedResponse()
     {
-        if (_socketAccessor.BufferEvents.TryDequeue(out var result))
-            return result.AsSpan().AsStruct<GenericEvent>();
-        Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<GenericEvent>()];
+        while (true)
+        {
+            if (_socketAccessor.BufferEvents.TryDequeue(out var result)) return new XEvent(result.Item1.ToStruct<XResponse>(), result.Item2);
 
-        if (!_socketAccessor.PollRead())
-            return scratchBuffer.ToStruct<GenericEvent>();
+            if (_socketAccessor.PollRead())
+                if (_socketAccessor.AvailableData == 0)
+                    return new XEvent(
+                        new byte[32].ToStruct<XResponse>(), 
+                        new MappingDetails(XResponseType.Event, EventType.LastEvent));
 
-        var totalRead = _socketAccessor.Received(scratchBuffer, false);
-        return totalRead == 0
-            ? scratchBuffer.Make<GenericEvent, LastEvent>(new LastEvent(Sequence))
-            : scratchBuffer.ToStruct<GenericEvent>();
+            _socketAccessor.FlushSocket();
+        }
     }
 
     public bool HasEventToProcesses() =>

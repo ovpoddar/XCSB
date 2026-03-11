@@ -1,59 +1,39 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Models;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
 using Xcsb.Response.Event;
 
 namespace Xcsb.Models;
 
-[StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
-public unsafe struct XEvent
+public readonly struct XEvent
 {
-    [FieldOffset(0)] private XResponse _response;
-    [FieldOffset(0)] private XEventType _eventType;
-    [FieldOffset(1)] private ErrorCode _errorType;
+    private readonly XResponse _response;
+    private readonly MappingDetails _mappingDetails;
 
+    internal XEvent(XResponse response, MappingDetails mappingDetails)
+    {
+        _response = response;
+        _mappingDetails = mappingDetails;
+    }
 
-    public readonly XEventType ReplyType =>
-        (_response.GetResponseType(), _errorType) switch
-        {
-            (XResponseType.Event or XResponseType.Notify, _) => _eventType,
-            (XResponseType.Error, ErrorCode.Request) => XEventType.RequestError,
-            (XResponseType.Error, ErrorCode.Value) => XEventType.ValueError,
-            (XResponseType.Error, ErrorCode.Window) => XEventType.WindowError,
-            (XResponseType.Error, ErrorCode.Pixmap) => XEventType.PixmapError,
-            (XResponseType.Error, ErrorCode.Atom) => XEventType.AtomError,
-            (XResponseType.Error, ErrorCode.Cursor) => XEventType.CursorError,
-            (XResponseType.Error, ErrorCode.Font) => XEventType.FontError,
-            (XResponseType.Error, ErrorCode.Match) => XEventType.MatchError,
-            (XResponseType.Error, ErrorCode.Drawable) => XEventType.DrawableError,
-            (XResponseType.Error, ErrorCode.Access) => XEventType.AccessError,
-            (XResponseType.Error, ErrorCode.Alloc) => XEventType.AllocError,
-            (XResponseType.Error, ErrorCode.Colormap) => XEventType.ColormapError,
-            (XResponseType.Error, ErrorCode.GContext) => XEventType.GContextError,
-            (XResponseType.Error, ErrorCode.IDChoice) => XEventType.IDChoiceError,
-            (XResponseType.Error, ErrorCode.Name) => XEventType.NameError,
-            (XResponseType.Error, ErrorCode.Length) => XEventType.LengthError,
-            (XResponseType.Error, ErrorCode.Implementation) => XEventType.ImplementationError,
-            _ => XEventType.Unknown,
-        };
+    public readonly XEventType ReplyType => _mappingDetails.ResponseTypeDetails!;
 
     public readonly unsafe ref readonly T As<T>() where T : struct =>
         ref _response.Bytes.AsStruct<T>();
 
     public readonly GenericError? Error =>
-        _response.GetResponseType() != XResponseType.Error
+        _mappingDetails.ResponseType != XResponseType.Error || _mappingDetails.ErrorMessageAction is null
             ? null
-            : _response.Bytes.AsStruct<GenericError>();
+            : new GenericError(_response, _mappingDetails.ErrorMessageAction);
 
     public readonly GenericEvent? Event =>
-        _response.GetResponseType() is XResponseType.Event or XResponseType.Notify
-            ? _response.Bytes.AsStruct<GenericEvent>()
+        _mappingDetails.ResponseType is XResponseType.Event or XResponseType.Notify
+            ? new GenericEvent(_response, _mappingDetails.ResponseTypeDetails!)
             : null;
 
-    public Span<byte> GetRawResponse()
-    {
-        return this.ReplyType != XEventType.Unknown ? [] : _response.Bytes;
-    }
+    public Span<byte> GetRawResponse() =>
+        _response.Bytes;
 
 }

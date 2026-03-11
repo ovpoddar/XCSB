@@ -123,25 +123,18 @@ if (query.Root != connection.HandshakeSuccessResponseBody.Screens[0].Root)
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.ReplyType == XEventType.LastEvent) return;
-    switch (evnt.ReplyType)
-    {
-        case XEventType.Expose:
-            {
-                xcsb.CopyAreaUnchecked(pixmap,
-                    window,
-                    gc,
-                    0, 0,
-                    0, 0,
-                    width, height);
-                break;
-            }
-
-        case XEventType.KeyPress:
-            isRunning = false;
-            break;
-    }
+    if (evnt.ReplyType == EventType.LastEvent) return;
+    else if (evnt.ReplyType == EventType.Expose)
+        xcsb.CopyAreaUnchecked(pixmap,
+            window,
+            gc,
+            0, 0,
+            0, 0,
+            width, height);
+    else if (evnt.ReplyType == EventType.KeyPress)
+        isRunning = false;
 }
+
 
 xcsb.FreePixmapUnchecked(pixmap);
 xcsb.FreeGCUnchecked(gc);

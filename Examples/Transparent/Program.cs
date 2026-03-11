@@ -1,6 +1,7 @@
 ﻿using Xcsb;
 using Xcsb.Connection;
 using Xcsb.Connection.Models.Handshake;
+using Xcsb.Response.Event;
 
 using var con = XcsbClient.Connect();
 if (con.HandshakeSuccessResponseBody is null)
@@ -36,7 +37,7 @@ client.CreateGCUnchecked(gc, window, Xcsb.Masks.GcMask.Foreground | Xcsb.Masks.G
 while (isRunning)
 {
     var evnt = client.GetEvent();
-    if (evnt.ReplyType == Xcsb.Models.XEventType.LastEvent)
+    if (evnt.ReplyType == EventType.LastEvent)
     {
         isRunning = false;
         return;

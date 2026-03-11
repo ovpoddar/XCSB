@@ -8,10 +8,8 @@ internal interface IXExtensationInternal : IXExtensation
 {
     ISocketAccessor Transport { get; }
 
-    void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply, int errors, int events);
+    void ActivateExtensation(ReadOnlySpan<char> name, QueryExtensionReply reply);
     bool IsExtensationEnable(string name);
-    // bool CanHandleEvent(byte replyType);
-    // bool CanHandleError(byte replyType);
 
     T GetOrCreate<T>(Func<T> factory) where T : class;
     void Clear();

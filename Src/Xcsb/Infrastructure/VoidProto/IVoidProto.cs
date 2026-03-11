@@ -50,7 +50,7 @@ public interface IVoidProto
 
     ResponseProto ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp);
 
-    ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt);
+    ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt);
 
     ResponseProto UngrabPointer(uint time);
 

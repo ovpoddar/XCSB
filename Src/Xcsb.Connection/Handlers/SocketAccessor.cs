@@ -1,10 +1,12 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Models;
+using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Errors;
@@ -15,17 +17,20 @@ internal sealed class SocketAccessor : ISocketAccessor
 {
     private readonly XcsbClientConfiguration _configuration;
     private readonly Socket _socket;
-    private static readonly ConcurrentDictionary<byte, XResponseType> ResponseMap =
-        new ConcurrentDictionary<byte, XResponseType>();
+    private static readonly ConcurrentDictionary<(byte, byte?), MappingDetails> ResponseMap =
+        new ConcurrentDictionary<(byte, byte?), MappingDetails>();
 
-    public ConcurrentQueue<byte[]> BufferEvents { get; } = new ConcurrentQueue<byte[]>();
-    public ConcurrentDictionary<int, byte[]> ReplyBuffer { get; } = new ConcurrentDictionary<int, byte[]>();
+
+    public ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; } = new ConcurrentQueue<(byte[], MappingDetails
+        )>();//notify, event, unknown
+    public ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; } = new ConcurrentDictionary<int, (byte[],
+        MappingDetails)>();// error, reply
     public int ReceivedSequence { get; set; }
     public int SendSequence { get; set; }
 
     static SocketAccessor()
     {
-        ResponseMap.Clear();        
+        ResponseMap.Clear();
     }
     
     public SocketAccessor(Socket socket, XcsbClientConfiguration configuration)
@@ -34,20 +39,33 @@ internal sealed class SocketAccessor : ISocketAccessor
         this._configuration = configuration;
     }
 
-    public void RegisterResponse(Range range, XResponseType type)
+    public void RegisterReply()
     {
-        for (var i = range.Start.Value; i < range.End.Value; i++)
-            ResponseMap[(byte)i] = type;
+        ResponseMap[(1, null)] = new MappingDetails(XResponseType.Reply, null);
+    }
+    
+    public void RegisterEvent<T>(XEventType type, byte? typeValue = null) where T : unmanaged, IXEvent
+    {
+        var value = new MappingDetails(type == 11  ? XResponseType.Notify : XResponseType.Event, type);
+        value.SetEventType<T>();
+        typeValue ??= type;
+        ResponseMap[(typeValue.Value, null)] = value;
     }
 
-
-    private XResponseType GetResponseType(ref readonly XResponse reply)
+    public void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError
     {
-        if (ResponseMap.TryGetValue(reply.ReplyType, out var type))
-            return type;
-        return reply.ReplyType == 36 
-            ? XResponseType.Event 
-            : XResponseType.Unknown;
+        var value = new MappingDetails(XResponseType.Error, type);
+        value.SetErrorType<T>();
+        ResponseMap[(typeValue, type)] = value;
+    }
+
+    private MappingDetails GetResponseType(ref readonly XResponse reply)
+    {
+        if (!ResponseMap.TryGetValue((reply.Bytes[0], reply.Bytes[1]), out var response))
+            if (!ResponseMap.TryGetValue((reply.Bytes[0], null), out response))
+                return new MappingDetails(XResponseType.Unknown, UnknownResponse.Unknown(reply.Bytes[0]));
+
+        return response;
     }
 
 
@@ -92,24 +110,25 @@ internal sealed class SocketAccessor : ISocketAccessor
         {
             _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
-            switch (GetResponseType(in content))
+            var responseType = GetResponseType(in content);
+            switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
-                    ReplyBuffer[content.Sequence] = buffer.ToArray();
+                    ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue(buffer.ToArray());
+                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
+                    ReplyBuffer[content.Sequence] = (ComputeResponse(ref buffer), responseType);
                     break;
                 case XResponseType.Event:
-                    BufferEvents.Enqueue(buffer.ToArray());
+                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
                     break;
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue(content.ReplyType == 35
+                    BufferEvents.Enqueue((content.ReplyType == 35
                         ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
-                        : buffer.ToArray());
+                        : buffer.ToArray(), responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -125,31 +144,33 @@ internal sealed class SocketAccessor : ISocketAccessor
         {
             _ = Received(buffer);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
-            switch (GetResponseType(in content))
+            var responseType = GetResponseType(in content);
+            switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
                     if (ReceivedSequence > outProtoSequence)
-                        ReplyBuffer[content.Sequence] = buffer.ToArray();
+                        ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
                     else
                     {
                         if (shouldThrowOnError)
-                            throw new XEventException(buffer.ToStruct<GenericError>());
+                            throw new XEventException(new GenericError(buffer.ToStruct<XResponse>(),
+                                responseType.ErrorMessageAction!));
                     }
 
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue(buffer.ToArray());
+                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = ComputeResponse(ref buffer);
+                    ReplyBuffer[content.Sequence] = (ComputeResponse(ref buffer), responseType);
                     break;
                 case XResponseType.Event:
-                    BufferEvents.Enqueue(buffer.ToArray());
+                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
                     break;
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue(content.ReplyType == 35
+                    BufferEvents.Enqueue((content.ReplyType == 35
                         ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
-                        : buffer.ToArray());
+                        : buffer.ToArray(), responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -175,10 +196,10 @@ internal sealed class SocketAccessor : ISocketAccessor
         if (!ReplyBuffer.TryRemove(content.Sequence, out var response))
             return result;
 
-        replySize = result.Length + response.Length;
+        replySize = result.Length + response.Item1.Length;
         using var scratchBuffer = new ArrayPoolUsing<byte>(replySize);
-        response.CopyTo(scratchBuffer);
-        result[0..result.Length].CopyTo(scratchBuffer[response.Length..]);
+        response.Item1.CopyTo(scratchBuffer);
+        result[0..result.Length].CopyTo(scratchBuffer[response.Item1.Length..]);
         return scratchBuffer.Slice(0, replySize).ToArray();
     }
 
@@ -199,10 +220,10 @@ internal sealed class SocketAccessor : ISocketAccessor
             if (!ReplyBuffer.Remove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
-            var response = reply.AsSpan().AsStruct<T>();
-            return response.Verify(in sequence)
-                ? (reply, null)
-                : (null, reply.AsSpan().ToStruct<GenericError>());
+            var response = reply.Item1.AsSpan().AsStruct<T>();
+            return response.Verify(in sequence) && reply.Item2.ResponseType == XResponseType.Reply
+                ? (reply.Item1, null)
+                : (null, new GenericError(reply.Item1.AsSpan().ToStruct<XResponse>(), reply.Item2.ErrorMessageAction!));
         }
     }
 
@@ -213,7 +234,7 @@ internal sealed class SocketAccessor : ISocketAccessor
 
         var hasAnyData = ReplyBuffer.Remove(response.Id, out var buffer);
         return hasAnyData
-            ? buffer.AsSpan().AsStruct<T>()
+            ? buffer.Item1.AsSpan().AsStruct<T>()
             : response.HasReturn
                 ? throw new InvalidOperationException()
                 : null;

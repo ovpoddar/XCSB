@@ -2,4 +2,5 @@
 
 internal interface IXError : IXBaseResponse
 {
+    string GetErrorMessage();
 }

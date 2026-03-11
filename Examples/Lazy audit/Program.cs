@@ -4,6 +4,7 @@ using Xcsb;
 using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Response.Event;
 
 const int WIDTH = 50;
 const int HEIGHT = 50;
@@ -54,8 +55,8 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.ReplyType == XEventType.LastEvent) return;
-    if (evnt.ReplyType == XEventType.Expose)
+    if (evnt.ReplyType == EventType.LastEvent) return;
+    if (evnt.ReplyType == EventType.Expose)
     {
         lazyXcsb.PutImage(ImageFormatBitmap.ZPixmap,
             window,

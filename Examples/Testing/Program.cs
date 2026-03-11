@@ -68,10 +68,10 @@ for (var y = 0; y < h; y++)
 while (true)
 {
     var evnt = d.GetEvent();
-    if (evnt.ReplyType == Xcsb.Models.XEventType.LastEvent || evnt.Error.HasValue)
+    if (evnt.ReplyType == EventType.LastEvent || evnt.Error.HasValue)
     { break; }
 
-    if (evnt.ReplyType == Xcsb.Models.XEventType.Expose)
+    if (evnt.ReplyType == EventType.Expose)
     {
         d.PutImageChecked(ImageFormatBitmap.ZPixmap,
             window,
@@ -94,9 +94,9 @@ while (true)
             body1
             );
     }
-    if (evnt.ReplyType == XEventType.Unknown)
+    if (evnt.ReplyType == DamageErrorCode.DamageNotify)
     {
-        var damag = evnt.As<GenericEvent>().As<DamageNotifyEvent>();
+        var damag = evnt.As<DamageNotifyEvent>();
         Console.WriteLine($"{damag.ResponseHeader} {damag.Drawable} {damag.Damage} {damag.Timestamp} {damag.Area} {damag.Geometry}");
 
     }

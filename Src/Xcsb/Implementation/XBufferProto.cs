@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Handlers.Buffered;
 using Xcsb.Handlers.Direct;
 using Xcsb.Infrastructure;
@@ -500,9 +501,9 @@ internal sealed class XBufferProto : IXBufferProto
         _bufferProtoOut.AddRange(properties);
     }
 
-    public void SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
+    public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt)
     {
-        var request = new SendEventType(propagate, destination, eventMask, evnt);
+        var request = new SendEventType(propagate, destination, eventMask, evnt.GetRawResponse().AsStruct<XResponse>());
         _bufferProtoOut.Add(ref request);
     }
 
