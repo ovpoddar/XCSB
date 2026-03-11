@@ -5,7 +5,7 @@ using Xcsb.Extension.Damage.Models;
 using Xcsb.Extension.Damage.Response.Events;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Response.Event;
+using Xcsb.Models.TypeInfo;
 
 const int WIDTH = 500;
 const int HEIGHT = 500;

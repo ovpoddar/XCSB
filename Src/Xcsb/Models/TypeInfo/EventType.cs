@@ -1,6 +1,6 @@
 ﻿using Xcsb.Connection.Models;
 
-namespace Xcsb.Response.Event;
+namespace Xcsb.Models.TypeInfo;
 
 public sealed record EventType : XEventType
 {

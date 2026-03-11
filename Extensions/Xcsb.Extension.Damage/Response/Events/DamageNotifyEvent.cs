@@ -7,7 +7,7 @@ namespace Xcsb.Extension.Damage.Response.Events;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct DamageNotifyEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<byte, byte> ResponseHeader;
     public readonly uint Drawable;
     public readonly uint Damage;
     public readonly uint Timestamp;

@@ -7,7 +7,7 @@ namespace Xcsb.Response.Replies.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct AllocColorPlanesResponse : IXReply
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
     public readonly ushort NumberOfPixels;
     private readonly ushort _pad1;
@@ -17,7 +17,7 @@ internal readonly struct AllocColorPlanesResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                _pad1 == 0 && Length == NumberOfPixels;
     }
 }

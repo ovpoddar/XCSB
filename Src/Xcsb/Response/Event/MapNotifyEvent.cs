@@ -7,14 +7,14 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct MapNotifyEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Event;
     public uint Window;
     public bool OverrideRedirect;
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.MapNotify
+        return ResponseHeader.Reply == ResponseType.MapNotify
             && ResponseHeader.GetValue() == 0;
     }
 }

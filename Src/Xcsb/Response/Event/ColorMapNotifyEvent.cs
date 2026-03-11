@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ColorMapNotifyEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Window;
     public uint ColorMap;
     public byte New;
@@ -16,6 +16,6 @@ public struct ColorMapNotifyEvent : IXEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.ColormapNotify;
+        return ResponseHeader.Reply == ResponseType.ColormapNotify;
     }
 }

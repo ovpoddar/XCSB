@@ -8,7 +8,7 @@ namespace Xcsb.Response.Replies.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 60)]
 internal readonly struct ListFontsWithInfoResponse : IXReply
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
     public readonly CharInfo MinBounds;
     private readonly int _pad0;
@@ -28,7 +28,7 @@ internal readonly struct ListFontsWithInfoResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                _pad0 == 0 && _pad1 == 0;
     }
 

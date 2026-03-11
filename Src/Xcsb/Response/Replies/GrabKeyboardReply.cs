@@ -8,12 +8,12 @@ namespace Xcsb.Response.Replies;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct GrabKeyboardReply : IXReply
 {
-    public readonly ResponseHeader<GrabStatus> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, GrabStatus> ResponseHeader;
     public readonly uint Length;
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                Length == 0;
     }
 

@@ -7,7 +7,7 @@ namespace Xcsb.Extension.Damage.Response.Errors;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct BadDamageError : IXError
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<byte, byte> ResponseHeader;
 
     public string GetErrorMessage() =>
         "invalid Damage parameter";

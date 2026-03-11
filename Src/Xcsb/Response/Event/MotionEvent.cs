@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct MotionNotifyEvent : IXEvent
 {
-    public readonly ResponseHeader<Motion> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, Motion> ResponseHeader;
     public uint Time;
     public uint Root;
     public uint Window;
@@ -22,6 +22,6 @@ public struct MotionNotifyEvent : IXEvent
     public bool IsSameScreen => _sameScreen == 1;
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.MotionNotify;
+        return ResponseHeader.Reply == ResponseType.MotionNotify;
     }
 }

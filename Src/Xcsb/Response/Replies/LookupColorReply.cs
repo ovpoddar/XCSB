@@ -7,7 +7,7 @@ namespace Xcsb.Response.Replies;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct LookupColorReply : IXReply
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
     public readonly ushort ExactRed;
     public readonly ushort ExactGreen;
@@ -18,7 +18,7 @@ public readonly struct LookupColorReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                Length == 0;
     }
 }

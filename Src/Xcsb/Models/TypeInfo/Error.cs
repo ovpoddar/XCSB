@@ -1,4 +1,6 @@
-﻿namespace Xcsb.Connection.Models.TypeInfo;
+﻿using Xcsb.Connection.Models;
+
+namespace Xcsb.Models.TypeInfo;
 
 public sealed record ErrorCode : XEventType
 {

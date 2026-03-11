@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct CreateNotifyEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Parent;
     public uint Window;
     public short X;
@@ -21,7 +21,7 @@ public struct CreateNotifyEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.CreateNotify && //this.ResponseHeader.Sequence == sequence &&
+        return ResponseHeader.Reply == ResponseType.CreateNotify && //this.ResponseHeader.Sequence == sequence &&
                ResponseHeader.GetValue() == 0;
     }
 }

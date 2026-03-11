@@ -8,7 +8,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct SelectionRequestEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Time; // 0 -> current time
     public uint Owner;
     public uint Requestor;
@@ -18,6 +18,6 @@ public struct SelectionRequestEvent : IXEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.SelectionRequest && ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.SelectionRequest && ResponseHeader.GetValue() == 0;
     }
 }

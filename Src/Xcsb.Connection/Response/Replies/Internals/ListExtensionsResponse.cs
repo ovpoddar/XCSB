@@ -6,12 +6,12 @@ namespace Xcsb.Connection.Response.Replies.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct ListExtensionsResponse : IXReply
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<byte, byte> ResponseHeader;
     public readonly uint Length;
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.GetResponseType() == XResponseType.Reply &&
+        return ResponseHeader.Reply == 1 &&
                Length * 4 >= NumberOfExtensions;
     }
 

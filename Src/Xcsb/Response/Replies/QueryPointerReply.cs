@@ -8,7 +8,7 @@ namespace Xcsb.Response.Replies;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct QueryPointerReply : IXReply
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
     public readonly uint Root;
     public readonly uint child;
@@ -22,7 +22,7 @@ public readonly struct QueryPointerReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                Length == 0;
     }
 }

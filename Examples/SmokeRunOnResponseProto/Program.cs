@@ -3,7 +3,7 @@ using Xcsb;
 using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Response.Event;
+using Xcsb.Models.TypeInfo;
 
 using var connection = XcsbClient.Connect();
 var client = connection.Initialized();

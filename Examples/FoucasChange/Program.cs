@@ -3,6 +3,7 @@ using Xcsb.Connection;
 using Xcsb.Infrastructure;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Event;
 
 

@@ -7,7 +7,6 @@ using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Models.Handshake;
-using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.BigRequests;
@@ -17,12 +16,14 @@ using Xcsb.Infrastructure.Exceptions;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
+using Xcsb.Models.TypeInfo;
 using Xcsb.Requests;
 using Xcsb.Requests.BigExtensation;
 using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
+
 
 #if !NETSTANDARD
 using System.Numerics;

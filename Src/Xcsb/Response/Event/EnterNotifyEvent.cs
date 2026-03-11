@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct EnterNotifyEvent : IXEvent
 {
-    public readonly ResponseHeader<NotifyDetail> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, NotifyDetail> ResponseHeader;
     public uint Time;
     public uint Root;
     public uint Event;
@@ -24,6 +24,6 @@ public struct EnterNotifyEvent : IXEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.EnterNotify;
+        return ResponseHeader.Reply == ResponseType.EnterNotify;
     }
 }

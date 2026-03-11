@@ -8,7 +8,7 @@ namespace Xcsb.Response.Replies.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 52)]
 internal unsafe struct GetKeyboardControlResponse : IXReply
 {
-    public readonly ResponseHeader<AutoRepeatMode> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, AutoRepeatMode> ResponseHeader;
     public readonly uint Length;
     public readonly uint LedMask;
     public readonly byte KeyClickPercent;
@@ -20,7 +20,7 @@ internal unsafe struct GetKeyboardControlResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                Length == 5;
     }
 }

@@ -4,9 +4,9 @@ using System.Runtime.InteropServices;
 namespace Xcsb.Connection.Response.Contract;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
-public readonly struct ResponseHeader<T> where T : unmanaged
+public readonly struct ResponseHeader<R, T> where T : unmanaged where R : unmanaged
 {
-    public readonly byte Reply;
+    public readonly R Reply;
     private readonly T _value;
     public readonly ushort Sequence;
 
@@ -16,14 +16,5 @@ public readonly struct ResponseHeader<T> where T : unmanaged
     }
 
     internal T GetValue() => _value;
-
-    internal readonly XResponseType GetResponseType() => this.Reply switch
-    {
-        0 => XResponseType.Error,
-        1 => XResponseType.Reply,
-        11 => XResponseType.Notify,
-        2 and <= 34 or 36 => XResponseType.Event,
-        _ => XResponseType.Unknown
-    };
 
 }

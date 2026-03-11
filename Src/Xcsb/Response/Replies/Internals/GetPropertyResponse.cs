@@ -7,7 +7,7 @@ namespace Xcsb.Response.Replies.Internals;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 internal readonly struct GetPropertyResponse : IXReply
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
     public readonly uint Type;
     public readonly uint BytesAfter;
@@ -15,7 +15,7 @@ internal readonly struct GetPropertyResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                ValueLength != Length;
     }
 

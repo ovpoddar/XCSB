@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct FocusOutEvent : IXEvent
 {
-    public readonly ResponseHeader<NotifyDetail> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, NotifyDetail> ResponseHeader;
     public int Event;
     public NotifyMode Mode;
 

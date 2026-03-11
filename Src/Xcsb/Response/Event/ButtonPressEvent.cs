@@ -8,7 +8,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ButtonPressEvent : IXEvent
 {
-    public readonly ResponseHeader<Button> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, Button> ResponseHeader;
     public uint TimeStamp;
     public uint RootWindow;
     public uint EventWindow;
@@ -24,6 +24,6 @@ public struct ButtonPressEvent : IXEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.ButtonPress;
+        return ResponseHeader.Reply == ResponseType.ButtonPress;
     }
 }

@@ -2,7 +2,7 @@
 using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Response.Event;
+using Xcsb.Models.TypeInfo;
 
 const int width = 400;
 const int height = 300;

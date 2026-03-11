@@ -6,7 +6,7 @@ using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
-using Xcsb.Response.Event;
+using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
 

@@ -7,13 +7,13 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ResizeRequestEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Window;
     public ushort Width;
     public ushort Height;
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.ResizeRequest && ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.ResizeRequest && ResponseHeader.GetValue() == 0;
     }
 }

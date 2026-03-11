@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ExposeEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Window;
     public ushort X;
     public ushort Y;
@@ -18,6 +18,6 @@ public struct ExposeEvent : IXEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Expose && ResponseHeader.GetValue() == 0;
+        return ResponseHeader.Reply == ResponseType.Expose && ResponseHeader.GetValue() == 0;
     }
 }

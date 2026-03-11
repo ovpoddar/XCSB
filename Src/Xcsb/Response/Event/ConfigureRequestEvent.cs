@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ConfigureRequestEvent : IXEvent
 {
-    public readonly ResponseHeader<StackMode> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, StackMode> ResponseHeader;
     public uint Parent;
     public uint Window;
     public uint Sibling;
@@ -20,6 +20,6 @@ public struct ConfigureRequestEvent : IXEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.ConfigureRequest;
+        return ResponseHeader.Reply == ResponseType.ConfigureRequest;
     }
 }

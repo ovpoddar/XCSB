@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct KeyReleaseEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint TimeStamp;
     public uint RootWindow;
     public uint EventWindow;
@@ -21,6 +21,6 @@ public struct KeyReleaseEvent : IXEvent
     public bool IsSameScreen => _isSameScreen == 1;
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.KeyRelease;
+        return ResponseHeader.Reply == ResponseType.KeyRelease;
     }
 }

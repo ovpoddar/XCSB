@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct PropertyNotifyEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Window;
     public uint Atom;
     public uint Time;
@@ -15,7 +15,7 @@ public struct PropertyNotifyEvent : IXEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.PropertyNotify
+        return ResponseHeader.Reply == ResponseType.PropertyNotify
             && ResponseHeader.GetValue() == 0;
     }
 }

@@ -6,7 +6,7 @@ namespace Xcsb.Extension.Damage.Response.Replies;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct DamageQueryVersionReply : IXReply
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<byte, byte> ResponseHeader;
     public readonly uint Length;
     public readonly uint MajorVersion;
     public readonly uint MinorVersion;

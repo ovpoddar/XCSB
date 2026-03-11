@@ -8,7 +8,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct ClientMessageEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Window;
     public ATOM Type;
     public ClientMessageData Data;
@@ -16,6 +16,6 @@ public struct ClientMessageEvent : IXEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.ClientMessage;
+        return ResponseHeader.Reply == ResponseType.ClientMessage;
     }
 }

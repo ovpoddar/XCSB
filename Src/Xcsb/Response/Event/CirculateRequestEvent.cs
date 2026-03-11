@@ -7,7 +7,7 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct CirculateRequestEvent : IXEvent
 {
-    public readonly ResponseHeader<byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Parent;
     public uint Window;
     private readonly uint _pad1;
@@ -16,6 +16,6 @@ public struct CirculateRequestEvent : IXEvent
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.CirculateRequest && ResponseHeader.GetValue() == 0 && _pad1 == 0;
+        return ResponseHeader.Reply == ResponseType.CirculateRequest && ResponseHeader.GetValue() == 0 && _pad1 == 0;
     }
 }

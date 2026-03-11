@@ -8,12 +8,12 @@ namespace Xcsb.Response.Replies;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct SetModifierMappingReply : IXReply
 {
-    public readonly ResponseHeader<MappingStatus> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, MappingStatus> ResponseHeader;
     public readonly uint Length;
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                Length == 0;
     }
 

@@ -9,7 +9,7 @@ namespace Xcsb.Response.Replies;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
 public readonly struct GetWindowAttributesReply : IXReply
 {
-    public readonly ResponseHeader<BackingStores> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, BackingStores> ResponseHeader;
     public readonly uint Length;
     public readonly uint VisualId;
     public readonly ClassResponseType Class;
@@ -29,7 +29,7 @@ public readonly struct GetWindowAttributesReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply &&
                Length == 3 && _pad0 == 0;
     }
 

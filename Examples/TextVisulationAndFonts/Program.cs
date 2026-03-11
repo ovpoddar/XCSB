@@ -2,6 +2,7 @@
 using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Event;
 
 using var connection = XcsbClient.Connect();

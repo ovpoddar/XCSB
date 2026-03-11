@@ -7,13 +7,13 @@ namespace Xcsb.Response.Event;
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public struct FocusInEvent : IXEvent
 {
-    public readonly ResponseHeader<NotifyDetail> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, NotifyDetail> ResponseHeader;
     public int Event;
     public NotifyMode Mode;
 
 
     public readonly bool Verify()
     {
-        return (ResponseType)ResponseHeader.Reply == ResponseType.FocusIn;
+        return ResponseHeader.Reply == ResponseType.FocusIn;
     }
 }
