@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
-using Xcsb.Response.Event;
 
 namespace Xcsb.Requests;
 

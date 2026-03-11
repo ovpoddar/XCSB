@@ -1,6 +1,5 @@
 ﻿using Xcsb;
 using Xcsb.Connection;
-using Xcsb.Connection.Models.Handshake;
 using Xcsb.Response.Event;
 
 using var con = XcsbClient.Connect();

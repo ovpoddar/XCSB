@@ -1,9 +1,11 @@
-﻿using Xcsb.Connection.Response;
-using Xcsb.Connection.Response.Errors;
+﻿using Xcsb.Connection.Models;
+using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
-using Xcsb.Response.Event;
+
+
 
 
 #if !NETSTANDARD

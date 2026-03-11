@@ -2,7 +2,7 @@
 using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Connection.Response.Contract;
 
-namespace Xcsb.Connection.Response.Errors;
+namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct AccessError : IXError

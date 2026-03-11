@@ -6,8 +6,6 @@ using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Models.Handshake;
-using Xcsb.Connection.Models.TypeInfo;
-using Xcsb.Connection.Response.Contract;
 
 namespace Xcsb.Connection.Infrastructure;
 
@@ -128,25 +126,6 @@ internal class XConnection : IXConnectionInternal
 
     private static void Register(ISocketAccessor accessor)
     {
-        // error
-        accessor.RegisterError<Response.Errors.AccessError>(0, ErrorCode.Access);
-        accessor.RegisterError<Response.Errors.AllocError>(0, ErrorCode.Alloc);
-        accessor.RegisterError<Response.Errors.AtomError>(0, ErrorCode.Atom);
-        accessor.RegisterError<Response.Errors.ColormapError>(0, ErrorCode.Colormap);
-        accessor.RegisterError<Response.Errors.CursorError>(0, ErrorCode.Cursor);
-        accessor.RegisterError<Response.Errors.DrawableError>(0, ErrorCode.Drawable);
-        accessor.RegisterError<Response.Errors.FontError>(0, ErrorCode.Font);
-        accessor.RegisterError<Response.Errors.GContextError>(0, ErrorCode.GContext);
-        accessor.RegisterError<Response.Errors.IDChoiceError>(0, ErrorCode.IDChoice);
-        accessor.RegisterError<Response.Errors.ImplementationError>(0, ErrorCode.Implementation);
-        accessor.RegisterError<Response.Errors.LengthError>(0, ErrorCode.Length);
-        accessor.RegisterError<Response.Errors.MatchError>(0, ErrorCode.Match);
-        accessor.RegisterError<Response.Errors.NameError>(0, ErrorCode.Name);
-        accessor.RegisterError<Response.Errors.PixmapError>(0, ErrorCode.Pixmap);
-        accessor.RegisterError<Response.Errors.RequestError>(0, ErrorCode.Request);
-        accessor.RegisterError<Response.Errors.ValueError>(0, ErrorCode.Value);
-        accessor.RegisterError<Response.Errors.WindowError>(0, ErrorCode.Window);
-
         // reply
         accessor.RegisterReply();
     }

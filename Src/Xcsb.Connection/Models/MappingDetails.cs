@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xcsb.Connection.Configuration;
+﻿using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 
@@ -25,7 +22,7 @@ internal record struct MappingDetails
         // Type = typeof(T);
         ErrorMessageAction = ErrorProcesser.GetErrorMessage<T>;
     }
-    
+
     public void SetEventType<T>() where T : unmanaged, IXEvent
     {
         // Type = typeof(T);

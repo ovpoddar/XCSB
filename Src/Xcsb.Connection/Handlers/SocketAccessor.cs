@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Helpers;
@@ -9,7 +8,6 @@ using Xcsb.Connection.Models;
 using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
-using Xcsb.Connection.Response.Errors;
 
 namespace Xcsb.Connection.Handlers;
 
@@ -32,7 +30,7 @@ internal sealed class SocketAccessor : ISocketAccessor
     {
         ResponseMap.Clear();
     }
-    
+
     public SocketAccessor(Socket socket, XcsbClientConfiguration configuration)
     {
         this._socket = socket;
@@ -43,10 +41,10 @@ internal sealed class SocketAccessor : ISocketAccessor
     {
         ResponseMap[(1, null)] = new MappingDetails(XResponseType.Reply, null);
     }
-    
+
     public void RegisterEvent<T>(XEventType type, byte? typeValue = null) where T : unmanaged, IXEvent
     {
-        var value = new MappingDetails(type == 11  ? XResponseType.Notify : XResponseType.Event, type);
+        var value = new MappingDetails(type == 11 ? XResponseType.Notify : XResponseType.Event, type);
         value.SetEventType<T>();
         typeValue ??= type;
         ResponseMap[(typeValue.Value, null)] = value;

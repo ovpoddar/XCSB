@@ -2,10 +2,10 @@
 using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Connection.Response.Contract;
 
-namespace Xcsb.Connection.Response.Errors;
+namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct IDChoiceError : IXError
+public readonly struct WindowError : IXError
 {
     public readonly ResponseHeader<byte> ResponseHeader;
     public readonly uint BadResourceId;
@@ -14,14 +14,13 @@ public readonly struct IDChoiceError : IXError
 
     public readonly string GetErrorMessage() =>
         """
-        The value chosen for a resource identifier either is
-        not included in the range assigned to the client or is
-        already in use.
+        A value for a WINDOW argument does not name a defined
+        WINDOW.
         """;
 
     public bool Verify(in int sequence)
     {
         return ResponseHeader.GetResponseType() == XResponseType.Error && ResponseHeader.Sequence == sequence
-            && ResponseHeader.GetValue() == ErrorCode.IDChoice;
+            && ResponseHeader.GetValue() == ErrorCode.Window;
     }
 }

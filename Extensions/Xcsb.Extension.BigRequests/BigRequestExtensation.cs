@@ -12,8 +12,8 @@ namespace Xcsb.Extension.BigRequests
                 return null;
 
             var response = extensationInternal.QueryExtension("BIG-REQUESTS"u8);
-            return !response.Present 
-                ? null 
+            return !response.Present
+                ? null
                 : extensationInternal.GetOrCreate(() => new BigRequestProto(response, extensationInternal));
         }
     }

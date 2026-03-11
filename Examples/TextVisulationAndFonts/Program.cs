@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Xcsb;
+﻿using Xcsb;
 using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;

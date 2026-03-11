@@ -1,8 +1,4 @@
 ﻿using Xcsb.Connection;
-using Xcsb.Connection.Models;
-using Xcsb.Extension.Damage.Models;
-using Xcsb.Extension.Damage.Response.Errors;
-using Xcsb.Extension.Damage.Response.Events;
 
 namespace Xcsb.Extension.Damage
 {

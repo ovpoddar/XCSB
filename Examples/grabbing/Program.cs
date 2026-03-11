@@ -38,7 +38,7 @@ while (isRunning)
 
     if (evnt.ReplyType == EventType.Expose)
         draw_interface();
-    
+
 
     if (evnt.ReplyType == EventType.KeyPress)
     {
@@ -59,12 +59,12 @@ while (isRunning)
             case 15: demo_ungrab_all(); break; // 6
             case 43: show_help(); break; // h
             case 24:
-            {
-                demo_ungrab_all();
-                con.FreeGCUnchecked(gc);
-                con.KillClientUnchecked(window);
-                break;
-            }
+                {
+                    demo_ungrab_all();
+                    con.FreeGCUnchecked(gc);
+                    con.KillClientUnchecked(window);
+                    break;
+                }
         }
     }
 

@@ -1,15 +1,11 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
-using Xcsb.Connection.Response.Errors;
-using Xcsb.Models;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
@@ -101,11 +97,11 @@ internal sealed class ProtoInExtended
 
     }
 
-    public int AvailableData => 
+    public int AvailableData =>
         _socketAccessor.AvailableData;
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void PollRead(int timeout) => 
+    public void PollRead(int timeout) =>
         _socketAccessor.PollRead(timeout);
 
     public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
@@ -140,7 +136,7 @@ internal sealed class ProtoInExtended
             if (_socketAccessor.PollRead())
                 if (_socketAccessor.AvailableData == 0)
                     return new XEvent(
-                        new byte[32].ToStruct<XResponse>(), 
+                        new byte[32].ToStruct<XResponse>(),
                         new MappingDetails(XResponseType.Event, EventType.LastEvent));
 
             _socketAccessor.FlushSocket();

@@ -1,5 +1,4 @@
 ﻿using Xcsb.Connection.Handlers;
-using Xcsb.Connection.Models;
 using Xcsb.Connection.Response.Replies;
 
 namespace Xcsb.Connection;

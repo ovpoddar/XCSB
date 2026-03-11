@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-using Xcsb.Connection.Models.TypeInfo;
+﻿using System.Runtime.InteropServices;
 using Xcsb.Connection.Response.Contract;
-using Xcsb.Connection.Response.Errors;
 using Xcsb.Extension.Damage.Models;
 
 namespace Xcsb.Extension.Damage.Response.Errors;

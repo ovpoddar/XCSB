@@ -1,6 +1,5 @@
 ﻿using Xcsb;
 using Xcsb.Connection;
-using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Infrastructure;
 using Xcsb.Masks;
 using Xcsb.Models;

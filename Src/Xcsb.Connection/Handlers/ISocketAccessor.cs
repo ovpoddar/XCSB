@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
-using Xcsb.Connection.Response.Errors;
 
 namespace Xcsb.Connection.Handlers;
 

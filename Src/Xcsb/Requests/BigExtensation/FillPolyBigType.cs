@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using Xcsb.Models;
 
-namespace Xcsb.Requests;
+namespace Xcsb.Requests.BigExtensation;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -2,10 +2,10 @@
 using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Connection.Response.Contract;
 
-namespace Xcsb.Connection.Response.Errors;
+namespace Xcsb.Response.Errors;
 
-[StructLayout(LayoutKind.Sequential, Size = 1)]
-public readonly struct ColormapError : IXError
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+public readonly struct DrawableError : IXError
 {
     public readonly ResponseHeader<byte> ResponseHeader;
     public readonly uint BadResourceId;
@@ -14,13 +14,13 @@ public readonly struct ColormapError : IXError
 
     public readonly string GetErrorMessage() =>
         """
-        A value for a COLORMAP argument does not name a
-        defined COLORMAP.
+        A value for a DRAWABLE argument does not name a
+        defined WINDOW or PIXMAP.
         """;
 
     public bool Verify(in int sequence)
     {
         return ResponseHeader.GetResponseType() == XResponseType.Error && ResponseHeader.Sequence == sequence
-            && ResponseHeader.GetValue() == ErrorCode.Colormap;
+            && ResponseHeader.GetValue() == ErrorCode.Drawable;
     }
 }

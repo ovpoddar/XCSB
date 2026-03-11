@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xcsb.Connection.Response.Contract;
-
-namespace Xcsb.Connection.Models;
+﻿namespace Xcsb.Connection.Models;
 
 public abstract record XEventType
 {
@@ -19,6 +14,6 @@ public abstract record XEventType
     public static implicit operator byte(XEventType type) =>
         type._value;
 
-    public static explicit operator string (XEventType type) =>
+    public static explicit operator string(XEventType type) =>
         type._name;
 }

@@ -1,4 +1,4 @@
-﻿using Xcsb.Connection.Response.Errors;
+﻿using Xcsb.Connection.Response.Contract;
 
 namespace Xcsb.Connection.Infrastructure.Exceptions;
 

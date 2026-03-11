@@ -2,7 +2,6 @@
 using System.Text;
 using Xcsb;
 using Xcsb.Connection;
-using Xcsb.Connection.Models;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Response.Event;

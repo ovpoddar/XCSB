@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xcsb.Connection.Response.Contract;
-
-namespace Xcsb.Connection.Models.TypeInfo;
+﻿namespace Xcsb.Connection.Models.TypeInfo;
 
 public sealed record ErrorCode : XEventType
 {

@@ -1,6 +1,6 @@
-﻿using Xcsb.Infrastructure.ResponceProto;
+﻿using Xcsb.Connection.Models;
+using Xcsb.Infrastructure.ResponceProto;
 using Xcsb.Infrastructure.VoidProto;
-using Xcsb.Models;
 
 namespace Xcsb.Infrastructure;
 

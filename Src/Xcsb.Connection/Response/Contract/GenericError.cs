@@ -1,7 +1,6 @@
 ﻿using Xcsb.Connection.Configuration;
-using Xcsb.Connection.Response.Contract;
 
-namespace Xcsb.Connection.Response.Errors;
+namespace Xcsb.Connection.Response.Contract;
 
 public readonly struct GenericError
 {
@@ -13,6 +12,6 @@ public readonly struct GenericError
         _response = response;
         _message = message;
     }
-    
+
     public string Message => _message(_response.Bytes);
 }

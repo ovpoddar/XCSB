@@ -2,7 +2,7 @@
 using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Connection.Response.Contract;
 
-namespace Xcsb.Connection.Response.Errors;
+namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct ValueError : IXError
@@ -12,7 +12,7 @@ public readonly struct ValueError : IXError
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public readonly string GetErrorMessage() => 
+    public readonly string GetErrorMessage() =>
         """
         Some numeric value falls outside the range of values
         accepted by the request. Unless a specific range is

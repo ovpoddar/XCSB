@@ -2,13 +2,14 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Connection;
+using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Models.Handshake;
+using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
-using Xcsb.Connection.Response.Errors;
 using Xcsb.Extension.BigRequests;
 using Xcsb.Handlers.Direct;
 using Xcsb.Infrastructure;
@@ -18,12 +19,10 @@ using Xcsb.Models;
 using Xcsb.Models.String;
 using Xcsb.Requests;
 using Xcsb.Requests.BigExtensation;
+using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
-using Xcsb.Connection.Handlers;
-using Xcsb.Response.Contract;
-
 
 #if !NETSTANDARD
 using System.Numerics;
@@ -60,6 +59,27 @@ internal sealed class XProto : IXProto
 
     private static void Resister(ISocketAccessor accessor)
     {
+
+        // error
+        accessor.RegisterError<AccessError>(0, ErrorCode.Access);
+        accessor.RegisterError<AllocError>(0, ErrorCode.Alloc);
+        accessor.RegisterError<AtomError>(0, ErrorCode.Atom);
+        accessor.RegisterError<ColormapError>(0, ErrorCode.Colormap);
+        accessor.RegisterError<CursorError>(0, ErrorCode.Cursor);
+        accessor.RegisterError<DrawableError>(0, ErrorCode.Drawable);
+        accessor.RegisterError<FontError>(0, ErrorCode.Font);
+        accessor.RegisterError<GContextError>(0, ErrorCode.GContext);
+        accessor.RegisterError<IDChoiceError>(0, ErrorCode.IDChoice);
+        accessor.RegisterError<ImplementationError>(0, ErrorCode.Implementation);
+        accessor.RegisterError<LengthError>(0, ErrorCode.Length);
+        accessor.RegisterError<MatchError>(0, ErrorCode.Match);
+        accessor.RegisterError<NameError>(0, ErrorCode.Name);
+        accessor.RegisterError<PixmapError>(0, ErrorCode.Pixmap);
+        accessor.RegisterError<RequestError>(0, ErrorCode.Request);
+        accessor.RegisterError<ValueError>(0, ErrorCode.Value);
+        accessor.RegisterError<WindowError>(0, ErrorCode.Window);
+
+        // event
         accessor.RegisterEvent<ButtonPressEvent>(EventType.ButtonPress);
         accessor.RegisterEvent<ButtonReleaseEvent>(EventType.ButtonRelease);
         accessor.RegisterEvent<CirculateNotifyEvent>(EventType.CirculateNotify);

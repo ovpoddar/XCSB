@@ -1,11 +1,7 @@
-﻿using System.Runtime.InteropServices;
-using Xcsb.Connection.Helpers;
-using Xcsb.Connection.Models;
+﻿using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
-using Xcsb.Connection.Response.Errors;
-using Xcsb.Response.Event;
 
-namespace Xcsb.Models;
+namespace Xcsb.Connection.Models;
 
 public readonly struct XEvent
 {

@@ -2,25 +2,25 @@
 using Xcsb.Connection.Models.TypeInfo;
 using Xcsb.Connection.Response.Contract;
 
-namespace Xcsb.Connection.Response.Errors;
+namespace Xcsb.Response.Errors;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct AtomError : IXError
+[StructLayout(LayoutKind.Sequential, Size = 1)]
+public readonly struct ColormapError : IXError
 {
     public readonly ResponseHeader<byte> ResponseHeader;
-    public readonly uint BadAtomId;
+    public readonly uint BadResourceId;
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
     public readonly string GetErrorMessage() =>
         """
-        A value for an ATOM argument does not name a defined
-        ATOM.
+        A value for a COLORMAP argument does not name a
+        defined COLORMAP.
         """;
 
     public bool Verify(in int sequence)
     {
         return ResponseHeader.GetResponseType() == XResponseType.Error && ResponseHeader.Sequence == sequence
-            && ResponseHeader.GetValue() == ErrorCode.Atom;
+            && ResponseHeader.GetValue() == ErrorCode.Colormap;
     }
 }

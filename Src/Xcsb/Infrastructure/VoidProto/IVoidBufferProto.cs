@@ -1,7 +1,8 @@
-﻿using Xcsb.Masks;
+﻿using Xcsb.Connection.Models;
+using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
-using Xcsb.Response.Event;
+
 #if !NETSTANDARD
 using System.Numerics;
 #endif
