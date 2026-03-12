@@ -532,7 +532,7 @@ internal sealed class XProto : IXProto
     public ResponseProto ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp) =>
         ConvertSelectionBase(requestor, selection, target, property, timestamp);
 
-    public ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt) =>
+    public ResponseProto SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt) =>
         SendEventBase(propagate, destination, eventMask, evnt);
 
     public ResponseProto UngrabPointer(uint time) =>
@@ -853,7 +853,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void SendEventUnchecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
+    public void SendEventUnchecked(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
     {
         var cookie = this.SendEventBase(propagate, destination, eventMask, evnt);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1359,7 +1359,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void SendEventChecked(bool propagate, uint destination, uint eventMask, XEvent evnt)
+    public void SendEventChecked(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
     {
         var cookie = this.SendEventBase(propagate, destination, eventMask, evnt);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -2538,9 +2538,9 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto SendEventBase(bool propagate, uint destination, uint eventMask, XEvent evnt)
+    private ResponseProto SendEventBase(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
     {
-        var request = new SendEventType(propagate, destination, eventMask, evnt.GetRawResponse().AsStruct<XResponse>());
+        var request = new SendEventType(propagate, destination, eventMask, evnt.GetResponse());
         _protoOutExtended.Send(ref request);
         return new ResponseProto(_protoOutExtended.Sequence);
     }

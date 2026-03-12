@@ -13,4 +13,8 @@ public struct GenericEvent
         _eventType = eventType;
     }
 
+    public readonly Span<byte> GetRawResponse() =>
+        _response.Bytes;
+    
+    internal readonly XResponse GetResponse() => _response;
 }

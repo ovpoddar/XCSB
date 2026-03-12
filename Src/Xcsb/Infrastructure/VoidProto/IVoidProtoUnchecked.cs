@@ -1,4 +1,5 @@
 ﻿using Xcsb.Connection.Models;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
@@ -47,7 +48,7 @@ public interface IVoidProtoUnchecked
 
     void ConvertSelectionUnchecked(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp);
 
-    void SendEventUnchecked(bool propagate, uint destination, uint eventMask, XEvent evnt);
+    void SendEventUnchecked(bool propagate, uint destination, uint eventMask, GenericEvent evnt);
 
     void UngrabPointerUnchecked(uint time);
 

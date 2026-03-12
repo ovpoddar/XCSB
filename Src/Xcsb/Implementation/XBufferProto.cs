@@ -502,9 +502,9 @@ internal sealed class XBufferProto : IXBufferProto
         _bufferProtoOut.AddRange(properties);
     }
 
-    public void SendEvent(bool propagate, uint destination, uint eventMask, XEvent evnt)
+    public void SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
     {
-        var request = new SendEventType(propagate, destination, eventMask, evnt.GetRawResponse().AsStruct<XResponse>());
+        var request = new SendEventType(propagate, destination, eventMask, evnt.GetResponse());
         _bufferProtoOut.Add(ref request);
     }
 

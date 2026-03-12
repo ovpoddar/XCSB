@@ -112,7 +112,6 @@ x.UngrabKeyboardUnchecked(0);
 
 var xevnt = x.GetEvent();
 Debug.Assert(xevnt.ReplyType == EventType.Expose || xevnt.ReplyType == EventType.MappingNotify);
-// todo: fix this
 Console.WriteLine("all success {0}", !xevnt.Error.HasValue);
 
 x.UnmapSubwindowsChecked(sub);

@@ -186,7 +186,7 @@ while (isRunning)
         if (motionEvent.Window == window1)
         {
             motionEvent.Window = window2;
-            x.SendEventUnchecked(true, window2, (uint)EventMask.PointerMotionMask, evnt);
+            x.SendEventUnchecked(true, window2, (uint)EventMask.PointerMotionMask, evnt.Event!.Value);
         }
     }
 }
