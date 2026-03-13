@@ -112,6 +112,7 @@ internal sealed class SocketAccessor : ISocketAccessor
             switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
+                    ReceivedSequence++;
                     ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
                     break;
                 case XResponseType.Notify:
@@ -146,6 +147,7 @@ internal sealed class SocketAccessor : ISocketAccessor
             switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
+                    ReceivedSequence++;
                     if (ReceivedSequence > outProtoSequence)
                         ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
                     else
