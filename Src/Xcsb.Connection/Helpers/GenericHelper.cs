@@ -128,6 +128,7 @@ internal static class GenericHelper
     }
 
     internal static int CountFlags<T>(this T value) where T : struct, Enum
+#if NETSTANDARD
     {
         var v = Convert.ToUInt64(value);
         var count = 0;
@@ -140,4 +141,8 @@ internal static class GenericHelper
 
         return count;
     }
+#else
+        => BitOperations.PopCount(Convert.ToUInt64(value));
+#endif
+
 }

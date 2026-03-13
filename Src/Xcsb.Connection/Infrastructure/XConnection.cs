@@ -72,7 +72,7 @@ internal class XConnection : IXConnectionInternal
 
                 authData.CopyTo(workingBuffer[writeIndex..]);
                 writeIndex += authData.Length;
-                workingBuffer.Slice(writeIndex, authName.Length.Padding()).Clear();
+                workingBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
                 this.Accessor.SendData(workingBuffer, SocketFlags.None);
             }
             return true;

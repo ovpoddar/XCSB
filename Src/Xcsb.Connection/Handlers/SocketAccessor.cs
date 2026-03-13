@@ -15,14 +15,17 @@ internal sealed class SocketAccessor : ISocketAccessor
 {
     private readonly XcsbClientConfiguration _configuration;
     private readonly Socket _socket;
+
     private static readonly ConcurrentDictionary<(byte, byte?), MappingDetails> ResponseMap =
         new ConcurrentDictionary<(byte, byte?), MappingDetails>();
 
 
-    public ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; } = new ConcurrentQueue<(byte[], MappingDetails
-        )>();//notify, event, unknown
-    public ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; } = new ConcurrentDictionary<int, (byte[],
-        MappingDetails)>();// error, reply
+    public ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; } =
+        new ConcurrentQueue<(byte[], MappingDetails)>();
+
+    public ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; } =
+        new ConcurrentDictionary<int, (byte[], MappingDetails)>();
+
     public int ReceivedSequence { get; set; }
     public int SendSequence { get; set; }
 
@@ -242,6 +245,7 @@ internal sealed class SocketAccessor : ISocketAccessor
 
     #endregion
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool PollRead(int timeout = -1) =>
         _socket.Poll(timeout, SelectMode.SelectRead);
 
