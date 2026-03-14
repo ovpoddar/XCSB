@@ -15,7 +15,7 @@ internal interface ISocketAccessor
     ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; }
     int SendSequence { get; set; }
 
-    byte[] ComputeResponse(ref Span<byte> buffer, bool updateSequence = true);
+    byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true);
     void FlushSocket();
     void FlushSocket(int outProtoSequence, bool shouldThrowOnError);
     T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct;

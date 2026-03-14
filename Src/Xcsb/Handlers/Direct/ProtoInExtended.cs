@@ -79,7 +79,7 @@ internal sealed class ProtoInExtended
         while (true)
         {
             _ = _socketAccessor.Received(headerBuffer);
-            var packet = _socketAccessor.ComputeResponse(ref headerBuffer).AsSpan();
+            var packet = _socketAccessor.ComputeResponse(headerBuffer).AsSpan();
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
             Debug.Assert(response.ResponseHeader.Sequence == sequence);

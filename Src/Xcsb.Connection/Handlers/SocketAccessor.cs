@@ -100,7 +100,7 @@ internal sealed class SocketAccessor : ISocketAccessor
     public void FlushSocket()
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
-        Span<byte> buffer = stackalloc byte[bufferSize];
+        var buffer = new byte[bufferSize];
         while (_socket.Available != 0)
         {
             _ = Received(buffer);
@@ -110,21 +110,21 @@ internal sealed class SocketAccessor : ISocketAccessor
             {
                 case XResponseType.Error:
                     ReceivedSequence++;
-                    ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
+                    ReplyBuffer[content.Sequence] = (buffer, responseType);
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
+                    BufferEvents.Enqueue((buffer, responseType));
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = (ComputeResponse(ref buffer), responseType);
+                    ReplyBuffer[content.Sequence] = (ComputeResponse(buffer.AsSpan()), responseType);
                     break;
                 case XResponseType.Event:
-                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
+                    BufferEvents.Enqueue((buffer, responseType));
                     break;
                 case XResponseType.Unknown:
                     BufferEvents.Enqueue((content.ReplyType == 35
                         ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
-                        : buffer.ToArray(), responseType));
+                        : buffer, responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -135,7 +135,7 @@ internal sealed class SocketAccessor : ISocketAccessor
     public void FlushSocket(int outProtoSequence, bool shouldThrowOnError)
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
-        Span<byte> buffer = stackalloc byte[bufferSize];
+        var buffer = new byte[bufferSize];
         while (_socket.Available != 0)
         {
             _ = Received(buffer);
@@ -146,7 +146,7 @@ internal sealed class SocketAccessor : ISocketAccessor
                 case XResponseType.Error:
                     ReceivedSequence++;
                     if (ReceivedSequence > outProtoSequence)
-                        ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
+                        ReplyBuffer[content.Sequence] = (buffer, responseType);
                     else
                     {
                         if (shouldThrowOnError)
@@ -156,18 +156,18 @@ internal sealed class SocketAccessor : ISocketAccessor
 
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
+                    BufferEvents.Enqueue((buffer, responseType));
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = (ComputeResponse(ref buffer), responseType);
+                    ReplyBuffer[content.Sequence] = (ComputeResponse(buffer), responseType);
                     break;
                 case XResponseType.Event:
-                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
+                    BufferEvents.Enqueue((buffer, responseType));
                     break;
                 case XResponseType.Unknown:
                     BufferEvents.Enqueue((content.ReplyType == 35
                         ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
-                        : buffer.ToArray(), responseType));
+                        : buffer, responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -175,7 +175,7 @@ internal sealed class SocketAccessor : ISocketAccessor
         }
     }
 
-    public byte[] ComputeResponse(ref Span<byte> buffer, bool updateSequence = true)
+    public byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
         if (updateSequence && content.Sequence > ReceivedSequence)
