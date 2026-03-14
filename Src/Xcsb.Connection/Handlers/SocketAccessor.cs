@@ -15,8 +15,7 @@ internal sealed class SocketAccessor : ISocketAccessor
 {
     private readonly XcsbClientConfiguration _configuration;
     private readonly Socket _socket;
-
-    private static readonly ConcurrentDictionary<(byte, byte?), MappingDetails> ResponseMap =
+    private readonly ConcurrentDictionary<(byte, byte?), MappingDetails> ResponseMap =
         new ConcurrentDictionary<(byte, byte?), MappingDetails>();
 
 
@@ -28,11 +27,6 @@ internal sealed class SocketAccessor : ISocketAccessor
 
     public int ReceivedSequence { get; set; }
     public int SendSequence { get; set; }
-
-    static SocketAccessor()
-    {
-        ResponseMap.Clear();
-    }
 
     public SocketAccessor(Socket socket, XcsbClientConfiguration configuration)
     {

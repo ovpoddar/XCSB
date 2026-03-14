@@ -94,7 +94,7 @@ public class HandshakeSuccessResponseBody
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(length);
             socketAccessor.Received(scratchBuffer[..length]);
-            result.VendorName = Encoding.ASCII.GetString(scratchBuffer, 0, contentLength).TrimEnd();
+            result.VendorName = Encoding.ASCII.GetString(scratchBuffer[0..contentLength]).TrimEnd();
         }
 
         return length;
