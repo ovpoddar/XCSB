@@ -185,19 +185,17 @@ internal sealed class SocketAccessor : ISocketAccessor
         if (replySize == 0)
             return buffer.ToArray();
 
-        using var result = new ArrayPoolUsing<byte>(32 + replySize);
-        buffer.CopyTo(result[..32]);
+        ReplyBuffer.TryRemove(content.Sequence, out var prior);
+        var priorLen = prior.Item1?.Length ?? 0;
+        var totalSize = 32 + replySize + priorLen;
 
-        _ = Received(result[32..result.Length]);
+        using var combined = new ArrayPoolUsing<byte>(totalSize);
+        if (prior.Item1 is { } priorData)
+            priorData.AsSpan().CopyTo(combined[..priorLen]);
+        buffer.CopyTo(combined[priorLen..]);
+        _ = Received(combined[(priorLen + 32)..(priorLen + 32 + replySize)]);
+        return combined.Slice(0, totalSize).ToArray();
 
-        if (!ReplyBuffer.TryRemove(content.Sequence, out var response))
-            return result;
-
-        replySize = result.Length + response.Item1.Length;
-        using var scratchBuffer = new ArrayPoolUsing<byte>(replySize);
-        response.Item1.CopyTo(scratchBuffer);
-        result[0..result.Length].CopyTo(scratchBuffer[response.Item1.Length..]);
-        return scratchBuffer.Slice(0, replySize).ToArray();
     }
 
 
@@ -226,7 +224,7 @@ internal sealed class SocketAccessor : ISocketAccessor
 
     public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct
     {
-        if (ReceivedSequence < response.Id)
+        if (ReceivedSequence < response.Id && !ReplyBuffer.ContainsKey(response.Id))
             FlushSocket();
 
         var hasAnyData = ReplyBuffer.Remove(response.Id, out var buffer);
