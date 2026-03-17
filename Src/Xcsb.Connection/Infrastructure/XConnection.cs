@@ -153,7 +153,7 @@ internal class XConnection : IXConnectionInternal
             Accessor.ReplyBuffer.Clear();
             if (Extensation is IXExtensationInternal extensationInternal)
                 extensationInternal.Clear();
-            _socket?.Dispose();
+            _socket.Dispose();
         }
 
         _disposed = true;

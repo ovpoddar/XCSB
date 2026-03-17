@@ -33,7 +33,7 @@ internal static class ConnectionHelper
             throw new UnauthorizedAccessException();
 
         if (configuration.ShouldCrashOnFailConnection)
-            throw new Exception(response.FailReason.ToString());
+            throw new Exception(response.FailReason);
         return response;
     }
 
@@ -47,7 +47,7 @@ internal static class ConnectionHelper
             ?? throw new UnauthorizedAccessException();
 
         if (configuration.ShouldCrashOnFailConnection && context.HandshakeStatus is not HandshakeStatus.Success)
-            throw new Exception(context.FailReason.ToString());
+            throw new Exception(context.FailReason);
         return context;
     }
 
