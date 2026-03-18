@@ -349,8 +349,11 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new ImageText16Type(drawable, gc, x, y, text.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(Encoding.BigEndianUnicode.GetBytes(text.ToString()));
-        _bufferProtoOut.AddRange(new byte[(16 + (text.Length * 2)).Padding()]);
+        var textByteCount = Encoding.BigEndianUnicode.GetByteCount(text);
+        var textBytes = new byte[textByteCount];
+        Encoding.BigEndianUnicode.GetBytes(text, textBytes);
+        _bufferProtoOut.AddRange(textBytes);
+        _bufferProtoOut.AddRange(new byte[(16 + textByteCount).Padding()]);
 
     }
 

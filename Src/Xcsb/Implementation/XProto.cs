@@ -60,7 +60,6 @@ internal sealed class XProto : IXProto
 
     private static void Resister(ISocketAccessor accessor)
     {
-
         // error
         accessor.RegisterError<AccessError>(0, ErrorCode.Access);
         accessor.RegisterError<AllocError>(0, ErrorCode.Alloc);
@@ -2068,6 +2067,7 @@ internal sealed class XProto : IXProto
                 ref request,
                 32,
                 MemoryMarshal.Cast<uint, byte>(args));
+            _protoOutExtended.SendExact(workingBuffer[..requiredBuffer]);
         }
 
         return new ResponseProto(_protoOutExtended.Sequence);
@@ -2419,7 +2419,8 @@ internal sealed class XProto : IXProto
 
     private ResponseProto PolyText16Base(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
-        var request = new PolyText16Type(drawable, gc, x, y, data.Sum(a => a.Count));
+        var totalItemCount = data.Sum(a => a.Count);
+        var request = new PolyText16Type(drawable, gc, x, y, totalItemCount);
         var requiredBuffer = request.Length * 4;
         var writIndex = 16;
         if (requiredBuffer < _bigRequestLength)
@@ -2433,7 +2434,7 @@ internal sealed class XProto : IXProto
             foreach (var item in data)
                 writIndex += item.CopyTo(scratchBuffer.Slice(writIndex, item.Count));
 
-            scratchBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            scratchBuffer[^totalItemCount.Padding()..].Clear();
             _protoOutExtended.SendExact(scratchBuffer);
         }
         else
@@ -2448,7 +2449,7 @@ internal sealed class XProto : IXProto
             foreach (var item in data)
                 writIndex += item.CopyTo(workingBuffer.Slice(writIndex, item.Count));
 
-            workingBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            workingBuffer[^totalItemCount.Padding()..].Clear();
             _protoOutExtended.SendExact(workingBuffer);
         }
 
@@ -2457,7 +2458,8 @@ internal sealed class XProto : IXProto
 
     private ResponseProto PolyText8Base(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
-        var request = new PolyText8Type(drawable, gc, x, y, data.Sum(a => a.Count));
+        var totalItemCount = data.Sum(a => a.Count);
+        var request = new PolyText8Type(drawable, gc, x, y, totalItemCount);
         var requiredBuffer = request.Length * 4;
         var writIndex = 16;
         if (requiredBuffer < _bigRequestLength)
@@ -2470,7 +2472,7 @@ internal sealed class XProto : IXProto
 #endif
             foreach (var item in data)
                 writIndex += item.CopyTo(scratchBuffer.Slice(writIndex, item.Count));
-            scratchBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            scratchBuffer[^totalItemCount.Padding()..].Clear();
             _protoOutExtended.SendExact(scratchBuffer);
         }
         else
@@ -2484,7 +2486,7 @@ internal sealed class XProto : IXProto
 #endif
             foreach (var item in data)
                 writIndex += item.CopyTo(workingBuffer.Slice(writIndex, item.Count));
-            workingBuffer[^data.Sum(a => a.Count).Padding()..].Clear();
+            workingBuffer[^totalItemCount.Padding()..].Clear();
             _protoOutExtended.SendExact(workingBuffer);
         }
 
@@ -2693,6 +2695,7 @@ internal sealed class XProto : IXProto
                 ref request,
                 16,
                 name);
+            _protoOutExtended.SendExact(workingBuffer[..requiredBuffer]);
         }
 
         return new ResponseProto(_protoOutExtended.Sequence);
