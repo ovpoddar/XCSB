@@ -150,7 +150,7 @@ internal sealed class SocketAccessor : ISocketAccessor
                     else
                     {
                         if (shouldThrowOnError)
-                            throw new XEventException(new GenericError(buffer.ToStruct<XResponse>(),
+                            throw new XEventException(new GenericError(buffer.AsSpan().ToStruct<XResponse>(),
                                 responseType.ErrorMessageAction!));
                     }
 
