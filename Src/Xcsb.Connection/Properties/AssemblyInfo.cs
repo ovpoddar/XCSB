@@ -4,3 +4,4 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xcsb.SockAccesser")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xcsb.Extension.BigRequests")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xcsb.Extension.Damage")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xcsb.Extension.XInput")]
