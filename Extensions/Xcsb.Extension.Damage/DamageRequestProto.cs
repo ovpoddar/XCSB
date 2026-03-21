@@ -15,16 +15,16 @@ namespace Xcsb.Extension.Damage;
 internal sealed class DamageRequestProto : IDamageRequest
 {
     private readonly QueryExtensionReply _response;
-    private readonly IXExtensationInternal _extensationInternal;
+    private readonly IXExtensionInternal _extensionInternal;
 
-    public DamageRequestProto(QueryExtensionReply response, IXExtensationInternal extensationInternal)
+    public DamageRequestProto(QueryExtensionReply response, IXExtensionInternal extensionInternal)
     {
         _response = response;
-        _extensationInternal = extensationInternal;
+        _extensionInternal = extensionInternal;
 
-        extensationInternal.Transport.RegisterEvent<DamageNotifyEvent>(DamageErrorCode.DamageNotify,
+        extensionInternal.Transport.RegisterEvent<DamageNotifyEvent>(DamageErrorCode.DamageNotify,
             (byte?)(response.FirstEvent + DamageErrorCode.DamageNotify));
-        extensationInternal.Transport.RegisterError<BadDamageError>((byte)(response.FirstError + DamageErrorCode.BadDamage),
+        extensionInternal.Transport.RegisterError<BadDamageError>((byte)(response.FirstError + DamageErrorCode.BadDamage),
             DamageErrorCode.BadDamage);
     }
 
@@ -36,10 +36,10 @@ internal sealed class DamageRequestProto : IDamageRequest
     private ResponseProto AddBase(uint drawable, uint region)
     {
         var request = new DamageAddType(this._response.MajorOpcode, drawable, region);
-        _extensationInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensationInternal.Transport.SendSequence, false);
+        return new ResponseProto(_extensionInternal.Transport.SendSequence, false);
     }
 
     public void Create(uint damage, uint drawable, ReportLevel reportLavel)
@@ -50,10 +50,10 @@ internal sealed class DamageRequestProto : IDamageRequest
     private ResponseProto CreateBase(uint damage, uint drawable, ReportLevel reportLavel)
     {
         var request = new DamageCreateType(this._response.MajorOpcode, damage, drawable, reportLavel);
-        _extensationInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensationInternal.Transport.SendSequence, false);
+        return new ResponseProto(_extensionInternal.Transport.SendSequence, false);
     }
 
     public void Destroy(uint damage)
@@ -64,16 +64,16 @@ internal sealed class DamageRequestProto : IDamageRequest
     private ResponseProto DestroyBase(uint damage)
     {
         var request = new DamageDestroyType(this._response.MajorOpcode, damage);
-        _extensationInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SendRequest(
            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
            System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensationInternal.Transport.SendSequence, false);
+        return new ResponseProto(_extensionInternal.Transport.SendSequence, false);
     }
 
     public DamageQueryVersionReply QueryVersion(uint majorVersion, uint minorVersion)
     {
         var cookie = QueryVersionBase(majorVersion, minorVersion);
-        var (result, error) = this._extensationInternal.Transport.ReceivedResponseSpan<DamageQueryVersionReply>(cookie.Id);
+        var (result, error) = this._extensionInternal.Transport.ReceivedResponseSpan<DamageQueryVersionReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
 
@@ -83,10 +83,10 @@ internal sealed class DamageRequestProto : IDamageRequest
     private ResponseProto QueryVersionBase(uint majorVersion, uint minorVersion)
     {
         var request = new DamageQueryVersionType(_response.MajorOpcode, majorVersion, minorVersion);
-        _extensationInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensationInternal.Transport.SendSequence, true);
+        return new ResponseProto(_extensionInternal.Transport.SendSequence, true);
     }
 
     public void Subtract(uint damage, uint repair, uint parts)
@@ -97,9 +97,9 @@ internal sealed class DamageRequestProto : IDamageRequest
     private ResponseProto SubtractBase(uint damage, uint repair, uint parts)
     {
         var request = new DamageSubtractType(_response.MajorOpcode, damage, repair, parts);
-        _extensationInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensationInternal.Transport.SendSequence, true);
+        return new ResponseProto(_extensionInternal.Transport.SendSequence, true);
     }
 }

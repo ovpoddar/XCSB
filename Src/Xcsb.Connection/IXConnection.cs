@@ -5,7 +5,7 @@ namespace Xcsb.Connection;
 public interface IXConnection : IDisposable
 {
     HandshakeSuccessResponseBody? HandshakeSuccessResponseBody { get; }
-    IXExtensation Extensation { get; }
+    IXExtension Extension { get; }
     string FailReason { get; }
 
     uint NewId();

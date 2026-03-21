@@ -11,32 +11,32 @@ namespace Xcsb.Extension.BigRequests;
 
 internal sealed class BigRequestProto : IBigRequest
 {
-    private readonly IXExtensationInternal _extensation;
+    private readonly IXExtensionInternal _extension;
     private readonly QueryExtensionReply _response;
 
-    public BigRequestProto(QueryExtensionReply response, IXExtensationInternal extensation)
+    public BigRequestProto(QueryExtensionReply response, IXExtensionInternal extension)
     {
         _response = response;
-        _extensation = extensation;
+        _extension = extension;
     }
 
     public BigReqEnableReply BigRequestsEnable()
     {
         var cookie = BigRequestsEnableBase();
-        var (result, error) = this._extensation.Transport.ReceivedResponseSpan<BigReqEnableReply>(cookie.Id);
+        var (result, error) = this._extension.Transport.ReceivedResponseSpan<BigReqEnableReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
 
-        _extensation.ActivateExtensation(BigRequestExtensation.ExtensationName, _response);
+        _extension.ActivateExtension(BigRequestExtension.ExtensionName, _response);
         return result.AsSpan().ToStruct<BigReqEnableReply>();
     }
 
     private ResponseProto BigRequestsEnableBase()
     {
         var request = new BigReqEnableType(_response.MajorOpcode);
-        _extensation.Transport.SendRequest(
+        _extension.Transport.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensation.Transport.SendSequence, true);
+        return new ResponseProto(_extension.Transport.SendSequence, true);
     }
 }

@@ -20,14 +20,14 @@ internal class XConnection : IXConnectionInternal
     public string FailReason { get; private set; } = string.Empty;
     public bool Connected => this._socket.Connected;
     public ISocketAccessor Accessor { get; }
-    public IXExtensation Extensation { get; }
+    public IXExtension Extension { get; }
 
     public XConnection(string path, XcsbClientConfiguration configuration, in ProtocolType type)
     {
         this._socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
         this._socket.Connect(new UnixDomainSocketEndPoint(path));
         this.Accessor = new SocketAccessor(_socket, configuration);
-        this.Extensation = new XcsbExtensation(this.Accessor);
+        this.Extension = new XcsbExtension(this.Accessor);
         this._globalId = 0;
     }
 
@@ -151,8 +151,8 @@ internal class XConnection : IXConnectionInternal
             // Socket is the only resource that needs disposal.
             Accessor.BufferEvents.Clear();
             Accessor.ReplyBuffer.Clear();
-            if (Extensation is IXExtensationInternal extensationInternal)
-                extensationInternal.Clear();
+            if (Extension is IXExtensionInternal extensionInternal)
+                extensionInternal.Clear();
             _socket.Dispose();
         }
 

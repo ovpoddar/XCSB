@@ -15,7 +15,7 @@ using var c = XcsbClient.Connect();
 if (c.HandshakeSuccessResponseBody == null)
     return;
 
-var s = c.Extensation.Damage();
+var s = c.Extension.Damage();
 if (s is null) return;
 
 var window = c.NewId();

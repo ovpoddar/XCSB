@@ -18,7 +18,7 @@ using Xcsb.Models;
 using Xcsb.Models.String;
 using Xcsb.Models.TypeInfo;
 using Xcsb.Requests;
-using Xcsb.Requests.BigExtensation;
+using Xcsb.Requests.BigExtension;
 using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
@@ -40,7 +40,7 @@ internal sealed class XProto : IXProto
     private static uint _bigRequestLength = 262140;
     private readonly ProtoInExtended _protoInExtended;
     private readonly ProtoOutExtended _protoOutExtended;
-    private readonly IXExtensationInternal _extensationInternal;
+    private readonly IXExtensionInternal _extensionInternal;
 
     public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(_protoInExtended, _protoOutExtended);
 
@@ -53,9 +53,9 @@ internal sealed class XProto : IXProto
         _protoInExtended = new ProtoInExtended(connection.Accessor);
         _protoOutExtended = new ProtoOutExtended(connection.Accessor);
 
-        if (connection.Extensation is not IXExtensationInternal extensationInternal)
-            throw new InvalidOperationException("Extensation is not initialized");
-        _extensationInternal = extensationInternal;
+        if (connection.Extension is not IXExtensionInternal extensionInternal)
+            throw new InvalidOperationException("Extension is not initialized");
+        _extensionInternal = extensionInternal;
     }
 
     private static void Resister(ISocketAccessor accessor)
@@ -3253,8 +3253,8 @@ internal sealed class XProto : IXProto
 
     private void EnableBigRequestIfNeeded()
     {
-        if (_extensationInternal.IsExtensationEnable(BigRequestExtensation.ExtensationName)) return;
-        var request = _extensationInternal.BigRequest()
+        if (_extensionInternal.IsExtensionEnable(BigRequestExtension.ExtensionName)) return;
+        var request = _extensionInternal.BigRequest()
                       ?? throw new InvalidOperationException("BigRequest is not supported");
         var response = request.BigRequestsEnable();
         _bigRequestLength = response.MaximumRequestLength;
