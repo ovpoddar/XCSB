@@ -19,7 +19,7 @@ namespace Xcsb.Extension.Damage
             return extensionInternal.GetOrCreate(() =>
             {
                 extensionInternal.ActivateExtension(ExtensionName, response);
-                var request = new DamageRequestProto(response, extensionInternal);
+                var request = new DamageProto(response, extensionInternal);
                 var versionNegostion = request.QueryVersion(ExtensionMajorVersion, ExtensionMinorVersion);
                 ExtensionMajorVersion = versionNegostion.MajorVersion;
                 ExtensionMinorVersion = versionNegostion.MinorVersion;

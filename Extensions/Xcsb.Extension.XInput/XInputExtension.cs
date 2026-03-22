@@ -17,10 +17,14 @@ namespace Xcsb.Extension.XInput
             if (!response.Present) return null;
             
             
-            return extensionInternal.GetOrCreate<IXinputRequest?>(() =>
+            return extensionInternal.GetOrCreate(() =>
             {
                 extensionInternal.ActivateExtension(ExtensionName, response);
-                return null;
+                var result = new XInputProto(response, extensionInternal);
+                var versionNegosiation = result.GetExtensionVersion("XInputExtension"u8);
+                ExtensionMajorVersion = versionNegosiation.ServerMajor;
+                ExtensionMinorVersion = versionNegosiation.ServerMinor;
+                return result;
             });
         }
     }

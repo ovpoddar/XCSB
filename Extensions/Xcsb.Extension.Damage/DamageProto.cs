@@ -12,12 +12,12 @@ using Xcsb.Extension.Damage.Response.Replies;
 
 namespace Xcsb.Extension.Damage;
 
-internal sealed class DamageRequestProto : IDamageRequest
+internal sealed class DamageProto : IDamageRequest
 {
     private readonly QueryExtensionReply _response;
     private readonly IXExtensionInternal _extensionInternal;
 
-    public DamageRequestProto(QueryExtensionReply response, IXExtensionInternal extensionInternal)
+    public DamageProto(QueryExtensionReply response, IXExtensionInternal extensionInternal)
     {
         _response = response;
         _extensionInternal = extensionInternal;

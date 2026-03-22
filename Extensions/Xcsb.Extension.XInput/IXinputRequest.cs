@@ -1,8 +1,11 @@
+using System;
+using Xcsb.Extension.XInput.Response.Replies;
+
 namespace Xcsb.Extension.XInput;
 
 public interface IXinputRequest
 {
-    void GetExtensionVersion();
+    GetExtensionVersionReply GetExtensionVersion(ReadOnlySpan<byte> name);
     void ListInputDevices();
     void OpenDevice();
     void CloseDevice();

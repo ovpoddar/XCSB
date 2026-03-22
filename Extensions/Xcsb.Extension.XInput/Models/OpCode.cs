@@ -1,6 +1,6 @@
 namespace Xcsb.Extension.XInput.Models;
 
-public enum OpCode
+public enum OpCode : byte
 {
     GetExtensionVersion = 1,
     ListInputDevices = 2,
