@@ -10,13 +10,18 @@
 		<Version>2.0.0-beta</Version>
 		<Authors>Ov Poddar</Authors>
 		<Description>Xcsb is a .NET library that lets you talk directly to the x-server Window System. For .NET developers, this means you can build cross-platform desktop apps that interact with X11 servers.</Description>
-		<PackageReadmeFile>..\..\README.md</PackageReadmeFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/ovpoddar/XCSB.git</RepositoryUrl>
-		<PackageLicenseFile>..\..\LICENSE</PackageLicenseFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
-
+	
+	<ItemGroup>
+		<None Include="LICENSE" Pack="True" PackagePath="./" />
+		<None Include="README.md" Pack="True" PackagePath="./" />
+	</ItemGroup>
+	
 	<ItemGroup>
 		<ProjectReference Include="..\..\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
 		<ProjectReference Include="..\Xcsb.Connection\Xcsb.Connection.csproj" />
