@@ -1,0 +1,21 @@
+﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
+using Xcsb.Models;
+
+namespace Xcsb.Extension.Damage.Response.Events;
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+public readonly struct DamageNotifyEvent : IXEvent
+{
+    public readonly ResponseHeader<byte, byte> ResponseHeader;
+    public readonly uint Drawable;
+    public readonly uint Damage;
+    public readonly uint Timestamp;
+    public readonly Rectangle Area;
+    public readonly Rectangle Geometry;
+
+    public bool Verify()
+    {
+        return true;
+    }
+}

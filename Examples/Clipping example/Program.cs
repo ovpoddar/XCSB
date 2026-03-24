@@ -1,13 +1,16 @@
 ﻿using Xcsb;
+using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Models.TypeInfo;
 
 const int width = 400;
 const int height = 300;
 
-using var xcsb = XcsbClient.Initialized();
-var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
-var window = xcsb.NewId();
+using var connection = XcsbClient.Connect();
+var xcsb = connection.Initialized();
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
+var window = connection.NewId();
 
 xcsb.CreateWindowUnchecked(0,
     window,
@@ -19,25 +22,25 @@ xcsb.CreateWindowUnchecked(0,
     [screen.WhitePixel, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask)]
 );
 
-var pixmap = xcsb.NewId();
+var pixmap = connection.NewId();
 xcsb.CreatePixmapUnchecked(screen.RootDepth!.DepthValue,
     pixmap,
     screen.Root,
     width, height);
 
-var gc = xcsb.NewId();
-xcsb.CreateGCUnchecked(gc, pixmap, GCMask.Foreground | GCMask.Background, [screen.BlackPixel, screen.WhitePixel]);
+var gc = connection.NewId();
+xcsb.CreateGCUnchecked(gc, pixmap, GcMask.Foreground | GcMask.Background, [screen.BlackPixel, screen.WhitePixel]);
 
-var cursor = xcsb.NewId();
+var cursor = connection.NewId();
 
-var cursor_pixmap = xcsb.NewId();
-var cursor_mask = xcsb.NewId();
+var cursor_pixmap = connection.NewId();
+var cursor_mask = connection.NewId();
 
 xcsb.CreatePixmapUnchecked(1, cursor_pixmap, screen.Root, 16, 16);
 xcsb.CreatePixmapUnchecked(1, cursor_mask, screen.Root, 16, 16);
 
-var cursor_gc = xcsb.NewId();
-xcsb.CreateGCUnchecked(cursor_gc, cursor_pixmap, GCMask.Foreground, [1]);
+var cursor_gc = connection.NewId();
+xcsb.CreateGCUnchecked(cursor_gc, cursor_pixmap, GcMask.Foreground, [1]);
 
 xcsb.PolySegmentUnchecked(cursor_pixmap, cursor_gc,
 [
@@ -61,7 +64,7 @@ xcsb.RecolorCursorUnchecked(cursor,
 
 xcsb.ChangeWindowAttributesUnchecked(window, ValueMask.Cursor, [cursor]);
 
-xcsb.ChangeGCUnchecked(gc, GCMask.Foreground, [screen.WhitePixel]);
+xcsb.ChangeGCUnchecked(gc, GcMask.Foreground, [screen.WhitePixel]);
 xcsb.PolyFillRectangleUnchecked(pixmap, gc, [new Rectangle { X = 0, Y = 0, Width = width, Height = height }]);
 
 xcsb.SetClipRectanglesUnchecked(ClipOrdering.Unsorted,
@@ -78,15 +81,15 @@ xcsb.SetDashesUnchecked(
     0,
     [10, 5, 3, 7]);
 
-xcsb.ChangeGCUnchecked(gc, GCMask.LineStyle, [1]);
+xcsb.ChangeGCUnchecked(gc, GcMask.LineStyle, [1]);
 
-xcsb.ChangeGCUnchecked(gc, GCMask.Foreground, [screen.BlackPixel]);
+xcsb.ChangeGCUnchecked(gc, GcMask.Foreground, [screen.BlackPixel]);
 
 xcsb.PolyFillRectangleUnchecked(pixmap, gc, [new Rectangle { X = 0, Y = 0, Width = width, Height = height }]);
 
 xcsb.PolyRectangleUnchecked(pixmap, gc, [new Rectangle { X = 5, Y = 5, Width = width - 10, Height = height - 10 }]);
 
-xcsb.ChangeGCUnchecked(gc, GCMask.ClipMask, [0]);
+xcsb.ChangeGCUnchecked(gc, GcMask.ClipMask, [0]);
 
 xcsb.PolyRectangleUnchecked(pixmap, gc, [
     new Rectangle { X = 50, Y = 50, Width = 100, Height = 80 },
@@ -113,32 +116,25 @@ if (windowGeometry is { X: 38, Y: 59 })
         [500, 500]);
 
 var query = xcsb.QueryTree(window);
-if (query.Root != xcsb.HandshakeSuccessResponseBody.Screens[0].Root)
+if (query.Root != connection.HandshakeSuccessResponseBody.Screens[0].Root)
     return;
 
 
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.ReplyType == XEventType.LastEvent) return;
-    switch (evnt.ReplyType)
-    {
-        case XEventType.Expose:
-            {
-                xcsb.CopyAreaUnchecked(pixmap,
-                    window,
-                    gc,
-                    0, 0,
-                    0, 0,
-                    width, height);
-                break;
-            }
-
-        case XEventType.KeyPress:
-            isRunning = false;
-            break;
-    }
+    if (evnt.ReplyType == EventType.LastEvent) return;
+    else if (evnt.ReplyType == EventType.Expose)
+        xcsb.CopyAreaUnchecked(pixmap,
+            window,
+            gc,
+            0, 0,
+            0, 0,
+            width, height);
+    else if (evnt.ReplyType == EventType.KeyPress)
+        isRunning = false;
 }
+
 
 xcsb.FreePixmapUnchecked(pixmap);
 xcsb.FreeGCUnchecked(gc);

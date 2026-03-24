@@ -1,34 +1,42 @@
 ﻿using Xcsb;
-using Xcsb.Masks;
-using Xcsb.Models;
-using Xcsb.Models.Handshake;
-// todo:Reminder. this will work if their is the extension support
-var x11 = XcsbClient.Initialized();
-var rgbValue = x11.HandshakeSuccessResponseBody.Screens[0].Depths.FirstOrDefault(a => a.DepthValue == 32);
-var visual = rgbValue?.Visuals.LastOrDefault(a => a.Class == VisualClass.TrueColor).VisualId;
+using Xcsb.Connection;
+using Xcsb.Models.TypeInfo;
 
-if (!visual.HasValue || rgbValue == null)
+using var con = XcsbClient.Connect();
+if (con.HandshakeSuccessResponseBody is null)
+    return;
+var screen = con.HandshakeSuccessResponseBody.Screens[0];
+var visual = screen.Depths.FirstOrDefault(a => a.DepthValue == 32)?
+    .Visuals.FirstOrDefault();
+if (!visual.HasValue)
     return;
 
-var root = x11.HandshakeSuccessResponseBody.Screens[0].Root;
-var window = x11.NewId();
-var white = x11.HandshakeSuccessResponseBody.Screens[0].WhitePixel;
-var black = x11.HandshakeSuccessResponseBody.Screens[0].BlackPixel;
-var cmid = x11.NewId();
-x11.CreateColormapUnchecked(ColormapAlloc.None, cmid, root, visual.Value);
-x11.CreateWindowChecked(rgbValue.DepthValue, window, root, 10, 10, 168, 195, 1,
-    ClassType.InputOutput, visual.Value,
-    ValueMask.EventMask | ValueMask.BackgroundPixel | ValueMask.Colormap,
-    [(uint)EventMask.ExposureMask, 0, cmid]);
-x11.MapWindowUnchecked(window);
+var client = con.Initialized();
+var colormap = con.NewId();
+client.CreateColormapChecked(Xcsb.Models.ColormapAlloc.None,
+    colormap,
+    screen.Root,
+    visual.Value.VisualId);
+var window = con.NewId();
+client.CreateWindowChecked(
+    32,
+    window,
+    screen.Root,
+    0, 0, 300, 200, 0,
+    Xcsb.Models.ClassType.InputOutput,
+    visual.Value.VisualId,
+    Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.BorderPixel | Xcsb.Masks.ValueMask.Colormap,
+    [0x00000000, 0x00000000, colormap]
+    );
+client.MapWindowChecked(window);
 
 var isRunning = true;
-var gc = x11.NewId();
-x11.CreateGCUnchecked(gc, window, GCMask.Foreground | GCMask.Background, [white, black]);
+var gc = con.NewId();
+client.CreateGCUnchecked(gc, window, Xcsb.Masks.GcMask.Foreground | Xcsb.Masks.GcMask.Background, [screen.WhitePixel, screen.BlackPixel]);
 while (isRunning)
 {
-    var evnt = x11.GetEvent();
-    if (evnt.ReplyType == XEventType.LastEvent)
+    var evnt = client.GetEvent();
+    if (evnt.ReplyType == EventType.LastEvent)
     {
         isRunning = false;
         return;
@@ -38,7 +46,7 @@ while (isRunning)
         isRunning = false;
 
     Console.WriteLine(evnt.ReplyType);
-    x11.PolyLineUnchecked(0, window, gc, [
+    client.PolyLineUnchecked(0, window, gc, [
         new(10, 10),
         new(1430, 10),
         new(1430, 868),

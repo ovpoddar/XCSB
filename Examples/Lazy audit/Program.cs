@@ -1,15 +1,17 @@
 ﻿using System.Buffers;
 using System.Text;
 using Xcsb;
+using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Models.TypeInfo;
 
 const int WIDTH = 50;
 const int HEIGHT = 50;
-
-var xcsb = XcsbClient.Initialized();
-var window = xcsb.NewId();
-var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
+using var connection = XcsbClient.Connect();
+var xcsb = connection.Initialized();
+var window = connection.NewId();
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 var lazyXcsb = xcsb.BufferClient;
 
 xcsb.CreateWindowUnchecked(screen.RootDepth.DepthValue,
@@ -24,11 +26,11 @@ xcsb.CreateWindowUnchecked(screen.RootDepth.DepthValue,
 
 lazyXcsb.ChangeProperty<byte>(PropertyMode.Replace, window, ATOM.WmName, ATOM.String, Encoding.UTF8.GetBytes("working fixing dodo"));
 
-var gc = xcsb.NewId();
-lazyXcsb.CreateGC(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
+var gc = connection.NewId();
+lazyXcsb.CreateGC(gc, window, GcMask.Foreground | GcMask.GraphicsExposures, [screen.BlackPixel, 0]);
 
-var white_gc = xcsb.NewId();
-lazyXcsb.CreateGC(white_gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.WhitePixel, 0]);
+var white_gc = connection.NewId();
+lazyXcsb.CreateGC(white_gc, window, GcMask.Foreground | GcMask.GraphicsExposures, [screen.WhitePixel, 0]);
 
 var requirByte = WIDTH * HEIGHT * 4;
 var data = ArrayPool<byte>.Shared.Rent(requirByte);
@@ -53,8 +55,8 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.ReplyType == XEventType.LastEvent) return;
-    if (evnt.ReplyType == XEventType.Expose)
+    if (evnt.ReplyType == EventType.LastEvent) return;
+    if (evnt.ReplyType == EventType.Expose)
     {
         lazyXcsb.PutImage(ImageFormatBitmap.ZPixmap,
             window,

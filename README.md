@@ -1,67 +1,91 @@
 # Xcsb
 
-> ⚠️ **Warning:** Xcsb is currently in an unstable state. APIs and functionality may change without notice. Not all
-> methods are implemented. Use in production environments is not recommended.
+> **⚠️Warning**: Xcsb is currently in early development. APIs are subject to change, and not all functionality is implemented. Use in production environments is not recommended.
 
-**Xcsb** is a .NET library designed to interface with the X11 Window System. It allows .NET developers to create
-cross-platform desktop applications that communicate directly with X11 servers.
+**Xcsb** is a generic, low-level .NET library designed to interface directly with the X11 Window System. It allows .NET developers to create cross-platform desktop applications that communicate natively with X11 servers, bypassing heavy C wrappers.
 
 ## Features
 
-- Comprehensive X11 protocol support
-- Asynchronous and synchronous API options
-- Strongly-typed, idiomatic .NET interfaces
-- Cross-platform compatibility (Windows, Linux, macOS via .NET)
-- Minimal dependencies
-- Actively maintained and open source
+- **Direct Protocol Access**: Implements the X11 protocol directly in C#.
+- **Strongly Typed**: Idiomatic .NET interfaces for identifying protocol errors at compile time.
+- **Cross-Platform**: Compatible with Windows (via Xming/WSLg), Linux, and macOS (via XQuartz).
+- **Zero-Dependency**: No native dependencies on `libX11` or `xcb`.
 
 ## Installation
 
-Install via [NuGet](https://www.nuget.org/):
+Install via [NuGet](https://www.nuget.org/packages/Xcsb):
 
 ```shell
 dotnet add package Xcsb
 ```
 
-Or via the NuGet Package Manager:
+## 💡 Quick Start
 
-```shell
-Install-Package Xcsb
+Here is a minimal example of connecting to an X server and creating a basic window.
+
+```csharp
+using Xcsb;
+using Xcsb.Connection;
+using Xcsb.Masks;
+using Xcsb.Models;
+
+// 1. Connect to the X Server
+using var connection = XcsbClient.Connect();
+var xcsb = connection.Initialized();
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
+
+// 2. Create a Window ID
+var windowId = connection.NewId();
+
+// 3. Create the Window
+xcsb.CreateWindowUnchecked(
+    0,
+    windowId,
+    screen.Root,
+    x: 0, y: 0, width: 800, height: 600,
+    borderWidth: 0,
+    ClassType.InputOutput,
+    screen.RootVisualId,
+    ValueMask.BackPixel | ValueMask.EventMask,
+    [screen.WhitePixel, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask)]
+);
+
+// 4. Map (Show) the Window
+xcsb.MapWindowUnchecked(windowId);
+
+// 5. Basic Event Loop
+while (true)
+{
+    var evnt = xcsb.GetEvent();
+    if (evnt.ReplyType == XEventType.KeyPress)
+    {
+        break; // Exit on key press
+    }
+}
 ```
 
-For more detailed documentation and advanced usage, see the [Wiki](https://github.com/ovpoddar/XCSB/wiki).
+For more complex examples, such as drawing graphics or handling input, check the [Examples](./Examples) directory.
 
-## Requirements
+## 📋 Requirements
 
-- dotnet
-- **Windows users:** [Xming](https://sourceforge.net/projects/xming/) or any other alternatives.
+- **.NET 8.0** or later (supports .NET Standard 2.1)
+- **X Server**:
+  - **Linux**: Standard Xorg or Wayland (with XWayland).
+  - **Windows**: [Xming](https://sourceforge.net/projects/xming/), VcXsrv, or WSLg.
+  - **macOS**: [XQuartz](https://www.xquartz.org/).
 
-## References
+## 🤝 Contributing
 
-- [X11 Protocol Reference](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html)
-- [xcb-proto Documentation](https://xcb.freedesktop.org/manual/)
+Contributions are welcome!
 
-## Contributing
+1.  **Fork** the repository.
+2.  **Create** a feature branch (`git checkout -b feature/NewFeature`).
+3.  **Commit** your changes (`git commit -m 'Add some NewFeature'`).
+4.  **Push** to the branch (`git push origin feature/NewFeature`).
+5.  **Open** a Pull Request.
 
-Contributions are welcome! If you need a feature that is not yet implemented, add it yourself and add a PR. The Xcsb
-project aims to be approachable for contributors of all levels.
-
-> **Note:** Not all methods have example code associated with them. If you implement a new feature or method, please
-> consider adding an example to help others.
-
-To implement a missing feature:
-
-1. Review the [X11 Protocol Reference](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html)
-   and [xcb-proto Documentation](https://xcb.freedesktop.org/manual/) to understand the protocol details. or if you have
-   experience you can skip this.
-2. Fork the repository and create a new branch for your feature.
-3. Add or modify code following the project's style and structure.
-4. Write tests if possible, or write an example to demonstrate it. put at least one.
-5. Submit a pull request describing your changes and referencing the relevant protocol documentation.
-
-If you have questions or need guidance, please open an issue or start a discussion
-on [GitHub](https://github.com/ovpoddar/XCSB).
+Please review the [X11 Protocol Reference](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html) when implementing new features.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

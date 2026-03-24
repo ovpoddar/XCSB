@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFrameworks>netstandard2.1;net8.0;net9.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+	<Authors>Ov Poddar</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Xcsb.Connection\Xcsb.Connection.csproj" />
+  </ItemGroup>
+
+</Project>

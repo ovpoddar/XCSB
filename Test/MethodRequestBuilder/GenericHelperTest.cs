@@ -1,4 +1,4 @@
-﻿using Xcsb.Helpers;
+﻿using Xcsb.Connection.Helpers;
 
 namespace MethodRequestBuilder.Test;
 
@@ -30,21 +30,21 @@ public class GenericHelperTest
         var result = input.AddPadding();
         Assert.Equal(expected, result);
     }
-    
+
     [Theory]
     [InlineData((short)0, 0)]
     [InlineData((short)1, 4)]
     [InlineData((short)2, 4)]
     [InlineData((short)3, 4)]
     [InlineData((short)4, 4)]
-    [InlineData((short)123,124)]
+    [InlineData((short)123, 124)]
     [InlineData(short.MinValue, short.MinValue)]
     public void AddPadding_Short(short input, short expected)
     {
         var result = input.AddPadding();
         Assert.Equal(expected, result);
     }
-    
+
     [Theory]
     [InlineData(0, 0)]
     [InlineData(1, 4)]
@@ -58,7 +58,7 @@ public class GenericHelperTest
         var result = input.AddPadding();
         Assert.Equal(expected, result);
     }
-    
+
     [Theory]
     [InlineData((uint)0, 0)]
     [InlineData((uint)1, 4)]
@@ -79,7 +79,7 @@ public class GenericHelperTest
         Assert.Throws<ArgumentException>(() => 1.0f.AddPadding());
 #endif
     }
-    
+
     [Theory]
     [InlineData(0, 0)]
     [InlineData(1, 3)]

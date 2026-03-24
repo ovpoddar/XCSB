@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Xcsb;
+using Xcsb.Connection;
 
 namespace MethodRequestBuilder.Test;
 
@@ -330,7 +326,7 @@ public class HandShakeResponseTest
             return;
         /// Arrange
         var xcb = GetCResponse<XCBSetupT>(SetUpResponseCBody); //Goes First
-        using var xcsb = XcsbClient.Initialized();
+        using var xcsb = XcsbClient.Connect();
         /// Act
         var csContent = xcsb.HandshakeSuccessResponseBody;
         /// Assert
@@ -358,7 +354,7 @@ public class HandShakeResponseTest
             return;
         /// Arrange
         var xcb = GetCResponse<List<XCBScreenT>>(ScreenResponseCBody);
-        using var xcsb = XcsbClient.Initialized();
+        using var xcsb = XcsbClient.Connect();
         /// Act
         var screens = xcsb.HandshakeSuccessResponseBody.Screens;
         /// Assert
@@ -401,7 +397,7 @@ public class HandShakeResponseTest
             return;
         /// Arrange
         var xcb = GetCResponse<List<XCBFormatT>>(FormatResponseCBody);
-        using var xcsb = XcsbClient.Initialized();
+        using var xcsb = XcsbClient.Connect();
         /// Act
         var formats = xcsb.HandshakeSuccessResponseBody.Formats;
         /// Assert
@@ -424,7 +420,7 @@ public class HandShakeResponseTest
             return;
         /// Arrange
         var xcb = GetCResponse<List<XCBDepthT>>(DepthResponseCBody);
-        using var xcsb = XcsbClient.Initialized();
+        using var xcsb = XcsbClient.Connect();
         /// Act
         var depthes = xcsb.HandshakeSuccessResponseBody.Screens.SelectMany(a => a.Depths).ToList();
         /// Assert
@@ -446,7 +442,7 @@ public class HandShakeResponseTest
             return;
         /// Arrange
         var xcb = GetCResponse<List<XCBVisualtypeT>>(VisualResponseCBody);
-        using var xcsb = XcsbClient.Initialized();
+        using var xcsb = XcsbClient.Connect();
         /// Act
         var depthes = xcsb.HandshakeSuccessResponseBody.Screens.SelectMany(a => a.Depths.SelectMany(a => a.Visuals)).ToList();
         /// Assert

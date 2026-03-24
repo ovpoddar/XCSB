@@ -1,0 +1,27 @@
+﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Response.Contract;
+using Xcsb.Response.Contract;
+
+namespace Xcsb.Response.Event;
+
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+public struct MotionNotifyEvent : IXEvent
+{
+    public readonly ResponseHeader<ResponseType, Motion> ResponseHeader;
+    public uint Time;
+    public uint Root;
+    public uint Window;
+    public uint Child;
+    public short RootX;
+    public short RootY;
+    public short EventX;
+    public short EventY;
+    public ushort State;
+    private sbyte _sameScreen;
+
+    public bool IsSameScreen => _sameScreen == 1;
+    public readonly bool Verify()
+    {
+        return ResponseHeader.Reply == ResponseType.MotionNotify;
+    }
+}

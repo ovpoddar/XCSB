@@ -1,21 +1,23 @@
 ﻿using System.Buffers;
 using System.Text;
 using Xcsb;
+using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Models.TypeInfo;
 
 const int WIDTH = 50;
 const int HEIGHT = 50;
-
-var xcsb = XcsbClient.Initialized();
-var window = xcsb.NewId();
-var screen = xcsb.HandshakeSuccessResponseBody.Screens[0];
-var extensations = xcsb.ListExtensions();
+using var connection = XcsbClient.Connect();
+var xcsb = connection.Initialized();
+var window = connection.NewId();
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
+var extensations = connection.Extension.ListExtensions();
 Console.Write("available extensions: ");
 foreach (var extensation in extensations.Names)
     Console.WriteLine($"    {extensation}");
 
-var extension = xcsb.QueryExtension(Encoding.UTF8.GetBytes(extensations.Names[5]));
+var extension = connection.Extension.QueryExtension(Encoding.UTF8.GetBytes(extensations.Names[5]));
 Console.WriteLine(extension.FirstEvent);
 
 var rootProprityes = xcsb.ListProperties(screen.Root);
@@ -38,11 +40,11 @@ xcsb.CreateWindowUnchecked(screen.RootDepth.DepthValue,
 
 xcsb.ChangePropertyUnchecked<byte>(PropertyMode.Replace, window, ATOM.WmName, ATOM.String, Encoding.UTF8.GetBytes("working fixing dodo"));
 
-var gc = xcsb.NewId();
-xcsb.CreateGCUnchecked(gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.BlackPixel, 0]);
+var gc = connection.NewId();
+xcsb.CreateGCUnchecked(gc, window, GcMask.Foreground | GcMask.GraphicsExposures, [screen.BlackPixel, 0]);
 
-var white_gc = xcsb.NewId();
-xcsb.CreateGCUnchecked(white_gc, window, GCMask.Foreground | GCMask.GraphicsExposures, [screen.WhitePixel, 0]);
+var white_gc = connection.NewId();
+xcsb.CreateGCUnchecked(white_gc, window, GcMask.Foreground | GcMask.GraphicsExposures, [screen.WhitePixel, 0]);
 
 var requirByte = WIDTH * HEIGHT * 4;
 var data = ArrayPool<byte>.Shared.Rent(requirByte);
@@ -66,15 +68,15 @@ var isRunning = true;
 while (isRunning)
 {
     var evnt = xcsb.GetEvent();
-    if (evnt.ReplyType == XEventType.LastEvent) return;
+    if (evnt.ReplyType == EventType.LastEvent) return;
 
     if (evnt.Error.HasValue)
     {
-        Console.WriteLine(evnt.Error.Value.ResponseHeader.Reply);
+        Console.WriteLine(evnt.Error.Value.Message);
         isRunning = false;
     }
 
-    if (evnt.ReplyType == XEventType.Expose)
+    if (evnt.ReplyType == EventType.Expose)
     {
         xcsb.PutImageUnchecked(ImageFormatBitmap.ZPixmap,
             window,

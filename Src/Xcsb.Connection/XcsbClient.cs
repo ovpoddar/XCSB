@@ -1,0 +1,99 @@
+﻿using System.Net.Sockets;
+using Xcsb.Connection.Configuration;
+using Xcsb.Connection.Infrastructure;
+using Xcsb.Connection.Models;
+
+namespace Xcsb.Connection;
+
+public static class XcsbClient
+{
+    public static IXConnection Connect(string? display = null, XcsbClientConfiguration? configuration = null)
+    {
+        display = string.IsNullOrWhiteSpace(display)
+            ? Environment.GetEnvironmentVariable("DISPLAY") ?? ":0"
+            : display;
+        configuration ??= XcsbClientConfiguration.Default;
+
+        var connectionDetails = GetDisplayConfiguration(display);
+        var connectionResult = ConnectionHelper.TryConnect(connectionDetails, display, configuration);
+        return connectionResult;
+    }
+
+    public static IXConnection Connect(string display, Span<byte> name, Span<byte> data, XcsbClientConfiguration? configuration = null)
+    {
+        if (string.IsNullOrWhiteSpace(display)) throw new ArgumentNullException(nameof(display));
+        if (name.IsEmpty) throw new ArgumentNullException(nameof(name));
+        if (data.IsEmpty) throw new ArgumentNullException(nameof(data));
+        configuration ??= XcsbClientConfiguration.Default;
+
+        var connectionDetails = GetDisplayConfiguration(display);
+        var connectionResult = ConnectionHelper.Connect(connectionDetails, display, configuration, name, data);
+        return connectionResult;
+    }
+
+    private static ConnectionDetails GetDisplayConfiguration(ReadOnlySpan<char> input)
+    {
+        var details = new ConnectionDetails
+        {
+            DisplayNumber = 0,
+            ScreenNumber = 0
+        };
+        if (input.IsEmpty)
+            throw new Exception("Connect failed");
+
+        var colonIndex = input.LastIndexOf(':');
+        if (colonIndex == -1)
+            throw new Exception("Connect failed");
+
+        if (input[0] == '/')
+        {
+            details.Socket = input[..colonIndex];
+        }
+        else
+        {
+            var slashIndex = input.IndexOf('/');
+            if (slashIndex >= 0)
+            {
+                details.Protocol =
+#if NETSTANDARD
+                Enum.TryParse(input[..slashIndex].ToString(), true, out ProtocolType protocol)
+#else
+                Enum.TryParse(input[..slashIndex], true, out ProtocolType protocol)
+#endif
+                    ? protocol
+                    : ProtocolType.Tcp;
+                // todo this does not looks right 
+                // verify this
+                details.Host = input.Slice(slashIndex + 1, colonIndex);
+            }
+            else
+            {
+                details.Host = input[..colonIndex];
+            }
+        }
+
+        var displayNumberStart = input[(colonIndex + 1)..];
+        if (displayNumberStart.Length == 0)
+            throw new Exception("Connect failed");
+
+        var dotIndex = displayNumberStart.IndexOf('.');
+        bool result;
+        if (dotIndex < 0)
+        {
+            details.Display = displayNumberStart[..];
+            result = int.TryParse(displayNumberStart[..], out var displayNumber);
+            details.DisplayNumber = displayNumber;
+        }
+        else
+        {
+            details.Display = displayNumberStart[..dotIndex];
+            var task1 = int.TryParse(displayNumberStart[..dotIndex], out var displayNumber);
+            var task2 = int.TryParse(displayNumberStart[(dotIndex + 1)..], out var screenNumber);
+            details.DisplayNumber = displayNumber;
+            details.ScreenNumber = screenNumber;
+            result = task1 && task2;
+        }
+
+        return result ? details : throw new Exception("Connect failed");
+    }
+}

@@ -24,6 +24,7 @@ FROM cs-lang AS content
 WORKDIR /workspace
 COPY Src/ Src/.
 COPY Test/ Test/.
+COPY Extensions/ Extensions/. 
 WORKDIR /workspace/Test/MethodRequestBuilder
 RUN xvfb-run -s '-screen 0 1280x720x24' dotnet build -p:DOCKER=true
 ENV TEST_RESULTS_DIR=/workspace/TestResults

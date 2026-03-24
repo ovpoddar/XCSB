@@ -1,21 +1,23 @@
 ﻿using System.Text;
 using Xcsb;
+using Xcsb.Connection;
+using Xcsb.Connection.Models.Handshake;
 using Xcsb.Masks;
 using Xcsb.Models;
-using Xcsb.Models.Handshake;
 
 int screen_num = 0;
-using var x = XcsbClient.Initialized();
+var connection = XcsbClient.Connect();
+var x = connection.Initialized();
 
-var screen = x.HandshakeSuccessResponseBody.Screens[0];
+var screen = connection.HandshakeSuccessResponseBody.Screens[0];
 var root = screen.Root;
 
-var win = x.NewId();
+var win = connection.NewId();
 x.CreateWindowUnchecked(screen.RootDepth!.DepthValue,
     win,
     root,
     0, 0, 300, 200,
-    1, Xcsb.Models.ClassType.InputOutput, screen.RootVisualId,
+    1, ClassType.InputOutput, screen.RootVisualId,
     0, []);
 x.MapWindowUnchecked(win);
 
@@ -37,11 +39,11 @@ Console.WriteLine($"Grab status {grabResult.Status}");
 x.UngrabPointerUnchecked(0);
 Console.WriteLine("Ungrab pointer completed.");
 
-var fontId = x.NewId();
+var fontId = connection.NewId();
 x.OpenFontUnchecked("fixed", fontId);
 
-var _gc = x.NewId();
-x.CreateGCUnchecked(_gc, win, GCMask.Foreground | GCMask.Background | GCMask.Font, [screen.BlackPixel, screen.WhitePixel, fontId]);
+var _gc = connection.NewId();
+x.CreateGCUnchecked(_gc, win, GcMask.Foreground | GcMask.Background | GcMask.Font, [screen.BlackPixel, screen.WhitePixel, fontId]);
 
 x.ImageText8Unchecked(win, _gc, 10, 40, "the background will change"u8);
 Thread.Sleep(5000);
@@ -81,8 +83,8 @@ foreach (var atom in atoms)
 
 x.ImageText8Unchecked(win, _gc, 10, 40, "Change the GC's foreground red to white"u8);
 Thread.Sleep(5000);
-var gc = x.NewId();
-x.CreateGCUnchecked(gc, win, GCMask.Foreground, [0xFF0000]);
+var gc = connection.NewId();
+x.CreateGCUnchecked(gc, win, GcMask.Foreground, [0xFF0000]);
 var rect = new Rectangle()
 {
     X = 10,
@@ -93,7 +95,7 @@ var rect = new Rectangle()
 x.PolyFillRectangleUnchecked(win, gc, [rect]);
 
 Thread.Sleep(1000);
-x.ChangeGCUnchecked(gc, GCMask.Foreground, [screen.WhitePixel]);
+x.ChangeGCUnchecked(gc, GcMask.Foreground, [screen.WhitePixel]);
 rect.X += 20;
 rect.Y += 60;
 
@@ -101,16 +103,16 @@ x.PolyFillRectangleUnchecked(win, gc, [rect]);
 x.FreeGCUnchecked(gc);
 Thread.Sleep(3000);
 
-var gc1 = x.NewId();
-var gc2 = x.NewId();
-x.CreateGCUnchecked(gc1, win, GCMask.Foreground, [0x0000FF]);
+var gc1 = connection.NewId();
+var gc2 = connection.NewId();
+x.CreateGCUnchecked(gc1, win, GcMask.Foreground, [0x0000FF]);
 x.CreateGCUnchecked(gc2, win, 0, []);
 rect.X -= 15;
 rect.Y -= 65;
 x.PolyFillRectangleUnchecked(win, gc1, [rect]);
 Thread.Sleep(1500);
 
-x.CopyGCUnchecked(gc1, gc2, GCMask.Foreground);
+x.CopyGCUnchecked(gc1, gc2, GcMask.Foreground);
 rect.X += 20;
 rect.Y += 60;
 
@@ -160,9 +162,9 @@ Console.WriteLine("Access control disabled");
 Thread.Sleep(1500);
 
 
-var font = x.NewId();
+var font = connection.NewId();
 x.OpenFontUnchecked("cursor", font);
-var cursor = x.NewId();
+var cursor = connection.NewId();
 x.CreateGlyphCursorUnchecked(cursor, font, font, 'D', 69, 0, 0, 0, 65535, 65535, 65535);
 
 Console.WriteLine("Created cursor with ID: {0}", cursor);
@@ -185,7 +187,7 @@ Console.WriteLine("Selection owner cleared");
 
 x.SetCloseDownModeUnchecked(CloseDownMode.Destroy);
 
-x.Dispose();
+connection.Dispose();
 return 0;
 
 

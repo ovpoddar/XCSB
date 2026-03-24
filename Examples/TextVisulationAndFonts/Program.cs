@@ -1,22 +1,24 @@
-﻿using System.Text;
-using Xcsb;
+﻿using Xcsb;
+using Xcsb.Connection;
 using Xcsb.Masks;
 using Xcsb.Models;
+using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Event;
 
-using var c = XcsbClient.Initialized();
+using var connection = XcsbClient.Connect();
+var c = connection.Initialized();
 
-var window = c.NewId();
+var window = connection.NewId();
 c.CreateWindowChecked(0,
     window,
-    c.HandshakeSuccessResponseBody.Screens[0].Root,
+    connection.HandshakeSuccessResponseBody.Screens[0].Root,
  0,
  0,
  500,
  500,
  0,
  ClassType.InputOutput,
- c.HandshakeSuccessResponseBody.Screens[0].RootVisualId,
+ connection.HandshakeSuccessResponseBody.Screens[0].RootVisualId,
  ValueMask.BackgroundPixel | ValueMask.EventMask,
  [0x00ffffff, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask)]
 );
@@ -24,22 +26,22 @@ c.CreateWindowChecked(0,
 c.MapWindowChecked(window);
 var isRunning = true;
 
-var fontId = c.NewId();
-var fontId1 = c.NewId();
+var fontId = connection.NewId();
+var fontId1 = connection.NewId();
 var isExecuted = false;
 
 while (isRunning)
 {
     var Event = c.GetEvent();
 
-    if (Event.ReplyType == XEventType.LastEvent) return;
+    if (Event.ReplyType == EventType.LastEvent) return;
     if (Event.Error.HasValue)
     {
-        Console.WriteLine(Event.Error.Value.ResponseHeader.Reply);
+        Console.WriteLine(Event.Error.Value.Message);
         isRunning = false;
         break;
     }
-    else if (Event.ReplyType is XEventType.KeyPress)
+    else if (Event.ReplyType == EventType.KeyPress)
     {
         if (!isExecuted)
         {
@@ -73,10 +75,10 @@ while (isRunning)
             c.OpenFontChecked("-misc-fixed-*-*-*-*-13-*-*-*-*-*-iso10646-1", fontId);
             c.OpenFontChecked("fixed", fontId1);
 
-            var gc = c.NewId();
-            c.CreateGCChecked(gc, window, GCMask.Foreground | GCMask.Background | GCMask.Font, [c.HandshakeSuccessResponseBody.Screens[0].BlackPixel, c.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId]);
-            var gc1 = c.NewId();
-            c.CreateGCChecked(gc1, window, GCMask.Foreground | GCMask.Background | GCMask.Font, [c.HandshakeSuccessResponseBody.Screens[0].BlackPixel, c.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId1]);
+            var gc = connection.NewId();
+            c.CreateGCChecked(gc, window, GcMask.Foreground | GcMask.Background | GcMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId]);
+            var gc1 = connection.NewId();
+            c.CreateGCChecked(gc1, window, GcMask.Foreground | GcMask.Background | GcMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId1]);
 
             c.ImageText16Checked(window, gc, 10, 15, "this is a utf 16 string");
             c.ImageText8Checked(window, gc, 10, 40, "this is a utf 8 string"u8);
@@ -91,8 +93,8 @@ while (isRunning)
 
         if (keyPressEvent.Detail == 54) //c
         {
-            var gc = c.NewId();
-            c.CreateGCChecked(gc, window, GCMask.Foreground, [0x00ffffff]);
+            var gc = connection.NewId();
+            c.CreateGCChecked(gc, window, GcMask.Foreground, [0x00ffffff]);
 
             c.PolyFillRectangleChecked(window, gc, [new Rectangle{
                 X = 0,Y= 0,Width =  500, Height = 500
@@ -104,10 +106,10 @@ while (isRunning)
         c.BellChecked(100);
         Console.WriteLine($"event {Event.ReplyType} {keyPressEvent.Detail}");
     }
-    else if (Event.ReplyType == XEventType.Expose)
+    else if (Event.ReplyType == EventType.Expose)
     {
-        var gc = c.NewId();
-        c.CreateGCChecked(gc, window, GCMask.Foreground, [0x00ff0000]);
+        var gc = connection.NewId();
+        c.CreateGCChecked(gc, window, GcMask.Foreground, [0x00ff0000]);
 
         c.PolyFillRectangleChecked(window, gc, [new Rectangle{
                 X = 0,Y= 0,Width =  500, Height = 500
@@ -115,14 +117,14 @@ while (isRunning)
 
         c.FreeGCChecked(gc);
     }
-    else if (Event.ReplyType is XEventType.ButtonPress)
+    else if (Event.ReplyType == EventType.ButtonPress)
     {
         if (Event.As<ButtonPressEvent>().Detail == Button.LeftButton)
         {
-            var currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
+            var currentPos = c.QueryPointer(connection.HandshakeSuccessResponseBody.Screens[0].Root);
             Console.WriteLine($"before warp the pointer {currentPos.RootX}   {currentPos.RootY}");
             c.WarpPointerChecked(0, window, 0, 0, 0, 0, 200, 150);
-            currentPos = c.QueryPointer(c.HandshakeSuccessResponseBody.Screens[0].Root);
+            currentPos = c.QueryPointer(connection.HandshakeSuccessResponseBody.Screens[0].Root);
             Console.WriteLine($"before warp the pointer {currentPos.RootX}   {currentPos.RootY}");
         }
 
