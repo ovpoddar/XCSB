@@ -24,7 +24,4 @@ internal interface ISocketAccessor
     (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply;
     void SendData(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags);
     void SendRequest(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags);
-    void RegisterReply();
-    void RegisterEvent<T>(XEventType type, byte? typeValue = null) where T : unmanaged, IXEvent;
-    void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError;
 }

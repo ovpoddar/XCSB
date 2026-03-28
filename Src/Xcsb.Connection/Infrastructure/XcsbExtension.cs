@@ -3,8 +3,10 @@ using System.Runtime.InteropServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
+using Xcsb.Connection.Models;
 using Xcsb.Connection.Request;
 using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Connection.Response.Replies.Internals;
 
@@ -16,14 +18,15 @@ internal sealed class XcsbExtension : IXExtensionInternal
 
     private readonly ConcurrentDictionary<string, QueryExtensionReply> _extensitionReply =
         new ConcurrentDictionary<string, QueryExtensionReply>();
-
     private readonly ConcurrentDictionary<Type, Lazy<object>> _store = new ConcurrentDictionary<Type, Lazy<object>>();
+    private readonly ConcurrentDictionary<(byte, byte?), MappingDetails> _responseMap;
 
     public ISocketAccessor Transport { get; }
 
-    public XcsbExtension(ISocketAccessor accessor)
+    public XcsbExtension(ISocketAccessor accessor, ConcurrentDictionary<(byte, byte?), MappingDetails> responseMap)
     {
         Transport = accessor;
+        this._responseMap = responseMap;
     }
 
     public ListExtensionsReply ListExtensions()
@@ -91,5 +94,26 @@ internal sealed class XcsbExtension : IXExtensionInternal
     public void Clear()
     {
         _store.Clear();
+    }
+    
+    
+    public void RegisterReply()
+    {
+        _responseMap[(1, null)] = new MappingDetails(XResponseType.Reply, null);
+    }
+
+    public void RegisterEvent<T>(XEventType type, byte? typeValue = null) where T : unmanaged, IXEvent
+    {
+        var value = new MappingDetails(type == 11 ? XResponseType.Notify : XResponseType.Event, type);
+        value.SetEventType<T>();
+        typeValue ??= type;
+        _responseMap[(typeValue.Value, null)] = value;
+    }
+
+    public void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError
+    {
+        var value = new MappingDetails(XResponseType.Error, type);
+        value.SetErrorType<T>();
+        _responseMap[(typeValue, type)] = value;
     }
 }

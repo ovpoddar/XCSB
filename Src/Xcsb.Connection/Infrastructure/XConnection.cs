@@ -1,10 +1,12 @@
-﻿using System.Net.Sockets;
+﻿using System.Collections.Concurrent;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Models;
 using Xcsb.Connection.Models.Handshake;
 
 namespace Xcsb.Connection.Infrastructure;
@@ -14,6 +16,8 @@ internal class XConnection : IXConnectionInternal
     private readonly Socket _socket;
     private bool _disposed;
     private int _globalId;
+    private readonly ConcurrentDictionary<(byte, byte?), MappingDetails> _responseMap =
+        new ConcurrentDictionary<(byte, byte?), MappingDetails>();
 
     public HandshakeSuccessResponseBody? HandshakeSuccessResponseBody { get; private set; }
     public HandshakeStatus HandshakeStatus { get; private set; }
@@ -26,8 +30,8 @@ internal class XConnection : IXConnectionInternal
     {
         this._socket = new Socket(AddressFamily.Unix, SocketType.Stream, type);
         this._socket.Connect(new UnixDomainSocketEndPoint(path));
-        this.Accessor = new SocketAccessor(_socket, configuration);
-        this.Extension = new XcsbExtension(this.Accessor);
+        this.Accessor = new SocketAccessor(_socket, _responseMap, configuration);
+        this.Extension = new XcsbExtension(this.Accessor, _responseMap);
         this._globalId = 0;
     }
 
@@ -36,7 +40,8 @@ internal class XConnection : IXConnectionInternal
         try
         {
             var request = new HandShakeRequestType((ushort)authName.Length, (ushort)authData.Length);
-            var length = authName.Length.AddPadding() + authData.Length.AddPadding() + Marshal.SizeOf<HandShakeRequestType>();
+            var length = authName.Length.AddPadding() + authData.Length.AddPadding() +
+                         Marshal.SizeOf<HandShakeRequestType>();
             var writeIndex = 12;
             if (length < XcsbClientConfiguration.StackAllocThreshold)
             {
@@ -75,6 +80,7 @@ internal class XConnection : IXConnectionInternal
                 workingBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
                 this.Accessor.SendData(workingBuffer, SocketFlags.None);
             }
+
             return true;
         }
         catch (Exception)
@@ -98,7 +104,8 @@ internal class XConnection : IXConnectionInternal
             HandshakeSuccessResponseBody = HandshakeSuccessResponseBody.Read(this.Accessor,
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
             FailReason = string.Empty;
-            Register(Accessor);
+            if (Extension is not IXExtensionInternal extensionInternal) throw new InvalidOperationException();
+            extensionInternal.RegisterReply();
         }
         else
         {
@@ -124,15 +131,10 @@ internal class XConnection : IXConnectionInternal
         }
     }
 
-    private static void Register(ISocketAccessor accessor)
-    {
-        // reply
-        accessor.RegisterReply();
-    }
-
     public uint NewId() => HandshakeSuccessResponseBody is null
         ? throw new InvalidOperationException()
-        : (uint)((HandshakeSuccessResponseBody.ResourceIDMask & this._globalId++) | HandshakeSuccessResponseBody.ResourceIDBase);
+        : (uint)((HandshakeSuccessResponseBody.ResourceIDMask & this._globalId++) |
+                 HandshakeSuccessResponseBody.ResourceIDBase);
 
     public void Dispose()
     {

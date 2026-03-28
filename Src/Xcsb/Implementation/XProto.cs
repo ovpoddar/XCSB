@@ -49,69 +49,71 @@ internal sealed class XProto : IXProto
         if (connection.HandshakeStatus is not HandshakeStatus.Success ||
             connection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(connection.FailReason);
-        Resister(connection.Accessor);
+        
+        if (connection.Extension is not IXExtensionInternal extensionInternal)
+            throw new InvalidOperationException();
+        
+        _extensionInternal = extensionInternal;
+        Resister(_extensionInternal);
         _protoInExtended = new ProtoInExtended(connection.Accessor);
         _protoOutExtended = new ProtoOutExtended(connection.Accessor);
 
-        if (connection.Extension is not IXExtensionInternal extensionInternal)
-            throw new InvalidOperationException("Extension is not initialized");
-        _extensionInternal = extensionInternal;
     }
 
-    private static void Resister(ISocketAccessor accessor)
+    private static void Resister(IXExtensionInternal extension)
     {
         // error
-        accessor.RegisterError<AccessError>(0, ErrorCode.Access);
-        accessor.RegisterError<AllocError>(0, ErrorCode.Alloc);
-        accessor.RegisterError<AtomError>(0, ErrorCode.Atom);
-        accessor.RegisterError<ColormapError>(0, ErrorCode.Colormap);
-        accessor.RegisterError<CursorError>(0, ErrorCode.Cursor);
-        accessor.RegisterError<DrawableError>(0, ErrorCode.Drawable);
-        accessor.RegisterError<FontError>(0, ErrorCode.Font);
-        accessor.RegisterError<GContextError>(0, ErrorCode.GContext);
-        accessor.RegisterError<IDChoiceError>(0, ErrorCode.IDChoice);
-        accessor.RegisterError<ImplementationError>(0, ErrorCode.Implementation);
-        accessor.RegisterError<LengthError>(0, ErrorCode.Length);
-        accessor.RegisterError<MatchError>(0, ErrorCode.Match);
-        accessor.RegisterError<NameError>(0, ErrorCode.Name);
-        accessor.RegisterError<PixmapError>(0, ErrorCode.Pixmap);
-        accessor.RegisterError<RequestError>(0, ErrorCode.Request);
-        accessor.RegisterError<ValueError>(0, ErrorCode.Value);
-        accessor.RegisterError<WindowError>(0, ErrorCode.Window);
+        extension.RegisterError<AccessError>(0, ErrorCode.Access);
+        extension.RegisterError<AllocError>(0, ErrorCode.Alloc);
+        extension.RegisterError<AtomError>(0, ErrorCode.Atom);
+        extension.RegisterError<ColormapError>(0, ErrorCode.Colormap);
+        extension.RegisterError<CursorError>(0, ErrorCode.Cursor);
+        extension.RegisterError<DrawableError>(0, ErrorCode.Drawable);
+        extension.RegisterError<FontError>(0, ErrorCode.Font);
+        extension.RegisterError<GContextError>(0, ErrorCode.GContext);
+        extension.RegisterError<IDChoiceError>(0, ErrorCode.IDChoice);
+        extension.RegisterError<ImplementationError>(0, ErrorCode.Implementation);
+        extension.RegisterError<LengthError>(0, ErrorCode.Length);
+        extension.RegisterError<MatchError>(0, ErrorCode.Match);
+        extension.RegisterError<NameError>(0, ErrorCode.Name);
+        extension.RegisterError<PixmapError>(0, ErrorCode.Pixmap);
+        extension.RegisterError<RequestError>(0, ErrorCode.Request);
+        extension.RegisterError<ValueError>(0, ErrorCode.Value);
+        extension.RegisterError<WindowError>(0, ErrorCode.Window);
 
         // event
-        accessor.RegisterEvent<ButtonPressEvent>(EventType.ButtonPress);
-        accessor.RegisterEvent<ButtonReleaseEvent>(EventType.ButtonRelease);
-        accessor.RegisterEvent<CirculateNotifyEvent>(EventType.CirculateNotify);
-        accessor.RegisterEvent<CirculateRequestEvent>(EventType.CirculateRequest);
-        accessor.RegisterEvent<ClientMessageEvent>(EventType.ClientMessage);
-        accessor.RegisterEvent<ColorMapNotifyEvent>(EventType.ColormapNotify);
-        accessor.RegisterEvent<ConfigureNotifyEvent>(EventType.ConfigureNotify);
-        accessor.RegisterEvent<ConfigureRequestEvent>(EventType.ConfigureRequest);
-        accessor.RegisterEvent<DestroyNotifyEvent>(EventType.DestroyNotify);
-        accessor.RegisterEvent<EnterNotifyEvent>(EventType.EnterNotify);
-        accessor.RegisterEvent<ExposeEvent>(EventType.Expose);
-        accessor.RegisterEvent<FocusInEvent>(EventType.FocusIn);
-        accessor.RegisterEvent<FocusOutEvent>(EventType.FocusOut);
-        accessor.RegisterEvent<GraphicsExposeEvent>(EventType.GraphicsExpose);
-        accessor.RegisterEvent<GravityNotifyEvent>(EventType.GravityNotify);
-        accessor.RegisterEvent<KeymapNotifyEvent>(EventType.KeymapNotify);
-        accessor.RegisterEvent<KeyPressEvent>(EventType.KeyPress);
-        accessor.RegisterEvent<KeyReleaseEvent>(EventType.KeyRelease);
-        accessor.RegisterEvent<LeaveNotifyEvent>(EventType.LeaveNotify);
-        accessor.RegisterEvent<MapNotifyEvent>(EventType.MapNotify);
-        accessor.RegisterEvent<MappingNotifyEvent>(EventType.MappingNotify);
-        accessor.RegisterEvent<MapRequestEvent>(EventType.MapRequest);
-        accessor.RegisterEvent<MotionNotifyEvent>(EventType.MotionNotify);
-        accessor.RegisterEvent<NoExposeEvent>(EventType.NoExpose);
-        accessor.RegisterEvent<PropertyNotifyEvent>(EventType.PropertyNotify);
-        accessor.RegisterEvent<ReParentNotifyEvent>(EventType.ReParentNotify);
-        accessor.RegisterEvent<ResizeRequestEvent>(EventType.ResizeRequest);
-        accessor.RegisterEvent<SelectionClearEvent>(EventType.SelectionClear);
-        accessor.RegisterEvent<SelectionNotifyEvent>(EventType.SelectionNotify);
-        accessor.RegisterEvent<SelectionRequestEvent>(EventType.SelectionRequest);
-        accessor.RegisterEvent<UnMapNotifyEvent>(EventType.UnMapNotify);
-        accessor.RegisterEvent<VisibilityNotifyEvent>(EventType.VisibilityNotify);
+        extension.RegisterEvent<ButtonPressEvent>(EventType.ButtonPress);
+        extension.RegisterEvent<ButtonReleaseEvent>(EventType.ButtonRelease);
+        extension.RegisterEvent<CirculateNotifyEvent>(EventType.CirculateNotify);
+        extension.RegisterEvent<CirculateRequestEvent>(EventType.CirculateRequest);
+        extension.RegisterEvent<ClientMessageEvent>(EventType.ClientMessage);
+        extension.RegisterEvent<ColorMapNotifyEvent>(EventType.ColormapNotify);
+        extension.RegisterEvent<ConfigureNotifyEvent>(EventType.ConfigureNotify);
+        extension.RegisterEvent<ConfigureRequestEvent>(EventType.ConfigureRequest);
+        extension.RegisterEvent<DestroyNotifyEvent>(EventType.DestroyNotify);
+        extension.RegisterEvent<EnterNotifyEvent>(EventType.EnterNotify);
+        extension.RegisterEvent<ExposeEvent>(EventType.Expose);
+        extension.RegisterEvent<FocusInEvent>(EventType.FocusIn);
+        extension.RegisterEvent<FocusOutEvent>(EventType.FocusOut);
+        extension.RegisterEvent<GraphicsExposeEvent>(EventType.GraphicsExpose);
+        extension.RegisterEvent<GravityNotifyEvent>(EventType.GravityNotify);
+        extension.RegisterEvent<KeymapNotifyEvent>(EventType.KeymapNotify);
+        extension.RegisterEvent<KeyPressEvent>(EventType.KeyPress);
+        extension.RegisterEvent<KeyReleaseEvent>(EventType.KeyRelease);
+        extension.RegisterEvent<LeaveNotifyEvent>(EventType.LeaveNotify);
+        extension.RegisterEvent<MapNotifyEvent>(EventType.MapNotify);
+        extension.RegisterEvent<MappingNotifyEvent>(EventType.MappingNotify);
+        extension.RegisterEvent<MapRequestEvent>(EventType.MapRequest);
+        extension.RegisterEvent<MotionNotifyEvent>(EventType.MotionNotify);
+        extension.RegisterEvent<NoExposeEvent>(EventType.NoExpose);
+        extension.RegisterEvent<PropertyNotifyEvent>(EventType.PropertyNotify);
+        extension.RegisterEvent<ReParentNotifyEvent>(EventType.ReParentNotify);
+        extension.RegisterEvent<ResizeRequestEvent>(EventType.ResizeRequest);
+        extension.RegisterEvent<SelectionClearEvent>(EventType.SelectionClear);
+        extension.RegisterEvent<SelectionNotifyEvent>(EventType.SelectionNotify);
+        extension.RegisterEvent<SelectionRequestEvent>(EventType.SelectionRequest);
+        extension.RegisterEvent<UnMapNotifyEvent>(EventType.UnMapNotify);
+        extension.RegisterEvent<VisibilityNotifyEvent>(EventType.VisibilityNotify);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

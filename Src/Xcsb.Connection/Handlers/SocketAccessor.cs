@@ -15,8 +15,7 @@ internal sealed class SocketAccessor : ISocketAccessor
 {
     private readonly XcsbClientConfiguration _configuration;
     private readonly Socket _socket;
-    private readonly ConcurrentDictionary<(byte, byte?), MappingDetails> ResponseMap =
-        new ConcurrentDictionary<(byte, byte?), MappingDetails>();
+    private readonly ConcurrentDictionary<(byte, byte?), MappingDetails> _responseMap;
 
 
     public ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; } =
@@ -28,36 +27,18 @@ internal sealed class SocketAccessor : ISocketAccessor
     public int ReceivedSequence { get; set; }
     public int SendSequence { get; set; }
 
-    public SocketAccessor(Socket socket, XcsbClientConfiguration configuration)
+    public SocketAccessor(Socket socket, ConcurrentDictionary<(byte, byte?), MappingDetails> responseMap,
+        XcsbClientConfiguration configuration)
     {
         this._socket = socket;
+        this._responseMap = responseMap;
         this._configuration = configuration;
-    }
-
-    public void RegisterReply()
-    {
-        ResponseMap[(1, null)] = new MappingDetails(XResponseType.Reply, null);
-    }
-
-    public void RegisterEvent<T>(XEventType type, byte? typeValue = null) where T : unmanaged, IXEvent
-    {
-        var value = new MappingDetails(type == 11 ? XResponseType.Notify : XResponseType.Event, type);
-        value.SetEventType<T>();
-        typeValue ??= type;
-        ResponseMap[(typeValue.Value, null)] = value;
-    }
-
-    public void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError
-    {
-        var value = new MappingDetails(XResponseType.Error, type);
-        value.SetErrorType<T>();
-        ResponseMap[(typeValue, type)] = value;
     }
 
     private MappingDetails GetResponseType(ref readonly XResponse reply)
     {
-        if (!ResponseMap.TryGetValue((reply.Bytes[0], reply.Bytes[1]), out var response))
-            if (!ResponseMap.TryGetValue((reply.Bytes[0], null), out response))
+        if (!_responseMap.TryGetValue((reply.Bytes[0], reply.Bytes[1]), out var response))
+            if (!_responseMap.TryGetValue((reply.Bytes[0], null), out response))
                 return new MappingDetails(XResponseType.Unknown, UnknownResponse.Unknown(reply.Bytes[0]));
 
         return response;
