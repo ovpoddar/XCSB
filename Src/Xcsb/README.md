@@ -531,8 +531,6 @@ If you have questions or need guidance, please open an issue or start a discussi
 ## Related Projects
 
 - **[Xcsb.Connection](../Xcsb.Connection)** - Low-level X server connection library
-- **Xcsb.Models** - Protocol data structures (included in this package)
-- **Xcsb.Masks** - Event masks and attribute flags (included in this package)
 
 ## License
 

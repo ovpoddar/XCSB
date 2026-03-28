@@ -257,12 +257,6 @@ Please reference the [X11 Protocol Specification](https://www.x.org/releases/X11
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Related Projects
-
-- **Xcsb** - The main library containing X11 protocol operations
-- **Xcsb.Models** - Protocol data structures and type definitions
-- **Xcsb.Masks** - Event masks and attribute flags
-
 ## Resources
 
 - [X11 Protocol Reference](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html)
