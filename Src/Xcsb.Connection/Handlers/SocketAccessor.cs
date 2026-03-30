@@ -84,8 +84,9 @@ internal sealed class SocketAccessor : ISocketAccessor
         var buffer = new byte[bufferSize];
         while (_socket.Available != 0)
         {
-            _ = Received(buffer);
-            ref readonly var content = ref buffer.AsStruct<XResponse>();
+            var scratchBuffer = buffer.AsSpan();
+            _ = Received(scratchBuffer);
+            ref readonly var content = ref scratchBuffer.AsStruct<XResponse>();
             var responseType = GetResponseType(in content);
             switch (responseType.ResponseType)
             {
@@ -97,7 +98,7 @@ internal sealed class SocketAccessor : ISocketAccessor
                     BufferEvents.Enqueue((buffer, responseType));
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = (ComputeResponse(buffer.AsSpan()), responseType);
+                    ReplyBuffer[content.Sequence] = (ComputeResponse(scratchBuffer), responseType);
                     break;
                 case XResponseType.Event:
                     BufferEvents.Enqueue((buffer, responseType));
@@ -119,8 +120,9 @@ internal sealed class SocketAccessor : ISocketAccessor
         var buffer = new byte[bufferSize];
         while (_socket.Available != 0)
         {
-            _ = Received(buffer);
-            ref readonly var content = ref buffer.AsStruct<XResponse>();
+            var scratchBuffer = buffer.AsSpan();
+            _ = Received(scratchBuffer);
+            ref readonly var content = ref scratchBuffer.AsStruct<XResponse>();
             var responseType = GetResponseType(in content);
             switch (responseType.ResponseType)
             {
@@ -131,7 +133,7 @@ internal sealed class SocketAccessor : ISocketAccessor
                     else
                     {
                         if (shouldThrowOnError)
-                            throw new XEventException(new GenericError(buffer.AsSpan().ToStruct<XResponse>(),
+                            throw new XEventException(new GenericError(scratchBuffer.ToStruct<XResponse>(),
                                 responseType.ErrorMessageAction!));
                     }
 
@@ -140,7 +142,7 @@ internal sealed class SocketAccessor : ISocketAccessor
                     BufferEvents.Enqueue((buffer, responseType));
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = (ComputeResponse(buffer), responseType);
+                    ReplyBuffer[content.Sequence] = (ComputeResponse(scratchBuffer), responseType);
                     break;
                 case XResponseType.Event:
                     BufferEvents.Enqueue((buffer, responseType));
@@ -151,7 +153,7 @@ internal sealed class SocketAccessor : ISocketAccessor
                         : buffer, responseType));
                     break;
                 default:
-                    throw new Exception(string.Join(", ", buffer.ToArray()));
+                    throw new Exception(string.Join(", ", buffer));
             }
         }
     }
