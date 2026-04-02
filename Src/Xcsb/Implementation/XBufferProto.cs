@@ -57,7 +57,7 @@ internal sealed class XBufferProto : IXBufferProto
 
         var request = new ChangeGCType(gc, mask, args.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(args);
+        _bufferProtoOut.AddRange<uint>(args);
 
     }
 
@@ -65,8 +65,8 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new ChangeHostsType(mode, family, address.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(address);
-        _bufferProtoOut.AddRange(new byte[address.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(address);
+        _bufferProtoOut.AddRange<byte>(new byte[address.Length.Padding()]);
 
     }
 
@@ -74,14 +74,14 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new ChangeKeyboardControlType(mask, args.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(args);
+        _bufferProtoOut.AddRange<uint>(args);
     }
 
     public void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, ReadOnlySpan<uint> keysym)
     {
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(keysym);
+        _bufferProtoOut.AddRange<uint>(keysym);
     }
 
     public void ChangePointerControl(Acceleration? acceleration, ushort? threshold)
@@ -102,8 +102,8 @@ internal sealed class XBufferProto : IXBufferProto
             throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
         var request = new ChangePropertyType(mode, window, property, type, args.Length, size);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(args);
-        _bufferProtoOut.AddRange(new byte[(args.Length * size).Padding()]);
+        _bufferProtoOut.AddRange<T>(args);
+        _bufferProtoOut.AddRange<byte>(new byte[(args.Length * size).Padding()]);
     }
 
     public void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
@@ -119,7 +119,7 @@ internal sealed class XBufferProto : IXBufferProto
 
         var request = new ChangeWindowAttributesType(window, mask, args.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(args);
+        _bufferProtoOut.AddRange<uint>(args);
     }
 
     public void CirculateWindow(Circulate circulate, uint window)
@@ -146,7 +146,7 @@ internal sealed class XBufferProto : IXBufferProto
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
         var request = new ConfigureWindowType(window, mask, args.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(args);
+        _bufferProtoOut.AddRange<uint>(args);
     }
 
     public void ConvertSelection(uint requestor, ATOM selection, ATOM target, ATOM property, uint timestamp)
@@ -207,7 +207,7 @@ internal sealed class XBufferProto : IXBufferProto
 
         var request = new CreateGCType(gc, drawable, mask, args.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(args);
+        _bufferProtoOut.AddRange<uint>(args);
     }
 
     public void CreateGlyphCursor(uint cursorId, uint sourceFont, uint fontMask, char sourceChar, ushort charMask,
@@ -230,7 +230,7 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(args);
+        _bufferProtoOut.AddRange<uint>(args);
     }
 
     public void DeleteProperty(uint window, ATOM atom)
@@ -255,7 +255,7 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(points);
+        _bufferProtoOut.AddRange<Point>(points);
     }
 
     public void FlushChecked() =>
@@ -297,7 +297,7 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(pixels);
+        _bufferProtoOut.AddRange<uint>(pixels);
 
     }
 
@@ -352,8 +352,8 @@ internal sealed class XBufferProto : IXBufferProto
         var textByteCount = Encoding.BigEndianUnicode.GetByteCount(text);
         var textBytes = new byte[textByteCount];
         Encoding.BigEndianUnicode.GetBytes(text, textBytes);
-        _bufferProtoOut.AddRange(textBytes);
-        _bufferProtoOut.AddRange(new byte[(16 + textByteCount).Padding()]);
+        _bufferProtoOut.AddRange<byte>(textBytes);
+        _bufferProtoOut.AddRange<byte>(new byte[(16 + textByteCount).Padding()]);
 
     }
 
@@ -361,8 +361,8 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new ImageText8Type(drawable, gc, x, y, text.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(text);
-        _bufferProtoOut.AddRange(new byte[text.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(text);
+        _bufferProtoOut.AddRange<byte>(new byte[text.Length.Padding()]);
     }
 
     public void InstallColormap(uint colormapId)
@@ -397,15 +397,15 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new NoOperationType(args.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(args);
+        _bufferProtoOut.AddRange<uint>(args);
     }
 
     public void OpenFont(string fontName, uint fontId)
     {
         var request = new OpenFontType(fontId, fontName.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(Encoding.ASCII.GetBytes(fontName));
-        _bufferProtoOut.AddRange(new byte[fontName.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(Encoding.ASCII.GetBytes(fontName));
+        _bufferProtoOut.AddRange<byte>(new byte[fontName.Length.Padding()]);
 
     }
 
@@ -413,49 +413,49 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new PolyArcType(drawable, gc, arcs.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(arcs);
+        _bufferProtoOut.AddRange<Arc>(arcs);
     }
 
     public void PolyFillArc(uint drawable, uint gc, ReadOnlySpan<Arc> arcs)
     {
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(arcs);
+        _bufferProtoOut.AddRange<Arc>(arcs);
     }
 
     public void PolyFillRectangle(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
     {
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(rectangles);
+        _bufferProtoOut.AddRange<Rectangle>(rectangles);
     }
 
     public void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
     {
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(points);
+        _bufferProtoOut.AddRange<Point>(points);
     }
 
     public void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
     {
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(points);
+        _bufferProtoOut.AddRange<Point>(points);
     }
 
     public void PolyRectangle(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
     {
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(rectangles);
+        _bufferProtoOut.AddRange<Rectangle>(rectangles);
     }
 
     public void PolySegment(uint drawable, uint gc, ReadOnlySpan<Segment> segments)
     {
         var request = new PolySegmentType(drawable, gc, segments.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(segments);
+        _bufferProtoOut.AddRange<Segment>(segments);
     }
 
     public void PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
@@ -463,8 +463,8 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new PolyText16Type(drawable, gc, x, y, data.Sum(a => a.Count));
         _bufferProtoOut.Add(ref request);
         foreach (var item in data)
-            _bufferProtoOut.AddRange(item.ToArray());
-        _bufferProtoOut.AddRange(new byte[data.Sum(a => a.Count).Padding()]);
+            _bufferProtoOut.AddRange<byte>(item.ToArray());
+        _bufferProtoOut.AddRange<byte>(new byte[data.Sum(a => a.Count).Padding()]);
     }
 
     public void PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
@@ -472,8 +472,8 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new PolyText8Type(drawable, gc, x, y, data.Sum(a => a.Count));
         _bufferProtoOut.Add(ref request);
         foreach (var item in data)
-            _bufferProtoOut.AddRange(item.ToArray());
-        _bufferProtoOut.AddRange(new byte[data.Sum(a => a.Count).Padding()]);
+            _bufferProtoOut.AddRange<byte>(item.ToArray());
+        _bufferProtoOut.AddRange<byte>(new byte[data.Sum(a => a.Count).Padding()]);
     }
 
     public void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
@@ -481,8 +481,8 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(data);
-        _bufferProtoOut.AddRange(new byte[data.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(data);
+        _bufferProtoOut.AddRange<byte>(new byte[data.Length.Padding()]);
     }
 
     public void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
@@ -502,7 +502,7 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(properties);
+        _bufferProtoOut.AddRange<ATOM>(properties);
     }
 
     public void SendEvent(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
@@ -521,7 +521,7 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(rectangles);
+        _bufferProtoOut.AddRange<Rectangle>(rectangles);
     }
 
     public void SetCloseDownMode(CloseDownMode mode)
@@ -534,8 +534,8 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(dashes);
-        _bufferProtoOut.AddRange(new byte[dashes.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(dashes);
+        _bufferProtoOut.AddRange<byte>(new byte[dashes.Length.Padding()]);
     }
 
     public void SetFontPath(string[] strPaths)
@@ -547,9 +547,9 @@ internal sealed class XBufferProto : IXBufferProto
         foreach (var path in strPaths.OrderBy(a => a.Length))
         {
             _bufferProtoOut.Add((byte)path.Length);
-            _bufferProtoOut.AddRange(Encoding.ASCII.GetBytes(path));
+            _bufferProtoOut.AddRange<byte>(Encoding.ASCII.GetBytes(path));
         }
-        _bufferProtoOut.AddRange(new byte[strPaths.Sum(a => a.Length + 1).Padding()]);
+        _bufferProtoOut.AddRange<byte>(new byte[strPaths.Sum(a => a.Length + 1).Padding()]);
     }
 
     public void SetInputFocus(InputFocusMode mode, uint focus, uint time)
@@ -574,15 +574,15 @@ internal sealed class XBufferProto : IXBufferProto
     {
         var request = new StoreColorsType(colormapId, item.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(item);
+        _bufferProtoOut.AddRange<ColorItem>(item);
     }
 
     public void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
     {
         var request = new StoreNamedColorType(mode, colormapId, pixels, name.Length);
         _bufferProtoOut.Add(ref request);
-        _bufferProtoOut.AddRange(name);
-        _bufferProtoOut.AddRange(new byte[name.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(name);
+        _bufferProtoOut.AddRange<byte>(new byte[name.Length.Padding()]);
     }
 
     public void UngrabButton(Button button, uint grabWindow, ModifierMask mask)
