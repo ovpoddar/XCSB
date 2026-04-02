@@ -13,9 +13,9 @@ namespace Xcsb.Infrastructure.VoidProto;
 public interface IVoidBufferProto
 {
     void CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args);
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, ReadOnlySpan<uint> args);
 
-    void ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args);
+    void ChangeWindowAttributes(uint window, ValueMask mask, ReadOnlySpan<uint> args);
 
     void DestroyWindow(uint window);
     void DestroySubwindows(uint window);
@@ -29,11 +29,11 @@ public interface IVoidBufferProto
     void UnmapWindow(uint window);
     void UnmapSubwindows(uint window);
 
-    void ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args);
+    void ConfigureWindow(uint window, ConfigureValueMask mask, ReadOnlySpan<uint> args);
 
     void CirculateWindow(Circulate circulate, uint window);
 
-    void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+    void ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, ReadOnlySpan<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -42,7 +42,7 @@ public interface IVoidBufferProto
 
     void DeleteProperty(uint window, ATOM atom);
 
-    void RotateProperties(uint window, ushort delta, Span<ATOM> properties);
+    void RotateProperties(uint window, ushort delta, ReadOnlySpan<ATOM> properties);
 
     void SetSelectionOwner(uint owner, ATOM atom, uint timestamp);
 
@@ -85,15 +85,15 @@ public interface IVoidBufferProto
 
     void FreePixmap(uint pixmapId);
 
-    void CreateGC(uint gc, uint drawable, GcMask mask, Span<uint> args);
+    void CreateGC(uint gc, uint drawable, GcMask mask, ReadOnlySpan<uint> args);
 
-    void ChangeGC(uint gc, GcMask mask, Span<uint> args);
+    void ChangeGC(uint gc, GcMask mask, ReadOnlySpan<uint> args);
 
     void CopyGC(uint srcGc, uint dstGc, GcMask mask);
 
-    void SetDashes(uint gc, ushort dashOffset, Span<byte> dashes);
+    void SetDashes(uint gc, ushort dashOffset, ReadOnlySpan<byte> dashes);
 
-    void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles);
+    void SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, ReadOnlySpan<Rectangle> rectangles);
 
     void FreeGC(uint gc);
 
@@ -105,24 +105,24 @@ public interface IVoidBufferProto
     void CopyPlane(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY, ushort destinationX,
         ushort destinationY, ushort width, ushort height, uint bitPlane);
 
-    void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points);
+    void PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points);
 
-    void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points);
+    void PolyLine(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points);
 
-    void PolySegment(uint drawable, uint gc, Span<Segment> segments);
+    void PolySegment(uint drawable, uint gc, ReadOnlySpan<Segment> segments);
 
-    void PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles);
+    void PolyRectangle(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles);
 
-    void PolyArc(uint drawable, uint gc, Span<Arc> arcs);
+    void PolyArc(uint drawable, uint gc, ReadOnlySpan<Arc> arcs);
 
-    void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points);
+    void FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, ReadOnlySpan<Point> points);
 
-    void PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles);
+    void PolyFillRectangle(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles);
 
-    void PolyFillArc(uint drawable, uint gc, Span<Arc> arcs);
+    void PolyFillArc(uint drawable, uint gc, ReadOnlySpan<Arc> arcs);
 
     void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
-        byte leftPad, byte depth, Span<byte> data);
+        byte leftPad, byte depth, ReadOnlySpan<byte> data);
 
     void ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text);
 
@@ -137,9 +137,9 @@ public interface IVoidBufferProto
     void InstallColormap(uint colormapId);
     void UninstallColormap(uint colormapId);
 
-    void FreeColors(uint colormapId, uint planeMask, Span<uint> pixels);
+    void FreeColors(uint colormapId, uint planeMask, ReadOnlySpan<uint> pixels);
 
-    void StoreColors(uint colormapId, Span<ColorItem> item);
+    void StoreColors(uint colormapId, ReadOnlySpan<ColorItem> item);
 
     void StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name);
 
@@ -155,11 +155,11 @@ public interface IVoidBufferProto
         ushort backGreen, ushort backBlue);
 
     // suppose need changes
-    void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym);
+    void ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, ReadOnlySpan<uint> Keysym);
 
     void Bell(sbyte percent);
 
-    void ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args);
+    void ChangeKeyboardControl(KeyboardControlMask mask, ReadOnlySpan<uint> args);
 
     void ChangePointerControl(Acceleration? acceleration, ushort? threshold);
 
@@ -167,13 +167,13 @@ public interface IVoidBufferProto
 
     void ForceScreenSaver(ForceScreenSaverMode mode);
 
-    void ChangeHosts(HostMode mode, Family family, Span<byte> address);
+    void ChangeHosts(HostMode mode, Family family, ReadOnlySpan<byte> address);
 
     void SetAccessControl(AccessControlMode mode);
     void SetCloseDownMode(CloseDownMode mode);
     void KillClient(uint resource);
 
-    void NoOperation(Span<uint> args);
+    void NoOperation(ReadOnlySpan<uint> args);
 
     void PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
     void PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);

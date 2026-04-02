@@ -131,12 +131,13 @@ internal sealed class ProtoInExtended
     {
         while (true)
         {
-            if (_socketAccessor.BufferEvents.TryDequeue(out var result)) return new XEvent(result.Item1.ToStruct<XResponse>(), result.Item2);
+            if (_socketAccessor.BufferEvents.TryDequeue(out var result)) 
+                return new XEvent(result.Item1.AsSpan().ToStruct<XResponse>(), result.Item2);
 
             if (_socketAccessor.PollRead())
                 if (_socketAccessor.AvailableData == 0)
                     return new XEvent(
-                        new byte[32].ToStruct<XResponse>(),
+                        new byte[32].AsSpan().ToStruct<XResponse>(),
                         new MappingDetails(XResponseType.Event, EventType.LastEvent));
 
             _socketAccessor.FlushSocket();

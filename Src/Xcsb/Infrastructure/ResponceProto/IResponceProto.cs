@@ -36,7 +36,7 @@ public interface IResponseProto
 
     AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens,
         ushort blues);
-    QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels);
+    QueryColorsReply QueryColors(uint colorMap, ReadOnlySpan<uint> pixels);
     LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name);
     QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height);
     SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes);

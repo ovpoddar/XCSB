@@ -13,9 +13,9 @@ namespace Xcsb.Infrastructure.VoidProto;
 public interface IVoidProtoChecked
 {
     void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args);
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, ReadOnlySpan<uint> args);
 
-    void ChangeWindowAttributesChecked(uint window, ValueMask mask, Span<uint> args);
+    void ChangeWindowAttributesChecked(uint window, ValueMask mask, ReadOnlySpan<uint> args);
 
     void DestroyWindowChecked(uint window);
     void DestroySubwindowsChecked(uint window);
@@ -29,11 +29,11 @@ public interface IVoidProtoChecked
     void UnmapWindowChecked(uint window);
     void UnmapSubwindowsChecked(uint window);
 
-    void ConfigureWindowChecked(uint window, ConfigureValueMask mask, Span<uint> args);
+    void ConfigureWindowChecked(uint window, ConfigureValueMask mask, ReadOnlySpan<uint> args);
 
     void CirculateWindowChecked(Circulate circulate, uint window);
 
-    void ChangePropertyChecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+    void ChangePropertyChecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, ReadOnlySpan<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -42,7 +42,7 @@ public interface IVoidProtoChecked
 
     void DeletePropertyChecked(uint window, ATOM atom);
 
-    void RotatePropertiesChecked(uint window, ushort delta, Span<ATOM> properties);
+    void RotatePropertiesChecked(uint window, ushort delta, ReadOnlySpan<ATOM> properties);
 
     void SetSelectionOwnerChecked(uint owner, ATOM atom, uint timestamp);
 
@@ -85,15 +85,15 @@ public interface IVoidProtoChecked
 
     void FreePixmapChecked(uint pixmapId);
 
-    void CreateGCChecked(uint gc, uint drawable, GcMask mask, Span<uint> args);
+    void CreateGCChecked(uint gc, uint drawable, GcMask mask, ReadOnlySpan<uint> args);
 
-    void ChangeGCChecked(uint gc, GcMask mask, Span<uint> args);
+    void ChangeGCChecked(uint gc, GcMask mask, ReadOnlySpan<uint> args);
 
     void CopyGCChecked(uint srcGc, uint dstGc, GcMask mask);
 
-    void SetDashesChecked(uint gc, ushort dashOffset, Span<byte> dashes);
+    void SetDashesChecked(uint gc, ushort dashOffset, ReadOnlySpan<byte> dashes);
 
-    void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, Span<Rectangle> rectangles);
+    void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, ReadOnlySpan<Rectangle> rectangles);
 
     void FreeGCChecked(uint gc);
 
@@ -105,24 +105,24 @@ public interface IVoidProtoChecked
     void CopyPlaneChecked(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
         ushort destinationX, ushort destinationY, ushort width, ushort height, uint bitPlane);
 
-    void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points);
+    void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points);
 
-    void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points);
+    void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points);
 
-    void PolySegmentChecked(uint drawable, uint gc, Span<Segment> segments);
+    void PolySegmentChecked(uint drawable, uint gc, ReadOnlySpan<Segment> segments);
 
-    void PolyRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles);
+    void PolyRectangleChecked(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles);
 
-    void PolyArcChecked(uint drawable, uint gc, Span<Arc> arcs);
+    void PolyArcChecked(uint drawable, uint gc, ReadOnlySpan<Arc> arcs);
 
-    void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points);
+    void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, ReadOnlySpan<Point> points);
 
-    void PolyFillRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles);
+    void PolyFillRectangleChecked(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles);
 
-    void PolyFillArcChecked(uint drawable, uint gc, Span<Arc> arcs);
+    void PolyFillArcChecked(uint drawable, uint gc, ReadOnlySpan<Arc> arcs);
 
     void PutImageChecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
-        byte leftPad, byte depth, Span<byte> data);
+        byte leftPad, byte depth, ReadOnlySpan<byte> data);
 
     void ImageText8Checked(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text);
 
@@ -137,9 +137,9 @@ public interface IVoidProtoChecked
     void InstallColormapChecked(uint colormapId);
     void UninstallColormapChecked(uint colormapId);
 
-    void FreeColorsChecked(uint colormapId, uint planeMask, Span<uint> pixels);
+    void FreeColorsChecked(uint colormapId, uint planeMask, ReadOnlySpan<uint> pixels);
 
-    void StoreColorsChecked(uint colormapId, Span<ColorItem> item);
+    void StoreColorsChecked(uint colormapId, ReadOnlySpan<ColorItem> item);
 
     void StoreNamedColorChecked(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name);
 
@@ -155,11 +155,11 @@ public interface IVoidProtoChecked
         ushort backGreen, ushort backBlue);
 
     // suppose need changes
-    void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, Span<uint> Keysym);
+    void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode, ReadOnlySpan<uint> Keysym);
 
     void BellChecked(sbyte percent);
 
-    void ChangeKeyboardControlChecked(KeyboardControlMask mask, Span<uint> args);
+    void ChangeKeyboardControlChecked(KeyboardControlMask mask, ReadOnlySpan<uint> args);
 
     void ChangePointerControlChecked(Acceleration? acceleration, ushort? threshold);
 
@@ -167,7 +167,7 @@ public interface IVoidProtoChecked
 
     void ForceScreenSaverChecked(ForceScreenSaverMode mode);
 
-    void ChangeHostsChecked(HostMode mode, Family family, Span<byte> address);
+    void ChangeHostsChecked(HostMode mode, Family family, ReadOnlySpan<byte> address);
 
     void SetAccessControlChecked(AccessControlMode mode);
     void SetCloseDownModeChecked(CloseDownMode mode);

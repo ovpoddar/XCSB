@@ -370,7 +370,7 @@ internal sealed class XProto : IXProto
             : result!.Value;
     }
 
-    public QueryColorsReply QueryColors(uint colorMap, Span<uint> pixels)
+    public QueryColorsReply QueryColors(uint colorMap, ReadOnlySpan<uint> pixels)
     {
         var cookie = QueryColorsBase(colorMap, pixels);
         var (result, error) = this._protoInExtended.ReceivedResponseSpan<QueryColorsResponse>(cookie.Id);
@@ -478,10 +478,10 @@ internal sealed class XProto : IXProto
     public XEvent GetEvent() => this._protoInExtended.ReceivedResponse();
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
-        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args) =>
+        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, ReadOnlySpan<uint> args) =>
         CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args);
 
-    public ResponseProto ChangeWindowAttributes(uint window, ValueMask mask, Span<uint> args) =>
+    public ResponseProto ChangeWindowAttributes(uint window, ValueMask mask, ReadOnlySpan<uint> args) =>
         ChangeWindowAttributesBase(window, mask, args);
 
     public ResponseProto DestroyWindow(uint window) =>
@@ -508,13 +508,13 @@ internal sealed class XProto : IXProto
     public ResponseProto UnmapSubwindows(uint window) =>
         UnmapSubwindowsBase(window);
 
-    public ResponseProto ConfigureWindow(uint window, ConfigureValueMask mask, Span<uint> args) =>
+    public ResponseProto ConfigureWindow(uint window, ConfigureValueMask mask, ReadOnlySpan<uint> args) =>
         ConfigureWindowBase(window, mask, args);
 
     public ResponseProto CirculateWindow(Circulate circulate, uint window) =>
         CirculateWindowBase(circulate, window);
 
-    public ResponseProto ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+    public ResponseProto ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, ReadOnlySpan<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -524,7 +524,7 @@ internal sealed class XProto : IXProto
     public ResponseProto DeleteProperty(uint window, ATOM atom) =>
         DeletePropertyBase(window, atom);
 
-    public ResponseProto RotateProperties(uint window, ushort delta, Span<ATOM> properties) =>
+    public ResponseProto RotateProperties(uint window, ushort delta, ReadOnlySpan<ATOM> properties) =>
         RotatePropertiesBase(window, delta, properties);
 
     public ResponseProto SetSelectionOwner(uint owner, ATOM atom, uint timestamp) =>
@@ -589,20 +589,20 @@ internal sealed class XProto : IXProto
     public ResponseProto FreePixmap(uint pixmapId) =>
         FreePixmapBase(pixmapId);
 
-    public ResponseProto CreateGC(uint gc, uint drawable, GcMask mask, Span<uint> args) =>
+    public ResponseProto CreateGC(uint gc, uint drawable, GcMask mask, ReadOnlySpan<uint> args) =>
         CreateGcBase(gc, drawable, mask, args);
 
-    public ResponseProto ChangeGC(uint gc, GcMask mask, Span<uint> args) =>
+    public ResponseProto ChangeGC(uint gc, GcMask mask, ReadOnlySpan<uint> args) =>
         ChangeGcBase(gc, mask, args);
 
     public ResponseProto CopyGC(uint srcGc, uint dstGc, GcMask mask) =>
         CopyGcBase(srcGc, dstGc, mask);
 
-    public ResponseProto SetDashes(uint gc, ushort dashOffset, Span<byte> dashes) =>
+    public ResponseProto SetDashes(uint gc, ushort dashOffset, ReadOnlySpan<byte> dashes) =>
         SetDashesBase(gc, dashOffset, dashes);
 
     public ResponseProto SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
-        Span<Rectangle> rectangles) =>
+        ReadOnlySpan<Rectangle> rectangles) =>
         SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
 
     public ResponseProto FreeGC(uint gc) =>
@@ -620,33 +620,33 @@ internal sealed class XProto : IXProto
         CopyPlaneBase(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY, width, height,
             bitPlane);
 
-    public ResponseProto PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
+    public ResponseProto PolyPoint(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points) =>
         PolyPointBase(coordinate, drawable, gc, points);
 
-    public ResponseProto PolyLine(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points) =>
+    public ResponseProto PolyLine(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points) =>
         PolyLineBase(coordinate, drawable, gc, points);
 
-    public ResponseProto PolySegment(uint drawable, uint gc, Span<Segment> segments) =>
+    public ResponseProto PolySegment(uint drawable, uint gc, ReadOnlySpan<Segment> segments) =>
         PolySegmentBase(drawable, gc, segments);
 
-    public ResponseProto PolyRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
+    public ResponseProto PolyRectangle(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles) =>
         PolyRectangleBase(drawable, gc, rectangles);
 
-    public ResponseProto PolyArc(uint drawable, uint gc, Span<Arc> arcs) =>
+    public ResponseProto PolyArc(uint drawable, uint gc, ReadOnlySpan<Arc> arcs) =>
         PolyArcBase(drawable, gc, arcs);
 
     public ResponseProto FillPoly(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate,
-        Span<Point> points) =>
+        ReadOnlySpan<Point> points) =>
         FillPolyBase(drawable, gc, shape, coordinate, points);
 
-    public ResponseProto PolyFillRectangle(uint drawable, uint gc, Span<Rectangle> rectangles) =>
+    public ResponseProto PolyFillRectangle(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles) =>
         PolyFillRectangleBase(drawable, gc, rectangles);
 
-    public ResponseProto PolyFillArc(uint drawable, uint gc, Span<Arc> arcs) =>
+    public ResponseProto PolyFillArc(uint drawable, uint gc, ReadOnlySpan<Arc> arcs) =>
         PolyFillArcBase(drawable, gc, arcs);
 
     public ResponseProto PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height,
-        short x, short y, byte leftPad, byte depth, Span<byte> data) =>
+        short x, short y, byte leftPad, byte depth, ReadOnlySpan<byte> data) =>
         PutImageBase(format, drawable, gc, width, height, x, y, leftPad, depth, data);
 
     public ResponseProto ImageText8(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text) =>
@@ -670,10 +670,10 @@ internal sealed class XProto : IXProto
     public ResponseProto UninstallColormap(uint colormapId) =>
         UninstallColormapBase(colormapId);
 
-    public ResponseProto FreeColors(uint colormapId, uint planeMask, Span<uint> pixels) =>
+    public ResponseProto FreeColors(uint colormapId, uint planeMask, ReadOnlySpan<uint> pixels) =>
         FreeColorsBase(colormapId, planeMask, pixels);
 
-    public ResponseProto StoreColors(uint colormapId, Span<ColorItem> item) =>
+    public ResponseProto StoreColors(uint colormapId, ReadOnlySpan<ColorItem> item) =>
         StoreColorsBase(colormapId, item);
 
     public ResponseProto StoreNamedColor(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name) =>
@@ -697,13 +697,13 @@ internal sealed class XProto : IXProto
         RecolorCursorBase(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
 
     public ResponseProto ChangeKeyboardMapping(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
-        Span<uint> keysym) =>
+        ReadOnlySpan<uint> keysym) =>
         ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
 
     public ResponseProto Bell(sbyte percent) =>
         BellBase(percent);
 
-    public ResponseProto ChangeKeyboardControl(KeyboardControlMask mask, Span<uint> args) =>
+    public ResponseProto ChangeKeyboardControl(KeyboardControlMask mask, ReadOnlySpan<uint> args) =>
         ChangeKeyboardControlBase(mask, args);
 
     public ResponseProto ChangePointerControl(Acceleration? acceleration, ushort? threshold) =>
@@ -716,7 +716,7 @@ internal sealed class XProto : IXProto
     public ResponseProto ForceScreenSaver(ForceScreenSaverMode mode) =>
         ForceScreenSaverBase(mode);
 
-    public ResponseProto ChangeHosts(HostMode mode, Family family, Span<byte> address) =>
+    public ResponseProto ChangeHosts(HostMode mode, Family family, ReadOnlySpan<byte> address) =>
         ChangeHostsBase(mode, family, address);
 
     public ResponseProto SetAccessControl(AccessControlMode mode) =>
@@ -747,14 +747,14 @@ internal sealed class XProto : IXProto
     }
 
     public void CreateWindowUnchecked(byte depth, uint window, uint parent, short x, short y, ushort width,
-        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void ChangeWindowAttributesUnchecked(uint window, ValueMask mask, Span<uint> args)
+    public void ChangeWindowAttributesUnchecked(uint window, ValueMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.ChangeWindowAttributesBase(window, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -808,7 +808,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void ConfigureWindowUnchecked(uint window, ConfigureValueMask mask, Span<uint> args)
+    public void ConfigureWindowUnchecked(uint window, ConfigureValueMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.ConfigureWindowBase(window, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -820,7 +820,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void ChangePropertyUnchecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+    public void ChangePropertyUnchecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, ReadOnlySpan<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -836,7 +836,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void RotatePropertiesUnchecked(uint window, ushort delta, Span<ATOM> properties)
+    public void RotatePropertiesUnchecked(uint window, ushort delta, ReadOnlySpan<ATOM> properties)
     {
         var cookie = this.RotatePropertiesBase(window, delta, properties);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -967,13 +967,13 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void CreateGCUnchecked(uint gc, uint drawable, GcMask mask, Span<uint> args)
+    public void CreateGCUnchecked(uint gc, uint drawable, GcMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.CreateGcBase(gc, drawable, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void ChangeGCUnchecked(uint gc, GcMask mask, Span<uint> args)
+    public void ChangeGCUnchecked(uint gc, GcMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.ChangeGcBase(gc, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -985,14 +985,14 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void SetDashesUnchecked(uint gc, ushort dashOffset, Span<byte> dashes)
+    public void SetDashesUnchecked(uint gc, ushort dashOffset, ReadOnlySpan<byte> dashes)
     {
         var cookie = this.SetDashesBase(gc, dashOffset, dashes);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void SetClipRectanglesUnchecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
-        Span<Rectangle> rectangles)
+        ReadOnlySpan<Rectangle> rectangles)
     {
         var cookie = this.SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1026,50 +1026,50 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void PolyPointUnchecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    public void PolyPointUnchecked(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
     {
         var cookie = this.PolyPointBase(coordinate, drawable, gc, points);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void PolyLineUnchecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    public void PolyLineUnchecked(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
     {
         var cookie = this.PolyLineBase(coordinate, drawable, gc, points);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void PolySegmentUnchecked(uint drawable, uint gc, Span<Segment> segments)
+    public void PolySegmentUnchecked(uint drawable, uint gc, ReadOnlySpan<Segment> segments)
     {
         var cookie = this.PolySegmentBase(drawable, gc, segments);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void PolyRectangleUnchecked(uint drawable, uint gc, Span<Rectangle> rectangles)
+    public void PolyRectangleUnchecked(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
     {
         var cookie = this.PolyRectangleBase(drawable, gc, rectangles);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void PolyArcUnchecked(uint drawable, uint gc, Span<Arc> arcs)
+    public void PolyArcUnchecked(uint drawable, uint gc, ReadOnlySpan<Arc> arcs)
     {
         var cookie = this.PolyArcBase(drawable, gc, arcs);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
     public void FillPolyUnchecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate,
-        Span<Point> points)
+        ReadOnlySpan<Point> points)
     {
         var cookie = this.FillPolyBase(drawable, gc, shape, coordinate, points);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void PolyFillRectangleUnchecked(uint drawable, uint gc, Span<Rectangle> rectangles)
+    public void PolyFillRectangleUnchecked(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
     {
         var cookie = this.PolyFillRectangleBase(drawable, gc, rectangles);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void PolyFillArcUnchecked(uint drawable, uint gc, Span<Arc> arcs)
+    public void PolyFillArcUnchecked(uint drawable, uint gc, ReadOnlySpan<Arc> arcs)
     {
         var cookie = this.PolyFillArcBase(drawable, gc, arcs);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1077,7 +1077,7 @@ internal sealed class XProto : IXProto
 
     public void PutImageUnchecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height,
         short x,
-        short y, byte leftPad, byte depth, Span<byte> data)
+        short y, byte leftPad, byte depth, ReadOnlySpan<byte> data)
     {
         var cookie = this.PutImageBase(format, drawable, gc, width, height, x, y, leftPad, depth, data);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1125,13 +1125,13 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void FreeColorsUnchecked(uint colormapId, uint planeMask, Span<uint> pixels)
+    public void FreeColorsUnchecked(uint colormapId, uint planeMask, ReadOnlySpan<uint> pixels)
     {
         var cookie = this.FreeColorsBase(colormapId, planeMask, pixels);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void StoreColorsUnchecked(uint colormapId, Span<ColorItem> item)
+    public void StoreColorsUnchecked(uint colormapId, ReadOnlySpan<ColorItem> item)
     {
         var cookie = this.StoreColorsBase(colormapId, item);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1174,7 +1174,7 @@ internal sealed class XProto : IXProto
     }
 
     public void ChangeKeyboardMappingUnchecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
-        Span<uint> keysym)
+        ReadOnlySpan<uint> keysym)
     {
         var cookie = this.ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1186,7 +1186,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void ChangeKeyboardControlUnchecked(KeyboardControlMask mask, Span<uint> args)
+    public void ChangeKeyboardControlUnchecked(KeyboardControlMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.ChangeKeyboardControlBase(mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1210,7 +1210,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void ChangeHostsUnchecked(HostMode mode, Family family, Span<byte> address)
+    public void ChangeHostsUnchecked(HostMode mode, Family family, ReadOnlySpan<byte> address)
     {
         var cookie = this.ChangeHostsBase(mode, family, address);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
@@ -1253,14 +1253,14 @@ internal sealed class XProto : IXProto
     }
 
     public void CreateWindowChecked(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
-        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+        ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void ChangeWindowAttributesChecked(uint window, ValueMask mask, Span<uint> args)
+    public void ChangeWindowAttributesChecked(uint window, ValueMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.ChangeWindowAttributesBase(window, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1314,7 +1314,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void ConfigureWindowChecked(uint window, ConfigureValueMask mask, Span<uint> args)
+    public void ConfigureWindowChecked(uint window, ConfigureValueMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.ConfigureWindowBase(window, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1326,7 +1326,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void ChangePropertyChecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, Span<T> args)
+    public void ChangePropertyChecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, ReadOnlySpan<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -1342,7 +1342,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void RotatePropertiesChecked(uint window, ushort delta, Span<ATOM> properties)
+    public void RotatePropertiesChecked(uint window, ushort delta, ReadOnlySpan<ATOM> properties)
     {
         var cookie = this.RotatePropertiesBase(window, delta, properties);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1473,13 +1473,13 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void CreateGCChecked(uint gc, uint drawable, GcMask mask, Span<uint> args)
+    public void CreateGCChecked(uint gc, uint drawable, GcMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.CreateGcBase(gc, drawable, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void ChangeGCChecked(uint gc, GcMask mask, Span<uint> args)
+    public void ChangeGCChecked(uint gc, GcMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.ChangeGcBase(gc, mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1491,14 +1491,14 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void SetDashesChecked(uint gc, ushort dashOffset, Span<byte> dashes)
+    public void SetDashesChecked(uint gc, ushort dashOffset, ReadOnlySpan<byte> dashes)
     {
         var cookie = this.SetDashesBase(gc, dashOffset, dashes);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void SetClipRectanglesChecked(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
-        Span<Rectangle> rectangles)
+        ReadOnlySpan<Rectangle> rectangles)
     {
         var cookie = this.SetClipRectanglesBase(ordering, gc, clipX, clipY, rectangles);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1532,56 +1532,56 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    public void PolyPointChecked(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
     {
         var cookie = this.PolyPointBase(coordinate, drawable, gc, points);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    public void PolyLineChecked(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
     {
         var cookie = this.PolyLineBase(coordinate, drawable, gc, points);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void PolySegmentChecked(uint drawable, uint gc, Span<Segment> segments)
+    public void PolySegmentChecked(uint drawable, uint gc, ReadOnlySpan<Segment> segments)
     {
         var cookie = this.PolySegmentBase(drawable, gc, segments);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void PolyRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
+    public void PolyRectangleChecked(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
     {
         var cookie = this.PolyRectangleBase(drawable, gc, rectangles);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void PolyArcChecked(uint drawable, uint gc, Span<Arc> arcs)
+    public void PolyArcChecked(uint drawable, uint gc, ReadOnlySpan<Arc> arcs)
     {
         var cookie = this.PolyArcBase(drawable, gc, arcs);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, Span<Point> points)
+    public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, ReadOnlySpan<Point> points)
     {
         var cookie = this.FillPolyBase(drawable, gc, shape, coordinate, points);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void PolyFillRectangleChecked(uint drawable, uint gc, Span<Rectangle> rectangles)
+    public void PolyFillRectangleChecked(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
     {
         var cookie = this.PolyFillRectangleBase(drawable, gc, rectangles);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void PolyFillArcChecked(uint drawable, uint gc, Span<Arc> arcs)
+    public void PolyFillArcChecked(uint drawable, uint gc, ReadOnlySpan<Arc> arcs)
     {
         var cookie = this.PolyFillArcBase(drawable, gc, arcs);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
     public void PutImageChecked(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x,
-        short y, byte leftPad, byte depth, Span<byte> data)
+        short y, byte leftPad, byte depth, ReadOnlySpan<byte> data)
     {
         var cookie = this.PutImageBase(format, drawable, gc, width, height, x, y, leftPad, depth, data);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1629,13 +1629,13 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void FreeColorsChecked(uint colormapId, uint planeMask, Span<uint> pixels)
+    public void FreeColorsChecked(uint colormapId, uint planeMask, ReadOnlySpan<uint> pixels)
     {
         var cookie = this.FreeColorsBase(colormapId, planeMask, pixels);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void StoreColorsChecked(uint colormapId, Span<ColorItem> item)
+    public void StoreColorsChecked(uint colormapId, ReadOnlySpan<ColorItem> item)
     {
         var cookie = this.StoreColorsBase(colormapId, item);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1678,7 +1678,7 @@ internal sealed class XProto : IXProto
     }
 
     public void ChangeKeyboardMappingChecked(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
-        Span<uint> keysym)
+        ReadOnlySpan<uint> keysym)
     {
         var cookie = this.ChangeKeyboardMappingBase(keycodeCount, firstKeycode, keysymsPerKeycode, keysym);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1690,7 +1690,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void ChangeKeyboardControlChecked(KeyboardControlMask mask, Span<uint> args)
+    public void ChangeKeyboardControlChecked(KeyboardControlMask mask, ReadOnlySpan<uint> args)
     {
         var cookie = this.ChangeKeyboardControlBase(mask, args);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1714,7 +1714,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void ChangeHostsChecked(HostMode mode, Family family, Span<byte> address)
+    public void ChangeHostsChecked(HostMode mode, Family family, ReadOnlySpan<byte> address)
     {
         var cookie = this.ChangeHostsBase(mode, family, address);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1756,7 +1756,7 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    private ResponseProto ChangeWindowAttributesBase(uint window, ValueMask mask, Span<uint> args)
+    private ResponseProto ChangeWindowAttributesBase(uint window, ValueMask mask, ReadOnlySpan<uint> args)
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
@@ -1807,7 +1807,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto ChangeGcBase(uint gc, GcMask mask, Span<uint> args)
+    private ResponseProto ChangeGcBase(uint gc, GcMask mask, ReadOnlySpan<uint> args)
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
@@ -1826,7 +1826,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
-    private ResponseProto ChangeHostsBase(HostMode mode, Family family, Span<byte> address)
+    private ResponseProto ChangeHostsBase(HostMode mode, Family family, ReadOnlySpan<byte> address)
     {
         var request = new ChangeHostsType(mode, family, address.Length);
         var bigRequest = new ChangeHostsBigType(mode, family, address.Length);
@@ -1842,7 +1842,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
-    private ResponseProto ChangeKeyboardControlBase(KeyboardControlMask mask, Span<uint> args)
+    private ResponseProto ChangeKeyboardControlBase(KeyboardControlMask mask, ReadOnlySpan<uint> args)
     {
         var request = new ChangeKeyboardControlType(mask, args.Length);
         var bigRequest = new ChangeKeyboardControlBigType(mask, args.Length);
@@ -1859,7 +1859,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto ChangeKeyboardMappingBase(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
-        Span<uint> keysym)
+        ReadOnlySpan<uint> keysym)
     {
         var request = new ChangeKeyboardMappingType(keycodeCount, firstKeycode, keysymsPerKeycode);
         var bigRequest = new ChangeKeyboardMappingBigType(keycodeCount, firstKeycode, keysymsPerKeycode);
@@ -1884,7 +1884,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto ChangePropertyBase<T>(PropertyMode mode, uint window, ATOM property, ATOM type,
-        Span<T> args)
+        ReadOnlySpan<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -1936,7 +1936,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto ConfigureWindowBase(uint window, ConfigureValueMask mask, Span<uint> args)
+    private ResponseProto ConfigureWindowBase(uint window, ConfigureValueMask mask, ReadOnlySpan<uint> args)
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
@@ -2011,7 +2011,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto CreateGcBase(uint gc, uint drawable, GcMask mask, Span<uint> args)
+    private ResponseProto CreateGcBase(uint gc, uint drawable, GcMask mask, ReadOnlySpan<uint> args)
     {
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
@@ -2047,7 +2047,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto CreateWindowBase(byte depth, uint window, uint parent, short x, short y, ushort width,
-        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, Span<uint> args)
+        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, ReadOnlySpan<uint> args)
     {
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
@@ -2090,7 +2090,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto FillPolyBase(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate,
-        Span<Point> points)
+        ReadOnlySpan<Point> points)
     {
         var request = new FillPolyType(drawable, gc, shape, coordinate, points.Length);
         var bigRequest = new FillPolyBigType(drawable, gc, shape, coordinate, points.Length);
@@ -2119,7 +2119,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto FreeColorsBase(uint colormapId, uint planeMask, Span<uint> pixels)
+    private ResponseProto FreeColorsBase(uint colormapId, uint planeMask, ReadOnlySpan<uint> pixels)
     {
         var request = new FreeColorsType(colormapId, planeMask, pixels.Length);
         var bigRequest = new FreeColorsBigType(colormapId, planeMask, pixels.Length);
@@ -2314,7 +2314,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto PolyArcBase(uint drawable, uint gc, Span<Arc> arcs)
+    private ResponseProto PolyArcBase(uint drawable, uint gc, ReadOnlySpan<Arc> arcs)
     {
         var request = new PolyArcType(drawable, gc, arcs.Length);
         var bigRequest = new PolyArcBigType(drawable, gc, arcs.Length);
@@ -2329,7 +2329,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto PolyFillArcBase(uint drawable, uint gc, Span<Arc> arcs)
+    private ResponseProto PolyFillArcBase(uint drawable, uint gc, ReadOnlySpan<Arc> arcs)
     {
         var request = new PolyFillArcType(drawable, gc, arcs.Length);
         var bigRequest = new PolyFillArcBigType(drawable, gc, arcs.Length);
@@ -2344,7 +2344,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto PolyFillRectangleBase(uint drawable, uint gc, Span<Rectangle> rectangles)
+    private ResponseProto PolyFillRectangleBase(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
     {
         var request = new PolyFillRectangleType(drawable, gc, rectangles.Length);
         var bigRequest = new PolyFillRectangleBigType(drawable, gc, rectangles.Length);
@@ -2359,7 +2359,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto PolyLineBase(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    private ResponseProto PolyLineBase(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
     {
         var request = new PolyLineType(coordinate, drawable, gc, points.Length);
         var bigRequest = new PolyLineBigType(coordinate, drawable, gc, points.Length);
@@ -2374,7 +2374,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto PolyPointBase(CoordinateMode coordinate, uint drawable, uint gc, Span<Point> points)
+    private ResponseProto PolyPointBase(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
     {
         var request = new PolyPointType(coordinate, drawable, gc, points.Length);
         var bigRequest = new PolyPointBigType(coordinate, drawable, gc, points.Length);
@@ -2389,7 +2389,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto PolyRectangleBase(uint drawable, uint gc, Span<Rectangle> rectangles)
+    private ResponseProto PolyRectangleBase(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
     {
         var request = new PolyRectangleType(drawable, gc, rectangles.Length);
         var bigRequest = new PolyRectangleBigType(drawable, gc, rectangles.Length);
@@ -2404,7 +2404,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto PolySegmentBase(uint drawable, uint gc, Span<Segment> segments)
+    private ResponseProto PolySegmentBase(uint drawable, uint gc, ReadOnlySpan<Segment> segments)
     {
         var request = new PolySegmentType(drawable, gc, segments.Length);
         var bigRequest = new PolySegmentBigType(drawable, gc, segments.Length);
@@ -2496,7 +2496,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto PutImageBase(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height,
-        short x, short y, byte leftPad, byte depth, Span<byte> data)
+        short x, short y, byte leftPad, byte depth, ReadOnlySpan<byte> data)
     {
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         var bigRequest = new PutImageBigType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
@@ -2527,7 +2527,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto RotatePropertiesBase(uint window, ushort delta, Span<ATOM> properties)
+    private ResponseProto RotatePropertiesBase(uint window, ushort delta, ReadOnlySpan<ATOM> properties)
     {
         var request = new RotatePropertiesType(window, properties.Length, delta);
         var bigRequest = new RotatePropertiesBigType(window, properties.Length, delta);
@@ -2557,7 +2557,7 @@ internal sealed class XProto : IXProto
     }
 
     private ResponseProto SetClipRectanglesBase(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
-        Span<Rectangle> rectangles)
+        ReadOnlySpan<Rectangle> rectangles)
     {
         var request = new SetClipRectanglesType(ordering, gc, clipX, clipY, rectangles.Length);
         var bigRequest = new SetClipRectanglesBigType(ordering, gc, clipX, clipY, rectangles.Length);
@@ -2579,7 +2579,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto SetDashesBase(uint gc, ushort dashOffset, Span<byte> dashes)
+    private ResponseProto SetDashesBase(uint gc, ushort dashOffset, ReadOnlySpan<byte> dashes)
     {
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
         var bigRequest = new SetDashesBigType(gc, dashOffset, dashes.Length);
@@ -2661,7 +2661,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence);
     }
 
-    private ResponseProto StoreColorsBase(uint colormapId, Span<ColorItem> item)
+    private ResponseProto StoreColorsBase(uint colormapId, ReadOnlySpan<ColorItem> item)
     {
         var request = new StoreColorsType(colormapId, item.Length);
         var bigRequest = new StoreColorsBigType(colormapId, item.Length);
@@ -3072,7 +3072,7 @@ internal sealed class XProto : IXProto
         return new ResponseProto(_protoOutExtended.Sequence, true);
     }
 
-    private ResponseProto QueryColorsBase(uint colorMap, Span<uint> pixels)
+    private ResponseProto QueryColorsBase(uint colorMap, ReadOnlySpan<uint> pixels)
     {
         var request = new QueryColorsType(colorMap, pixels.Length);
         var bigRequest = new QueryColorsBigType(colorMap, pixels.Length);
