@@ -1,4 +1,5 @@
 ﻿using Xcsb.Connection;
+using Xcsb.Extension.Damage.Infrastructure;
 
 namespace Xcsb.Extension.Damage
 {

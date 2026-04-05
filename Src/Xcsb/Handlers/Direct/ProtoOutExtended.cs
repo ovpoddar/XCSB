@@ -11,8 +11,8 @@ internal sealed class ProtoOutExtended
 
     public int Sequence
     {
-        get { return _socketAccessor.SendSequence; }
-        set { _socketAccessor.SendSequence = value; }
+        get => _socketAccessor.SendSequence;
+        set => _socketAccessor.SendSequence = value;
     }
     internal ProtoOutExtended(ISocketAccessor socketAccessor)
     {
