@@ -7,7 +7,7 @@ namespace Xcsb.Requests.BigExtension;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct CreateGCBigType(uint gc, uint drawable, GcMask mask, int argsLength)
+internal readonly struct CreateGcBigType(uint gc, uint drawable, GcMask mask, int argsLength)
 {
     public readonly Opcode OpCode = Opcode.CreateGC;
     private readonly byte _pad0 = 0;

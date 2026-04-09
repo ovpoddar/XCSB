@@ -1813,7 +1813,7 @@ internal sealed class XProto : IXProto
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
 
         var request = new ChangeGCType(gc, mask, args.Length);
-        var bigRequest = new ChangeGCBigType(gc, mask, args.Length);
+        var bigRequest = new ChangeGcBigType(gc, mask, args.Length);
         SendWithBigRequestIfNeed(
             ref request,
             12,
@@ -2017,7 +2017,7 @@ internal sealed class XProto : IXProto
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
 
         var request = new CreateGCType(gc, drawable, mask, args.Length);
-        var bigRequest = new CreateGCBigType(gc, drawable, mask, args.Length);
+        var bigRequest = new CreateGcBigType(gc, drawable, mask, args.Length);
         SendWithBigRequestIfNeed(
             ref request,
             16,
