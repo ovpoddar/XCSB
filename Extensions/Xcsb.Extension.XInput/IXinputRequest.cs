@@ -8,7 +8,7 @@ public interface IXinputRequest
     GetExtensionVersionReply GetExtensionVersion(ReadOnlySpan<byte> name);
     void ListInputDevices();
     void OpenDevice();
-    void CloseDevice();
+    void CloseDevice(byte deviceId);
     void SetDeviceMode();
     void SelectExtensionEvent();
     void GetSelectedExtensionEvents();
@@ -18,7 +18,7 @@ public interface IXinputRequest
     void ChangeKeyboardDevice();
     void ChangePointerDevice();
     void GrabDevice();
-    void UngrabDevice();
+    void UngrabDevice(uint time, byte deviceId);
     void GrabDeviceKey();
     void UngrabDeviceKey();
     void GrabDeviceButton();

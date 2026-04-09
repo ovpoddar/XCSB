@@ -9,7 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Src\Xcsb.Connection\Xcsb.Connection.csproj" />
-      <ProjectReference Include="..\..\Src\Xcsb\Xcsb.csproj" />
+      <ProjectReference Include="..\..\Src\Xcsb.Models\Xcsb.Models.csproj" />
     </ItemGroup>
 
 </Project>

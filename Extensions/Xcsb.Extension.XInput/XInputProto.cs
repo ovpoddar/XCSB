@@ -63,9 +63,12 @@ internal sealed class XInputProto : IXinputRequest
         throw new System.NotImplementedException();
     }
 
-    public void CloseDevice()
+    public void CloseDevice(byte deviceId)
     {
-        throw new System.NotImplementedException();
+        var request = new CloseDeviceType(this._response.MajorOpcode, deviceId);
+        _extensionInternal.Transport.SendRequest(
+            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
+                SocketFlags.None);
     }
 
     public void SetDeviceMode()
@@ -113,9 +116,12 @@ internal sealed class XInputProto : IXinputRequest
         throw new System.NotImplementedException();
     }
 
-    public void UngrabDevice()
+    public void UngrabDevice(uint time, byte deviceId)
     {
-        throw new System.NotImplementedException();
+        var request = new UngrabDeviceType(this._response.MajorOpcode, time, deviceId);
+        _extensionInternal.Transport.SendRequest(
+            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
+                SocketFlags.None);
     }
 
     public void GrabDeviceKey()

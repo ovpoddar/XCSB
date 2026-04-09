@@ -25,6 +25,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
 		<ProjectReference Include="..\Xcsb.Connection\Xcsb.Connection.csproj" />
+		<ProjectReference Include="..\Xcsb.Models\Xcsb.Models.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
