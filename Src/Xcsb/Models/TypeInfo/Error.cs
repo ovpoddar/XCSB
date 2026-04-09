@@ -18,8 +18,8 @@ public sealed record ErrorCode : XEventType
     public static readonly ErrorCode Access = new ErrorCode(10, "Access");
     public static readonly ErrorCode Alloc = new ErrorCode(11, "Alloc");
     public static readonly ErrorCode Colormap = new ErrorCode(12, "Colormap");
-    public static readonly ErrorCode GContext = new ErrorCode(13, "GContext");
-    public static readonly ErrorCode IDChoice = new ErrorCode(14, "IDChoice");
+    public static readonly ErrorCode GcContext = new ErrorCode(13, "GContext");
+    public static readonly ErrorCode IdChoice = new ErrorCode(14, "IdChoice");
     public static readonly ErrorCode Name = new ErrorCode(15, "Name");
     public static readonly ErrorCode Length = new ErrorCode(16, "Length");
     public static readonly ErrorCode Implementation = new ErrorCode(17, "Implementation");

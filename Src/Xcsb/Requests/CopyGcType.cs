@@ -7,7 +7,7 @@ namespace Xcsb.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct CopyGCType(uint srcGc, uint dstGc, GcMask mask)
+internal readonly struct CopyGcType(uint srcGc, uint dstGc, GcMask mask)
 {
     public readonly Opcode OpCode = Opcode.CopyGC;
     private readonly byte _pad0 = 0;

@@ -70,8 +70,8 @@ internal sealed class XProto : IXProto
         extension.RegisterError<CursorError>(0, ErrorCode.Cursor);
         extension.RegisterError<DrawableError>(0, ErrorCode.Drawable);
         extension.RegisterError<FontError>(0, ErrorCode.Font);
-        extension.RegisterError<GContextError>(0, ErrorCode.GContext);
-        extension.RegisterError<IDChoiceError>(0, ErrorCode.IDChoice);
+        extension.RegisterError<GcContextError>(0, ErrorCode.GcContext);
+        extension.RegisterError<IDChoiceError>(0, ErrorCode.IdChoice);
         extension.RegisterError<ImplementationError>(0, ErrorCode.Implementation);
         extension.RegisterError<LengthError>(0, ErrorCode.Length);
         extension.RegisterError<MatchError>(0, ErrorCode.Match);
@@ -1812,7 +1812,7 @@ internal sealed class XProto : IXProto
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
 
-        var request = new ChangeGCType(gc, mask, args.Length);
+        var request = new ChangeGcType(gc, mask, args.Length);
         var bigRequest = new ChangeGcBigType(gc, mask, args.Length);
         SendWithBigRequestIfNeed(
             ref request,
@@ -1981,7 +1981,7 @@ internal sealed class XProto : IXProto
 
     private ResponseProto CopyGcBase(uint srcGc, uint dstGc, GcMask mask)
     {
-        var request = new CopyGCType(srcGc, dstGc, mask);
+        var request = new CopyGcType(srcGc, dstGc, mask);
         _protoOutExtended.Send(ref request);
         return new ResponseProto(_protoOutExtended.Sequence);
     }
@@ -2016,7 +2016,7 @@ internal sealed class XProto : IXProto
         if (mask.CountFlags() != args.Length)
             throw new InsufficientDataException(mask.CountFlags(), args.Length, nameof(mask), nameof(args));
 
-        var request = new CreateGCType(gc, drawable, mask, args.Length);
+        var request = new CreateGcType(gc, drawable, mask, args.Length);
         var bigRequest = new CreateGcBigType(gc, drawable, mask, args.Length);
         SendWithBigRequestIfNeed(
             ref request,
@@ -2143,7 +2143,7 @@ internal sealed class XProto : IXProto
 
     private ResponseProto FreeGcBase(uint gc)
     {
-        var request = new FreeGCType(gc);
+        var request = new FreeGcType(gc);
         _protoOutExtended.Send(ref request);
         return new ResponseProto(_protoOutExtended.Sequence);
     }

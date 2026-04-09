@@ -23,6 +23,6 @@ public readonly struct IDChoiceError : IXError
     public bool Verify(in int sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && ResponseHeader.Sequence == sequence
-            && ResponseHeader.GetValue() == ErrorCode.IDChoice;
+            && ResponseHeader.GetValue() == ErrorCode.IdChoice;
     }
 }

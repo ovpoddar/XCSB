@@ -6,7 +6,7 @@ namespace Xcsb.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct FreeGCType(uint gc)
+internal readonly struct FreeGcType(uint gc)
 {
     public readonly Opcode OpCode = Opcode.FreeGC;
     private readonly byte _pad0 = 0;
