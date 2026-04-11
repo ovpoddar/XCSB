@@ -11,8 +11,8 @@ internal sealed class ProtoOutExtended
 
     public int Sequence
     {
-        get => _socketAccessor.SendSequence;
-        set => _socketAccessor.SendSequence = value;
+        get => _socketAccessor.SocketOut.Sequence;
+        set => _socketAccessor.SocketOut.Sequence = value;
     }
     internal ProtoOutExtended(ISocketAccessor socketAccessor)
     {
@@ -21,12 +21,12 @@ internal sealed class ProtoOutExtended
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Send<T>(scoped ref T value) where T : unmanaged =>
-        _socketAccessor.SendRequest(
+        _socketAccessor.SocketOut.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)),
             SocketFlags.None);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SendExact(scoped in ReadOnlySpan<byte> buffer) =>
-        _socketAccessor.SendRequest(buffer, SocketFlags.None);
+        _socketAccessor.SocketOut.SendRequest(buffer, SocketFlags.None);
 
 }

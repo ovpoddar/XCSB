@@ -59,7 +59,7 @@ internal class XConnection : IXConnectionInternal
                 authData.CopyTo(scratchBuffer[writeIndex..]);
                 writeIndex += authData.Length;
                 scratchBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
-                this.Accessor.SendData(scratchBuffer, SocketFlags.None);
+                this.Accessor.SocketOut.SendData(scratchBuffer, SocketFlags.None);
             }
             else
             {
@@ -78,7 +78,7 @@ internal class XConnection : IXConnectionInternal
                 authData.CopyTo(workingBuffer[writeIndex..]);
                 writeIndex += authData.Length;
                 workingBuffer.Slice(writeIndex, authData.Length.Padding()).Clear();
-                this.Accessor.SendData(workingBuffer, SocketFlags.None);
+                this.Accessor.SocketOut.SendData(workingBuffer, SocketFlags.None);
             }
 
             return true;
@@ -94,14 +94,14 @@ internal class XConnection : IXConnectionInternal
     public void SetUpStatus()
     {
         Span<byte> tempBuffer = stackalloc byte[Unsafe.SizeOf<HandshakeResponseHead>()];
-        this.Accessor.Received(tempBuffer);
+        this.Accessor.SocketIn.Received(tempBuffer);
         ref readonly var response = ref tempBuffer.AsStruct<HandshakeResponseHead>();
 
         HandshakeStatus = response.HandshakeStatus;
 
         if (response.HandshakeStatus is HandshakeStatus.Success)
         {
-            HandshakeSuccessResponseBody = HandshakeSuccessResponseBody.Read(this.Accessor,
+            HandshakeSuccessResponseBody = HandshakeSuccessResponseBody.Read(this.Accessor.SocketIn,
                 response.HandshakeResponseHeadSuccess.AdditionalDataLength * 4);
             FailReason = string.Empty;
             if (Extension is not IXExtensionInternal extensionInternal) throw new InvalidOperationException();
@@ -118,14 +118,14 @@ internal class XConnection : IXConnectionInternal
             if (requiredBuffer < 255)
             {
                 Span<byte> buffer = stackalloc byte[requiredBuffer];
-                this.Accessor.Received(buffer);
+                this.Accessor.SocketIn.Received(buffer);
                 FailReason = Encoding.ASCII.GetString(buffer).TrimEnd();
             }
             else
             {
                 using var buffer = new ArrayPoolUsing<byte>(dataLength);
                 var workingBuffer = buffer.Slice(0, dataLength);
-                this.Accessor.Received(workingBuffer);
+                this.Accessor.SocketIn.Received(workingBuffer);
                 FailReason = Encoding.ASCII.GetString(workingBuffer).TrimEnd();
             }
         }
@@ -151,8 +151,8 @@ internal class XConnection : IXConnectionInternal
         {
             // ProtoIn and ProtoOut only hold references to the Socket, they don't own it.
             // Socket is the only resource that needs disposal.
-            Accessor.BufferEvents.Clear();
-            Accessor.ReplyBuffer.Clear();
+            Accessor.SocketIn.BufferEvents.Clear();
+            Accessor.SocketIn.ReplyBuffer.Clear();
             if (Extension is IXExtensionInternal extensionInternal)
                 extensionInternal.Clear();
             _socket.Dispose();

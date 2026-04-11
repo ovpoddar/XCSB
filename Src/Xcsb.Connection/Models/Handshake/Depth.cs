@@ -14,10 +14,10 @@ public class Depth
     public required Visual[] Visuals;
 #endif
 
-    internal static Depth Read(ISocketAccessor socketAccessor, ref int currentlyRead)
+    internal static Depth Read(ISocketIn socketIn, ref int currentlyRead)
     {
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_Depth>()];
-        socketAccessor.Received(scratchBuffer);
+        socketIn.Received(scratchBuffer);
         currentlyRead += scratchBuffer.Length;
 
         ref readonly var depth = ref scratchBuffer.AsStruct<_Depth>();
@@ -26,24 +26,24 @@ public class Depth
             DepthValue = depth.DepthValue,
             Visuals = new Visual[depth.VisualsLength]
         };
-        currentlyRead += SetVisual(result, socketAccessor);
+        currentlyRead += SetVisual(result, socketIn);
         return result;
     }
 
-    private static int SetVisual(Depth depth, ISocketAccessor socketAccessor)
+    private static int SetVisual(Depth depth, ISocketIn socketIn)
     {
         var requireByte = Marshal.SizeOf<Visual>() * depth.Visuals.Length;
         if (requireByte < XcsbClientConfiguration.StackAllocThreshold)
         {
             Span<byte> scratchBuffer = stackalloc byte[requireByte];
-            socketAccessor.Received(scratchBuffer);
+            socketIn.Received(scratchBuffer);
             MemoryMarshal.Cast<byte, Visual>(scratchBuffer)
                 .CopyTo(depth.Visuals);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requireByte);
-            socketAccessor.Received(scratchBuffer[..requireByte]);
+            socketIn.Received(scratchBuffer[..requireByte]);
             MemoryMarshal.Cast<byte, Visual>(scratchBuffer)
                 .CopyTo(depth.Visuals);
         }

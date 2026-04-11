@@ -23,7 +23,7 @@ internal sealed class BigRequestProto : IBigRequest
     public BigReqEnableReply BigRequestsEnable()
     {
         var cookie = BigRequestsEnableBase();
-        var (result, error) = this._extension.Transport.ReceivedResponseSpan<BigReqEnableReply>(cookie.Id);
+        var (result, error) = this._extension.Transport.SocketIn.ReceivedResponseSpan<BigReqEnableReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
 
@@ -34,9 +34,9 @@ internal sealed class BigRequestProto : IBigRequest
     private ResponseProto BigRequestsEnableBase()
     {
         var request = new BigReqEnableType(_response.MajorOpcode);
-        _extension.Transport.SendRequest(
+        _extension.Transport.SocketOut.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extension.Transport.SendSequence, true);
+        return new ResponseProto(_extension.Transport.SocketOut.Sequence, true);
     }
 }

@@ -27,7 +27,7 @@ internal sealed class XInputProto : IXinputRequest
     public GetExtensionVersionReply GetExtensionVersion(ReadOnlySpan<byte> name)
     {
         var cookie = GetExtensionVersionBase(name);
-        var (result, error) = this._extensionInternal.Transport.ReceivedResponseSpan<GetExtensionVersionReply>(cookie.Id);
+        var (result, error) = this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetExtensionVersionReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().ToStruct<GetExtensionVersionReply>();
@@ -41,16 +41,16 @@ internal sealed class XInputProto : IXinputRequest
         {
             Span<byte> scratchBuffer = stackalloc byte[requestSize];
             scratchBuffer.WriteRequest(ref request, 8, name);
-            _extensionInternal.Transport.SendRequest(scratchBuffer, SocketFlags.None);
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requestSize);
             scratchBuffer[..requestSize].WriteRequest(ref request, 8, name);
-            _extensionInternal.Transport.SendRequest(scratchBuffer[..requestSize], SocketFlags.None);
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer[..requestSize], SocketFlags.None);
         }
         
-        return new ResponseProto(_extensionInternal.Transport.SendSequence);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
     
     public void ListInputDevices()
@@ -66,7 +66,7 @@ internal sealed class XInputProto : IXinputRequest
     public void CloseDevice(byte deviceId)
     {
         var request = new CloseDeviceType(this._response.MajorOpcode, deviceId);
-        _extensionInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SocketOut.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
                 SocketFlags.None);
     }
@@ -119,7 +119,7 @@ internal sealed class XInputProto : IXinputRequest
     public void UngrabDevice(uint time, byte deviceId)
     {
         var request = new UngrabDeviceType(this._response.MajorOpcode, time, deviceId);
-        _extensionInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SocketOut.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
                 SocketFlags.None);
     }

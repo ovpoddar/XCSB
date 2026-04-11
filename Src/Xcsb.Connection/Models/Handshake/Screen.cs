@@ -28,10 +28,10 @@ public class Screen
     public required Depth[] Depths;
 #endif
 
-    internal static Screen Read(ISocketAccessor socketAccessor, ref int currentlyRead)
+    internal static Screen Read(ISocketIn socketIn, ref int currentlyRead)
     {
         Span<byte> scratchBuffer = stackalloc byte[Marshal.SizeOf<_screen>()];
-        socketAccessor.Received(scratchBuffer);
+        socketIn.Received(scratchBuffer);
         currentlyRead += scratchBuffer.Length;
 
         ref readonly var screen = ref scratchBuffer.AsStruct<_screen>();
@@ -56,7 +56,7 @@ public class Screen
         };
 
         for (var i = 0; i < result.Depths.Length; i++)
-            result.Depths[i] = Depth.Read(socketAccessor, ref currentlyRead);
+            result.Depths[i] = Depth.Read(socketIn, ref currentlyRead);
         return result;
     }
 }

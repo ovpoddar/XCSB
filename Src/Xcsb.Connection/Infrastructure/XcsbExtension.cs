@@ -32,7 +32,7 @@ internal sealed class XcsbExtension : IXExtensionInternal
     public ListExtensionsReply ListExtensions()
     {
         var cookie = ListExtensionsBase();
-        var (result, error) = this.Transport.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
+        var (result, error) = this.Transport.SocketIn.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new ListExtensionsReply(result);
@@ -41,9 +41,9 @@ internal sealed class XcsbExtension : IXExtensionInternal
     private ResponseProto ListExtensionsBase()
     {
         var request = new ListExtensionsType();
-        Transport.SendRequest(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
+        Transport.SocketOut.SendRequest(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(Transport.SendSequence, true);
+        return new ResponseProto(Transport.SocketOut.Sequence, true);
     }
 
     public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name)
@@ -51,7 +51,7 @@ internal sealed class XcsbExtension : IXExtensionInternal
         if (name.Length > ushort.MaxValue)
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
         var cookie = QueryExtensionBase(name);
-        var (result, error) = this.Transport.ReceivedResponseSpan<QueryExtensionReply>(cookie.Id);
+        var (result, error) = this.Transport.SocketIn.ReceivedResponseSpan<QueryExtensionReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().ToStruct<QueryExtensionReply>();
@@ -66,17 +66,17 @@ internal sealed class XcsbExtension : IXExtensionInternal
         {
             Span<byte> scratchBuffer = stackalloc byte[requiredBuffer];
             scratchBuffer.WriteRequest(ref request, 8, name);
-            Transport.SendRequest(scratchBuffer, System.Net.Sockets.SocketFlags.None);
+            Transport.SocketOut.SendRequest(scratchBuffer, System.Net.Sockets.SocketFlags.None);
         }
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requiredBuffer);
             var workingBuffer = scratchBuffer[..requiredBuffer];
             workingBuffer.WriteRequest(ref request, 8, name);
-            Transport.SendRequest(workingBuffer, System.Net.Sockets.SocketFlags.None);
+            Transport.SocketOut.SendRequest(workingBuffer, System.Net.Sockets.SocketFlags.None);
         }
 
-        return new ResponseProto(Transport.SendSequence, true);
+        return new ResponseProto(Transport.SocketOut.Sequence, true);
     }
 
     public void ActivateExtension(ReadOnlySpan<char> name, QueryExtensionReply reply) =>

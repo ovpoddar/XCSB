@@ -18,8 +18,8 @@ internal sealed class ProtoInExtended
 
     internal int Sequence
     {
-        get => _socketAccessor.ReceivedSequence;
-        set => _socketAccessor.ReceivedSequence = value;
+        get => _socketAccessor.SocketIn.Sequence;
+        set => _socketAccessor.SocketIn.Sequence = value;
     }
 
     internal ProtoInExtended(ISocketAccessor socketAccessor)
@@ -40,7 +40,7 @@ internal sealed class ProtoInExtended
                 continue;
             }
 
-            if (!_socketAccessor.ReplyBuffer.Remove(sequence, out var reply))
+            if (!_socketAccessor.SocketIn.ReplyBuffer.Remove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
             var response = reply.Item1.AsSpan().AsStruct<ListFontsWithInfoResponse>();
@@ -78,8 +78,8 @@ internal sealed class ProtoInExtended
 
         while (true)
         {
-            _ = _socketAccessor.Received(headerBuffer);
-            var packet = _socketAccessor.ComputeResponse(headerBuffer).AsSpan();
+            _ = _socketAccessor.SocketIn.Received(headerBuffer);
+            var packet = _socketAccessor.SocketIn.ComputeResponse(headerBuffer).AsSpan();
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
             Debug.Assert(response.ResponseHeader.Sequence == sequence);
@@ -110,7 +110,7 @@ internal sealed class ProtoInExtended
             _socketAccessor.PollRead(1000);
 
         FlushSocket();
-        if (!_socketAccessor.ReplyBuffer.Remove(sequence, out var response))
+        if (!_socketAccessor.SocketIn.ReplyBuffer.Remove(sequence, out var response))
             return;
 
         if (response.Item2.ResponseType != XResponseType.Error)
@@ -123,7 +123,7 @@ internal sealed class ProtoInExtended
 
     public (T?, GenericError?) ReceivedResponse<T>(int sequence, int timeout = 1000) where T : unmanaged, IXReply
     {
-        var (result, error) = _socketAccessor.ReceivedResponseSpan<T>(sequence, timeout);
+        var (result, error) = _socketAccessor.SocketIn.ReceivedResponseSpan<T>(sequence, timeout);
         return (result?.AsSpan().ToStruct<T>(), error);
     }
 
@@ -131,7 +131,7 @@ internal sealed class ProtoInExtended
     {
         while (true)
         {
-            if (_socketAccessor.BufferEvents.TryDequeue(out var result)) 
+            if (_socketAccessor.SocketIn.BufferEvents.TryDequeue(out var result)) 
                 return new XEvent(result.Item1.AsSpan().ToStruct<XResponse>(), result.Item2);
 
             if (_socketAccessor.PollRead())
@@ -140,12 +140,12 @@ internal sealed class ProtoInExtended
                         new byte[32].AsSpan().ToStruct<XResponse>(),
                         new MappingDetails(XResponseType.Event, EventType.LastEvent));
 
-            _socketAccessor.FlushSocket();
+            _socketAccessor.SocketIn.FlushSocket();
         }
     }
 
     public bool HasEventToProcesses() =>
-        !_socketAccessor.BufferEvents.IsEmpty || _socketAccessor.AvailableData >= Unsafe.SizeOf<GenericEvent>();
+        !_socketAccessor.SocketIn.BufferEvents.IsEmpty || _socketAccessor.AvailableData >= Unsafe.SizeOf<GenericEvent>();
 
     public void WaitForEventArrival()
     {
@@ -155,17 +155,17 @@ internal sealed class ProtoInExtended
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void FlushSocket() =>
-        _socketAccessor.FlushSocket();
+        _socketAccessor.SocketIn.FlushSocket();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void FlushSocket(int outProtoSequence, bool shouldThrowOnError) =>
-        _socketAccessor.FlushSocket(outProtoSequence, shouldThrowOnError);
+        _socketAccessor.SocketIn.FlushSocket(outProtoSequence, shouldThrowOnError);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply =>
-        _socketAccessor.ReceivedResponseSpan<T>(sequence, timeOut);
+        _socketAccessor.SocketIn.ReceivedResponseSpan<T>(sequence, timeOut);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct =>
-        _socketAccessor.GetVoidRequestResponse<T>(response);
+        _socketAccessor.SocketIn.GetVoidRequestResponse<T>(response);
 }

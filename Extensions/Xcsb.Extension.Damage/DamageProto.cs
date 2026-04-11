@@ -46,35 +46,35 @@ internal sealed class DamageProto : IDamageRequest
     private ResponseProto AddBase(uint drawable, uint region)
     {
         var request = new DamageAddType(this._response.MajorOpcode, drawable, region);
-        _extensionInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SocketOut.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensionInternal.Transport.SendSequence);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto CreateBase(uint damage, uint drawable, ReportLevel reportLevel)
     {
         var request = new DamageCreateType(this._response.MajorOpcode, damage, drawable, reportLevel);
-        _extensionInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SocketOut.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensionInternal.Transport.SendSequence);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto DestroyBase(uint damage)
     {
         var request = new DamageDestroyType(this._response.MajorOpcode, damage);
-        _extensionInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SocketOut.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensionInternal.Transport.SendSequence);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     public DamageQueryVersionReply QueryVersion(uint majorVersion, uint minorVersion)
     {
         var cookie = QueryVersionBase(majorVersion, minorVersion);
         var (result, error) =
-            this._extensionInternal.Transport.ReceivedResponseSpan<DamageQueryVersionReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<DamageQueryVersionReply>(cookie.Id);
         if (error.HasValue)
             throw new XEventException(error.Value);
 
@@ -84,19 +84,19 @@ internal sealed class DamageProto : IDamageRequest
     private ResponseProto QueryVersionBase(uint majorVersion, uint minorVersion)
     {
         var request = new DamageQueryVersionType(_response.MajorOpcode, majorVersion, minorVersion);
-        _extensionInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SocketOut.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensionInternal.Transport.SendSequence, true);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence, true);
     }
 
     private ResponseProto SubtractBase(uint damage, uint repair, uint parts)
     {
         var request = new DamageSubtractType(_response.MajorOpcode, damage, repair, parts);
-        _extensionInternal.Transport.SendRequest(
+        _extensionInternal.Transport.SocketOut.SendRequest(
             MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
             System.Net.Sockets.SocketFlags.None);
-        return new ResponseProto(_extensionInternal.Transport.SendSequence, true);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence, true);
     }
     
     private void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
@@ -104,8 +104,8 @@ internal sealed class DamageProto : IDamageRequest
         if (this._extensionInternal.Transport.AvailableData == 0)
             _extensionInternal.Transport.PollRead(1000);
 
-        _extensionInternal.Transport.FlushSocket();
-        if (!_extensionInternal.Transport.ReplyBuffer.Remove(sequence, out var response))
+        _extensionInternal.Transport.SocketIn.FlushSocket();
+        if (!_extensionInternal.Transport.SocketIn.ReplyBuffer.Remove(sequence, out var response))
             return;
 
         if (response.Item2.ResponseType != XResponseType.Error)
