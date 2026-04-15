@@ -38,26 +38,25 @@ internal sealed class XProto : IXProto
 {
     private XBufferProto? _xBufferProto;
     private static uint _bigRequestLength = 262140;
+    private readonly ISocketAccessor _socketAccessor;
     private readonly ProtoInExtended _protoInExtended;
-    private readonly ProtoOutExtended _protoOutExtended;
     private readonly IXExtensionInternal _extensionInternal;
 
-    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(_protoInExtended, _protoOutExtended);
+    public IXBufferProto BufferClient => _xBufferProto ??= new XBufferProto(_protoInExtended, _socketAccessor.SocketOut);
 
     public XProto(IXConnectionInternal connection)
     {
         if (connection.HandshakeStatus is not HandshakeStatus.Success ||
             connection.HandshakeSuccessResponseBody is null)
             throw new UnauthorizedAccessException(connection.FailReason);
-        
+
         if (connection.Extension is not IXExtensionInternal extensionInternal)
             throw new InvalidOperationException();
-        
+
         _extensionInternal = extensionInternal;
         Resister(_extensionInternal);
         _protoInExtended = new ProtoInExtended(connection.Accessor);
-        _protoOutExtended = new ProtoOutExtended(connection.Accessor);
-
+        _socketAccessor = connection.Accessor;
     }
 
     private static void Resister(IXExtensionInternal extension)
@@ -478,7 +477,8 @@ internal sealed class XProto : IXProto
     public XEvent GetEvent() => this._protoInExtended.ReceivedResponse();
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
-        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, ReadOnlySpan<uint> args) =>
+        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask,
+        ReadOnlySpan<uint> args) =>
         CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType, rootVisualId, mask, args);
 
     public ResponseProto ChangeWindowAttributes(uint window, ValueMask mask, ReadOnlySpan<uint> args) =>
@@ -514,7 +514,8 @@ internal sealed class XProto : IXProto
     public ResponseProto CirculateWindow(Circulate circulate, uint window) =>
         CirculateWindowBase(circulate, window);
 
-    public ResponseProto ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, ReadOnlySpan<T> args)
+    public ResponseProto ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type,
+        ReadOnlySpan<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -747,7 +748,8 @@ internal sealed class XProto : IXProto
     }
 
     public void CreateWindowUnchecked(byte depth, uint window, uint parent, short x, short y, ushort width,
-        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, ReadOnlySpan<uint> args)
+        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask,
+        ReadOnlySpan<uint> args)
     {
         var cookie = this.CreateWindowBase(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args);
@@ -820,7 +822,8 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void ChangePropertyUnchecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type, ReadOnlySpan<T> args)
+    public void ChangePropertyUnchecked<T>(PropertyMode mode, uint window, ATOM property, ATOM type,
+        ReadOnlySpan<T> args)
         where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -1562,7 +1565,8 @@ internal sealed class XProto : IXProto
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate, ReadOnlySpan<Point> points)
+    public void FillPolyChecked(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate,
+        ReadOnlySpan<Point> points)
     {
         var cookie = this.FillPolyBase(drawable, gc, shape, coordinate, points);
         this._protoInExtended.SkipErrorForSequence(cookie.Id, true);
@@ -1773,21 +1777,21 @@ internal sealed class XProto : IXProto
             MemoryMarshal.Cast<uint, byte>(args)
         );
 
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto DestroyWindowBase(uint window)
     {
         var request = new DestroyWindowType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto AllowEventsBase(EventsMode mode, uint time)
     {
         var request = new AllowEventsType(mode, time);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto BellBase(sbyte percent)
@@ -1796,15 +1800,15 @@ internal sealed class XProto : IXProto
             throw new ArgumentOutOfRangeException(nameof(percent), "value must be between -100 to 100");
 
         var request = new BellType(percent);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ChangeActivePointerGrabBase(uint cursor, uint time, ushort mask)
     {
         var request = new ChangeActivePointerGrabType(cursor, time, mask);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ChangeGcBase(uint gc, GcMask mask, ReadOnlySpan<uint> args)
@@ -1823,7 +1827,7 @@ internal sealed class XProto : IXProto
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(args));
 
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ChangeHostsBase(HostMode mode, Family family, ReadOnlySpan<byte> address)
@@ -1839,7 +1843,7 @@ internal sealed class XProto : IXProto
             bigRequest.Length * 4,
             address
         );
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ChangeKeyboardControlBase(KeyboardControlMask mask, ReadOnlySpan<uint> args)
@@ -1855,7 +1859,7 @@ internal sealed class XProto : IXProto
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(args)
         );
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ChangeKeyboardMappingBase(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
@@ -1872,15 +1876,15 @@ internal sealed class XProto : IXProto
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(keysym)
         );
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ChangePointerControlBase(Acceleration? acceleration, ushort? threshold)
     {
         var request = new ChangePointerControlType(acceleration?.Numerator ?? 0, acceleration?.Denominator ?? 0,
             threshold ?? 0, (byte)(acceleration is null ? 0 : 1), (byte)(threshold.HasValue ? 1 : 0));
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ChangePropertyBase<T>(PropertyMode mode, uint window, ATOM property, ATOM type,
@@ -1905,35 +1909,35 @@ internal sealed class XProto : IXProto
             MemoryMarshal.Cast<T, byte>(args)
         );
 
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ChangeSaveSetBase(ChangeSaveSetMode changeSaveSetMode, uint window)
     {
         var request = new ChangeSaveSetType(changeSaveSetMode, window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CirculateWindowBase(Circulate circulate, uint window)
     {
         var request = new CirculateWindowType(circulate, window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ClearAreaBase(bool exposures, uint window, short x, short y, ushort width, ushort height)
     {
         var request = new ClearAreaType(exposures, window, x, y, width, height);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CloseFontBase(uint fontId)
     {
         var request = new CloseFontType(fontId);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ConfigureWindowBase(uint window, ConfigureValueMask mask, ReadOnlySpan<uint> args)
@@ -1952,15 +1956,15 @@ internal sealed class XProto : IXProto
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(args)
         );
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ConvertSelectionBase(uint requestor, ATOM selection, ATOM target, ATOM property,
         uint timestamp)
     {
         var request = new ConvertSelectionType(requestor, selection, target, property, timestamp);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CopyAreaBase(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -1968,22 +1972,22 @@ internal sealed class XProto : IXProto
     {
         var request = new CopyAreaType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CopyColormapAndFreeBase(uint colormapId, uint srcColormapId)
     {
         var request = new CopyColormapAndFreeType(colormapId, srcColormapId);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CopyGcBase(uint srcGc, uint dstGc, GcMask mask)
     {
         var request = new CopyGcType(srcGc, dstGc, mask);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CopyPlaneBase(uint srcDrawable, uint destinationDrawable, uint gc, ushort srcX, ushort srcY,
@@ -1991,15 +1995,15 @@ internal sealed class XProto : IXProto
     {
         var request = new CopyPlaneType(srcDrawable, destinationDrawable, gc, srcX, srcY, destinationX, destinationY,
             width, height, bitPlane);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CreateColormapBase(ColormapAlloc alloc, uint colormapId, uint window, uint visual)
     {
         var request = new CreateColormapType(alloc, colormapId, window, visual);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CreateCursorBase(uint cursorId, uint source, uint mask, ushort foreRed, ushort foreGreen,
@@ -2007,8 +2011,8 @@ internal sealed class XProto : IXProto
     {
         var request = new CreateCursorType(cursorId, source, mask, foreRed, foreGreen, foreBlue, backRed, backGreen,
             backBlue, x, y);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CreateGcBase(uint gc, uint drawable, GcMask mask, ReadOnlySpan<uint> args)
@@ -2026,7 +2030,7 @@ internal sealed class XProto : IXProto
             20,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(args));
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto CreateGlyphCursorBase(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
@@ -2035,19 +2039,20 @@ internal sealed class XProto : IXProto
     {
         var request = new CreateGlyphCursorType(cursorId, sourceFont, fontMask, sourceChar, charMask, foreRed,
             foreGreen, foreBlue, backRed, backGreen, backBlue);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CreatePixmapBase(byte depth, uint pixmapId, uint drawable, ushort width, ushort height)
     {
         var request = new CreatePixmapType(depth, pixmapId, drawable, width, height);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CreateWindowBase(byte depth, uint window, uint parent, short x, short y, ushort width,
-        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask, ReadOnlySpan<uint> args)
+        ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask,
+        ReadOnlySpan<uint> args)
     {
         var request = new CreateWindowType(depth, window, parent, x, y, width, height, borderWidth, classType,
             rootVisualId, mask, args.Length);
@@ -2059,7 +2064,7 @@ internal sealed class XProto : IXProto
                 ref request,
                 32,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2069,24 +2074,24 @@ internal sealed class XProto : IXProto
                 ref request,
                 32,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(workingBuffer[..requiredBuffer]);
+            _socketAccessor.SocketOut.SendExact(workingBuffer[..requiredBuffer]);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto DeletePropertyBase(uint window, ATOM atom)
     {
         var request = new DeletePropertyType(window, atom);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto DestroySubwindowsBase(uint window)
     {
         var request = new DestroySubWindowsType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto FillPolyBase(uint drawable, uint gc, PolyShape shape, CoordinateMode coordinate,
@@ -2102,21 +2107,21 @@ internal sealed class XProto : IXProto
             20,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<Point, byte>(points));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ForceScreenSaverBase(ForceScreenSaverMode mode)
     {
         var request = new ForceScreenSaverType(mode);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto FreeColormapBase(uint colormapId)
     {
         var request = new FreeColormapType(colormapId);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto FreeColorsBase(uint colormapId, uint planeMask, ReadOnlySpan<uint> pixels)
@@ -2131,28 +2136,28 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(pixels));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto FreeCursorBase(uint cursorId)
     {
         var request = new FreeCursorType(cursorId);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto FreeGcBase(uint gc)
     {
         var request = new FreeGcType(gc);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto FreePixmapBase(uint pixmapId)
     {
         var request = new FreePixmapType(pixmapId);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto GrabButtonBase(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
@@ -2160,23 +2165,23 @@ internal sealed class XProto : IXProto
     {
         var request = new GrabButtonType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             button, modifiers);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto GrabKeyBase(bool exposures, uint grabWindow, ModifierMask mask, byte keycode,
         GrabMode pointerMode, GrabMode keyboardMode)
     {
         var request = new GrabKeyType(exposures, grabWindow, mask, keycode, pointerMode, keyboardMode);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto GrabServerBase()
     {
         var request = new GrabServerType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ImageText16Base(uint drawable, uint gc, short x, short y, ReadOnlySpan<char> text)
@@ -2194,7 +2199,7 @@ internal sealed class XProto : IXProto
 #endif
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(text.Length * 2 + 16)..requiredBuffer].Clear();
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2207,10 +2212,10 @@ internal sealed class XProto : IXProto
 #endif
             Encoding.BigEndianUnicode.GetBytes(text, scratchBuffer[16..(text.Length * 2 + 16)]);
             scratchBuffer[(text.Length * 2 + 16)..requiredBuffer].Clear();
-            _protoOutExtended.SendExact(scratchBuffer[..requiredBuffer]);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ImageText8Base(uint drawable, uint gc, short x, short y, ReadOnlySpan<byte> text)
@@ -2225,35 +2230,35 @@ internal sealed class XProto : IXProto
             20,
             bigRequest.Length * 4,
             text);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto InstallColormapBase(uint colormapId)
     {
         var request = new InstallColormapType(colormapId);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto KillClientBase(uint resource)
     {
         var request = new KillClientType(resource);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto MapSubwindowsBase(uint window)
     {
         var request = new MapSubWindowsType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto MapWindowBase(uint window)
     {
         var request = new MapWindowType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto NoOperationBase(Span<uint> args)
@@ -2267,7 +2272,7 @@ internal sealed class XProto : IXProto
                 ref request,
                 4,
                 MemoryMarshal.Cast<uint, byte>(args));
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2279,7 +2284,7 @@ internal sealed class XProto : IXProto
                 MemoryMarshal.Cast<uint, byte>(args));
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto OpenFontBase(string fontName, uint fontId)
@@ -2296,7 +2301,7 @@ internal sealed class XProto : IXProto
 #endif
             Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
             scratchBuffer[(fontName.Length + 12)..requiredBuffer].Clear();
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2308,10 +2313,10 @@ internal sealed class XProto : IXProto
 #endif
             Encoding.ASCII.GetBytes(fontName, scratchBuffer[12..(fontName.Length + 12)]);
             scratchBuffer[(fontName.Length + 12)..requiredBuffer].Clear();
-            _protoOutExtended.SendExact(scratchBuffer[..requiredBuffer]);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PolyArcBase(uint drawable, uint gc, ReadOnlySpan<Arc> arcs)
@@ -2326,7 +2331,7 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<Arc, byte>(arcs));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PolyFillArcBase(uint drawable, uint gc, ReadOnlySpan<Arc> arcs)
@@ -2341,7 +2346,7 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<Arc, byte>(arcs));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PolyFillRectangleBase(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
@@ -2356,7 +2361,7 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PolyLineBase(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
@@ -2371,7 +2376,7 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<Point, byte>(points));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PolyPointBase(CoordinateMode coordinate, uint drawable, uint gc, ReadOnlySpan<Point> points)
@@ -2386,7 +2391,7 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<Point, byte>(points));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PolyRectangleBase(uint drawable, uint gc, ReadOnlySpan<Rectangle> rectangles)
@@ -2401,7 +2406,7 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PolySegmentBase(uint drawable, uint gc, ReadOnlySpan<Segment> segments)
@@ -2416,7 +2421,7 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<Segment, byte>(segments));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PolyText16Base(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
@@ -2437,7 +2442,7 @@ internal sealed class XProto : IXProto
                 writIndex += item.CopyTo(scratchBuffer.Slice(writIndex, item.Count));
 
             scratchBuffer[^totalItemCount.Padding()..].Clear();
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2452,10 +2457,10 @@ internal sealed class XProto : IXProto
                 writIndex += item.CopyTo(workingBuffer.Slice(writIndex, item.Count));
 
             workingBuffer[^totalItemCount.Padding()..].Clear();
-            _protoOutExtended.SendExact(workingBuffer);
+            _socketAccessor.SocketOut.SendExact(workingBuffer);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PolyText8Base(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
@@ -2475,7 +2480,7 @@ internal sealed class XProto : IXProto
             foreach (var item in data)
                 writIndex += item.CopyTo(scratchBuffer.Slice(writIndex, item.Count));
             scratchBuffer[^totalItemCount.Padding()..].Clear();
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2489,10 +2494,10 @@ internal sealed class XProto : IXProto
             foreach (var item in data)
                 writIndex += item.CopyTo(workingBuffer.Slice(writIndex, item.Count));
             workingBuffer[^totalItemCount.Padding()..].Clear();
-            _protoOutExtended.SendExact(workingBuffer);
+            _socketAccessor.SocketOut.SendExact(workingBuffer);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto PutImageBase(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height,
@@ -2509,22 +2514,22 @@ internal sealed class XProto : IXProto
             bigRequest.Length * 4,
             data
         );
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto RecolorCursorBase(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue,
         ushort backRed, ushort backGreen, ushort backBlue)
     {
         var request = new RecolorCursorType(cursorId, foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ReparentWindowBase(uint window, uint parent, short x, short y)
     {
         var request = new ReparentWindowType(window, parent, x, y);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto RotatePropertiesBase(uint window, ushort delta, ReadOnlySpan<ATOM> properties)
@@ -2539,21 +2544,21 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<ATOM, byte>(properties));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto SendEventBase(bool propagate, uint destination, uint eventMask, GenericEvent evnt)
     {
         var request = new SendEventType(propagate, destination, eventMask, evnt.GetResponse());
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto SetAccessControlBase(AccessControlMode mode)
     {
         var request = new SetAccessControlType(mode);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto SetClipRectanglesBase(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY,
@@ -2569,14 +2574,14 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<Rectangle, byte>(rectangles));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto SetCloseDownModeBase(CloseDownMode mode)
     {
         var request = new SetCloseDownModeType(mode);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto SetDashesBase(uint gc, ushort dashOffset, ReadOnlySpan<byte> dashes)
@@ -2591,7 +2596,7 @@ internal sealed class XProto : IXProto
             16,
             bigRequest.Length * 4,
             dashes);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto SetFontPathBase(string[] strPaths)
@@ -2616,7 +2621,7 @@ internal sealed class XProto : IXProto
             }
 
             scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2633,32 +2638,32 @@ internal sealed class XProto : IXProto
             }
 
             scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
-            _protoOutExtended.SendExact(scratchBuffer[..requiredBuffer]);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto SetInputFocusBase(InputFocusMode mode, uint focus, uint time)
     {
         var request = new SetInputFocusType(mode, focus, time);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto SetScreenSaverBase(short timeout, short interval, TriState preferBlanking,
         TriState allowExposures)
     {
         var request = new SetScreenSaverType(timeout, interval, preferBlanking, allowExposures);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto SetSelectionOwnerBase(uint owner, ATOM atom, uint timestamp)
     {
         var request = new SetSelectionOwnerType(owner, atom, timestamp);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto StoreColorsBase(uint colormapId, ReadOnlySpan<ColorItem> item)
@@ -2673,7 +2678,7 @@ internal sealed class XProto : IXProto
             12,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<ColorItem, byte>(item));
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto StoreNamedColorBase(ColorFlag mode, uint colormapId, uint pixels, ReadOnlySpan<byte> name)
@@ -2687,7 +2692,7 @@ internal sealed class XProto : IXProto
                 ref request,
                 16,
                 name);
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2697,66 +2702,66 @@ internal sealed class XProto : IXProto
                 ref request,
                 16,
                 name);
-            _protoOutExtended.SendExact(workingBuffer[..requiredBuffer]);
+            _socketAccessor.SocketOut.SendExact(workingBuffer[..requiredBuffer]);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto UngrabButtonBase(Button button, uint grabWindow, ModifierMask mask)
     {
         var request = new UngrabButtonType(button, grabWindow, mask);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto UngrabKeyBase(byte key, uint grabWindow, ModifierMask modifier)
     {
         var request = new UngrabKeyType(key, grabWindow, modifier);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto UngrabKeyboardBase(uint time)
     {
         var request = new UngrabKeyboardType(time);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto UngrabPointerBase(uint time)
     {
         var request = new UngrabPointerType(time);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto UngrabServerBase()
     {
         var request = new UnGrabServerType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto UninstallColormapBase(uint colormapId)
     {
         var request = new UninstallColormapType(colormapId);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto UnmapSubwindowsBase(uint window)
     {
         var request = new UnMapSubwindowsType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto UnmapWindowBase(uint window)
     {
         var request = new UnmapWindowType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto WarpPointerBase(uint srcWindow, uint destinationWindow, short srcX, short srcY,
@@ -2764,22 +2769,22 @@ internal sealed class XProto : IXProto
     {
         var request = new WarpPointerType(srcWindow, destinationWindow, srcX, srcY, srcWidth, srcHeight, destinationX,
             destinationY);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto AllocColorBase(uint colorMap, ushort red, ushort green, ushort blue)
     {
         var request = new AllocColorType(colorMap, red, green, blue);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto QueryPointerBase(uint window)
     {
         var request = new QueryPointerType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GrabPointerBase(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
@@ -2787,8 +2792,8 @@ internal sealed class XProto : IXProto
     {
         var request = new GrabPointerType(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto InternAtomBase(bool onlyIfExist, string atomName)
@@ -2805,7 +2810,7 @@ internal sealed class XProto : IXProto
 #endif
             Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
             scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2817,103 +2822,103 @@ internal sealed class XProto : IXProto
 #endif
             Encoding.ASCII.GetBytes(atomName, scratchBuffer[8..(atomName.Length + 8)]);
             scratchBuffer[(atomName.Length + 8)..requiredBuffer].Clear();
-            _protoOutExtended.SendExact(scratchBuffer[..requiredBuffer]);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetPropertyBase(bool delete, uint window, ATOM property, ATOM type, uint offset,
         uint length)
     {
         var request = new GetPropertyType(delete, window, property, type, offset, length);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetWindowAttributesBase(uint window)
     {
         var request = new GetWindowAttributesType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetGeometryBase(uint drawable)
     {
         var request = new GetGeometryType(drawable);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto QueryTreeBase(uint window)
     {
         var request = new QueryTreeType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetAtomNameBase(ATOM atom)
     {
         var request = new GetAtomNameType(atom);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ListPropertiesBase(uint window)
     {
         var request = new ListPropertiesType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetSelectionOwnerBase(ATOM atom)
     {
         var request = new GetSelectionOwnerType(atom);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GrabKeyboardBase(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
         GrabMode keyboardMode)
     {
         var request = new GrabKeyboardType(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetMotionEventsBase(uint window, uint startTime, uint endTime)
     {
         var request = new GetMotionEventsType(window, startTime, endTime);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto TranslateCoordinatesBase(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY)
     {
         var request = new TranslateCoordinatesType(srcWindow, destinationWindow, srcX, srcY);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetInputFocusBase()
     {
         var request = new GetInputFocusType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto QueryKeymapBase()
     {
         var request = new QueryKeymapType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto QueryFontBase(uint fontId)
     {
         var request = new QueryFontType(fontId);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto QueryTextExtentsBase(uint font, ReadOnlySpan<char> stringForQuery)
@@ -2931,7 +2936,7 @@ internal sealed class XProto : IXProto
 #endif
             Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
             scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2944,10 +2949,10 @@ internal sealed class XProto : IXProto
 #endif
             Encoding.Unicode.GetBytes(stringForQuery, scratchBuffer[8..(stringForQuery.Length * 2 + 8)]);
             scratchBuffer[(stringForQuery.Length * 2 + 8)..requiredBuffer].Clear();
-            _protoOutExtended.SendExact(scratchBuffer[..requiredBuffer]);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer[..requiredBuffer]);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ListFontsBase(ReadOnlySpan<byte> pattern, int maxNames)
@@ -2962,7 +2967,7 @@ internal sealed class XProto : IXProto
                 8,
                 pattern
             );
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -2973,10 +2978,10 @@ internal sealed class XProto : IXProto
                 8,
                 pattern
             );
-            _protoOutExtended.SendExact(workingBuffer);
+            _socketAccessor.SocketOut.SendExact(workingBuffer);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ListFontsWithInfoBase(ReadOnlySpan<byte> pattan, int maxNames)
@@ -2991,7 +2996,7 @@ internal sealed class XProto : IXProto
                 8,
                 pattan
             );
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -3002,32 +3007,32 @@ internal sealed class XProto : IXProto
                 8,
                 pattan
             );
-            _protoOutExtended.SendExact(workingBuffer);
+            _socketAccessor.SocketOut.SendExact(workingBuffer);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetFontPathBase()
     {
         var request = new GetFontPathType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetImageBase(ImageFormat format, uint drawable, ushort x, ushort y, ushort width,
         ushort height, uint planeMask)
     {
         var request = new GetImageType(format, drawable, x, y, width, height, planeMask);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ListInstalledColormapsBase(uint window)
     {
         var request = new ListInstalledColormapsType(window);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto AllocNamedColorBase(uint colorMap, ReadOnlySpan<byte> name)
@@ -3041,7 +3046,7 @@ internal sealed class XProto : IXProto
                 ref request,
                 12,
                 name);
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -3051,25 +3056,25 @@ internal sealed class XProto : IXProto
                 ref request,
                 12,
                 name);
-            _protoOutExtended.SendExact(workingBuffer);
+            _socketAccessor.SocketOut.SendExact(workingBuffer);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto AllocColorCellsBase(bool contiguous, uint colorMap, ushort colors, ushort planes)
     {
         var request = new AllocColorCellsType(contiguous, colorMap, colors, planes);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto AllocColorPlanesBase(bool contiguous, uint colorMap, ushort colors, ushort reds,
         ushort greens, ushort blues)
     {
         var request = new AllocColorPlanesType(contiguous, colorMap, colors, reds, greens, blues);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto QueryColorsBase(uint colorMap, ReadOnlySpan<uint> pixels)
@@ -3084,7 +3089,7 @@ internal sealed class XProto : IXProto
             12,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(pixels));
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto LookupColorBase(uint colorMap, ReadOnlySpan<byte> name)
@@ -3098,7 +3103,7 @@ internal sealed class XProto : IXProto
                 ref request,
                 12,
                 name);
-            _protoOutExtended.SendExact(scratchBuffer);
+            _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
         {
@@ -3108,17 +3113,17 @@ internal sealed class XProto : IXProto
                 ref request,
                 12,
                 name);
-            _protoOutExtended.SendExact(workingBuffer);
+            _socketAccessor.SocketOut.SendExact(workingBuffer);
         }
 
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto QueryBestSizeBase(QueryShapeOf shape, uint drawable, ushort width, ushort height)
     {
         var request = new QueryBestSizeType(shape, drawable, width, height);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto SetModifierMappingBase(Span<ulong> keycodes)
@@ -3133,28 +3138,28 @@ internal sealed class XProto : IXProto
             8,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<ulong, byte>(keycodes));
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetModifierMappingBase()
     {
         var request = new GetModifierMappingType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetKeyboardMappingBase(byte firstKeycode, byte count)
     {
         var request = new GetKeyboardMappingType(firstKeycode, count);
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetKeyboardControlBase()
     {
         var request = new GetKeyboardControlType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto SetPointerMappingBase(Span<byte> maps)
@@ -3169,35 +3174,35 @@ internal sealed class XProto : IXProto
             8,
             bigRequest.Length * 4,
             maps);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetPointerMappingBase()
     {
         var request = new GetPointerMappingType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetPointerControlBase()
     {
         var request = new GetPointerControlType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto GetScreenSaverBase()
     {
         var request = new GetScreenSaverType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     private ResponseProto ListHostsBase()
     {
         var request = new ListHostsType();
-        _protoOutExtended.Send(ref request);
-        return new ResponseProto(_protoOutExtended.Sequence, true);
+        _socketAccessor.SocketOut.Send(ref request);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
     }
 
     const int _minStackSupport = 512;
@@ -3220,7 +3225,7 @@ internal sealed class XProto : IXProto
                     ref request,
                     requestLength,
                     data);
-                _protoOutExtended.SendExact(scratchBuffer);
+                _socketAccessor.SocketOut.SendExact(scratchBuffer);
             }
             else
             {
@@ -3230,7 +3235,7 @@ internal sealed class XProto : IXProto
                     ref request,
                     requestLength,
                     data);
-                _protoOutExtended.SendExact(workingBuffer);
+                _socketAccessor.SocketOut.SendExact(workingBuffer);
             }
         }
         else
@@ -3244,7 +3249,7 @@ internal sealed class XProto : IXProto
                     ref bigRequest,
                     bigRequestLength,
                     data);
-                _protoOutExtended.SendExact(workingBuffer);
+                _socketAccessor.SocketOut.SendExact(workingBuffer);
             }
             else
             {

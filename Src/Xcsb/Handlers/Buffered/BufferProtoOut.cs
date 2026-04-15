@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Handlers;
 using Xcsb.Handlers.Direct;
 
 namespace Xcsb.Handlers.Buffered;
@@ -7,12 +8,12 @@ namespace Xcsb.Handlers.Buffered;
 internal sealed class BufferProtoOut
 {
     private readonly List<byte> _buffer;
-    private readonly ProtoOutExtended _protoOut;
+    private readonly ISocketOut _protoOut;
     private int _requestLength;
 
     public int Sequence => _protoOut.Sequence;
 
-    public BufferProtoOut(ProtoOutExtended protoOut)
+    public BufferProtoOut(ISocketOut protoOut)
     {
         _protoOut = protoOut;
         _buffer = new List<byte>();

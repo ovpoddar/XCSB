@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Response.Contract;
@@ -23,7 +24,7 @@ internal sealed class XBufferProto : IXBufferProto
     private readonly BufferProtoOut _bufferProtoOut;
     private readonly BufferProtoIn _bufferProtoIn;
 
-    public XBufferProto(ProtoInExtended protoIn, ProtoOutExtended protoOut)
+    public XBufferProto(ProtoInExtended protoIn, ISocketOut protoOut)
     {
         _bufferProtoOut = new BufferProtoOut(protoOut);
         _bufferProtoIn = new BufferProtoIn(protoIn);

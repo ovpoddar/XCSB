@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Xcsb.Connection.Configuration;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Models;
@@ -30,4 +32,15 @@ internal class SocketOut : ISocketOut
         SendData(in buffer, socketFlags);
         Sequence++;
     }
+    
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Send<T>(scoped ref T value) where T : unmanaged =>
+        this.SendRequest(
+            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref value, 1)),
+            SocketFlags.None);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SendExact(scoped in ReadOnlySpan<byte> buffer) =>
+        this.SendRequest(buffer, SocketFlags.None);
 }
