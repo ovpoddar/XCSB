@@ -30,4 +30,30 @@ internal sealed class SocketAccessor : ISocketAccessor
         _socket.Poll(timeout, SelectMode.SelectRead);
     
     public int AvailableData => _socket.Available;
+    
+    public bool  HasEventToProcesses() =>
+        !SocketIn.BufferEvents.IsEmpty || AvailableData >= Unsafe.SizeOf<GenericEvent>();
+
+    public void WaitForEventArrival()
+    {
+        if (!HasEventToProcesses())
+            PollRead();
+    }
+
+    
+    public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
+    {
+        if (AvailableData == 0)
+            PollRead(1000);
+
+        this.SocketIn.FlushSocket();
+        if (!this.SocketIn.ReplyBuffer.Remove(sequence, out var response))
+            return;
+
+        if (response.Item2.ResponseType != XResponseType.Error)
+            throw new Exception($"Unexpected Response Found {response.Item2.ResponseType}");
+        var error = new GenericError(response.Item1.AsSpan().ToStruct<XResponse>(), response.Item2.ErrorMessageAction!);
+        if (shouldThrow)
+            throw new XEventException(error, name);
+    }
 }

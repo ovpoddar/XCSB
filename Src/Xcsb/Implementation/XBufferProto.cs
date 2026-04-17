@@ -24,10 +24,10 @@ internal sealed class XBufferProto : IXBufferProto
     private readonly BufferProtoOut _bufferProtoOut;
     private readonly BufferProtoIn _bufferProtoIn;
 
-    public XBufferProto(ProtoInExtended protoIn, ISocketOut protoOut)
+    public XBufferProto(ISocketAccessor socketAccessor)
     {
-        _bufferProtoOut = new BufferProtoOut(protoOut);
-        _bufferProtoIn = new BufferProtoIn(protoIn);
+        _bufferProtoOut = new BufferProtoOut(socketAccessor.SocketOut);
+        _bufferProtoIn = new BufferProtoIn(socketAccessor);
     }
 
     public void AllowEvents(EventsMode mode, uint time)

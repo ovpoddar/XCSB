@@ -1,10 +1,9 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Models;
-using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Replies;
@@ -12,45 +11,33 @@ using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Handlers.Direct;
 
-internal sealed class ProtoInExtended
+internal static class ProtoInExtended
 {
-    private readonly ISocketAccessor _socketAccessor;
-
-    internal int Sequence
-    {
-        get => _socketAccessor.SocketIn.Sequence;
-        set => _socketAccessor.SocketIn.Sequence = value;
-    }
-
-    internal ProtoInExtended(ISocketAccessor socketAccessor)
-    {
-        _socketAccessor = socketAccessor;
-    }
-
-
-    public (ListFontsWithInfoReply[], GenericError?) ReceivedResponseArray(int sequence, int maxNames, int timeOut = 1000)
+    internal static (ListFontsWithInfoReply[], GenericError?) ReceivedResponseArray(this ISocketAccessor socketAccessor,
+        int sequence, int maxNames, int timeOut = 1000)
     {
         while (true)
         {
-            if (sequence > Sequence)
+            if (sequence > socketAccessor.SocketIn.Sequence)
             {
-                if (_socketAccessor.AvailableData == 0)
-                    _socketAccessor.PollRead(timeOut);
-                FlushSocket();
+                if (socketAccessor.AvailableData == 0)
+                    socketAccessor.PollRead(timeOut);
+                socketAccessor.SocketIn.FlushSocket();
                 continue;
             }
 
-            if (!_socketAccessor.SocketIn.ReplyBuffer.Remove(sequence, out var reply))
+            if (!socketAccessor.SocketIn.ReplyBuffer.Remove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
             var response = reply.Item1.AsSpan().AsStruct<ListFontsWithInfoResponse>();
             return response.Verify(sequence)
-                ? (GetListFontsReply(reply.Item1, sequence, maxNames), null)
+                ? (GetListFontsReply(socketAccessor.SocketIn, reply.Item1, sequence, maxNames), null)
                 : ([], reply.Item1.AsSpan().ToStruct<GenericError>());
         }
     }
 
-    private ListFontsWithInfoReply[] GetListFontsReply(Span<byte> reply, int sequence, int maxNames)
+    private static ListFontsWithInfoReply[] GetListFontsReply(ISocketIn socketIn, Span<byte> reply, int sequence,
+        int maxNames)
     {
         var result = new ArrayPoolUsing<ListFontsWithInfoReply>(maxNames);
         var count = 0;
@@ -68,6 +55,7 @@ internal sealed class ProtoInExtended
                 result.Dispose();
                 result = larger;
             }
+
             cursor += Unsafe.SizeOf<ListFontsWithInfoResponse>();
             var responseLength = (int)(response.Length * 4) - 28;
             result[count++] = new ListFontsWithInfoReply(in response, reply.Slice(cursor, responseLength));
@@ -78,8 +66,8 @@ internal sealed class ProtoInExtended
 
         while (true)
         {
-            _ = _socketAccessor.SocketIn.Received(headerBuffer);
-            var packet = _socketAccessor.SocketIn.ComputeResponse(headerBuffer).AsSpan();
+            _ = socketIn.Received(headerBuffer);
+            var packet = socketIn.ComputeResponse(headerBuffer).AsSpan();
 
             ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
             Debug.Assert(response.ResponseHeader.Sequence == sequence);
@@ -94,78 +82,29 @@ internal sealed class ProtoInExtended
             result.Dispose();
             result = larger;
         }
-
     }
 
-    public int AvailableData =>
-        _socketAccessor.AvailableData;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void PollRead(int timeout) =>
-        _socketAccessor.PollRead(timeout);
-
-    public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
+    internal static (T?, GenericError?) ReceivedResponse<T>(this ISocketIn socketIn, int sequence, int timeout = 1000)
+        where T : unmanaged, IXReply
     {
-        if (this._socketAccessor.AvailableData == 0)
-            _socketAccessor.PollRead(1000);
-
-        FlushSocket();
-        if (!_socketAccessor.SocketIn.ReplyBuffer.Remove(sequence, out var response))
-            return;
-
-        if (response.Item2.ResponseType != XResponseType.Error)
-            throw new Exception($"Unexpected Response Found {response.Item2.ResponseType}");
-        var error = new GenericError(response.Item1.AsSpan().ToStruct<XResponse>(), response.Item2.ErrorMessageAction!);
-        if (shouldThrow)
-            throw new XEventException(error, name);
-    }
-
-
-    public (T?, GenericError?) ReceivedResponse<T>(int sequence, int timeout = 1000) where T : unmanaged, IXReply
-    {
-        var (result, error) = _socketAccessor.SocketIn.ReceivedResponseSpan<T>(sequence, timeout);
+        var (result, error) = socketIn.ReceivedResponseSpan<T>(sequence, timeout);
         return (result?.AsSpan().ToStruct<T>(), error);
     }
 
-    public XEvent ReceivedResponse()
+    internal static XEvent ReceivedResponse(this ISocketAccessor socketAccessor)
     {
         while (true)
         {
-            if (_socketAccessor.SocketIn.BufferEvents.TryDequeue(out var result)) 
+            if (socketAccessor.SocketIn.BufferEvents.TryDequeue(out var result))
                 return new XEvent(result.Item1.AsSpan().ToStruct<XResponse>(), result.Item2);
 
-            if (_socketAccessor.PollRead())
-                if (_socketAccessor.AvailableData == 0)
+            if (socketAccessor.PollRead())
+                if (socketAccessor.AvailableData == 0)
                     return new XEvent(
                         new byte[32].AsSpan().ToStruct<XResponse>(),
                         new MappingDetails(XResponseType.Event, EventType.LastEvent));
 
-            _socketAccessor.SocketIn.FlushSocket();
+            socketAccessor.SocketIn.FlushSocket();
         }
     }
-
-    public bool HasEventToProcesses() =>
-        !_socketAccessor.SocketIn.BufferEvents.IsEmpty || _socketAccessor.AvailableData >= Unsafe.SizeOf<GenericEvent>();
-
-    public void WaitForEventArrival()
-    {
-        if (!HasEventToProcesses())
-            _socketAccessor.PollRead();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void FlushSocket() =>
-        _socketAccessor.SocketIn.FlushSocket();
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void FlushSocket(int outProtoSequence, bool shouldThrowOnError) =>
-        _socketAccessor.SocketIn.FlushSocket(outProtoSequence, shouldThrowOnError);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply =>
-        _socketAccessor.SocketIn.ReceivedResponseSpan<T>(sequence, timeOut);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct =>
-        _socketAccessor.SocketIn.GetVoidRequestResponse<T>(response);
 }
