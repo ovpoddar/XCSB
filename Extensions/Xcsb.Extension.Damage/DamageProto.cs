@@ -46,27 +46,21 @@ internal sealed class DamageProto : IDamageRequest
     private ResponseProto AddBase(uint drawable, uint region)
     {
         var request = new DamageAddType(this._response.MajorOpcode, drawable, region);
-        _extensionInternal.Transport.SocketOut.SendRequest(
-            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
-            System.Net.Sockets.SocketFlags.None);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto CreateBase(uint damage, uint drawable, ReportLevel reportLevel)
     {
         var request = new DamageCreateType(this._response.MajorOpcode, damage, drawable, reportLevel);
-        _extensionInternal.Transport.SocketOut.SendRequest(
-            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
-            System.Net.Sockets.SocketFlags.None);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto DestroyBase(uint damage)
     {
         var request = new DamageDestroyType(this._response.MajorOpcode, damage);
-        _extensionInternal.Transport.SocketOut.SendRequest(
-            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
-            System.Net.Sockets.SocketFlags.None);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
@@ -84,18 +78,14 @@ internal sealed class DamageProto : IDamageRequest
     private ResponseProto QueryVersionBase(uint majorVersion, uint minorVersion)
     {
         var request = new DamageQueryVersionType(_response.MajorOpcode, majorVersion, minorVersion);
-        _extensionInternal.Transport.SocketOut.SendRequest(
-            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
-            System.Net.Sockets.SocketFlags.None);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence, true);
     }
 
     private ResponseProto SubtractBase(uint damage, uint repair, uint parts)
     {
         var request = new DamageSubtractType(_response.MajorOpcode, damage, repair, parts);
-        _extensionInternal.Transport.SocketOut.SendRequest(
-            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
-            System.Net.Sockets.SocketFlags.None);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence, true);
     }
     

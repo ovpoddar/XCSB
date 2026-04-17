@@ -34,9 +34,7 @@ internal sealed class BigRequestProto : IBigRequest
     private ResponseProto BigRequestsEnableBase()
     {
         var request = new BigReqEnableType(_response.MajorOpcode);
-        _extension.Transport.SocketOut.SendRequest(
-            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
-            System.Net.Sockets.SocketFlags.None);
+        _extension.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extension.Transport.SocketOut.Sequence, true);
     }
 }
