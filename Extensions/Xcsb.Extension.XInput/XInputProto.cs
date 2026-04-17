@@ -66,9 +66,7 @@ internal sealed class XInputProto : IXinputRequest
     public void CloseDevice(byte deviceId)
     {
         var request = new CloseDeviceType(this._response.MajorOpcode, deviceId);
-        _extensionInternal.Transport.SocketOut.SendRequest(
-            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
-                SocketFlags.None);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
     }
 
     public void SetDeviceMode()
@@ -119,9 +117,7 @@ internal sealed class XInputProto : IXinputRequest
     public void UngrabDevice(uint time, byte deviceId)
     {
         var request = new UngrabDeviceType(this._response.MajorOpcode, time, deviceId);
-        _extensionInternal.Transport.SocketOut.SendRequest(
-            MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref request, 1)),
-                SocketFlags.None);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
     }
 
     public void GrabDeviceKey()
