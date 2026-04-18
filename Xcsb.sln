@@ -42,6 +42,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EBB83547-D313-45B6-98FB-D926BAE5FD5C}"
 	ProjectSection(SolutionItems) = preProject
 		Test.env.Dockerfile = Test.env.Dockerfile
+		Debug.env.Dockerfile = Debug.env.Dockerfile
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Examples\Testing\Testing.csproj", "{58CEC74F-FF93-4EC2-A527-6A8E46786A13}"
