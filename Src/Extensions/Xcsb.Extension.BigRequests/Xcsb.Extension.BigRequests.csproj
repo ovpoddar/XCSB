@@ -5,10 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<LangVersion>latest</LangVersion>
+  <RootNamespace>Xcsb.Extension.BigRequests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Src\Xcsb.Connection\Xcsb.Connection.csproj" />
+    <ProjectReference Include="..\..\Core\Xcsb.Connection\Xcsb.Connection.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,9 +4,10 @@
         <TargetFrameworks>netstandard2.1;net8.0;net9.0</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
+        <RootNamespace>Xcsb.Extension.XInput</RootNamespace>
     </PropertyGroup>
     
     <ItemGroup>
-        <ProjectReference Include="..\..\Src\Xcsb.Connection\Xcsb.Connection.csproj" />
+        <ProjectReference Include="..\..\Core\Xcsb.Connection\Xcsb.Connection.csproj" />
     </ItemGroup>
 </Project>

@@ -5,11 +5,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+        <RootNamespace>Xcsb.Extension.Damage</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Src\Xcsb.Connection\Xcsb.Connection.csproj" />
-      <ProjectReference Include="..\..\Src\Xcsb.Models\Xcsb.Models.csproj" />
+      <ProjectReference Include="..\..\Core\Xcsb.Connection\Xcsb.Connection.csproj" />
+      <ProjectReference Include="..\..\Share\Xcsb.Models\Xcsb.Models.csproj" />
     </ItemGroup>
 
 </Project>

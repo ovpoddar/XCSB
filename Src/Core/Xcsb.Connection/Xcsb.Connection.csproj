@@ -15,6 +15,7 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <LangVersion>latest</LangVersion>
+        <RootNamespace>Xcsb.Connection</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

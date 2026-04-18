@@ -8,7 +8,7 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Src\Xcsb\Xcsb.csproj" />
+    <ProjectReference Include="..\..\Src\Core\Xcsb\Xcsb.csproj" />
   </ItemGroup>
 
 </Project>

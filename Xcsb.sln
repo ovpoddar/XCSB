@@ -40,21 +40,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Examples\Testing\Testing.csproj", "{58CEC74F-FF93-4EC2-A527-6A8E46786A13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Connection", "Src\Xcsb.Connection\Xcsb.Connection.csproj", "{C1ABA8B8-F44B-43ED-6212-19AE2033608C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Connection", "Src\Core\Xcsb.Connection\Xcsb.Connection.csproj", "{C1ABA8B8-F44B-43ED-6212-19AE2033608C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb", "Src\Xcsb\Xcsb.csproj", "{4C5054CC-FAAC-ABFC-5B1C-FA2EB23EFE0F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb", "Src\Core\Xcsb\Xcsb.csproj", "{4C5054CC-FAAC-ABFC-5B1C-FA2EB23EFE0F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.SockAccesser", "Src\Xcsb.SockAccesser\Xcsb.SockAccesser.csproj", "{15BA8899-50D1-4F86-9C2B-50F3C50F61FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.SockAccessor", "Src\Core\Xcsb.SockAccessor\Xcsb.SockAccessor.csproj", "{15BA8899-50D1-4F86-9C2B-50F3C50F61FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Extension.BigRequests", "Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj", "{3B76A290-5D33-EAC7-3B52-2213258A59FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Extension.BigRequests", "Src\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj", "{3B76A290-5D33-EAC7-3B52-2213258A59FE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{4F7EFCC8-6336-4E78-92F3-B144EBDFD447}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Src\Extensions", "{4F7EFCC8-6336-4E78-92F3-B144EBDFD447}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Extension.Damage", "Extensions\Xcsb.Extension.Damage\Xcsb.Extension.Damage.csproj", "{979F2376-77DE-61C6-69B0-60F28310F6DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Extension.Damage", "Src\Extensions\Xcsb.Extension.Damage\Xcsb.Extension.Damage.csproj", "{979F2376-77DE-61C6-69B0-60F28310F6DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Extension.XInput", "Extensions\Xcsb.Extension.XInput\Xcsb.Extension.XInput.csproj", "{C0FBD4CF-1531-4BC8-95D1-FA7A0EAF1233}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Extension.XInput", "Src\Extensions\Xcsb.Extension.XInput\Xcsb.Extension.XInput.csproj", "{C0FBD4CF-1531-4BC8-95D1-FA7A0EAF1233}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Models", "Src\Xcsb.Models\Xcsb.Models.csproj", "{572EFF05-1799-40DD-B42A-5227DCE15410}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Share", "Src\Share", "{DB5F44E5-9FAF-43B4-8EED-0A442AB53F34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Models", "Src\Share\Xcsb.Models\Xcsb.Models.csproj", "{572EFF05-1799-40DD-B42A-5227DCE15410}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -330,7 +332,7 @@ Global
 		{3B76A290-5D33-EAC7-3B52-2213258A59FE} = {4F7EFCC8-6336-4E78-92F3-B144EBDFD447}
 		{979F2376-77DE-61C6-69B0-60F28310F6DE} = {4F7EFCC8-6336-4E78-92F3-B144EBDFD447}
 		{C0FBD4CF-1531-4BC8-95D1-FA7A0EAF1233} = {4F7EFCC8-6336-4E78-92F3-B144EBDFD447}
-		{572EFF05-1799-40DD-B42A-5227DCE15410} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{572EFF05-1799-40DD-B42A-5227DCE15410} = {DB5F44E5-9FAF-43B4-8EED-0A442AB53F34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {34E68139-A24A-49E2-91B8-4A775950FCD5}

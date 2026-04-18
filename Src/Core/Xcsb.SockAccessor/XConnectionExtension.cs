@@ -1,7 +1,7 @@
 ﻿using System;
 using Xcsb.Connection;
 
-namespace Xcsb.SockAccesser
+namespace Xcsb.SockAccessor
 {
     public static class XConnectionExtension
     {

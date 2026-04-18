@@ -15,6 +15,7 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<LangVersion>latest</LangVersion>
+		<RootNamespace>Xcsb</RootNamespace>
 	</PropertyGroup>
 	
 	<ItemGroup>
@@ -24,8 +25,8 @@
 	
 	<ItemGroup>
 		<ProjectReference Include="..\..\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
+		<ProjectReference Include="..\..\Share\Xcsb.Models\Xcsb.Models.csproj" />
 		<ProjectReference Include="..\Xcsb.Connection\Xcsb.Connection.csproj" />
-		<ProjectReference Include="..\Xcsb.Models\Xcsb.Models.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
