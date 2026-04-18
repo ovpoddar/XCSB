@@ -23,10 +23,9 @@ RUN rm -rf /temp
 FROM cs-lang AS content
 WORKDIR /workspace
 COPY Src/ Src/.
-COPY Test/ Test/.
-COPY Extensions/ Extensions/. 
+COPY Test/MethodRequestBuilder/ Test/MethodRequestBuilder/.
 WORKDIR /workspace/Test/MethodRequestBuilder
-RUN xvfb-run -s '-screen 0 1280x720x24' dotnet build -p:DOCKER=true
+RUN xvfb-run -s '-screen 0 1280x720x24' dotnet build MethodRequestBuilder.csproj -p:DOCKER=true
 ENV TEST_RESULTS_DIR=/workspace/TestResults
 
 RUN mkdir -p ${TEST_RESULTS_DIR}
