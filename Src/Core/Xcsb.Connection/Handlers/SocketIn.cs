@@ -150,7 +150,7 @@ internal class SocketIn : ISocketIn
         return combined.Slice(0, totalSize).ToArray();
     }
 
-    public (byte[]?, GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000)
+    public (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000)
         where T : unmanaged, IXReply
     {
         while (true)
@@ -169,7 +169,7 @@ internal class SocketIn : ISocketIn
             var response = reply.Item1.AsSpan().AsStruct<T>();
             return response.Verify(in sequence) && reply.Item2.ResponseType == XResponseType.Reply
                 ? (reply.Item1, null)
-                : (null, new GenericError(reply.Item1.AsSpan().ToStruct<XResponse>(), reply.Item2.ErrorMessageAction!));
+                : (Array.Empty<byte>(), new GenericError(reply.Item1.AsSpan().ToStruct<XResponse>(), reply.Item2.ErrorMessageAction!));
         }
     }
 
