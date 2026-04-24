@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.1;net8.0;net9.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>Xcsb</Title>
+		<Version>2.0.0-beta</Version>
+		<Authors>Ov Poddar</Authors>
+		<Description>Xcsb is a .NET library that lets you talk directly to the x-server Window System. For .NET developers, this means you can build cross-platform desktop apps that interact with X11 servers.</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/ovpoddar/XCSB.git</RepositoryUrl>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<LangVersion>latest</LangVersion>
+		<RootNamespace>Xcsb</RootNamespace>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<None Include="LICENSE" Pack="True" PackagePath="./" />
+		<None Include="README.md" Pack="True" PackagePath="./" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\..\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
+		<ProjectReference Include="..\..\Share\Xcsb.Models\Xcsb.Models.csproj" />
+		<ProjectReference Include="..\Xcsb.Connection\Xcsb.Connection.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Requests\*.h" />
+		<Compile Remove="**\Tools*.cs" />
+	</ItemGroup>
+
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+		<PackageReference Include="System.Memory" Version="4.6.3" />
+		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+	</ItemGroup>
+</Project>

@@ -8,11 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
-    <ProjectReference Include="..\..\Extensions\Xcsb.Extension.Damage\Xcsb.Extension.Damage.csproj" />
-    <ProjectReference Include="..\..\Extensions\Xcsb.Extension.XInput\Xcsb.Extension.XInput.csproj" />
-    <ProjectReference Include="..\..\Src\Xcsb.SockAccesser\Xcsb.SockAccesser.csproj" />
-    <ProjectReference Include="..\..\Src\Xcsb\Xcsb.csproj" />
+    <ProjectReference Include="..\..\Src\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
+    <ProjectReference Include="..\..\Src\Extensions\Xcsb.Extension.Damage\Xcsb.Extension.Damage.csproj" />
+    <ProjectReference Include="..\..\Src\Extensions\Xcsb.Extension.XInput\Xcsb.Extension.XInput.csproj" />
+    <ProjectReference Include="..\..\Src\Core\Xcsb.SockAccessor\Xcsb.SockAccessor.csproj" />
+    <ProjectReference Include="..\..\Src\Core\Xcsb\Xcsb.csproj" />
   </ItemGroup>
 
 </Project>
