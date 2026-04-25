@@ -15,6 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6E0A4E4C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{3817ABB2-8DFC-4C5A-9103-92198F43A941}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gen", "Gen", "{1B3FBB73-F80E-4491-92BB-23DD0D7A44C5}"
+    ProjectSection(SolutionItems) = preProject
+        Gen/ToolsXProtoParse.cs = ToolsXProtoParse.cs
+    EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Images", "Examples\Images\Images.csproj", "{8ABB9E22-6DA3-DACD-A1A8-A873DD7C6379}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextVisulationAndFonts", "Examples\TextVisulationAndFonts\TextVisulationAndFonts.csproj", "{52445E6B-E8C7-7394-BCED-23959B9C2225}"
