@@ -1,9 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
-        <LangVersion>latest</LangVersion>
+        <TargetFrameworks>netstandard2.1;net8.0;net9.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <Title>Xcsb.Models</Title>
+        <Version>1.0.0-beta</Version>
+        <Authors>Ov Poddar</Authors>
+        <Description>Xcsb.Models</Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/ovpoddar/XCSB.git</RepositoryUrl>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Xcsb.Models</RootNamespace>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="True" PackagePath="./" />
+        <None Include="README.md" Pack="True" PackagePath="./" />
+    </ItemGroup>
 
 </Project>
