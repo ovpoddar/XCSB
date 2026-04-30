@@ -1,10 +1,6 @@
 #:sdk Microsoft.NET.Sdk
 using System.Text;
 
-// using var file = File.OpenRead("/mnt/hardDrive/testP/parse/xinput.h");
-// var tokens = new Parser(file);
-// tokens.Parse();
-
 var location = "/usr/include/xcb/";
 if (!Directory.Exists(location))
 {
@@ -22,7 +18,7 @@ if ((pathAttributes & FileAttributes.Directory) == FileAttributes.Directory)
         System.Console.WriteLine("File name: {0}, Found Types: {1}", file, headerParser.TypeDefinitions.Count);
     }
 }
-else if ((pathAttributes & FileAttributes.Normal) == FileAttributes.Normal)
+else if (File.Exists(location))
 {
     using var readStream = File.OpenRead(location);
     var headerParser = new Parser(readStream);
@@ -136,6 +132,7 @@ public class Parser
 
     }
 
+    // todo: fix fail on `typedef struct xcb_connection_t xcb_connection_t;
     private TypeDefinition GetTypeDefination(Token token)
     {
         if (token.Value != TokenType.Symbol)
