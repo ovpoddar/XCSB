@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 
 string xprotoFilePath;
-if (File.Exists("/usr/include/xcb/xproto.h"))
-    xprotoFilePath = "/usr/include/xcb/xproto.h";
+if (File.Exists("/mnt/hardDrive/WorkingSet/XCSB/Src/Extensions/Xcsb.Extension.XInput/xinput.h"))
+    xprotoFilePath = "/mnt/hardDrive/WorkingSet/XCSB/Src/Extensions/Xcsb.Extension.XInput/xinput.h";
 else
 {
     Console.WriteLine("Put the xproto.h path.");
