@@ -1,6 +1,6 @@
 # Xcsb.Connection
 
-> **⚠️ Warning**: Xcsb is currently in early development. APIs are subject to change, and not all functionality is implemented. Use in production environments is not recommended.
+> **⚠️ Warning**: Xcsb.Connection is currently in early development. APIs are subject to change, and not all functionality is implemented. Use in production environments is not recommended.
 
 ## Overview
 
@@ -23,13 +23,13 @@ Unlike traditional X11 bindings that wrap `libX11` or `xcb`, Xcsb.Connection imp
 Install via [NuGet](https://www.nuget.org/packages/Xcsb):
 
 ```shell
-dotnet add package Xcsb
+dotnet add package Xcsb.Connection
 ```
 
 Or add directly to your `.csproj` file:
 
 ```xml
-<PackageReference Include="Xcsb" Version="1.0.0-beta5.1" />
+<PackageReference Include="Xcsb.Connection" Version="1.0.1-beta" />
 ```
 
 ## Quick Start
@@ -97,25 +97,6 @@ using Xcsb.Models;
 using var connection = XcsbClient.Connect();
 var xcsb = connection.Initialized();
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];
-
-// Create a Window ID
-var windowId = connection.NewId();
-
-// Create the Window
-xcsb.CreateWindowUnchecked(
-    0,
-    windowId,
-    screen.Root,
-    x: 0, y: 0, width: 800, height: 600,
-    borderWidth: 0,
-    ClassType.InputOutput,
-    screen.RootVisualId,
-    ValueMask.BackPixel | ValueMask.EventMask,
-    [screen.WhitePixel, (uint)(EventMask.ExposureMask | EventMask.KeyPressMask)]
-);
-
-// Map (Show) the Window
-xcsb.MapWindowUnchecked(windowId);
 
 // Basic Event Loop
 while (true)
