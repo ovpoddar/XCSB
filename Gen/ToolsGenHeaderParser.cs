@@ -35,13 +35,11 @@ public class Parser
 {
     private readonly Lexer _lexer;
     public List<TypeDefinition> TypeDefinitions { get; set; }
-    public List<Methods> Methods { get; set; }
 
     public Parser(Stream stream)
     {
         this._lexer = new Lexer(stream);
         this.TypeDefinitions = new List<TypeDefinition>();
-        this.Methods = new List<Methods>();
     }
 
     public void Parse()
@@ -203,27 +201,6 @@ public class Parser
             throw new Exception($"Expected token {expectedText} but got {token.Text}");
     }
 
-    private void SkipUntil(ref Token token, TokenType expected, string expectedText)
-    {
-        if (token.Value == expected && token.Text == expectedText)
-            return;
-        while (true)
-        {
-            token = _lexer.NextToken();
-            if (token.Value == expected && token.Text == expectedText)
-                break;
-        }
-    }
-}
-
-public struct Methods
-{
-    public String ReturnType { get; set; }
-    public String Name { get; set; }
-    public String[] Parameters { get; set; }
-    public string? Comments { get; set; }
-    public string? Body { get; set; }
-    public bool IsDecleration { get; set; }
 }
 
 public struct TypeDefinition
