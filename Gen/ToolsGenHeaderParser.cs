@@ -6,30 +6,41 @@ if (!Directory.Exists(location))
 {
     Console.WriteLine("Put the xproto.h path.");
     location = Console.ReadLine();
+    if (location == null) return;
 }
 var pathAttributes = File.GetAttributes(location);
 if ((pathAttributes & FileAttributes.Directory) == FileAttributes.Directory)
 {
     foreach (var file in Directory.EnumerateFiles(location, "*.h", SearchOption.AllDirectories))
     {
-        using var readStream = File.OpenRead(file);
-        var headerParser = new Parser(readStream);
-        headerParser.Parse();
-        System.Console.WriteLine("File name: {0}, Found Types: {1}", file, headerParser.TypeDefinitions.Count);
+        Generate(file);
     }
 }
 else if (File.Exists(location))
 {
-    using var readStream = File.OpenRead(location);
-    var headerParser = new Parser(readStream);
-    headerParser.Parse();
-    System.Console.WriteLine("File name: {0}, Found Types: {1}", location, headerParser.TypeDefinitions.Count);
+    Generate(location);
 }
 else
 {
     System.Console.WriteLine("Fail to process the location.");
 }
 System.Console.WriteLine("Parsing completed.");
+
+void Generate(string path)
+{
+    using var readStream = File.OpenRead(path);
+    var headerParser = new Parser(readStream);
+    headerParser.Parse();
+    using var writeStream = File.OpenWrite(
+        Path.Join(Environment.CurrentDirectory, "Generated", Path.GetFileNameWithoutExtension(path) + ".generated.cs")
+    );
+    writeStream.Position = 0;
+    foreach (var item in headerParser.TypeDefinitions)
+    {
+        if (item.Name == null) continue;
+        writeStream.Write(Encoding.UTF8.GetBytes(item.Name + "\n"));
+    }
+}
 
 public class Parser
 {
