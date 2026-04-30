@@ -23,7 +23,8 @@ else if (File.Exists(location))
     using var readStream = File.OpenRead(location);
     var headerParser = new Parser(readStream);
     headerParser.Parse();
-    System.Console.WriteLine("File name: {0}, Found Types: {1}", location, headerParser.TypeDefinitions.Count);}
+    System.Console.WriteLine("File name: {0}, Found Types: {1}", location, headerParser.TypeDefinitions.Count);
+}
 else
 {
     System.Console.WriteLine("Fail to process the location.");
@@ -132,7 +133,6 @@ public class Parser
 
     }
 
-    // todo: fix fail on `typedef struct xcb_connection_t xcb_connection_t;
     private TypeDefinition GetTypeDefination(Token token)
     {
         if (token.Value != TokenType.Symbol)
@@ -155,7 +155,12 @@ public class Parser
         if (token.Value == TokenType.Symbol)
         {
             typeDefination.Name = token.Text;
-            SkipUntil(ref token, TokenType.OpenCurly, "{");
+
+            token = _lexer.NextToken();
+            if (token.Value != TokenType.OpenCurly)
+            {
+                return typeDefination;
+            }
         }
         else if (token.Value == TokenType.OpenCurly)
         {
