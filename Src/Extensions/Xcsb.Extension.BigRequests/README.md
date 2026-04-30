@@ -1,0 +1,1 @@
+``Xcsb.Extension.BigRequests`` is a library for sending big requests to the server.
