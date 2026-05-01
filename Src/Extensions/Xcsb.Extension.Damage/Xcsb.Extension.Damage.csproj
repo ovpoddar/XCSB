@@ -9,8 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Core\Xcsb.Connection\Xcsb.Connection.csproj" />
-      <ProjectReference Include="..\..\Share\Xcsb.Models\Xcsb.Models.csproj" />
+        <PackageReference Include="Xcsb.Connection" Version="1.0.1-beta" />
+        <PackageReference Include="Xcsb.Models" Version="1.0.0-beta" />
     </ItemGroup>
-
 </Project>

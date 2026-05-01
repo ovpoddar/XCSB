@@ -6,8 +6,8 @@
         <Nullable>enable</Nullable>
         <RootNamespace>Xcsb.Extension.XInput</RootNamespace>
     </PropertyGroup>
-    
+
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\Xcsb.Connection\Xcsb.Connection.csproj" />
+        <PackageReference Include="Xcsb.Connection" Version="1.0.1-beta" />
     </ItemGroup>
 </Project>
