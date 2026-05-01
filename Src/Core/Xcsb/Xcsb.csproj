@@ -24,13 +24,13 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<ProjectReference Include="..\..\Extensions\Xcsb.Extension.BigRequests\Xcsb.Extension.BigRequests.csproj" />
-		<ProjectReference Include="..\..\Share\Xcsb.Models\Xcsb.Models.csproj" />
-		<ProjectReference Include="..\Xcsb.Connection\Xcsb.Connection.csproj" />
+		<None Remove="Requests\*.h" />
+		<Compile Remove="**\Tools*.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Remove="Requests\*.h" />
-		<Compile Remove="**\Tools*.cs" />
+	  <PackageReference Include="Xcsb.Connection" Version="1.0.1-beta" />
+	  <PackageReference Include="Xcsb.Extension.BigRequests" Version="1.0.0-beta" />
+	  <PackageReference Include="Xcsb.Models" Version="1.0.0-beta" />
 	</ItemGroup>
 </Project>
