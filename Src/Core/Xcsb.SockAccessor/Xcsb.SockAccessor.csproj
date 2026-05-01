@@ -1,14 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	<TargetFrameworks>netstandard2.1;net8.0;net9.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
-	<Authors>Ov Poddar</Authors>
-  <RootNamespace>Xcsb.SockAccessor</RootNamespace>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Xcsb.Connection\Xcsb.Connection.csproj" />
-  </ItemGroup>
-
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;net8.0;net9.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <Authors>Ov Poddar</Authors>
+        <RootNamespace>Xcsb.SockAccessor</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Xcsb.Connection" Version="1.0.1-beta"/>
+    </ItemGroup>
 </Project>
