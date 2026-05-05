@@ -188,11 +188,24 @@ internal class SocketIn : ISocketIn
     
     private MappingDetails GetResponseType(ref readonly XResponse reply)
     {
-        if (!_responseMap.TryGetValue((reply.Bytes[0], reply.Bytes[1]), out var response))
-            if (!_responseMap.TryGetValue((reply.Bytes[0], null), out response))
-                return new MappingDetails(XResponseType.Unknown, UnknownResponse.Unknown(reply.Bytes[0]));
+        var rawType = reply.Bytes[0];
+        var detail = reply.Bytes[1];
+        var type = (byte)(rawType & 0x7F);
+        
+        if (_responseMap.TryGetValue((type, detail), out var response) 
+            || _responseMap.TryGetValue((type, null), out response))
+            return response;
 
-        return response;
+        if (rawType != type)
+            if (_responseMap.TryGetValue((rawType, detail), out response) 
+                || _responseMap.TryGetValue((rawType, null), out response))
+                return response;
+
+        return new MappingDetails(
+            XResponseType.Unknown,
+            UnknownResponse.Unknown(type)
+        );
+
     }
 
 }
