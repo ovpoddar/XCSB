@@ -12,20 +12,17 @@ internal record struct MappingDetails
         ResponseTypeDetails = responseTypeDetails;
     }
 
-    // public Type Type { get; private set; }
     public XResponseType ResponseType { get; }
     public XEventType? ResponseTypeDetails { get; }
     public ActionDelegates.ErrorMessageAction? ErrorMessageAction { get; private set; }
 
     public void SetErrorType<T>() where T : unmanaged, IXError
     {
-        // Type = typeof(T);
         ErrorMessageAction = ErrorProcesser.GetErrorMessage<T>;
     }
 
     public void SetEventType<T>() where T : unmanaged, IXEvent
     {
-        // Type = typeof(T);
         ErrorMessageAction = null;
     }
 }
