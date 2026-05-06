@@ -86,7 +86,7 @@ while (isRunning)
 {
     var evnt = x.GetEvent();
 
-    Console.WriteLine(evnt.ReplyType);
+    Console.WriteLine((byte)evnt.ReplyType + " "+ evnt.IsSyntheticReply);
     if (evnt.ReplyType == EventType.LastEvent) return;
     else if (evnt.ReplyType == EventType.KeyPress)
     {

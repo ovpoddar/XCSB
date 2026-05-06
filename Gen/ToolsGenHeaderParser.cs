@@ -24,9 +24,11 @@ else
 {
     System.Console.WriteLine("Fail to process the location.");
 }
-System.Console.WriteLine("Parsing completed.");
 
-void Generate(string path)
+System.Console.WriteLine("Parsing completed.");
+return;
+
+static void Generate(string path)
 {
     using var readStream = File.OpenRead(path);
     var headerParser = new Parser(readStream);
@@ -85,6 +87,7 @@ public class Parser
                                 typeDefination.Aliases.Add(token.Text);
                             ExpextedToken(TokenType.Semicolon, ";");
                         }
+
                         typeDefination.Comments = cb.ToString();
                         cb.Clear();
                         this.TypeDefinitions.Add(typeDefination);
@@ -108,6 +111,7 @@ public class Parser
                             isFound = true;
                             break;
                         }
+
                         if (!isFound)
                         {
                             TypeDefinition typeDef = new TypeDefinition
@@ -120,6 +124,7 @@ public class Parser
 
                             this.TypeDefinitions.Add(typeDef);
                         }
+
                         ExpextedToken(TokenType.Semicolon, ";");
                     }
                 }
@@ -131,15 +136,12 @@ public class Parser
                     this.TypeDefinitions.Add(typeDefination);
                     cb.Clear();
                 }
-
             }
 
             if (token.Value == TokenType.OpenParen)
             {
-
             }
         }
-
     }
 
     private TypeDefinition GetTypeDefination(Token token)
@@ -152,9 +154,9 @@ public class Parser
         {
             Type = token.Text switch
             {
-                "struct" => TypeKind.Struct,
-                "union" => TypeKind.Union,
-                "enum" => TypeKind.Enum,
+                "struct" => TypeDefinition.TypeKind.Struct,
+                "union" => TypeDefinition.TypeKind.Union,
+                "enum" => TypeDefinition.TypeKind.Enum,
                 _ => throw new Exception("Unexpected type")
             }
         };
@@ -179,6 +181,7 @@ public class Parser
         {
             throw new Exception("Unexpected token after struct/union/enum");
         }
+
         var sb = new StringBuilder();
         while (true)
         {
@@ -198,6 +201,7 @@ public class Parser
             {
                 sb.Append(token.Text + " ");
             }
+
             if (token.Value == TokenType.CloseCurly && brases == 0)
                 break;
         }
@@ -212,103 +216,83 @@ public class Parser
             throw new Exception($"Expected token {expectedText} but got {token.Text}");
     }
 
-}
 
-public struct TypeDefinition
-{
-    public String? Name { get; set; }
-    public List<String> Aliases { get; set; } = new List<string>();
-    public string? Comments { get; set; }
-    public List<string> Fields { get; set; } = new List<string>();
-    public TypeKind Type { get; set; }
-    public TypeDefinition()
+    private class Lexer(Stream file)
     {
+        private long _line = 1;
+        private long _startOfLine = 0;
 
-    }
-}
-
-public enum TypeKind
-{
-    Unknown,
-    Struct,
-    Enum,
-    Union,
-}
-
-internal class Lexer(Stream file)
-{
-    private long _line = 1;
-    private long _startOfLine = 0;
-
-    public Token NextToken()
-    {
-        if (!file.CanRead || !file.CanSeek) throw new InvalidOperationException("Stream must be readable.");
-        if (file.Position >= file.Length)
-            return new Token(TokenType.TokenEnd, string.Empty, _line, file.Position - _startOfLine);
-        Span<byte> buffer = stackalloc byte[1];
-        file.ReadExactly(buffer);
-
-
-        switch (buffer[0])
+        public Token NextToken()
         {
-            case (byte)'/':
+            if (!file.CanRead || !file.CanSeek) throw new InvalidOperationException("Stream must be readable.");
+            if (file.Position >= file.Length)
+                return new Token(TokenType.TokenEnd, string.Empty, _line, file.Position - _startOfLine);
+            Span<byte> buffer = stackalloc byte[1];
+            file.ReadExactly(buffer);
+
+
+            switch (buffer[0])
+            {
+                case (byte)'/':
                 {
-                    if (file.Position >= file.Length) return new Token(TokenType.Operator, "/", _line, file.Position - _startOfLine);
+                    if (file.Position >= file.Length)
+                        return new Token(TokenType.Operator, "/", _line, file.Position - _startOfLine);
                     file.ReadExactly(buffer);
                     switch (buffer[0])
                     {
                         case (byte)'/':
+                        {
+                            var sb = new StringBuilder();
+                            sb.Append("//");
+                            while (file.Position < file.Length)
                             {
-                                var sb = new StringBuilder();
-                                sb.Append("//");
-                                while (file.Position < file.Length)
+                                file.ReadExactly(buffer);
+                                if (buffer[0] == (byte)'\n')
                                 {
-                                    file.ReadExactly(buffer);
-                                    if (buffer[0] == (byte)'\n')
-                                    {
-                                        _line++;
-                                        _startOfLine = file.Position;
-                                        break;
-                                    }
-
-                                    sb.Append((char)buffer[0]);
+                                    _line++;
+                                    _startOfLine = file.Position;
+                                    break;
                                 }
 
-                                return new Token(TokenType.Comment, sb.ToString(), _line, file.Position - _startOfLine);
+                                sb.Append((char)buffer[0]);
                             }
+
+                            return new Token(TokenType.Comment, sb.ToString(), _line, file.Position - _startOfLine);
+                        }
                         case (byte)'*':
+                        {
+                            var sb = new StringBuilder();
+                            sb.Append("/*");
+                            while (file.Position < file.Length)
                             {
-                                var sb = new StringBuilder();
-                                sb.Append("/*");
-                                while (file.Position < file.Length)
+                                file.ReadExactly(buffer);
+                                sb.Append((char)buffer[0]);
+                                if (buffer[0] == (byte)'\n')
                                 {
-                                    file.ReadExactly(buffer);
-                                    sb.Append((char)buffer[0]);
-                                    if (buffer[0] == (byte)'\n')
-                                    {
-                                        _line++;
-                                        _startOfLine = file.Position;
-                                    }
-
-                                    if (buffer[0] != (byte)'*') continue;
-
-                                    file.ReadExactly(buffer);
-                                    if (buffer[0] == (byte)'/')
-                                    {
-                                        sb.Append((char)buffer[0]);
-                                        break;
-                                    }
-                                    file.Seek(-1, SeekOrigin.Current);
+                                    _line++;
+                                    _startOfLine = file.Position;
                                 }
 
-                                return new Token(TokenType.Comment, sb.ToString(), _line, file.Position - _startOfLine);
+                                if (buffer[0] != (byte)'*') continue;
+
+                                file.ReadExactly(buffer);
+                                if (buffer[0] == (byte)'/')
+                                {
+                                    sb.Append((char)buffer[0]);
+                                    break;
+                                }
+
+                                file.Seek(-1, SeekOrigin.Current);
                             }
+
+                            return new Token(TokenType.Comment, sb.ToString(), _line, file.Position - _startOfLine);
+                        }
                         default:
                             file.Seek(-1, SeekOrigin.Current);
                             return new Token(TokenType.Operator, "/", _line, file.Position - _startOfLine);
                     }
                 }
-            case (byte)'#':
+                case (byte)'#':
                 {
                     var sb = new StringBuilder();
                     while (file.Position < file.Length)
@@ -335,16 +319,18 @@ internal class Lexer(Stream file)
                             break;
                         }
                     }
-                    return new Token(TokenType.PreprocessorDirective, sb.ToString(), _line, file.Position - _startOfLine);
+
+                    return new Token(TokenType.PreprocessorDirective, sb.ToString(), _line,
+                        file.Position - _startOfLine);
                 }
-            case (byte)'\n':
-                _line++;
-                _startOfLine = file.Position;
-                return NextToken();
-            case (byte)' ':
-            case (byte)'\t':
-                return NextToken();
-            case (byte)'\'':
+                case (byte)'\n':
+                    _line++;
+                    _startOfLine = file.Position;
+                    return NextToken();
+                case (byte)' ':
+                case (byte)'\t':
+                    return NextToken();
+                case (byte)'\'':
                 {
                     var sb = new StringBuilder();
                     sb.Append((char)buffer[0]);
@@ -358,13 +344,15 @@ internal class Lexer(Stream file)
                             sb.Append((char)buffer[0]);
                             continue;
                         }
+
                         if (buffer[0] == (byte)'\'')
                             break;
                     }
 
-                    return new Token(TokenType.StringInSingleQuotes, sb.ToString(), _line, file.Position - _startOfLine);
+                    return new Token(TokenType.StringInSingleQuotes, sb.ToString(), _line,
+                        file.Position - _startOfLine);
                 }
-            case (byte)'"':
+                case (byte)'"':
                 {
                     var sb = new StringBuilder();
                     sb.Append('"');
@@ -378,30 +366,34 @@ internal class Lexer(Stream file)
                             file.ReadExactly(buffer);
                             sb.Append((char)buffer[0]);
                         }
+
                         if (buffer[0] == (byte)'"')
                             break;
                     }
 
-                    return new Token(TokenType.StringInDoubleQuotes, sb.ToString(), _line, file.Position - _startOfLine);
+                    return new Token(TokenType.StringInDoubleQuotes, sb.ToString(), _line,
+                        file.Position - _startOfLine);
                 }
-            case (byte)'+':
-            case (byte)'-':
-            case (byte)'*':
-            case (byte)'%':
-            case (byte)'=':
-            case (byte)'!':
-            case (byte)'<':
-            case (byte)'>':
-            case (byte)'&':
-            case (byte)'|':
-            case (byte)'^':
+                case (byte)'+':
+                case (byte)'-':
+                case (byte)'*':
+                case (byte)'%':
+                case (byte)'=':
+                case (byte)'!':
+                case (byte)'<':
+                case (byte)'>':
+                case (byte)'&':
+                case (byte)'|':
+                case (byte)'^':
                 {
                     var sb = new StringBuilder();
                     sb.Append((char)buffer[0]);
                     if (file.Position < file.Length)
                     {
                         file.ReadExactly(buffer);
-                        if ((buffer[0] == (byte)'=' || buffer[0] == (byte)'&' || buffer[0] == (byte)'|') && (sb[0] == '+' || sb[0] == '-' || sb[0] == '*' || sb[0] == '%' || sb[0] == '=' || sb[0] == '!' || sb[0] == '<' || sb[0] == '>'))
+                        if ((buffer[0] == (byte)'=' || buffer[0] == (byte)'&' || buffer[0] == (byte)'|') &&
+                            (sb[0] == '+' || sb[0] == '-' || sb[0] == '*' || sb[0] == '%' || sb[0] == '=' ||
+                             sb[0] == '!' || sb[0] == '<' || sb[0] == '>'))
                         {
                             sb.Append((char)buffer[0]);
                         }
@@ -413,30 +405,30 @@ internal class Lexer(Stream file)
 
                     return new Token(TokenType.Operator, sb.ToString(), _line, file.Position - _startOfLine);
                 }
-            case (byte)'?':
-                return new Token(TokenType.TernaryQuestion, "?", _line, file.Position - _startOfLine);
-            case (byte)':':
-                return new Token(TokenType.TernaryColon, ":", _line, file.Position - _startOfLine);
+                case (byte)'?':
+                    return new Token(TokenType.TernaryQuestion, "?", _line, file.Position - _startOfLine);
+                case (byte)':':
+                    return new Token(TokenType.TernaryColon, ":", _line, file.Position - _startOfLine);
 
-            case (byte)'(':
-                return new Token(TokenType.OpenParen, "(", _line, file.Position - _startOfLine);
-            case (byte)')':
-                return new Token(TokenType.CloseParen, ")", _line, file.Position - _startOfLine);
-            case (byte)'{':
-                return new Token(TokenType.OpenCurly, "{", _line, file.Position - _startOfLine);
-            case (byte)'}':
-                return new Token(TokenType.CloseCurly, "}", _line, file.Position - _startOfLine);
-            case (byte)'[':
-                return new Token(TokenType.OpenSquare, "[", _line, file.Position - _startOfLine);
-            case (byte)']':
-                return new Token(TokenType.CloseSquare, "]", _line, file.Position - _startOfLine);
-            case (byte)';':
-                return new Token(TokenType.Semicolon, ";", _line, file.Position - _startOfLine);
-            case (byte)',':
-                return new Token(TokenType.Comma, ",", _line, file.Position - _startOfLine);
-            case (byte)'.':
-                return new Token(TokenType.Dot, ".", _line, file.Position - _startOfLine);
-            case >= (byte)'0' and <= (byte)'9':
+                case (byte)'(':
+                    return new Token(TokenType.OpenParen, "(", _line, file.Position - _startOfLine);
+                case (byte)')':
+                    return new Token(TokenType.CloseParen, ")", _line, file.Position - _startOfLine);
+                case (byte)'{':
+                    return new Token(TokenType.OpenCurly, "{", _line, file.Position - _startOfLine);
+                case (byte)'}':
+                    return new Token(TokenType.CloseCurly, "}", _line, file.Position - _startOfLine);
+                case (byte)'[':
+                    return new Token(TokenType.OpenSquare, "[", _line, file.Position - _startOfLine);
+                case (byte)']':
+                    return new Token(TokenType.CloseSquare, "]", _line, file.Position - _startOfLine);
+                case (byte)';':
+                    return new Token(TokenType.Semicolon, ";", _line, file.Position - _startOfLine);
+                case (byte)',':
+                    return new Token(TokenType.Comma, ",", _line, file.Position - _startOfLine);
+                case (byte)'.':
+                    return new Token(TokenType.Dot, ".", _line, file.Position - _startOfLine);
+                case >= (byte)'0' and <= (byte)'9':
                 {
                     var sb = new StringBuilder();
                     sb.Append((char)buffer[0]);
@@ -459,9 +451,9 @@ internal class Lexer(Stream file)
 
                     return new Token(TokenType.Number, sb.ToString(), _line, file.Position - _startOfLine);
                 }
-            case >= (byte)'A' and <= (byte)'Z':
-            case >= (byte)'a' and <= (byte)'z':
-            case (byte)'_':
+                case >= (byte)'A' and <= (byte)'Z':
+                case >= (byte)'a' and <= (byte)'z':
+                case (byte)'_':
                 {
                     var sb = new StringBuilder();
                     sb.Append((char)buffer[0]);
@@ -484,45 +476,68 @@ internal class Lexer(Stream file)
 
                     return new Token(TokenType.Symbol, sb.ToString(), _line, file.Position - _startOfLine);
                 }
-            default:
-                return new Token(TokenType.Unknown, ((char)buffer[0]).ToString(), _line, file.Position - _startOfLine);
+                default:
+                    return new Token(TokenType.Unknown, ((char)buffer[0]).ToString(), _line,
+                        file.Position - _startOfLine);
+            }
         }
+    }
+
+    private struct Token(TokenType value, string text, long line, long column)
+    {
+        public TokenType Value { get; } = value;
+        public string Text { get; set; } = text;
+        public Location Location { get; } = new(line, column);
+    }
+
+    private enum TokenType
+    {
+        TokenEnd,
+        PreprocessorDirective,
+        Symbol,
+        Comment,
+        Unknown,
+        OpenParen,
+        CloseParen,
+        OpenCurly,
+        CloseCurly,
+        OpenSquare,
+        CloseSquare,
+        Semicolon,
+        Number,
+        Operator,
+        StringInDoubleQuotes,
+        StringInSingleQuotes,
+        Comma,
+        Dot,
+        TernaryQuestion,
+        TernaryColon,
+    }
+
+    private struct Location(long row, long column)
+    {
+        public long Row { get; set; } = row;
+        public long Column { get; set; } = column;
     }
 }
 
-public struct Token(TokenType value, string text, long line, long column)
+public struct TypeDefinition
 {
-    public TokenType Value { get; } = value;
-    public string Text { get; set; } = text;
-    public Location Location { get; } = new(line, column);
-}
+    public String? Name { get; set; }
+    public List<String> Aliases { get; set; } = new List<string>();
+    public string? Comments { get; set; }
+    public List<string> Fields { get; set; } = new List<string>();
+    public TypeKind Type { get; set; }
 
-public enum TokenType
-{
-    TokenEnd,
-    PreprocessorDirective,
-    Symbol,
-    Comment,
-    Unknown,
-    OpenParen,
-    CloseParen,
-    OpenCurly,
-    CloseCurly,
-    OpenSquare,
-    CloseSquare,
-    Semicolon,
-    Number,
-    Operator,
-    StringInDoubleQuotes,
-    StringInSingleQuotes,
-    Comma,
-    Dot,
-    TernaryQuestion,
-    TernaryColon,
-}
-
-public struct Location(long row, long column)
-{
-    public long Row { get; set; } = row;
-    public long Column { get; set; } = column;
+    public TypeDefinition()
+    {
+    }
+    
+    public enum TypeKind
+    {
+        Unknown,
+        Struct,
+        Enum,
+        Union,
+    }
 }
