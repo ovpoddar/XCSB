@@ -130,7 +130,7 @@ internal class SocketIn : ISocketIn
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public async Task ReceivedAsync(Memory<byte> buffer, CancellationToken token = default)
+    private async Task ReceivedAsync(Memory<byte> buffer, CancellationToken token = default)
     {
         if (buffer.Length == 0)
             return;
@@ -138,7 +138,7 @@ internal class SocketIn : ISocketIn
         var total = 0;
         while (_socket.Connected || token.IsCancellationRequested)
         {
-            total += await _socket.ReceiveAsync(buffer[total..], SocketFlags.None, token);
+            total += await _socket.ReceiveAsync(buffer[total..], SocketFlags.None, token).ConfigureAwait(false);
             if (total == buffer.Length)
                 break;
         }
@@ -151,7 +151,7 @@ internal class SocketIn : ISocketIn
         Memory<byte> buffer = new byte[bufferSize];
         while (true)
         {
-            await ReceivedAsync(buffer, token);
+            await ReceivedAsync(buffer, token).ConfigureAwait(false);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = GetResponseType(in content);
             if (sequence == content.Sequence)
@@ -241,7 +241,7 @@ internal class SocketIn : ISocketIn
         var totalSize = 32 + replySize;
         var combined = new byte[totalSize];
         buffer.Span.CopyTo(combined);
-        await ReceivedAsync(combined[32..], token);
+        await ReceivedAsync(combined[32..], token).ConfigureAwait(false);
         return combined;
     }
 

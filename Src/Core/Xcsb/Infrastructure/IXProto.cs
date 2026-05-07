@@ -4,7 +4,7 @@ using Xcsb.Infrastructure.VoidProto;
 
 namespace Xcsb.Infrastructure;
 
-public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked, IResponseProtoAsync
+public interface IXProto : IResponseProto, IResponseProtoAsync, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked
 {
     IXBufferProto BufferClient { get; }
 
