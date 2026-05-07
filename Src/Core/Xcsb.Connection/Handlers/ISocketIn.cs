@@ -11,11 +11,9 @@ internal interface ISocketIn
 
     ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; }
     ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; }
-    
     byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true);
     void FlushSocket();
     void FlushSocket(int outProtoSequence, bool shouldThrowOnError);
-    
     T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct;
     int Received(scoped in Span<byte> buffer, bool readAll = true);
     (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply;
