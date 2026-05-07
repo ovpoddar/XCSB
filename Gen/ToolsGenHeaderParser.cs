@@ -1,5 +1,6 @@
 #:sdk Microsoft.NET.Sdk
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 var location = "/usr/include/xcb/";
@@ -53,7 +54,16 @@ static void Generate(string path)
         writeStream.Write("internal sealed struct "u8);
         writeStream.Write(Encoding.UTF8.GetBytes(item.Name!
             .FixName("xcb_") + Environment.NewLine + '{'));
-        
+
+        foreach (var field in item.Fields)
+        {
+            writeStream.Write("\tpublic "u8);
+            writeStream.Write(field.GetFieldType);
+            writeStream.Write(" "u8);
+            writeStream.Write(field.GetFieldName.FixName());
+            writeStream.Write(Encoding.UTF8.GetBytes(";" + Environment.NewLine));
+        }
+
         writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
     }
 }
@@ -208,7 +218,7 @@ public class Parser
 
             if (token.Value == TokenType.Semicolon && brases == 1)
             {
-                typeDefination.Fields.Add(sb.ToString().Trim());
+                typeDefination.Fields.Add(new TypeDefinition.FieldDetails(sb.ToString().Trim()));
                 sb.Clear();
             }
             else
@@ -540,11 +550,26 @@ public struct TypeDefinition
     public String? Name { get; set; }
     public List<String> Aliases { get; set; } = new List<string>();
     public string? Comments { get; set; }
-    public List<string> Fields { get; set; } = new List<string>();
+    public List<FieldDetails> Fields { get; set; } = new List<FieldDetails>();
     public TypeKind Type { get; set; }
 
     public TypeDefinition()
     {
+    }
+
+    public class FieldDetails
+    {
+        private byte[] _rawField;
+        public FieldDetails(string field)
+        {
+            _rawField = Encoding.UTF8.GetBytes(field);
+        }
+
+        public ReadOnlySpan<byte> GetFieldName =>
+            _rawField.AsSpan()[(_rawField.LastIndexOf((byte)' ') + 1)..];
+
+        public ReadOnlySpan<byte> GetFieldType =>
+            _rawField.AsSpan(0, _rawField.LastIndexOf((byte)' '));
     }
 
     public enum TypeKind
@@ -565,7 +590,55 @@ public static class Helpers
         var sb = new StringBuilder();
         Debug.Assert(value.StartsWith(startsWith));
         Debug.Assert(value.EndsWith("_t"));
-        sb.Append(value[startsWith.Length..^2]);
+        var isUpperCase = true;
+        for (var i = startsWith.Length; i < value.Length - 2; i++)
+        {
+            if (value[i] == '_')
+            {
+                isUpperCase = true;
+                continue;
+            }
+            if (isUpperCase)
+            {
+                sb.Append(char.ToUpper(value[i]));
+                isUpperCase = false;
+            }
+            else
+            {
+                sb.Append(value[i]);
+            }
+        }
+
         return sb.ToString();
+    }
+
+    public static byte[] FixName(this ReadOnlySpan<byte> value)
+    {
+        var result = new byte[value.Length - value.Count((byte)'_')];
+        var wIndex = 0;
+        var isUpperCase = true;
+        foreach (var item in value)
+        {
+            if (item == '_')
+            {
+                isUpperCase = true;
+                continue;
+            }
+            if (isUpperCase)
+            {
+                var tempI = item;
+                result[wIndex] = tempI &= 0xDF;
+                wIndex++;
+                isUpperCase = false;
+            }
+            else
+            {
+                result[wIndex] = item;
+                wIndex++;
+            }
+
+        }
+
+        return result;
     }
 }
