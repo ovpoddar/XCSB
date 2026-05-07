@@ -23,6 +23,8 @@ using Xcsb.Response.Errors;
 using Xcsb.Response.Event;
 using Xcsb.Response.Replies;
 using Xcsb.Response.Replies.Internals;
+using Xcsb.Infrastructure.ResponceProto;
+
 
 
 #if !NETSTANDARD
@@ -3263,5 +3265,201 @@ internal sealed class XProto : IXProto
                       ?? throw new InvalidOperationException("BigRequest is not supported");
         var response = request.BigRequestsEnable();
         _bigRequestLength = response.MaximumRequestLength;
+    }
+
+    public async Task<AllocColorReply> AllocColorAsync(uint colorMap, ushort red, ushort green, ushort blue)
+    {
+        
+        var cookie = AllocColorBase(colorMap, red, green, blue);
+        var (result, error) = await this._socketAccessor.SocketIn.ReceivedResponseAsync<AllocColorReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.Value;
+    }
+
+    public Task<QueryPointerReply> QueryPointerAsync(uint window)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GrabPointerReply> GrabPointerAsync(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode, GrabMode keyboardMode,
+        uint confineTo, uint cursor, uint timeStamp)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<InternAtomReply> InternAtomAsync(bool onlyIfExist, string atomName)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetPropertyReply> GetPropertyAsync(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetWindowAttributesReply> GetWindowAttributesAsync(uint window)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetGeometryReply> GetGeometryAsync(uint drawable)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<QueryTreeReply> QueryTreeAsync(uint window)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetAtomNameReply> GetAtomNameAsync(ATOM atom)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ListPropertiesReply> ListPropertiesAsync(uint window)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetSelectionOwnerReply> GetSelectionOwnerAsync(ATOM atom)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GrabKeyboardReply> GrabKeyboardAsync(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode, GrabMode keyboardMode)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetMotionEventsReply> GetMotionEventsAsync(uint window, uint startTime, uint endTime)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<TranslateCoordinatesReply> TranslateCoordinatesAsync(uint srcWindow, uint destinationWindow, ushort srcX, ushort srcY)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetInputFocusReply> GetInputFocusAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<QueryKeymapReply> QueryKeymapAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<QueryFontReply> QueryFontAsync(uint fontId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<QueryTextExtentsReply> QueryTextExtentsAsync(uint font, ReadOnlySpan<char> stringForQuery)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ListFontsReply> ListFontsAsync(ReadOnlySpan<byte> pattern, int maxNames)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ListFontsWithInfoReply[]> ListFontsWithInfoAsync(ReadOnlySpan<byte> pattan, int maxNames)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetFontPathReply> GetFontPathAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetImageReply> GetImageAsync(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height, uint planeMask)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ListInstalledColormapsReply> ListInstalledColormapsAsync(uint window)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<AllocNamedColorReply> AllocNamedColorAsync(uint colorMap, ReadOnlySpan<byte> name)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<AllocColorCellsReply> AllocColorCellsAsync(bool contiguous, uint colorMap, ushort colors, ushort planes)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<AllocColorPlanesReply> AllocColorPlanesAsync(bool contiguous, uint colorMap, ushort colors, ushort reds, ushort greens, ushort blues)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<QueryColorsReply> QueryColorsAsync(uint colorMap, ReadOnlySpan<uint> pixels)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<LookupColorReply> LookupColorAsync(uint colorMap, ReadOnlySpan<byte> name)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<QueryBestSizeReply> QueryBestSizeAsync(QueryShapeOf shape, uint drawable, ushort width, ushort height)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<SetModifierMappingReply> SetModifierMappingAsync(Span<ulong> keycodes)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetModifierMappingReply> GetModifierMappingAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetKeyboardMappingReply> GetKeyboardMappingAsync(byte firstKeycode, byte count)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetKeyboardControlReply> GetKeyboardControlAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<SetPointerMappingReply> SetPointerMappingAsync(Span<byte> maps)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetPointerMappingReply> GetPointerMappingAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetPointerControlReply> GetPointerControlAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetScreenSaverReply> GetScreenSaverAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ListHostsReply> ListHostsAsync()
+    {
+        throw new NotImplementedException();
     }
 }

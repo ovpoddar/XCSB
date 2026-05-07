@@ -24,6 +24,9 @@ x.MapWindowUnchecked(win);
 var alloc_cookie = x.AllocColor(screen.DefaultColormap, 65535, 0, 0); // Red
 Console.WriteLine("Allocated red color, Pixel value: {0}", alloc_cookie.Pixel);
 
+var color2 = await x.AllocColorAsync(screen.DefaultColormap, 65535, 0, 0);
+Console.WriteLine("Allocated red color, Pixel value: {0}", color2.Pixel);
+
 // Free the color
 x.FreeColorsUnchecked(screen.DefaultColormap, 0, [alloc_cookie.Pixel]);
 Console.WriteLine("Color freed successfully");

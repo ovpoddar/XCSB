@@ -91,6 +91,14 @@ internal static class ProtoInExtended
         return (result?.AsSpan().ToStruct<T>(), error);
     }
 
+
+    internal static async Task<(T?, GenericError?)> ReceivedResponseAsync<T>(this ISocketIn socketIn, int sequence, int timeout = 1000)
+        where T : unmanaged, IXReply
+    {
+        var (result, error) = await socketIn.ReceivedResponseSpanAsync<T>(sequence);
+        return (result?.AsSpan().ToStruct<T>(), error);
+    }
+
     internal static XEvent ReceivedResponse(this ISocketAccessor socketAccessor)
     {
         while (true)

@@ -23,16 +23,16 @@ internal class SocketIn : ISocketIn
         _socket = socket;
         _responseMap = responseMap;
         _configuration = configuration;
-        
+
         BufferEvents = new ConcurrentQueue<(byte[], MappingDetails)>();
         ReplyBuffer = new ConcurrentDictionary<int, (byte[], MappingDetails)>();
     }
-    
-    public ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; } 
+
+    public ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; }
     public ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; }
-    
+
     public int Sequence { get; set; }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Received(scoped in Span<byte> buffer, bool readAll = true)
     {
@@ -128,6 +128,84 @@ internal class SocketIn : ISocketIn
         }
     }
 
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public async Task ReceivedAsync(Memory<byte> buffer, CancellationToken token = default)
+    {
+        if (buffer.Length == 0)
+            return;
+
+        var total = 0;
+        while (_socket.Connected || token.IsCancellationRequested)
+        {
+            total += await _socket.ReceiveAsync(buffer[total..], SocketFlags.None, token);
+            if (total == buffer.Length)
+                break;
+        }
+    }
+    
+    public async Task<(byte[], GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default)
+              where T : unmanaged, IXReply
+    {
+        var bufferSize = Unsafe.SizeOf<XResponse>();
+        Memory<byte> buffer = new byte[bufferSize];
+        while (true)
+        {
+            await ReceivedAsync(buffer, token);
+            ref readonly var content = ref buffer.AsStruct<XResponse>();
+            var responseType = GetResponseType(in content);
+            if (sequence == content.Sequence)
+            {
+                switch (responseType.ResponseType)
+                {
+                    case XResponseType.Error:
+                        {
+                            Sequence++;
+                            var response = buffer.AsStruct<T>();
+                            return response.Verify(in sequence)
+                                ? (Array.Empty<byte>(), new GenericError(buffer.Span.ToStruct<XResponse>(), responseType.ErrorMessageAction!))
+                                : throw new Exception("Should not called");
+                        }
+                    case XResponseType.Reply:
+                        {
+                            var result = await ComputeResponseAsync(buffer, token: token);
+                            var response = result.AsStruct<T>();
+                            return response.Verify(in sequence)
+                                ? (result, null)
+                                : throw new Exception("Should not called");
+                        }
+                    default:
+                        throw new Exception("Should Not called");
+                }
+            }
+
+            switch (responseType.ResponseType)
+            {
+                case XResponseType.Error:
+                    Sequence++;
+                    ReplyBuffer[content.Sequence] = (buffer.Span.ToArray(), responseType);
+                    break;
+                case XResponseType.Notify:
+                    BufferEvents.Enqueue((buffer.Span.ToArray(), responseType));
+                    break;
+                case XResponseType.Reply:
+                    ReplyBuffer[content.Sequence] = (await ComputeResponseAsync(buffer, token: token), responseType);
+                    break;
+                case XResponseType.Event:
+                    BufferEvents.Enqueue((buffer.Span.ToArray(), responseType));
+                    break;
+                case XResponseType.Unknown:
+                    BufferEvents.Enqueue((content.ReplyType == 35
+                        ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
+                        : buffer.Span.ToArray(), responseType));
+                    break;
+                default:
+                    throw new Exception(string.Join(", ", buffer.ToArray()));
+            }
+        }
+    }
+
+
     public byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
@@ -148,6 +226,23 @@ internal class SocketIn : ISocketIn
         buffer.CopyTo(combined[priorLen..]);
         _ = Received(combined[(priorLen + 32)..(priorLen + 32 + replySize)]);
         return combined.Slice(0, totalSize).ToArray();
+    }
+
+    public async ValueTask<byte[]> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true, CancellationToken token = default)
+    {
+        ref readonly var content = ref buffer.AsStruct<XResponse>();
+        if (updateSequence && content.Sequence > Sequence)
+            Sequence = content.Sequence;
+
+        var replySize = (int)(content.Length * 4);
+        if (replySize == 0)
+            return buffer.ToArray();
+            
+        var totalSize = 32 + replySize;
+        var combined = new byte[totalSize];
+        buffer.Span.CopyTo(combined);
+        await ReceivedAsync(combined[32..], token);
+        return combined;
     }
 
     public (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000)
@@ -185,19 +280,19 @@ internal class SocketIn : ISocketIn
                 ? throw new InvalidOperationException()
                 : null;
     }
-    
+
     private MappingDetails GetResponseType(ref readonly XResponse reply)
     {
         var rawType = reply.Bytes[0];
         var detail = reply.Bytes[1];
         var type = (byte)(rawType & 0x7F);
-        
-        if (_responseMap.TryGetValue((type, detail), out var response) 
+
+        if (_responseMap.TryGetValue((type, detail), out var response)
             || _responseMap.TryGetValue((type, null), out response))
             return response;
 
         if (rawType != type)
-            if (_responseMap.TryGetValue((rawType, detail), out response) 
+            if (_responseMap.TryGetValue((rawType, detail), out response)
                 || _responseMap.TryGetValue((rawType, null), out response))
                 return response;
 

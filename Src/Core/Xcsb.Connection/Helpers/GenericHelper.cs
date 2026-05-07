@@ -12,6 +12,9 @@ internal static class GenericHelper
     internal static ref readonly T AsStruct<T>(this Span<byte> bytes) where T : struct =>
         ref Unsafe.As<byte, T>(ref bytes[0]);
 
+    internal static ref readonly T AsStruct<T>(this Memory<byte> bytes) where T : struct =>
+        ref Unsafe.As<byte, T>(ref bytes.Span[0]);
+
     internal static T ToStruct<T>(this Span<byte> bytes) where T : struct =>
         Unsafe.As<byte, T>(ref bytes[0]);
 
