@@ -36,6 +36,25 @@ internal static class ProtoInExtended
         }
     }
 
+    internal static async Task<(ListFontsWithInfoReply[], GenericError?)> ReceivedResponseArrayAsync(this ISocketAccessor socketAccessor,
+        int sequence, int maxNames, CancellationToken token = default)
+    {
+        var result = new ArrayPoolUsing<ListFontsWithInfoReply>(maxNames);
+        var count = 0;
+        while (true)
+        {
+            var (reply, error) = await socketAccessor.SocketIn.ReceivedResponseSpanAsync<ListFontsWithInfoResponse>(sequence, token);
+            if (error.HasValue)
+                return (Array.Empty<ListFontsWithInfoReply>(), error);
+            
+            ref readonly var response = ref reply.AsStruct<ListFontsWithInfoResponse>();
+            if (!response.HasMore) break;
+            result[count++] = new ListFontsWithInfoReply(in response, reply[60..].Span);
+        }
+        
+        return (result[0..count].ToArray(), null);
+    }
+    
     private static ListFontsWithInfoReply[] GetListFontsReply(ISocketIn socketIn, Span<byte> reply, int sequence,
         int maxNames)
     {
@@ -96,7 +115,7 @@ internal static class ProtoInExtended
         CancellationToken token = default) where T : unmanaged, IXReply
     {
         var (result, error) = await socketIn.ReceivedResponseSpanAsync<T>(sequence, token).ConfigureAwait(false);
-        return (result?.AsSpan().ToStruct<T>(), error);
+        return (result.Span.ToStruct<T>(), error);
     }
 
     internal static XEvent ReceivedResponse(this ISocketAccessor socketAccessor)

@@ -173,7 +173,7 @@ public interface IVoidProtoChecked
     void SetCloseDownModeChecked(CloseDownMode mode);
     void KillClientChecked(uint resource);
 
-    void NoOperationChecked(Span<uint> args);
+    void NoOperationChecked(ReadOnlySpan<uint> args);
 
     void PolyText8Checked(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
     void PolyText16Checked(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);

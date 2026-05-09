@@ -130,7 +130,7 @@ internal class SocketIn : ISocketIn
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private async Task ReceivedAsync(Memory<byte> buffer, CancellationToken token = default)
+    public async Task ReceivedAsync(Memory<byte> buffer, CancellationToken token = default)
     {
         if (buffer.Length == 0)
             return;
@@ -144,7 +144,7 @@ internal class SocketIn : ISocketIn
         }
     }
     
-    public async Task<(byte[], GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default)
+    public async Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default)
               where T : unmanaged, IXReply
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
@@ -168,7 +168,7 @@ internal class SocketIn : ISocketIn
                         }
                     case XResponseType.Reply:
                         {
-                            var result = await ComputeResponseAsync(buffer, token: token);
+                            var result = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
                             var response = result.AsStruct<T>();
                             return response.Verify(in sequence)
                                 ? (result, null)
@@ -189,7 +189,9 @@ internal class SocketIn : ISocketIn
                     BufferEvents.Enqueue((buffer.Span.ToArray(), responseType));
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = (await ComputeResponseAsync(buffer, token: token), responseType);
+                    var key = content.Sequence;
+                    var response = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
+                    ReplyBuffer[key] = (response.ToArray(), responseType);
                     break;
                 case XResponseType.Event:
                     BufferEvents.Enqueue((buffer.Span.ToArray(), responseType));
@@ -228,7 +230,7 @@ internal class SocketIn : ISocketIn
         return combined.Slice(0, totalSize).ToArray();
     }
 
-    public async ValueTask<byte[]> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true, CancellationToken token = default)
+    public async ValueTask<Memory<byte>> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true, CancellationToken token = default)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
         if (updateSequence && content.Sequence > Sequence)
@@ -239,8 +241,8 @@ internal class SocketIn : ISocketIn
             return buffer.ToArray();
             
         var totalSize = 32 + replySize;
-        var combined = new byte[totalSize];
-        buffer.Span.CopyTo(combined);
+        Memory<byte> combined = new byte[totalSize];
+        buffer.CopyTo(combined);
         await ReceivedAsync(combined[32..], token).ConfigureAwait(false);
         return combined;
     }
