@@ -175,7 +175,7 @@ internal class SocketIn : ISocketIn
                                 : throw new Exception("Should not called");
                         }
                     default:
-                        throw new Exception("Should Not called");
+                        break;
                 }
             }
 
