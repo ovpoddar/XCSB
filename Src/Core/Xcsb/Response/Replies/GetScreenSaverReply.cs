@@ -16,7 +16,7 @@ public readonly struct GetScreenSaverReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Sequence == sequence;
+        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) && ResponseHeader.Sequence == sequence;
     }
 
     public readonly bool AllowExposures => _allowExposures == 1;

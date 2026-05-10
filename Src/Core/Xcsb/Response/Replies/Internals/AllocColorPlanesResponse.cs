@@ -17,7 +17,7 @@ internal readonly struct AllocColorPlanesResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                _pad1 == 0 && Length == NumberOfPixels;
     }
 }

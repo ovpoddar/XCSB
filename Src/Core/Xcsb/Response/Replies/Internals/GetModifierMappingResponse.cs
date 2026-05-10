@@ -12,7 +12,7 @@ internal readonly struct GetModifierMappingResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == KeycodesPerModifier * 2 && ResponseHeader.Sequence == sequence;
     }
 
