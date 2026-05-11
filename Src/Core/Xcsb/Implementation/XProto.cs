@@ -881,7 +881,7 @@ internal sealed class XProto : IXProto
     }
 
     // todo: move to base class
-    public XEvent GetEvent() => this._socketAccessor.ReceivedResponse();
+    public XEvent GetEvent() => this._socketAccessor.ReceivedEvent();
 
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
         ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask,

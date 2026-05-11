@@ -118,7 +118,7 @@ internal static class ProtoInExtended
         return (result.Span.ToStruct<T>(), error);
     }
 
-    internal static XEvent ReceivedResponse(this ISocketAccessor socketAccessor)
+    internal static XEvent ReceivedEvent(this ISocketAccessor socketAccessor)
     {
         while (true)
         {
