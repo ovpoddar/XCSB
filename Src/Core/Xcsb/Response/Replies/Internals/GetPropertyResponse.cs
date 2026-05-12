@@ -15,8 +15,7 @@ internal readonly struct GetPropertyResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
-               ValueLength != Length;
+        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence);
     }
 
     public byte Format => ResponseHeader.GetValue();

@@ -18,7 +18,7 @@ internal interface ISocketIn
     void FlushSocket(int outProtoSequence, bool shouldThrowOnError);
     T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct;
     int Received(scoped in Span<byte> buffer, bool readAll = true);
-    Task ReceivedAsync(Memory<byte> buffer, CancellationToken token = default);
+    Task<int> ReceivedAsync(Memory<byte> buffer, CancellationToken token = default);
     (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply;
     Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default) where T : unmanaged, IXReply;
 }

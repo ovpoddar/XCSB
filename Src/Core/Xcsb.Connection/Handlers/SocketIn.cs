@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using Xcsb.Connection.Configuration;
@@ -130,20 +131,25 @@ internal class SocketIn : ISocketIn
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public async Task ReceivedAsync(Memory<byte> buffer, CancellationToken token = default)
+    public async Task<int> ReceivedAsync(Memory<byte> buffer, CancellationToken token = default)
     {
-        if (buffer.Length == 0)
-            return;
+        if (buffer.IsEmpty)
+            return 0;
 
         var total = 0;
-        while (_socket.Connected || token.IsCancellationRequested)
+        while (total < buffer.Length)
         {
-            total += await _socket.ReceiveAsync(buffer[total..], SocketFlags.None, token).ConfigureAwait(false);
-            if (total == buffer.Length)
-                break;
+            var received = await _socket.ReceiveAsync(buffer[total..], SocketFlags.None,token)
+                .ConfigureAwait(false);
+
+            if (received == 0)
+                return total == 0 ? -1 : total;
+
+            total += received;
         }
+        return total;
     }
-    
+
     public async Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default)
               where T : unmanaged, IXReply
     {
@@ -151,7 +157,8 @@ internal class SocketIn : ISocketIn
         Memory<byte> buffer = new byte[bufferSize];
         while (true)
         {
-            await ReceivedAsync(buffer, token).ConfigureAwait(false);
+            var totalRead = await ReceivedAsync(buffer, token).ConfigureAwait(false);
+            Debug.Assert(totalRead == bufferSize);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = GetResponseType(in content);
             if (sequence == content.Sequence)
@@ -239,11 +246,12 @@ internal class SocketIn : ISocketIn
         var replySize = (int)(content.Length * 4);
         if (replySize == 0)
             return buffer.ToArray();
-            
+
         var totalSize = 32 + replySize;
         Memory<byte> combined = new byte[totalSize];
         buffer.CopyTo(combined);
-        await ReceivedAsync(combined[32..], token).ConfigureAwait(false);
+        var totalRead = await ReceivedAsync(combined[32..], token).ConfigureAwait(false);
+        Debug.Assert(totalRead == combined.Length - 32);
         return combined;
     }
 

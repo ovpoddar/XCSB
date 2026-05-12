@@ -22,6 +22,7 @@ public interface IXProto : IResponseProto, IResponseProtoAsync, IVoidProto, IVoi
     /// stream, which typically means the X server connection has been closed.
     /// </remarks>
     XEvent GetEvent();
+    Task<XEvent> GetEventAsync();
     bool IsEventAvailable();
     void WaitForEvent();
 }
