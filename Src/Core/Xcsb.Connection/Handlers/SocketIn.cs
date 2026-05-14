@@ -49,6 +49,7 @@ internal class SocketIn : ISocketIn
         return totalRead;
     }
 
+    // logic 1
     public void FlushSocket()
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
@@ -85,6 +86,7 @@ internal class SocketIn : ISocketIn
         }
     }
 
+    // logic 2
     public void FlushSocket(int outProtoSequence, bool shouldThrowOnError)
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
@@ -139,7 +141,7 @@ internal class SocketIn : ISocketIn
         var total = 0;
         while (total < buffer.Length)
         {
-            var received = await _socket.ReceiveAsync(buffer[total..], SocketFlags.None,token)
+            var received = await _socket.ReceiveAsync(buffer[total..], SocketFlags.None, token)
                 .ConfigureAwait(false);
 
             if (received == 0)
@@ -147,12 +149,26 @@ internal class SocketIn : ISocketIn
 
             total += received;
         }
+
         return total;
     }
 
-    public async Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default)
-              where T : unmanaged, IXReply
+    // logic 3
+    public async Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence,
+        CancellationToken token = default) where T : unmanaged, IXReply
     {
+        if (sequence < Sequence)
+        {
+            if (ReplyBuffer.TryGetValue(sequence, out var result))
+            {
+                var response = result.Item1.AsStruct<T>();
+                return response.Verify(in sequence)
+                    ? (result.Item1, null)
+                    : (Array.Empty<byte>(),
+                        new GenericError(result.Item1.ToStruct<XResponse>(), result.Item2.ErrorMessageAction!));
+            }
+        }
+
         var bufferSize = Unsafe.SizeOf<XResponse>();
         Memory<byte> buffer = new byte[bufferSize];
         while (true)
@@ -166,21 +182,22 @@ internal class SocketIn : ISocketIn
                 switch (responseType.ResponseType)
                 {
                     case XResponseType.Error:
-                        {
-                            Sequence++;
-                            var response = buffer.AsStruct<T>();
-                            return response.Verify(in sequence)
-                                ? (Array.Empty<byte>(), new GenericError(buffer.Span.ToStruct<XResponse>(), responseType.ErrorMessageAction!))
-                                : throw new Exception("Should not called");
-                        }
+                    {
+                        Sequence++;
+                        var response = buffer.AsStruct<T>();
+                        return response.Verify(in sequence)
+                            ? (Array.Empty<byte>(),
+                                new GenericError(buffer.Span.ToStruct<XResponse>(), responseType.ErrorMessageAction!))
+                            : throw new Exception("Should not called");
+                    }
                     case XResponseType.Reply:
-                        {
-                            var result = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
-                            var response = result.AsStruct<T>();
-                            return response.Verify(in sequence)
-                                ? (result, null)
-                                : throw new Exception("Should not called");
-                        }
+                    {
+                        var result = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
+                        var response = result.AsStruct<T>();
+                        return response.Verify(in sequence)
+                            ? (result, null)
+                            : throw new Exception("Should not called");
+                    }
                     default:
                         break;
                 }
@@ -214,6 +231,55 @@ internal class SocketIn : ISocketIn
         }
     }
 
+    // logic 4
+    public async Task<MappingDetails?> FlushAsync(Memory<byte> buffer, CancellationToken token = default)
+    {
+        if (buffer.IsEmpty || buffer.Length < Unsafe.SizeOf<XResponse>())
+            throw new ArgumentException("Buffer is too small.", nameof(buffer));
+
+        if (this.BufferEvents.TryDequeue(out var item))
+        {
+            item.Item1.CopyTo(buffer.Span);
+            return item.Item2;
+        }
+
+        var bufferSize = Unsafe.SizeOf<XResponse>();
+        while (true)
+        {
+            var totalRead = await ReceivedAsync(buffer, token).ConfigureAwait(false);
+            if (totalRead == 0)
+                return null;
+            Debug.Assert(totalRead == bufferSize);
+            ref readonly var content = ref buffer.AsStruct<XResponse>();
+            var responseType = GetResponseType(in content);
+
+            switch (responseType.ResponseType)
+            {
+                case XResponseType.Error:
+                    Sequence++;
+                    ReplyBuffer[content.Sequence] = (buffer.Span.ToArray(), responseType);
+                    break;
+                case XResponseType.Notify:
+                    return responseType;
+                    break;
+                case XResponseType.Reply:
+                    var key = content.Sequence;
+                    var response = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
+                    ReplyBuffer[key] = (response.ToArray(), responseType);
+                    break;
+                case XResponseType.Event:
+                    return responseType;
+                    break;
+                case XResponseType.Unknown:
+                    return (content.ReplyType == 35
+                        ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
+                        : responseType);
+                    break;
+                default:
+                    throw new Exception(string.Join(", ", buffer.ToArray()));
+            }
+        }
+    }
 
     public byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true)
     {
@@ -237,7 +303,8 @@ internal class SocketIn : ISocketIn
         return combined.Slice(0, totalSize).ToArray();
     }
 
-    public async ValueTask<Memory<byte>> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true, CancellationToken token = default)
+    public async ValueTask<Memory<byte>> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true,
+        CancellationToken token = default)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
         if (updateSequence && content.Sequence > Sequence)
@@ -274,7 +341,8 @@ internal class SocketIn : ISocketIn
             var response = reply.Item1.AsSpan().AsStruct<T>();
             return response.Verify(in sequence) && reply.Item2.ResponseType == XResponseType.Reply
                 ? (reply.Item1, null)
-                : (Array.Empty<byte>(), new GenericError(reply.Item1.AsSpan().ToStruct<XResponse>(), reply.Item2.ErrorMessageAction!));
+                : (Array.Empty<byte>(),
+                    new GenericError(reply.Item1.AsSpan().ToStruct<XResponse>(), reply.Item2.ErrorMessageAction!));
         }
     }
 
@@ -310,7 +378,5 @@ internal class SocketIn : ISocketIn
             XResponseType.Unknown,
             UnknownResponse.Unknown(type)
         );
-
     }
-
 }

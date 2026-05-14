@@ -883,6 +883,10 @@ internal sealed class XProto : IXProto
     // todo: move to base class
     public XEvent GetEvent() => this._socketAccessor.ReceivedEvent();
 
+    public async Task<XEvent> GetEventAsync(CancellationToken token = default) => 
+        await this._socketAccessor.ReceivedEventAsync(token)
+            .ConfigureAwait(false);
+
     public ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width,
         ushort height, ushort borderWidth, ClassType classType, uint rootVisualId, ValueMask mask,
         ReadOnlySpan<uint> args) =>
