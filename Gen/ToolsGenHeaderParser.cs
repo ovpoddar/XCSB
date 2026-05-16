@@ -1,5 +1,6 @@
 #:sdk Microsoft.NET.Sdk
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -38,7 +39,7 @@ static void Generate(string path)
     headerParser.Parse();
 
     var typeName = Path.GetFileNameWithoutExtension(path);
-    using var writeStream = File.OpenWrite(Path.Join(Environment.CurrentDirectory, "Gen/Generated", typeName + ".generated.cs"));
+    using var writeStream = File.OpenWrite(Path.Join(Environment.CurrentDirectory, "Generated", typeName + ".generated.cs"));
     writeStream.Position = 0;
 
     var items = headerParser.TypeDefinitions
@@ -63,9 +64,49 @@ static void Generate(string path)
             writeStream.Write(field.GetFieldName.FixName());
             writeStream.Write(Encoding.UTF8.GetBytes(";" + Environment.NewLine));
         }
-
         writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
     }
+
+    var requests = items.Where(x => x.Name != null
+            && x.Name.EndsWith("_request_t"))
+        .ToArray();
+
+    writeStream.Write("internal interface "u8);
+    writeStream.Write(Encoding.UTF8.GetBytes(typeName));
+    writeStream.Write("\n{\n"u8);
+    foreach (var item in items)
+    {
+        var itemName = item.Name.FixName("xcb_", "_request_t");
+        var responseName = item.Name.Trim(string.Empty, "_request_t") + "_response_t";
+        var responseType = items.FirstOrDefault(a => a.Name != null
+                && a.Name == responseName);
+
+
+        writeStream.Write("\t"u8);
+        if (responseType == null)
+            writeStream.Write("void "u8);
+        else
+            writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Request"));
+        writeStream.Write(Encoding.UTF8.GetBytes(itemName + "("));
+
+        var isfirst = true;
+
+        foreach (var field in item.Fields)
+        {
+            if (!isfirst)
+            {
+                writeStream.Write(", "u8);
+            }
+            writeStream.Write(field.GetFieldType);
+            writeStream.Write(" "u8);
+            writeStream.Write(field.GetFieldName.FixName());
+            isfirst = false;
+        }
+        writeStream.Write(Encoding.UTF8.GetBytes(");" + Environment.NewLine));
+
+        writeStream.Write("\n"u8);
+    }
+    writeStream.Write("\n}\n"u8);
 }
 
 public class Parser
@@ -504,7 +545,6 @@ public class Parser
     }
 }
 
-
 public struct Token(TokenType value, string text, long line, long column)
 {
     public TokenType Value { get; } = value;
@@ -542,18 +582,13 @@ public struct Location(long row, long column)
     public long Column { get; set; } = column;
 }
 
-
 public sealed class TypeDefinition
 {
-    public String? Name { get; set; }
-    public List<String> Aliases { get; set; } = new List<string>();
+    public string? Name { get; set; }
+    public List<string> Aliases { get; set; } = new List<string>();
     public string? Comments { get; set; }
     public List<FieldDetails> Fields { get; set; } = new List<FieldDetails>();
     public TypeKind Type { get; set; }
-
-    public TypeDefinition()
-    {
-    }
 
     public sealed class FieldDetails
     {
@@ -673,5 +708,44 @@ public static class Helpers
         }
 
         return result;
+    }
+
+    public static string FixName(this string value, string startsWith, string endWith)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+        var sb = new StringBuilder();
+        Debug.Assert(value.StartsWith(startsWith));
+        Debug.Assert(value.EndsWith(endWith));
+        var isUpperCase = true;
+        for (var i = startsWith.Length; i < value.Length - endWith.Length; i++)
+        {
+            if (value[i] == '_')
+            {
+                isUpperCase = true;
+                continue;
+            }
+            if (isUpperCase)
+            {
+                sb.Append(char.ToUpper(value[i]));
+                isUpperCase = false;
+            }
+            else
+            {
+                sb.Append(value[i]);
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    public static string Trim(this string value, string startsWith, string endWith)
+    {
+        Span<char> result = stackalloc char[value.Length - (startsWith.Length + endWith.Length)];
+
+        for (int i = 0; i < result.Length; i++)
+            result[i] = value[i + startsWith.Length];
+
+        return new string(result);
     }
 }
