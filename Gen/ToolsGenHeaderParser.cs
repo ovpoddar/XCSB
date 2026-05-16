@@ -543,7 +543,7 @@ public struct Location(long row, long column)
 }
 
 
-public struct TypeDefinition
+public sealed class TypeDefinition
 {
     public String? Name { get; set; }
     public List<String> Aliases { get; set; } = new List<string>();
