@@ -39,18 +39,20 @@ static void Generate(string path)
     headerParser.Parse();
 
     var typeName = Path.GetFileNameWithoutExtension(path);
-    using var writeStream = File.OpenWrite(Path.Join(Environment.CurrentDirectory, "Generated", typeName + ".generated.cs"));
+    using var writeStream = File.OpenWrite(Path.Join(Environment.CurrentDirectory, "Gen/Generated", typeName + ".generated.cs"));
     writeStream.Position = 0;
 
-    var items = headerParser.TypeDefinitions
-        .Where(x => x.Name != null
-            && (x.Name.EndsWith("_request_t") || x.Name.EndsWith("_response_t")))
+    var requestItems = headerParser.TypeDefinitions
+        .Where(x => x.Name != null && x.Name.EndsWith("_request_t"))
+        .ToArray();
+    var responseItems = headerParser.TypeDefinitions
+        .Where(x => x.Name != null &&  x.Name.EndsWith("_response_t"))
         .ToArray();
     writeStream.Write("namespace Xcsb."u8);
     writeStream.Write(Encoding.UTF8.GetBytes(typeName + ';'));
     writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
 
-    foreach (var item in items)
+    foreach (var item in requestItems)
     {
         writeStream.Write("internal sealed struct "u8);
         writeStream.Write(Encoding.UTF8.GetBytes(item.Name!
@@ -67,18 +69,31 @@ static void Generate(string path)
         writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
     }
 
-    var requests = items.Where(x => x.Name != null
-            && x.Name.EndsWith("_request_t"))
-        .ToArray();
+    foreach (var item in responseItems)
+    {
+        writeStream.Write("internal sealed struct "u8);
+        writeStream.Write(Encoding.UTF8.GetBytes(item.Name!
+            .FixName("xcb_") + Environment.NewLine + '{'));
 
+        foreach (var field in item.Fields)
+        {
+            writeStream.Write("\tpublic "u8);
+            writeStream.Write(field.GetFieldType);
+            writeStream.Write(" "u8);
+            writeStream.Write(field.GetFieldName.FixName());
+            writeStream.Write(Encoding.UTF8.GetBytes(";" + Environment.NewLine));
+        }
+        writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
+    }
+    
     writeStream.Write("internal interface "u8);
     writeStream.Write(Encoding.UTF8.GetBytes(typeName));
     writeStream.Write("\n{\n"u8);
-    foreach (var item in items)
+    foreach (var item in requestItems)
     {
         var itemName = item.Name.FixName("xcb_", "_request_t");
         var responseName = item.Name.Trim(string.Empty, "_request_t") + "_response_t";
-        var responseType = items.FirstOrDefault(a => a.Name != null
+        var responseType = responseItems.FirstOrDefault(a => a.Name != null
                 && a.Name == responseName);
 
 
