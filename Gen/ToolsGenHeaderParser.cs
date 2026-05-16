@@ -153,17 +153,13 @@ public class Parser
                     }
                 }
 
-                if (token.Text == "struct" || token.Text == "union" || token.Text == "enum")
+                if (token.Text is "struct" or "union" or "enum")
                 {
                     var typeDefination = GetTypeDefination(token);
                     typeDefination.Comments = cb.ToString();
                     this.TypeDefinitions.Add(typeDefination);
                     cb.Clear();
                 }
-            }
-
-            if (token.Value == TokenType.OpenParen)
-            {
             }
         }
     }
@@ -206,7 +202,7 @@ public class Parser
             throw new Exception("Unexpected token after struct/union/enum");
         }
 
-        var sb = new StringBuilder();
+        var tokens = new List<Token>();
         while (true)
         {
             token = _lexer.NextToken();
@@ -218,12 +214,12 @@ public class Parser
 
             if (token.Value == TokenType.Semicolon && brases == 1)
             {
-                typeDefination.Fields.Add(new TypeDefinition.FieldDetails(sb.ToString().Trim()));
-                sb.Clear();
+                typeDefination.Fields.Add(new TypeDefinition.FieldDetails(tokens.ToList()));
+                tokens.Clear();
             }
             else
             {
-                sb.Append(token.Text + " ");
+                tokens.Add(token);
             }
 
             if (token.Value == TokenType.CloseCurly && brases == 0)
@@ -506,44 +502,46 @@ public class Parser
             }
         }
     }
-
-    private struct Token(TokenType value, string text, long line, long column)
-    {
-        public TokenType Value { get; } = value;
-        public string Text { get; set; } = text;
-        public Location Location { get; } = new(line, column);
-    }
-
-    private enum TokenType
-    {
-        TokenEnd,
-        PreprocessorDirective,
-        Symbol,
-        Comment,
-        Unknown,
-        OpenParen,
-        CloseParen,
-        OpenCurly,
-        CloseCurly,
-        OpenSquare,
-        CloseSquare,
-        Semicolon,
-        Number,
-        Operator,
-        StringInDoubleQuotes,
-        StringInSingleQuotes,
-        Comma,
-        Dot,
-        TernaryQuestion,
-        TernaryColon,
-    }
-
-    private struct Location(long row, long column)
-    {
-        public long Row { get; set; } = row;
-        public long Column { get; set; } = column;
-    }
 }
+
+
+public struct Token(TokenType value, string text, long line, long column)
+{
+    public TokenType Value { get; } = value;
+    public string Text { get; set; } = text;
+    public Location Location { get; } = new(line, column);
+}
+
+public enum TokenType
+{
+    TokenEnd,
+    PreprocessorDirective,
+    Symbol,
+    Comment,
+    Unknown,
+    OpenParen,
+    CloseParen,
+    OpenCurly,
+    CloseCurly,
+    OpenSquare,
+    CloseSquare,
+    Semicolon,
+    Number,
+    Operator,
+    StringInDoubleQuotes,
+    StringInSingleQuotes,
+    Comma,
+    Dot,
+    TernaryQuestion,
+    TernaryColon,
+}
+
+public struct Location(long row, long column)
+{
+    public long Row { get; set; } = row;
+    public long Column { get; set; } = column;
+}
+
 
 public struct TypeDefinition
 {
@@ -557,19 +555,54 @@ public struct TypeDefinition
     {
     }
 
-    public class FieldDetails
+    public sealed class FieldDetails
     {
-        private byte[] _rawField;
-        public FieldDetails(string field)
+        private readonly byte[] _fieldName;
+        private readonly byte[] _fieldType;
+
+        public FieldDetails(List<Token> tokens)
         {
-            _rawField = Encoding.UTF8.GetBytes(field);
+            if (tokens == null || tokens.Count == 0)
+                throw new ArgumentException("Tokens cannot be null or empty.", nameof(tokens));
+
+            int symbolIndex = -1;
+
+            for (int i = tokens.Count - 1; i >= 0; i--)
+            {
+                if (tokens[i].Value == TokenType.Symbol)
+                {
+                    symbolIndex = i;
+                    break;
+                }
+            }
+
+            if (symbolIndex == -1)
+                throw new InvalidOperationException("No symbol token found.");
+
+            string fieldName = tokens[symbolIndex].Text;
+            _fieldName = Encoding.UTF8.GetBytes(fieldName);
+
+            if (symbolIndex == 0)
+                _fieldType = Array.Empty<byte>();
+            else
+            {
+                var sb = new StringBuilder();
+
+                for (int i = 0; i < symbolIndex; i++)
+                {
+                    if (i > 0)
+                        sb.Append(' ');
+
+                    sb.Append(tokens[i].Text);
+                }
+
+                _fieldType = Encoding.UTF8.GetBytes(sb.ToString());
+            }
         }
 
-        public ReadOnlySpan<byte> GetFieldName =>
-            _rawField.AsSpan()[(_rawField.LastIndexOf((byte)' ') + 1)..];
+        public ReadOnlySpan<byte> GetFieldName => _fieldName;
 
-        public ReadOnlySpan<byte> GetFieldType =>
-            _rawField.AsSpan(0, _rawField.LastIndexOf((byte)' '));
+        public ReadOnlySpan<byte> GetFieldType => _fieldType;
     }
 
     public enum TypeKind
