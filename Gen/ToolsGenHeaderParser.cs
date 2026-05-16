@@ -1,4 +1,5 @@
 #:sdk Microsoft.NET.Sdk
+using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -26,10 +27,10 @@ else if (File.Exists(location))
 }
 else
 {
-    System.Console.WriteLine("Fail to process the location.");
+    Console.WriteLine("Fail to process the location.");
 }
 
-System.Console.WriteLine("Parsing completed.");
+Console.WriteLine("Parsing completed.");
 return;
 
 static void Generate(string path)
@@ -46,12 +47,13 @@ static void Generate(string path)
         .Where(x => x.Name != null && x.Name.EndsWith("_request_t"))
         .ToArray();
     var responseItems = headerParser.TypeDefinitions
-        .Where(x => x.Name != null &&  x.Name.EndsWith("_response_t"))
+        .Where(x => x.Name != null && x.Name.EndsWith("_response_t"))
         .ToArray();
     writeStream.Write("namespace Xcsb."u8);
     writeStream.Write(Encoding.UTF8.GetBytes(typeName + ';'));
     writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
 
+    // attempt of writting requests only
     foreach (var item in requestItems)
     {
         writeStream.Write("internal sealed struct "u8);
@@ -61,33 +63,36 @@ static void Generate(string path)
         foreach (var field in item.Fields)
         {
             writeStream.Write("\tpublic "u8);
-            writeStream.Write(field.GetFieldType);
+            writeStream.Write(field.GetFieldType.MapCsType());
             writeStream.Write(" "u8);
             writeStream.Write(field.GetFieldName.FixName());
             writeStream.Write(Encoding.UTF8.GetBytes(";" + Environment.NewLine));
         }
+
         writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
     }
-
+    // attempt of writting response only
     foreach (var item in responseItems)
     {
         writeStream.Write("internal sealed struct "u8);
-        writeStream.Write(Encoding.UTF8.GetBytes(item.Name!
-            .FixName("xcb_") + Environment.NewLine + '{'));
+        writeStream.Write(Encoding.UTF8.GetBytes(item.Name!.FixName("xcb_") + Environment.NewLine + '{'));
 
         foreach (var field in item.Fields)
         {
             writeStream.Write("\tpublic "u8);
-            writeStream.Write(field.GetFieldType);
+            writeStream.Write(field.GetFieldType.MapCsType());
             writeStream.Write(" "u8);
             writeStream.Write(field.GetFieldName.FixName());
             writeStream.Write(Encoding.UTF8.GetBytes(";" + Environment.NewLine));
         }
+
         writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
     }
     
+
+    // base version
     writeStream.Write("internal interface "u8);
-    writeStream.Write(Encoding.UTF8.GetBytes(typeName));
+    writeStream.Write(Encoding.UTF8.GetBytes("I" + typeName));
     writeStream.Write("\n{\n"u8);
     foreach (var item in requestItems)
     {
@@ -95,11 +100,9 @@ static void Generate(string path)
         var responseName = item.Name.Trim(string.Empty, "_request_t") + "_response_t";
         var responseType = responseItems.FirstOrDefault(a => a.Name != null
                 && a.Name == responseName);
-
-
         writeStream.Write("\t"u8);
         if (responseType == null)
-            writeStream.Write("void "u8);
+            writeStream.Write("ResponseProto "u8);
         else
             writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Request"));
         writeStream.Write(Encoding.UTF8.GetBytes(itemName + "("));
@@ -112,14 +115,86 @@ static void Generate(string path)
             {
                 writeStream.Write(", "u8);
             }
-            writeStream.Write(field.GetFieldType);
+
+            writeStream.Write(field.GetFieldType.MapCsType());
             writeStream.Write(" "u8);
             writeStream.Write(field.GetFieldName.FixName());
             isfirst = false;
         }
-        writeStream.Write(Encoding.UTF8.GetBytes(");" + Environment.NewLine));
 
-        writeStream.Write("\n"u8);
+        writeStream.Write(");\n"u8);
+    }
+    writeStream.Write("\n}\n"u8);
+
+    // unchecked version
+    writeStream.Write("internal interface "u8);
+    writeStream.Write(Encoding.UTF8.GetBytes("I" + typeName + "Unchecked"));
+    writeStream.Write("\n{\n"u8);
+    foreach (var item in requestItems)
+    {
+        var itemName = item.Name.FixName("xcb_", "_request_t");
+        var responseName = item.Name.Trim(string.Empty, "_request_t") + "_response_t";
+        var responseType = responseItems.FirstOrDefault(a => a.Name != null
+                                                             && a.Name == responseName);
+        writeStream.Write("\t"u8);
+        if (responseType == null)
+            writeStream.Write("void "u8);
+        else
+            writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Request"));
+        writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Unchecked("));
+
+        var isfirst = true;
+
+        foreach (var field in item.Fields)
+        {
+            if (!isfirst)
+            {
+                writeStream.Write(", "u8);
+            }
+
+            writeStream.Write(field.GetFieldType.MapCsType());
+            writeStream.Write(" "u8);
+            writeStream.Write(field.GetFieldName.FixName());
+            isfirst = false;
+        }
+
+        writeStream.Write(");\n"u8);
+    }
+    writeStream.Write("\n}\n"u8);
+
+    // checked version
+    writeStream.Write("internal interface "u8);
+    writeStream.Write(Encoding.UTF8.GetBytes("I" + typeName + "Checked"));
+    writeStream.Write("\n{\n"u8);
+    foreach (var item in requestItems)
+    {
+        var itemName = item.Name.FixName("xcb_", "_request_t");
+        var responseName = item.Name.Trim(string.Empty, "_request_t") + "_response_t";
+        var responseType = responseItems.FirstOrDefault(a => a.Name != null
+                                                             && a.Name == responseName);
+        writeStream.Write("\t"u8);
+        if (responseType == null)
+            writeStream.Write("void "u8);
+        else
+            writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Request"));
+        writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Checked("));
+
+        var isfirst = true;
+
+        foreach (var field in item.Fields)
+        {
+            if (!isfirst)
+            {
+                writeStream.Write(", "u8);
+            }
+
+            writeStream.Write(field.GetFieldType.MapCsType());
+            writeStream.Write(" "u8);
+            writeStream.Write(field.GetFieldName.FixName());
+            isfirst = false;
+        }
+
+        writeStream.Write(");\n"u8);
     }
     writeStream.Write("\n}\n"u8);
 }
@@ -753,7 +828,6 @@ public static class Helpers
 
         return sb.ToString();
     }
-
     public static string Trim(this string value, string startsWith, string endWith)
     {
         Span<char> result = stackalloc char[value.Length - (startsWith.Length + endWith.Length)];
@@ -762,5 +836,20 @@ public static class Helpers
             result[i] = value[i + startsWith.Length];
 
         return new string(result);
+    }
+    private static readonly FrozenDictionary<string, byte[]> _map = new Dictionary<string, byte[]>
+        {
+            {"uint8_t", "byte"u8.ToArray()},
+            {"uint16_t", "ushort"u8.ToArray()},
+            {"int16_t", "short"u8.ToArray()},
+            {"xcb_window_t", "uint"u8.ToArray()},
+        }.ToFrozenDictionary();
+
+    public static ReadOnlySpan<byte> MapCsType(this ReadOnlySpan<byte> value)
+    {
+        string key = Encoding.UTF8.GetString(value);
+        if (_map.TryGetValue(key, out var result))
+            return result;
+        return value;
     }
 }
