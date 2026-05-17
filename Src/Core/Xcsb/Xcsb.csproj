@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;net8.0;net9.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -29,7 +28,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Xcsb.Connection" Version="1.0.1-beta" />
+	  <PackageReference Include="Xcsb.Connection" Version="1.0.2-beta" />
 	  <PackageReference Include="Xcsb.Extension.BigRequests" Version="1.0.0-beta" />
 	  <PackageReference Include="Xcsb.Models" Version="1.0.0-beta" />
 	</ItemGroup>

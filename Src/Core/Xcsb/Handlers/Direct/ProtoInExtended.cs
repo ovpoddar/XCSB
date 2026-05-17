@@ -36,6 +36,27 @@ internal static class ProtoInExtended
         }
     }
 
+    internal static async Task<(ListFontsWithInfoReply[], GenericError?)> ReceivedResponseArrayAsync(
+        this ISocketAccessor socketAccessor,
+        int sequence, int maxNames, CancellationToken token = default)
+    {
+        var result = new ArrayPoolUsing<ListFontsWithInfoReply>(maxNames);
+        var count = 0;
+        while (true)
+        {
+            var (reply, error) =
+                await socketAccessor.SocketIn.ReceivedResponseSpanAsync<ListFontsWithInfoResponse>(sequence, token);
+            if (error.HasValue)
+                return (Array.Empty<ListFontsWithInfoReply>(), error);
+
+            ref readonly var response = ref reply.AsStruct<ListFontsWithInfoResponse>();
+            if (!response.HasMore) break;
+            result[count++] = new ListFontsWithInfoReply(in response, reply[60..].Span);
+        }
+
+        return (result[0..count].ToArray(), null);
+    }
+
     private static ListFontsWithInfoReply[] GetListFontsReply(ISocketIn socketIn, Span<byte> reply, int sequence,
         int maxNames)
     {
@@ -91,7 +112,15 @@ internal static class ProtoInExtended
         return (result?.AsSpan().ToStruct<T>(), error);
     }
 
-    internal static XEvent ReceivedResponse(this ISocketAccessor socketAccessor)
+
+    internal static async Task<(T?, GenericError?)> ReceivedResponseAsync<T>(this ISocketIn socketIn, int sequence,
+        CancellationToken token = default) where T : unmanaged, IXReply
+    {
+        var (result, error) = await socketIn.ReceivedResponseSpanAsync<T>(sequence, token).ConfigureAwait(false);
+        return (result.Span.ToStruct<T>(), error);
+    }
+
+    internal static XEvent ReceivedEvent(this ISocketAccessor socketAccessor)
     {
         while (true)
         {
@@ -106,5 +135,21 @@ internal static class ProtoInExtended
 
             socketAccessor.SocketIn.FlushSocket();
         }
+    }
+
+    internal static async ValueTask<XEvent> ReceivedEventAsync(this ISocketAccessor socketAccessor,
+        CancellationToken token)
+    {
+        if (socketAccessor.SocketIn.BufferEvents.TryDequeue(out var result))
+            return new XEvent(result.Item1.AsSpan().ToStruct<XResponse>(), result.Item2);
+
+        var bufferSize = Unsafe.SizeOf<XResponse>();
+        var buffer = new byte[bufferSize];
+        var type = await socketAccessor.SocketIn.FlushAsync(buffer, token).ConfigureAwait(false);
+
+        if (type.HasValue)
+            return new XEvent(buffer.ToStruct<XResponse>(), type.Value);
+        return new XEvent(buffer.ToStruct<XResponse>(),
+            new MappingDetails(XResponseType.Event, EventType.LastEvent));
     }
 }

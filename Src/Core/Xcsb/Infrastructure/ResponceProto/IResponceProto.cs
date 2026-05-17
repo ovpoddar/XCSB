@@ -39,11 +39,11 @@ public interface IResponseProto
     QueryColorsReply QueryColors(uint colorMap, ReadOnlySpan<uint> pixels);
     LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name);
     QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height);
-    SetModifierMappingReply SetModifierMapping(Span<ulong> keycodes);
+    SetModifierMappingReply SetModifierMapping(ReadOnlySpan<ulong> keycodes);
     GetModifierMappingReply GetModifierMapping();
     GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count);
     GetKeyboardControlReply GetKeyboardControl();
-    SetPointerMappingReply SetPointerMapping(Span<byte> maps);
+    SetPointerMappingReply SetPointerMapping(ReadOnlySpan<byte> maps);
     GetPointerMappingReply GetPointerMapping();
     GetPointerControlReply GetPointerControl();
     GetScreenSaverReply GetScreenSaver();

@@ -13,7 +13,7 @@ internal readonly struct QueryColorsResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.Reply &&
+        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == NumberOfColors * 2;
     }
 }

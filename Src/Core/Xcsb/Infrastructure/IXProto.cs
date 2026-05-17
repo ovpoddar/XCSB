@@ -4,7 +4,7 @@ using Xcsb.Infrastructure.VoidProto;
 
 namespace Xcsb.Infrastructure;
 
-public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked
+public interface IXProto : IResponseProto, IResponseProtoAsync, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked
 {
     IXBufferProto BufferClient { get; }
 
@@ -22,6 +22,7 @@ public interface IXProto : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidP
     /// stream, which typically means the X server connection has been closed.
     /// </remarks>
     XEvent GetEvent();
+    Task<XEvent> GetEventAsync(CancellationToken token = default);
     bool IsEventAvailable();
     void WaitForEvent();
 }

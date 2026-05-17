@@ -13,7 +13,6 @@ internal readonly struct GetFontPathResponse : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Reply == ResponseType.Reply &&
-               Length != StringLength;
+        return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence);
     }
 }

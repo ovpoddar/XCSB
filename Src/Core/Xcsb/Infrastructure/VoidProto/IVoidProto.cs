@@ -174,7 +174,7 @@ public interface IVoidProto
     ResponseProto SetCloseDownMode(CloseDownMode mode);
     ResponseProto KillClient(uint resource);
 
-    ResponseProto NoOperation(Span<uint> args);
+    ResponseProto NoOperation(ReadOnlySpan<uint> args);
 
     ResponseProto PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
     ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);

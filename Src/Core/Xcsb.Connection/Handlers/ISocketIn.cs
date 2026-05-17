@@ -11,12 +11,15 @@ internal interface ISocketIn
 
     ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; }
     ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; }
-    
     byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true);
+    ValueTask<Memory<byte>> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true,
+        CancellationToken token = default);
     void FlushSocket();
     void FlushSocket(int outProtoSequence, bool shouldThrowOnError);
-    
     T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct;
     int Received(scoped in Span<byte> buffer, bool readAll = true);
+    Task<int> ReceivedAsync(Memory<byte> buffer, CancellationToken token = default);
     (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply;
+    Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default) where T : unmanaged, IXReply;
+    Task<MappingDetails?> FlushAsync(Memory<byte> buffer, CancellationToken token = default);
 }
