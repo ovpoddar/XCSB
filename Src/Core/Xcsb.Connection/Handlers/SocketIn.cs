@@ -261,7 +261,6 @@ internal class SocketIn : ISocketIn
                     break;
                 case XResponseType.Notify:
                     return responseType;
-                    break;
                 case XResponseType.Reply:
                     var key = content.Sequence;
                     var response = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
@@ -269,12 +268,10 @@ internal class SocketIn : ISocketIn
                     break;
                 case XResponseType.Event:
                     return responseType;
-                    break;
                 case XResponseType.Unknown:
                     return (content.ReplyType == 35
                         ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
                         : responseType);
-                    break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
             }
