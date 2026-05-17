@@ -47,7 +47,7 @@ static void Generate(string path)
         .Where(x => x.Name != null && x.Name.EndsWith("_request_t"))
         .ToArray();
     var responseItems = headerParser.TypeDefinitions
-        .Where(x => x.Name != null && x.Name.EndsWith("_response_t"))
+        .Where(x => x.Name != null && x.Name.EndsWith("_reply_t"))
         .ToArray();
     writeStream.Write("namespace Xcsb."u8);
     writeStream.Write(Encoding.UTF8.GetBytes(typeName + ';'));
@@ -88,7 +88,7 @@ static void Generate(string path)
 
         writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
     }
-    
+
 
     // base version
     writeStream.Write("internal interface "u8);
@@ -96,15 +96,15 @@ static void Generate(string path)
     writeStream.Write("\n{\n"u8);
     foreach (var item in requestItems)
     {
-        var itemName = item.Name.FixName("xcb_", "_request_t");
-        var responseName = item.Name.Trim(string.Empty, "_request_t") + "_response_t";
+        var itemName = item.Name!.FixName("xcb_", "_request_t");
+        var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
         var responseType = responseItems.FirstOrDefault(a => a.Name != null
                 && a.Name == responseName);
-        writeStream.Write("\t"u8);
+
         if (responseType == null)
-            writeStream.Write("ResponseProto "u8);
+            writeStream.Write("\tResponseProto "u8);
         else
-            writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Request"));
+            continue;
         writeStream.Write(Encoding.UTF8.GetBytes(itemName + "("));
 
         var isfirst = true;
@@ -126,22 +126,22 @@ static void Generate(string path)
     }
     writeStream.Write("\n}\n"u8);
 
-    // unchecked version
+    // return
     writeStream.Write("internal interface "u8);
-    writeStream.Write(Encoding.UTF8.GetBytes("I" + typeName + "Unchecked"));
+    writeStream.Write(Encoding.UTF8.GetBytes("I" + typeName));
     writeStream.Write("\n{\n"u8);
     foreach (var item in requestItems)
     {
-        var itemName = item.Name.FixName("xcb_", "_request_t");
-        var responseName = item.Name.Trim(string.Empty, "_request_t") + "_response_t";
+        var itemName = item.Name!.FixName("xcb_", "_request_t");
+        var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
         var responseType = responseItems.FirstOrDefault(a => a.Name != null
-                                                             && a.Name == responseName);
-        writeStream.Write("\t"u8);
+                && a.Name == responseName);
+
         if (responseType == null)
-            writeStream.Write("void "u8);
+            continue;
         else
-            writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Request"));
-        writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Unchecked("));
+            writeStream.Write(Encoding.UTF8.GetBytes("\t" + itemName + "Reply "));
+        writeStream.Write(Encoding.UTF8.GetBytes(itemName + "("));
 
         var isfirst = true;
 
@@ -162,22 +162,94 @@ static void Generate(string path)
     }
     writeStream.Write("\n}\n"u8);
 
-    // checked version
+    // return async
     writeStream.Write("internal interface "u8);
-    writeStream.Write(Encoding.UTF8.GetBytes("I" + typeName + "Checked"));
-    writeStream.Write("\n{\n"u8);
+    writeStream.Write(Encoding.UTF8.GetBytes("I" + typeName));
+    writeStream.Write("Async\n{\n"u8);
     foreach (var item in requestItems)
     {
-        var itemName = item.Name.FixName("xcb_", "_request_t");
-        var responseName = item.Name.Trim(string.Empty, "_request_t") + "_response_t";
+        var itemName = item.Name!.FixName("xcb_", "_request_t");
+        var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
         var responseType = responseItems.FirstOrDefault(a => a.Name != null
-                                                             && a.Name == responseName);
-        writeStream.Write("\t"u8);
+                && a.Name == responseName);
+
         if (responseType == null)
-            writeStream.Write("void "u8);
+            continue;
         else
-            writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Request"));
+            writeStream.Write(Encoding.UTF8.GetBytes("\tTask<" + itemName + "Reply> "));
+        writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Async("));
+
+        var isfirst = true;
+
+        foreach (var field in item.Fields)
+        {
+            if (!isfirst)
+            {
+                writeStream.Write(", "u8);
+            }
+
+            writeStream.Write(field.GetFieldType.MapCsType());
+            writeStream.Write(" "u8);
+            writeStream.Write(field.GetFieldName.FixName());
+            isfirst = false;
+        }
+
+        writeStream.Write(");\n"u8);
+    }
+    writeStream.Write("\n}\n"u8);
+
+    // checked
+    writeStream.Write("internal interface "u8);
+    writeStream.Write(Encoding.UTF8.GetBytes("I" + typeName));
+    writeStream.Write("Checked\n{\n"u8);
+    foreach (var item in requestItems)
+    {
+        var itemName = item.Name!.FixName("xcb_", "_request_t");
+        var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
+        var responseType = responseItems.FirstOrDefault(a => a.Name != null
+                && a.Name == responseName);
+
+        if (responseType == null)
+            writeStream.Write("\tvoid "u8);
+        else
+            continue;
         writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Checked("));
+
+        var isfirst = true;
+
+        foreach (var field in item.Fields)
+        {
+            if (!isfirst)
+            {
+                writeStream.Write(", "u8);
+            }
+
+            writeStream.Write(field.GetFieldType.MapCsType());
+            writeStream.Write(" "u8);
+            writeStream.Write(field.GetFieldName.FixName());
+            isfirst = false;
+        }
+
+        writeStream.Write(");\n"u8);
+    }
+    writeStream.Write("\n}\n"u8);
+
+    // Unchecked
+    writeStream.Write("internal interface "u8);
+    writeStream.Write(Encoding.UTF8.GetBytes("I" + typeName));
+    writeStream.Write("Unchecked\n{\n"u8);
+    foreach (var item in requestItems)
+    {
+        var itemName = item.Name!.FixName("xcb_", "_request_t");
+        var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
+        var responseType = responseItems.FirstOrDefault(a => a.Name != null
+                && a.Name == responseName);
+
+        if (responseType == null)
+            writeStream.Write("\tvoid "u8);
+        else
+            continue;
+        writeStream.Write(Encoding.UTF8.GetBytes(itemName + "Unchecked("));
 
         var isfirst = true;
 
