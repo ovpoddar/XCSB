@@ -29,7 +29,7 @@ dotnet add package Xcsb.Connection
 Or add directly to your `.csproj` file:
 
 ```xml
-<PackageReference Include="Xcsb.Connection" Version="1.0.1-beta" />
+<PackageReference Include="Xcsb.Connection" Version="1.0.2-beta" />
 ```
 
 ## Quick Start
