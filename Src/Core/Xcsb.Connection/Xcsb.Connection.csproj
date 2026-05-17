@@ -6,7 +6,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Title>Xcsb.Connection</Title>
-        <Version>1.0.1-beta</Version>
+        <Version>1.0.2-beta</Version>
         <Authors>Ov Poddar</Authors>
         <Description>Xcsb.Connection is a core XCSB library that manages low-level communication with X servers, including parsing display strings, creating connections (TCP or Unix sockets), and handling protocol messages like requests, events, and errors.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
