@@ -6,7 +6,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Title>Xcsb.Models</Title>
-        <Version>1.0.0-beta</Version>
+        <Version>1.0.0.1-beta</Version>
         <Authors>Ov Poddar</Authors>
         <Description>Xcsb.Models</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
