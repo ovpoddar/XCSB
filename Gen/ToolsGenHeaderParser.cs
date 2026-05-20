@@ -75,7 +75,7 @@ static void Generate(string path)
     // attempt of writting response only
     foreach (var item in responseItems)
     {
-        writeStream.Write("internal readonly struct "u8);
+        writeStream.Write("public readonly struct "u8);
         writeStream.Write(Encoding.UTF8.GetBytes(item.Name!.FixName("xcb_") + Environment.NewLine + '{'));
 
         foreach (var field in item.Fields)
@@ -916,6 +916,7 @@ public static class Helpers
             {"uint16_t", "ushort"u8.ToArray()},
             {"int16_t", "short"u8.ToArray()},
             {"xcb_window_t", "uint"u8.ToArray()},
+            {"xcb_atom_t", "ATOM"u8.ToArray()},
         }.ToFrozenDictionary();
 
     public static ReadOnlySpan<byte> MapCsType(this ReadOnlySpan<byte> value)
