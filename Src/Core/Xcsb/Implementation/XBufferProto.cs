@@ -2,10 +2,8 @@
 using System.Text;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
-using Xcsb.Connection.Models;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Handlers.Buffered;
-using Xcsb.Handlers.Direct;
 using Xcsb.Infrastructure;
 using Xcsb.Infrastructure.Exceptions;
 using Xcsb.Masks;
