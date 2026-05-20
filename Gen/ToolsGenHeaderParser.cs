@@ -40,7 +40,8 @@ static void Generate(string path)
     headerParser.Parse();
 
     var typeName = Path.GetFileNameWithoutExtension(path);
-    using var writeStream = File.OpenWrite(Path.Join(Environment.CurrentDirectory, "Gen/Generated", typeName + ".generated.cs"));
+    var directoryName = Path.Join(Environment.CurrentDirectory, "Gen/Generated", typeName + ".generated.cs");
+    using var writeStream = File.OpenWrite(directoryName);
     writeStream.Position = 0;
 
     var requestItems = headerParser.TypeDefinitions
@@ -56,7 +57,7 @@ static void Generate(string path)
     // attempt of writting requests only
     foreach (var item in requestItems)
     {
-        writeStream.Write("internal sealed struct "u8);
+        writeStream.Write("internal readonly struct "u8);
         writeStream.Write(Encoding.UTF8.GetBytes(item.Name!
             .FixName("xcb_") + Environment.NewLine + '{'));
 
@@ -74,7 +75,7 @@ static void Generate(string path)
     // attempt of writting response only
     foreach (var item in responseItems)
     {
-        writeStream.Write("internal sealed struct "u8);
+        writeStream.Write("public readonly struct "u8);
         writeStream.Write(Encoding.UTF8.GetBytes(item.Name!.FixName("xcb_") + Environment.NewLine + '{'));
 
         foreach (var field in item.Fields)
@@ -915,6 +916,7 @@ public static class Helpers
             {"uint16_t", "ushort"u8.ToArray()},
             {"int16_t", "short"u8.ToArray()},
             {"xcb_window_t", "uint"u8.ToArray()},
+            {"xcb_atom_t", "ATOM"u8.ToArray()},
         }.ToFrozenDictionary();
 
     public static ReadOnlySpan<byte> MapCsType(this ReadOnlySpan<byte> value)

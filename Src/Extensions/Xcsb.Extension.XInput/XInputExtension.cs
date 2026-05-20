@@ -1,5 +1,7 @@
 ﻿using System;
 using Xcsb.Connection;
+using Xcsb.Extension.XInput.Implementation;
+using Xcsb.Extension.XInput.Infrastructure;
 
 namespace Xcsb.Extension.XInput
 {
