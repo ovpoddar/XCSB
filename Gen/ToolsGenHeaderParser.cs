@@ -50,6 +50,9 @@ static void Generate(string path)
     var responseItems = headerParser.TypeDefinitions
         .Where(x => x.Name != null && x.Name.EndsWith("_reply_t"))
         .ToArray();
+    var enums = headerParser.TypeDefinitions
+        .Where(x => x.Type == TypeDefinition.TypeKind.Enum)
+        .ToArray();
     writeStream.Write("namespace Xcsb."u8);
     writeStream.Write(Encoding.UTF8.GetBytes(typeName + ';'));
     writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
