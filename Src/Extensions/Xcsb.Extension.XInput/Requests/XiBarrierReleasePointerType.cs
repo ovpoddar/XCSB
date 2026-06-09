@@ -10,6 +10,6 @@ internal readonly struct XiBarrierReleasePointerType(byte majorOpCode, uint numB
 {
     public readonly byte MajorOpcode = majorOpCode;
     public readonly OpCode Opcode = OpCode.XiBarrierReleasePointer;
-    public readonly ushort Length = 2;
+    public readonly ushort Length = (ushort)(2 + numBarriers * 3);
     public readonly uint NumBarriers = numBarriers;
 }

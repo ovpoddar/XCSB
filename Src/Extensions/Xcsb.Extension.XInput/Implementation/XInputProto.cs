@@ -196,7 +196,15 @@ internal sealed class XInputProto : IXinputRequest
 
     public ResponseProto XiChangeHierarchy(HierarchyChangeBuilder builder)
     {
-        throw new NotImplementedException();
+        var request = new XiChangeHierarchyType(this._response.MajorOpcode, (byte)builder.m_length, 
+            builder.m_data.Length / 4);
+        Span<byte> scratchBuffer = stackalloc byte[request.Length * 4];
+        scratchBuffer.WriteRequest(
+            ref request,
+            8,
+            builder.m_data);
+        _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     public ResponseProto XiSetClientPointer(uint window, ushort deviceId)
@@ -260,7 +268,14 @@ internal sealed class XInputProto : IXinputRequest
 
     public ResponseProto XiBarrierReleasePointer(ReadOnlySpan<BarrierReleasePointerInfo> barriers)
     {
-        throw new NotImplementedException();
+        var request = new XiBarrierReleasePointerType(this._response.MajorOpcode, (uint)barriers.Length);
+        Span<byte> scratchBuffer = stackalloc byte[request.Length * 4];
+        scratchBuffer.WriteRequest(
+            ref request,
+            8,
+            MemoryMarshal.Cast<BarrierReleasePointerInfo, byte>(barriers));
+        _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     public ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, ushort numClasses,
@@ -271,6 +286,8 @@ internal sealed class XInputProto : IXinputRequest
 
     public ChangeDeviceControlReply ChangeDeviceControl(ushort controlId, byte deviceId)
     {
-        throw new NotImplementedException();
+        var request = new ChangeDeviceControlType(this._response.MajorOpcode, controlId, deviceId);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
+        
     }
 }
