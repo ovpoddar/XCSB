@@ -6,7 +6,7 @@ namespace Xcsb.Extension.XInput.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct XiChangeHierarchyType(byte majorOpCode, byte numChanges, byte changes)
+internal readonly struct XiChangeHierarchyType(byte majorOpCode, byte numChanges)
 {
     public readonly byte MajorOpcode = majorOpCode;
     public readonly OpCode Opcode = OpCode.XiChangeHierarchy;

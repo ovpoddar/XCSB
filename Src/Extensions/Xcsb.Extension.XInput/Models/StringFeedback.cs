@@ -5,13 +5,13 @@ namespace Xcsb.Extension.XInput.Models;
 
 public class StringFeedback : IFeedback
 {
-    private readonly uint[] _keysyms;
     internal readonly StrFeedback m_feedback;
+    internal readonly uint[] m_keysyms;
 
-    public StringFeedback(byte feedbackId, uint[] keysyms)
+    public StringFeedback(byte feedbackId, uint[] mKeysyms)
     {
-        _keysyms = keysyms;
-        m_feedback = new StrFeedback(feedbackId, (ushort)keysyms.Length);
+        m_keysyms = mKeysyms;
+        m_feedback = new StrFeedback(feedbackId, (ushort)mKeysyms.Length);
         ClassId = m_feedback.ClassId;
         FeedbackId = m_feedback.FeedbackId;
         Length = m_feedback.Length;

@@ -10,7 +10,7 @@ internal readonly struct XiSelectEventsType(byte majorOpCode, uint window, ushor
 {
     public readonly byte MajorOpcode = majorOpCode;
     public readonly OpCode Opcode = OpCode.XiSelectEvents;
-    public readonly ushort Length = 3;
+    public readonly ushort Length = (ushort)(3 + numMask);
     public readonly uint Window = window;
     public readonly ushort NumMask = numMask;
 }
