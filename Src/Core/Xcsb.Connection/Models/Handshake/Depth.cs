@@ -56,7 +56,7 @@ public class Depth
 file struct _Depth
 {
     public byte DepthValue;
-    public byte Pad0;
+    private byte _pad0;
     public ushort VisualsLength;
-    public int Pad1;
+    private int _pad1;
 }

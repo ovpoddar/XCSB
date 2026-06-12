@@ -16,6 +16,6 @@ public readonly struct GetExtensionVersionReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Verify(sequence) && Length == 0;
+        return ResponseHeader.Verify(sequence) && Length == 0 && ResponseHeader.Reply == 1;
     }
 }

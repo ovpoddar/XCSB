@@ -94,7 +94,7 @@ public class HierarchyChangeBuilder
         public ushort Length { get; } = 3;
         public readonly ushort DeviceId = deviceId;
         public readonly ChangeMode ReturnMode = returnMode;
-        public readonly byte pad0 = 0;
+        private readonly byte _pad0 = 0;
         public readonly ushort ReturnPointer = returnPointer;
         public readonly ushort ReturnKeyboard = returnKeyboard;
     }

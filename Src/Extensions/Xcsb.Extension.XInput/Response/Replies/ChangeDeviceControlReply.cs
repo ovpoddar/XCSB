@@ -14,6 +14,6 @@ public readonly struct ChangeDeviceControlReply(byte majorOpCode) : IXReply
     private readonly byte Pad0;
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Verify(sequence) && Length == 2;
+        return ResponseHeader.Verify(sequence) && Length == 2 && ResponseHeader.Reply == 1;
     }
 }
