@@ -6,21 +6,12 @@ namespace Xcsb.Extension.XInput.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct GrabDeviceKeyType(
-    byte majorOpCode,
-    uint grabWindow,
-    ushort numClasses,
-    ushort modifiers,
-    byte modifierDevice,
-    byte grabbedDevice,
-    byte key,
-    byte thisDeviceMode,
-    byte otherDeviceMode,
-    byte ownerEvents)
+internal readonly struct GrabDeviceKeyType(byte majorOpCode, uint grabWindow, ushort modifiers, byte modifierDevice,
+    byte grabbedDevice, byte key, byte thisDeviceMode, byte otherDeviceMode, byte ownerEvents, ushort numClasses)
 {
     public readonly byte MajorOpcode = majorOpCode;
     public readonly OpCode Opcode = OpCode.GrabDeviceKey;
-    public readonly ushort Length = 5;
+    public readonly ushort Length = (ushort)(5 + numClasses);
     public readonly uint GrabWindow = grabWindow;
     public readonly ushort NumClasses = numClasses;
     public readonly ushort Modifiers = modifiers;

@@ -8,15 +8,15 @@ namespace Xcsb.Extension.XInput.Models.Writers;
 
 public class HierarchyChangeBuilder
 {
-    internal int _length;
-    internal byte[] _data;
+    internal int m_length;
+    internal byte[] m_data;
 
     public static HierarchyChangeBuilder Create()
     {
         var items = new HierarchyChangeBuilder()
         {
-            _data = Array.Empty<byte>(),
-            _length = 0
+            m_data = Array.Empty<byte>(),
+            m_length = 0
         };
         return items;
     }
@@ -24,9 +24,9 @@ public class HierarchyChangeBuilder
     public HierarchyChangeBuilder AddMaster(ReadOnlySpan<byte> name, bool sendCore, bool enable)
     {
         var request = new AddMasterHierarchy((ushort)name.Length, sendCore, enable);
-        var position = _data.Length;
+        var position = m_data.Length;
         Insert(request, position);
-        name.CopyTo(_data.AsSpan(position + 8));
+        name.CopyTo(m_data.AsSpan(position + 8));
         return this;
     }
 
@@ -54,14 +54,14 @@ public class HierarchyChangeBuilder
     
     private void Insert<T>(T item, int? position = null) where T : unmanaged, IHierarchyChange
     {
-        position ??= _data.Length;
+        position ??= m_data.Length;
         var size = item.Length * 4;
         var newBuffer = new byte[position.Value + size];
-        _data.CopyTo(newBuffer, 0);
+        m_data.CopyTo(newBuffer, 0);
         MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref item, 1))
             .CopyTo(newBuffer.AsSpan(position.Value));
-        _data = newBuffer;
-        _length++;
+        m_data = newBuffer;
+        m_length++;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]

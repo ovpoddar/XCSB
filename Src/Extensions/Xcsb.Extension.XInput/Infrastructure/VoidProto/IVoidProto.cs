@@ -9,14 +9,14 @@ namespace Xcsb.Extension.XInput.Infrastructure.VoidProto;
 public interface IVoidProto
 {
     ResponseProto CloseDevice(byte deviceId);
-    ResponseProto SelectExtensionEvent(uint window, ushort numClasses, uint[] foo);
-    ResponseProto ChangeDeviceDontPropagateList(uint window, ushort numClasses, byte mode, uint[] foo);
+    ResponseProto SelectExtensionEvent(uint window, ReadOnlySpan<uint> classes); //xcb_input_event_class_t
+    ResponseProto ChangeDeviceDontPropagateList(uint window, byte mode, ReadOnlySpan<uint> classes);
     ResponseProto UngrabDevice(uint time, byte deviceId);
-    ResponseProto GrabDeviceKey(uint grabWindow, ushort numClasses, ushort modifiers, byte modifierDevice,
-        byte grabbedDevice, byte key, byte thisDeviceMode, byte otherDeviceMode, byte ownerEvents, uint[] foo);
+    ResponseProto GrabDeviceKey(uint grabWindow, ushort modifiers, byte modifierDevice, byte grabbedDevice, byte key,
+        byte thisDeviceMode, byte otherDeviceMode, byte ownerEvents, ReadOnlySpan<uint> classes);
     ResponseProto UngrabDeviceKey(uint grabWindow, ushort modifiers, byte modifierDevice, byte key, byte grabbedDevice);
-    ResponseProto GrabDeviceButton(uint grabWindow, byte grabbedDevice, byte modifierDevice, ushort numClasses,
-        ushort modifiers, byte thisDeviceMode, byte otherDeviceMode, byte button, byte ownerEvents, uint[] foo);
+    ResponseProto GrabDeviceButton(uint grabWindow, byte grabbedDevice, byte modifierDevice, ushort modifiers,
+        byte thisDeviceMode, byte otherDeviceMode, byte button, byte ownerEvents, ReadOnlySpan<uint> classes);
     ResponseProto UngrabDeviceButton(uint grabWindow, ushort modifiers, byte modifierDevice, byte button,
         byte grabbedDevice);
     ResponseProto AllowDeviceEvents(uint time, byte mode, byte deviceId);
@@ -44,6 +44,6 @@ public interface IVoidProto
         byte[] foo);
     ResponseProto XiDeleteProperty(ushort deviceId, ATOM property);
     ResponseProto XiBarrierReleasePointer(ReadOnlySpan<BarrierReleasePointerInfo> barriers);
-    ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, ushort numClasses, byte numEvents,
-        int[] foo);
+    ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, byte numEvents, 
+        ReadOnlySpan<int> foo);
 }
