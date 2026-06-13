@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using Xcsb.Connection.Response;
 using Xcsb.Extension.XInput.Models;
 using Xcsb.Extension.XInput.Models.Writers;
@@ -21,13 +22,18 @@ public interface IVoidProto
         byte grabbedDevice);
     ResponseProto AllowDeviceEvents(uint time, byte mode, byte deviceId);
     ResponseProto SetDeviceFocus(uint focus, uint time, byte revertTo, byte deviceId);
-    ResponseProto ChangeFeedbackControl<T>(FeedbackControlMask mask, byte deviceId, byte feedbackId, T feedback) 
+    ResponseProto ChangeFeedbackControl<T>(FeedbackControlMask mask, byte deviceId, byte feedbackId, T feedback)
         where T : IFeedback;
     ResponseProto ChangeDeviceKeyMapping(byte deviceId, byte firstKeycode, byte keysymsPerKeycode, byte keycodeCount,
         uint[] foo);
     ResponseProto DeviceBell(byte deviceId, byte feedbackId, byte feedbackClass, sbyte percent);
-    ResponseProto ChangeDeviceProperty(ATOM property, ATOM type, byte deviceId, byte format, byte mode, uint numItems,
-        byte[] foo);
+    ResponseProto ChangeDeviceProperty<T>(ATOM property, ATOM type, byte deviceId, PropertyMode mode,
+        ReadOnlySpan<T> items) where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
+    ;
+
     ResponseProto DeleteDeviceProperty(ATOM property, byte deviceId);
     ResponseProto XiWarpPointer(uint srcWin, uint dstWin, int srcX, int srcY, ushort srcWidth, ushort srcHeight,
         int dstX, int dstY, ushort deviceId);
@@ -38,12 +44,16 @@ public interface IVoidProto
     ResponseProto XiSetFocus(uint window, uint time, ushort deviceId);
     ResponseProto XiUngrabDevice(uint time, ushort deviceId);
     ResponseProto XiAllowEvents(uint time, ushort deviceId, byte eventMode, uint touchId, uint grabWindow);
-    ResponseProto XiPassiveUngrabDevice(uint grabWindow, uint detail, ushort deviceId, ushort numModifiers,
-        byte grabType, uint[] foo);
-    ResponseProto XiChangeProperty(ushort deviceId, byte mode, byte format, ATOM property, ATOM type, uint numItems,
-        byte[] foo);
+    ResponseProto XiPassiveUngrabDevice(uint grabWindow, uint detail, InputDevice deviceId, GrabType grabType,
+        ReadOnlySpan<uint> modifiers);
+    ResponseProto XiChangeProperty<T>(ushort deviceId, PropertyMode mode, ATOM property, ATOM type,
+        ReadOnlySpan<T> items) where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
+    ;
     ResponseProto XiDeleteProperty(ushort deviceId, ATOM property);
     ResponseProto XiBarrierReleasePointer(ReadOnlySpan<BarrierReleasePointerInfo> barriers);
-    ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, byte numEvents, 
+    ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, byte numEvents,
         ReadOnlySpan<int> foo);
 }

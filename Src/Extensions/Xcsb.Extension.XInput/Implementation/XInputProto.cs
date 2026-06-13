@@ -1,5 +1,6 @@
 using System;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection;
@@ -197,11 +198,24 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto ChangeDeviceProperty(ATOM property, ATOM type, byte deviceId, byte format, byte mode,
-        uint numItems,
-        byte[] foo)
+    public ResponseProto ChangeDeviceProperty<T>(ATOM property, ATOM type, byte deviceId, PropertyMode mode,
+        ReadOnlySpan<T> items) where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
     {
-        throw new NotImplementedException();
+        var size = Marshal.SizeOf<T>();
+        if (size is not 1 and not 2 and not 4)
+            throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
+        var request = new ChangeDevicePropertyType(this._response.MajorOpcode, property, type, deviceId, size,
+            mode, (ushort)items.Length);
+        Span<byte> scratchBuffer = stackalloc byte[request.Length * 4];
+        scratchBuffer.WriteRequest(
+            ref request,
+            16,
+            MemoryMarshal.Cast<T, byte>(items));
+        _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     public ResponseProto DeleteDeviceProperty(ATOM property, byte deviceId)
@@ -280,16 +294,38 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto XiPassiveUngrabDevice(uint grabWindow, uint detail, ushort deviceId, ushort numModifiers,
-        byte grabType, uint[] foo)
+    public ResponseProto XiPassiveUngrabDevice(uint grabWindow, uint detail, InputDevice deviceId, GrabType grabType, 
+        ReadOnlySpan<uint> modifiers)
     {
-        throw new NotImplementedException();
+        var request = new XiPassiveUngrabDeviceType(this._response.MajorOpcode, grabWindow, detail, deviceId, 
+            (ushort)modifiers.Length, grabType);
+        Span<byte> scratchBuffer = stackalloc byte[request.Length * 4];
+        scratchBuffer.WriteRequest(
+            ref request,
+            20,
+            MemoryMarshal.Cast<uint, byte>(modifiers));
+        _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto XiChangeProperty(ushort deviceId, byte mode, byte format, ATOM property, ATOM type,
-        uint numItems, byte[] foo)
+    public ResponseProto XiChangeProperty<T>(ushort deviceId, PropertyMode mode, ATOM property, ATOM type,
+        ReadOnlySpan<T> items) where T : struct
+#if !NETSTANDARD
+        , INumber<T>
+#endif
     {
-        throw new NotImplementedException();
+        var size = Marshal.SizeOf<T>();
+        if (size is not 1 and not 2 and not 4)
+            throw new ArgumentException("type must be byte, sbyte, short, ushort, int, uint");
+        var request = new XiChangePropertyType(this._response.MajorOpcode, deviceId, mode, (byte)size, property, type,
+            (ushort)items.Length);
+        Span<byte> scratchBuffer = stackalloc byte[request.Length * 4];
+        scratchBuffer.WriteRequest(
+            ref request,
+            20,
+            MemoryMarshal.Cast<T, byte>(items));
+        _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     public ResponseProto XiDeleteProperty(ushort deviceId, ATOM property)
@@ -311,10 +347,11 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, byte numEvents, 
+    public ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, byte numEvents,
         ReadOnlySpan<int> classes)
     {
-        var request = new SendExtensionEventType(this._response.MajorOpcode, destination, deviceId, propagate, numEvents,
+        var request = new SendExtensionEventType(this._response.MajorOpcode, destination, deviceId, propagate,
+            numEvents,
             (ushort)classes.Length);
         Span<byte> scratchBuffer = stackalloc byte[request.Length * 4];
         scratchBuffer.WriteRequest(
