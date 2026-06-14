@@ -24,8 +24,9 @@ public interface IVoidProto
     ResponseProto SetDeviceFocus(uint focus, uint time, byte revertTo, byte deviceId);
     ResponseProto ChangeFeedbackControl<T>(FeedbackControlMask mask, byte deviceId, byte feedbackId, T feedback)
         where T : IFeedback;
+    // suppose need changes
     ResponseProto ChangeDeviceKeyMapping(byte deviceId, byte firstKeycode, byte keysymsPerKeycode, byte keycodeCount,
-        uint[] foo);
+        ReadOnlySpan<uint> keysyms);
     ResponseProto DeviceBell(byte deviceId, byte feedbackId, byte feedbackClass, sbyte percent);
     ResponseProto ChangeDeviceProperty<T>(ATOM property, ATOM type, byte deviceId, PropertyMode mode,
         ReadOnlySpan<T> items) where T : struct

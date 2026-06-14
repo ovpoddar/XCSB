@@ -184,11 +184,19 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto ChangeDeviceKeyMapping(byte deviceId, byte firstKeycode, byte keysymsPerKeycode,
-        byte keycodeCount,
-        uint[] foo)
+    public ResponseProto ChangeDeviceKeyMapping(byte deviceId, byte firstKeycode, byte keysymsPerKeycode, byte keycodeCount,
+        ReadOnlySpan<uint> keysyms)
     {
-        throw new NotImplementedException();
+        var request = new ChangeDeviceKeyMappingType(this._response.MajorOpcode, deviceId, firstKeycode, keysymsPerKeycode,
+            keycodeCount);
+        var requestSize = request.Length * 4;
+        Span<byte> scratchBuffer = stackalloc byte[requestSize];
+        scratchBuffer.WriteRequest(
+            ref request,
+            16,
+            MemoryMarshal.Cast<uint, byte>(keysyms));
+        _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     public ResponseProto DeviceBell(byte deviceId, byte feedbackId, byte feedbackClass, sbyte percent)
