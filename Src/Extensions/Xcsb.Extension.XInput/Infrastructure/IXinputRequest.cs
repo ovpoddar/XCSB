@@ -5,7 +5,7 @@ using Xcsb.Extension.XInput.Response.Replies;
 
 namespace Xcsb.Extension.XInput.Infrastructure;
 
-public interface IXinputRequest : IVoidProto, IResponceProto
+public interface IXinputRequest : IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked, IResponceProto
 {
     GetExtensionVersionReply GetExtensionVersion(ReadOnlySpan<byte> name);
 }
