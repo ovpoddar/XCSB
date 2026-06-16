@@ -9,7 +9,8 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <Extra Condition="$(DOCKER) != ''"> -p:DefineConstants=DOCKERENV</Extra>
-    <GenerateCmd>dotnet run ToolsMethodBuilder.cs$(Extra)</GenerateCmd>
+    <GenerateBaseCmd>dotnet run ToolsXProtoMethodBuilder.cs$(Extra)</GenerateBaseCmd>
+    <GenerateInputCmd>dotnet run ToolsXInputMethodBuilder.cs$(Extra)</GenerateInputCmd>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,8 +29,12 @@
   </ItemGroup>
 
   <ItemGroup>
+	<Compile Include="Generated\ToolsXInputMethodBuilder.cs" />
 	<ProjectReference Include="..\..\Src\Core\Xcsb\Xcsb.csproj" />
     <Compile Remove="**\Tools*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Generated\" />
   </ItemGroup>
 
@@ -37,13 +42,14 @@
     <ItemGroup>
         <GeneratedFiles Include="Generated\**\*Generated.cs" />
     </ItemGroup>
-    <Exec Condition="@(GeneratedFiles-&gt;Count()) == 0" Command="$(GenerateCmd)" WorkingDirectory="Generated" />
+    <Exec Condition="@(GeneratedFiles-&gt;Count()) == 0" Command="$(GenerateBaseCmd)" WorkingDirectory="Generated" />
+    <Exec Condition="@(GeneratedFiles-&gt;Count()) == 0" Command="$(GenerateInputCmd)" WorkingDirectory="Generated" />
     <ItemGroup>
         <Folder Include="Generated\" />
     </ItemGroup>
   </Target>
+  
   <Target Name="CleanUps" BeforeTargets="Clean">
-    
     <ItemGroup>
       <GeneratedFiles Include="Generated\**\*Generated.cs" />
     </ItemGroup>
