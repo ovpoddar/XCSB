@@ -108,42 +108,42 @@ internal sealed class XInputProto : IXinputRequest
         DeleteDevicePropertyBase(property, deviceId);
 
     public ResponseProto XiWarpPointer(uint srcWin, uint dstWin, int srcX, int srcY, ushort srcWidth, ushort srcHeight,
-        int dstX, int dstY, ushort deviceId) =>
+        int dstX, int dstY, InputDevice deviceId) =>
         XiWarpPointerBase(srcWin, dstWin, srcX, srcY, srcWidth, srcHeight, dstX, dstY, deviceId);
 
-    public ResponseProto XiChangeCursor(uint window, uint cursor, ushort deviceId) =>
+    public ResponseProto XiChangeCursor(uint window, uint cursor, InputDevice deviceId) =>
         XiChangeCursorBase(window, cursor, deviceId);
 
     public ResponseProto XiChangeHierarchy(HierarchyChangeBuilder builder) =>
         XiChangeHierarchyBase(builder);
 
-    public ResponseProto XiSetClientPointer(uint window, ushort deviceId) =>
+    public ResponseProto XiSetClientPointer(uint window, InputDevice deviceId) =>
         XiSetClientPointerBase(window, deviceId);
 
     public ResponseProto XiSelectEvents(uint window, EventMaskBuilder mask) =>
         XiSelectEventsBase(window, mask);
 
-    public ResponseProto XiSetFocus(uint window, uint time, ushort deviceId) =>
+    public ResponseProto XiSetFocus(uint window, uint time, InputDevice deviceId) =>
         XiSetFocusBase(window, time, deviceId);
 
-    public ResponseProto XiUngrabDevice(uint time, ushort deviceId) =>
+    public ResponseProto XiUngrabDevice(uint time, InputDevice deviceId) =>
         XiUngrabDeviceBase(time, deviceId);
 
-    public ResponseProto XiAllowEvents(uint time, ushort deviceId, byte eventMode, uint touchId, uint grabWindow) =>
+    public ResponseProto XiAllowEvents(uint time, InputDevice deviceId, byte eventMode, uint touchId, uint grabWindow) =>
         XiAllowEventsBase(time, deviceId, eventMode, touchId, grabWindow);
 
     public ResponseProto XiPassiveUngrabDevice(uint grabWindow, uint detail, InputDevice deviceId, GrabType grabType,
         ReadOnlySpan<uint> modifiers) =>
         XiPassiveUngrabDeviceBase(grabWindow, detail, deviceId, grabType, modifiers);
 
-    public ResponseProto XiChangeProperty<T>(ushort deviceId, PropertyMode mode, ATOM property, ATOM type,
+    public ResponseProto XiChangeProperty<T>(InputDevice deviceId, PropertyMode mode, ATOM property, ATOM type,
         ReadOnlySpan<T> items) where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
         => XiChangePropertyBase(deviceId, mode, property, type, items);
 
-    public ResponseProto XiDeleteProperty(ushort deviceId, ATOM property) =>
+    public ResponseProto XiDeleteProperty(InputDevice deviceId, ATOM property) =>
         XiDeletePropertyBase(deviceId, property);
 
     public ResponseProto XiBarrierReleasePointer(ReadOnlySpan<BarrierReleasePointerInfo> barriers) =>
@@ -257,13 +257,13 @@ internal sealed class XInputProto : IXinputRequest
     }
 
     public void XiWarpPointerChecked(uint srcWin, uint dstWin, int srcX, int srcY, ushort srcWidth, ushort srcHeight,
-        int dstX, int dstY, ushort deviceId)
+        int dstX, int dstY, InputDevice deviceId)
     {
         var cookie = XiWarpPointerBase(srcWin, dstWin, srcX, srcY, srcWidth, srcHeight, dstX, dstY, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void XiChangeCursorChecked(uint window, uint cursor, ushort deviceId)
+    public void XiChangeCursorChecked(uint window, uint cursor, InputDevice deviceId)
     {
         var cookie = XiChangeCursorBase(window, cursor, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
@@ -275,7 +275,7 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void XiSetClientPointerChecked(uint window, ushort deviceId)
+    public void XiSetClientPointerChecked(uint window, InputDevice deviceId)
     {
         var cookie = XiSetClientPointerBase(window, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
@@ -287,19 +287,19 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void XiSetFocusChecked(uint window, uint time, ushort deviceId)
+    public void XiSetFocusChecked(uint window, uint time, InputDevice deviceId)
     {
         var cookie = XiSetFocusBase(window, time, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void XiUngrabDeviceChecked(uint time, ushort deviceId)
+    public void XiUngrabDeviceChecked(uint time, InputDevice deviceId)
     {
         var cookie = XiUngrabDeviceBase(time, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void XiAllowEventsChecked(uint time, ushort deviceId, byte eventMode, uint touchId, uint grabWindow)
+    public void XiAllowEventsChecked(uint time, InputDevice deviceId, byte eventMode, uint touchId, uint grabWindow)
     {
         var cookie = XiAllowEventsBase(time, deviceId, eventMode, touchId, grabWindow);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
@@ -312,7 +312,7 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void XiChangePropertyChecked<T>(ushort deviceId, PropertyMode mode, ATOM property, ATOM type,
+    public void XiChangePropertyChecked<T>(InputDevice deviceId, PropertyMode mode, ATOM property, ATOM type,
         ReadOnlySpan<T> items) where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -322,7 +322,7 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
     }
 
-    public void XiDeletePropertyChecked(ushort deviceId, ATOM property)
+    public void XiDeletePropertyChecked(InputDevice deviceId, ATOM property)
     {
         var cookie = XiDeletePropertyBase(deviceId, property);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, true);
@@ -444,13 +444,13 @@ internal sealed class XInputProto : IXinputRequest
     }
 
     public void XiWarpPointerUnchecked(uint srcWin, uint dstWin, int srcX, int srcY, ushort srcWidth, ushort srcHeight,
-        int dstX, int dstY, ushort deviceId)
+        int dstX, int dstY, InputDevice deviceId)
     {
         var cookie = XiWarpPointerBase(srcWin, dstWin, srcX, srcY, srcWidth, srcHeight, dstX, dstY, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void XiChangeCursorUnchecked(uint window, uint cursor, ushort deviceId)
+    public void XiChangeCursorUnchecked(uint window, uint cursor, InputDevice deviceId)
     {
         var cookie = XiChangeCursorBase(window, cursor, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
@@ -462,7 +462,7 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void XiSetClientPointerUnchecked(uint window, ushort deviceId)
+    public void XiSetClientPointerUnchecked(uint window, InputDevice deviceId)
     {
         var cookie = XiSetClientPointerBase(window, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
@@ -474,19 +474,19 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void XiSetFocusUnchecked(uint window, uint time, ushort deviceId)
+    public void XiSetFocusUnchecked(uint window, uint time, InputDevice deviceId)
     {
         var cookie = XiSetFocusBase(window, time, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void XiUngrabDeviceUnchecked(uint time, ushort deviceId)
+    public void XiUngrabDeviceUnchecked(uint time, InputDevice deviceId)
     {
         var cookie = XiUngrabDeviceBase(time, deviceId);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void XiAllowEventsUnchecked(uint time, ushort deviceId, byte eventMode, uint touchId, uint grabWindow)
+    public void XiAllowEventsUnchecked(uint time, InputDevice deviceId, byte eventMode, uint touchId, uint grabWindow)
     {
         var cookie = XiAllowEventsBase(time, deviceId, eventMode, touchId, grabWindow);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
@@ -499,7 +499,7 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void XiChangePropertyUnchecked<T>(ushort deviceId, PropertyMode mode, ATOM property, ATOM type,
+    public void XiChangePropertyUnchecked<T>(InputDevice deviceId, PropertyMode mode, ATOM property, ATOM type,
         ReadOnlySpan<T> items) where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -509,7 +509,7 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
 
-    public void XiDeletePropertyUnchecked(ushort deviceId, ATOM property)
+    public void XiDeletePropertyUnchecked(InputDevice deviceId, ATOM property)
     {
         var cookie = XiDeletePropertyBase(deviceId, property);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
@@ -728,7 +728,7 @@ internal sealed class XInputProto : IXinputRequest
     }
 
     private ResponseProto XiWarpPointerBase(uint srcWin, uint dstWin, int srcX, int srcY, ushort srcWidth, ushort srcHeight,
-        int dstX, int dstY, ushort deviceId)
+        int dstX, int dstY, InputDevice deviceId)
     {
         var request = new XiWarpPointerType(this._response.MajorOpcode, srcWin, dstWin, srcX, srcY, srcWidth, srcHeight,
             dstX, dstY, deviceId);
@@ -736,7 +736,7 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiChangeCursorBase(uint window, uint cursor, ushort deviceId)
+    private ResponseProto XiChangeCursorBase(uint window, uint cursor, InputDevice deviceId)
     {
         var request = new XiChangeCursorType(this._response.MajorOpcode, window, cursor, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
@@ -756,7 +756,7 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiSetClientPointerBase(uint window, ushort deviceId)
+    private ResponseProto XiSetClientPointerBase(uint window, InputDevice deviceId)
     {
         var request = new XiSetClientPointerType(this._response.MajorOpcode, window, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
@@ -775,21 +775,21 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiSetFocusBase(uint window, uint time, ushort deviceId)
+    private ResponseProto XiSetFocusBase(uint window, uint time, InputDevice deviceId)
     {
         var request = new XiSetFocusType(this._response.MajorOpcode, window, time, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiUngrabDeviceBase(uint time, ushort deviceId)
+    private ResponseProto XiUngrabDeviceBase(uint time, InputDevice deviceId)
     {
         var request = new XiUngrabDeviceType(this._response.MajorOpcode, time, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiAllowEventsBase(uint time, ushort deviceId, byte eventMode, uint touchId, uint grabWindow)
+    private ResponseProto XiAllowEventsBase(uint time, InputDevice deviceId, byte eventMode, uint touchId, uint grabWindow)
     {
         var request = new XiAllowEventsType(this._response.MajorOpcode, time, deviceId, eventMode, touchId, grabWindow);
         _extensionInternal.Transport.SocketOut.Send(ref request);
@@ -810,7 +810,7 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiChangePropertyBase<T>(ushort deviceId, PropertyMode mode, ATOM property, ATOM type,
+    private ResponseProto XiChangePropertyBase<T>(InputDevice deviceId, PropertyMode mode, ATOM property, ATOM type,
         ReadOnlySpan<T> items) where T : struct
 #if !NETSTANDARD
         , INumber<T>
@@ -830,7 +830,7 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiDeletePropertyBase(ushort deviceId, ATOM property)
+    private ResponseProto XiDeletePropertyBase(InputDevice deviceId, ATOM property)
     {
         var request = new XiDeletePropertyType(this._response.MajorOpcode, deviceId, property);
         _extensionInternal.Transport.SocketOut.Send(ref request);

@@ -46,27 +46,27 @@ public interface IVoidProtoChecked
     void DeleteDevicePropertyChecked(ATOM property, byte deviceId);
 
     void XiWarpPointerChecked(uint srcWin, uint dstWin, int srcX, int srcY, ushort srcWidth, ushort srcHeight,
-        int dstX, int dstY, ushort deviceId);
+        int dstX, int dstY, InputDevice deviceId);
 
-    void XiChangeCursorChecked(uint window, uint cursor, ushort deviceId);
+    void XiChangeCursorChecked(uint window, uint cursor, InputDevice deviceId);
     void XiChangeHierarchyChecked(HierarchyChangeBuilder builder);
-    void XiSetClientPointerChecked(uint window, ushort deviceId);
+    void XiSetClientPointerChecked(uint window, InputDevice deviceId);
     void XiSelectEventsChecked(uint window, EventMaskBuilder mask);
-    void XiSetFocusChecked(uint window, uint time, ushort deviceId);
-    void XiUngrabDeviceChecked(uint time, ushort deviceId);
-    void XiAllowEventsChecked(uint time, ushort deviceId, byte eventMode, uint touchId, uint grabWindow);
+    void XiSetFocusChecked(uint window, uint time, InputDevice deviceId);
+    void XiUngrabDeviceChecked(uint time, InputDevice deviceId);
+    void XiAllowEventsChecked(uint time, InputDevice deviceId, byte eventMode, uint touchId, uint grabWindow);
 
     void XiPassiveUngrabDeviceChecked(uint grabWindow, uint detail, InputDevice deviceId, GrabType grabType,
         ReadOnlySpan<uint> modifiers);
 
-    void XiChangePropertyChecked<T>(ushort deviceId, PropertyMode mode, ATOM property, ATOM type,
+    void XiChangePropertyChecked<T>(InputDevice deviceId, PropertyMode mode, ATOM property, ATOM type,
         ReadOnlySpan<T> items) where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
     ;
 
-    void XiDeletePropertyChecked(ushort deviceId, ATOM property);
+    void XiDeletePropertyChecked(InputDevice deviceId, ATOM property);
     void XiBarrierReleasePointerChecked(ReadOnlySpan<BarrierReleasePointerInfo> barriers);
 
     void SendExtensionEventChecked(uint destination, byte deviceId, byte propagate, byte numEvents,

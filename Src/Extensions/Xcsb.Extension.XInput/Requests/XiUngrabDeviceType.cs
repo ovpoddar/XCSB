@@ -6,11 +6,11 @@ namespace Xcsb.Extension.XInput.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct XiUngrabDeviceType(byte majorOpCode, uint time, ushort deviceId)
+internal readonly struct XiUngrabDeviceType(byte majorOpCode, uint time, InputDevice deviceId)
 {
     public readonly byte MajorOpcode = majorOpCode;
     public readonly OpCode Opcode = OpCode.XiUngrabDevice;
     public readonly ushort Length = 3;
     public readonly uint Time = time;
-    public readonly ushort DeviceId = deviceId;
+    public readonly InputDevice DeviceId = deviceId;
 }

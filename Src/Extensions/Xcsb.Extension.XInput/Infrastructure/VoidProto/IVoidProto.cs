@@ -37,23 +37,23 @@ public interface IVoidProto
 
     ResponseProto DeleteDeviceProperty(ATOM property, byte deviceId);
     ResponseProto XiWarpPointer(uint srcWin, uint dstWin, int srcX, int srcY, ushort srcWidth, ushort srcHeight,
-        int dstX, int dstY, ushort deviceId);
-    ResponseProto XiChangeCursor(uint window, uint cursor, ushort deviceId);
+        int dstX, int dstY, InputDevice deviceId);
+    ResponseProto XiChangeCursor(uint window, uint cursor, InputDevice deviceId);
     ResponseProto XiChangeHierarchy(HierarchyChangeBuilder builder);
-    ResponseProto XiSetClientPointer(uint window, ushort deviceId);
+    ResponseProto XiSetClientPointer(uint window, InputDevice deviceId);
     ResponseProto XiSelectEvents(uint window, EventMaskBuilder mask);
-    ResponseProto XiSetFocus(uint window, uint time, ushort deviceId);
-    ResponseProto XiUngrabDevice(uint time, ushort deviceId);
-    ResponseProto XiAllowEvents(uint time, ushort deviceId, byte eventMode, uint touchId, uint grabWindow);
+    ResponseProto XiSetFocus(uint window, uint time, InputDevice deviceId);
+    ResponseProto XiUngrabDevice(uint time, InputDevice deviceId);
+    ResponseProto XiAllowEvents(uint time, InputDevice deviceId, byte eventMode, uint touchId, uint grabWindow);
     ResponseProto XiPassiveUngrabDevice(uint grabWindow, uint detail, InputDevice deviceId, GrabType grabType,
         ReadOnlySpan<uint> modifiers);
-    ResponseProto XiChangeProperty<T>(ushort deviceId, PropertyMode mode, ATOM property, ATOM type,
+    ResponseProto XiChangeProperty<T>(InputDevice deviceId, PropertyMode mode, ATOM property, ATOM type,
         ReadOnlySpan<T> items) where T : struct
 #if !NETSTANDARD
         , INumber<T>
 #endif
     ;
-    ResponseProto XiDeleteProperty(ushort deviceId, ATOM property);
+    ResponseProto XiDeleteProperty(InputDevice deviceId, ATOM property);
     ResponseProto XiBarrierReleasePointer(ReadOnlySpan<BarrierReleasePointerInfo> barriers);
     ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, byte numEvents,
         ReadOnlySpan<int> foo);

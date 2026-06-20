@@ -6,17 +6,8 @@ namespace Xcsb.Extension.XInput.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 36)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct XiWarpPointerType(
-    byte majorOpCode,
-    uint srcWin,
-    uint dstWin,
-    int srcX,
-    int srcY,
-    ushort srcWidth,
-    ushort srcHeight,
-    int dstX,
-    int dstY,
-    ushort deviceId)
+internal readonly struct XiWarpPointerType(byte majorOpCode, uint srcWin, uint dstWin, int srcX, int srcY,
+    ushort srcWidth, ushort srcHeight, int dstX, int dstY, InputDevice deviceId)
 {
     public readonly byte MajorOpcode = majorOpCode;
     public readonly OpCode Opcode = OpCode.XiWarpPointer;
@@ -29,5 +20,5 @@ internal readonly struct XiWarpPointerType(
     public readonly ushort SrcHeight = srcHeight;
     public readonly int DstX = dstX;
     public readonly int DstY = dstY;
-    public readonly ushort DeviceId = deviceId;
+    public readonly InputDevice DeviceId = deviceId;
 }
