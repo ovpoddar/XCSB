@@ -1171,7 +1171,7 @@ file abstract class BaseBuilder : IBuilder
             StartInfo = new ProcessStartInfo
             {
                 FileName = compiler,
-                Arguments = $"-x c -o \"{execFile}\" - -lxcb -lxinput",
+                Arguments = $"-x c -o \"{execFile}\" - -lxcb -lxcb-xinput",
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -1179,7 +1179,7 @@ file abstract class BaseBuilder : IBuilder
                 CreateNoWindow = true
             }
         };
-        System.Console.WriteLine(cMainBody);
+
         process.Start();
         process.StandardInput.Write(cMainBody);
         process.StandardInput.Close();
