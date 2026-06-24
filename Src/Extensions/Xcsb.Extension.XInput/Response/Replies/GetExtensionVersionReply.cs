@@ -1,12 +1,13 @@
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Response.Contract;
+using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 public readonly struct GetExtensionVersionReply : IXReply
 {
-    public readonly ResponseHeader<byte, byte> ResponseHeader;
+    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
     public readonly ushort ServerMajor;
     public readonly ushort ServerMinor;
@@ -16,6 +17,6 @@ public readonly struct GetExtensionVersionReply : IXReply
 
     public bool Verify(in int sequence)
     {
-        return ResponseHeader.Verify(sequence) && Length == 0 && ResponseHeader.Reply == 1;
+        return ResponseHeader.Verify(sequence) && Length == 0 && ResponseHeader.Reply == ResponseType.Reply;
     }
 }

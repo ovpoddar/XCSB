@@ -13,6 +13,7 @@ using Xcsb.Extension.XInput.Models;
 using Xcsb.Extension.XInput.Models.Writers;
 using Xcsb.Extension.XInput.Requests;
 using Xcsb.Extension.XInput.Response.Replies;
+using Xcsb.Extension.XInput.Response.Replies.Internals;
 using Xcsb.Models;
 
 namespace Xcsb.Extension.XInput.Implementation;
@@ -47,6 +48,16 @@ internal sealed class XInputProto : IXinputRequest
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.AsSpan().ToStruct<ChangeDeviceControlReply>();
+    }
+
+    public ListInputDevicesReply ListInputDevices()
+    {
+        var cookie = ListInputDevicesBase();
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ListInputDevicesResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new ListInputDevicesReply(result);
     }
 
     public ResponseProto CloseDevice(byte deviceId) =>
@@ -90,8 +101,8 @@ internal sealed class XInputProto : IXinputRequest
         where T : IFeedback =>
         ChangeFeedbackControlBase(mask, deviceId, feedbackId, feedback);
 
-    public ResponseProto ChangeDeviceKeyMapping(byte deviceId, byte firstKeycode, byte keysymsPerKeycode, byte keycodeCount,
-        ReadOnlySpan<uint> keysyms) =>
+    public ResponseProto ChangeDeviceKeyMapping(byte deviceId, byte firstKeycode, byte keysymsPerKeycode,
+        byte keycodeCount, ReadOnlySpan<uint> keysyms) =>
         ChangeDeviceKeyMappingBase(deviceId, firstKeycode, keysymsPerKeycode, keycodeCount, keysyms);
 
     public ResponseProto DeviceBell(byte deviceId, byte feedbackId, byte feedbackClass, sbyte percent) =>
@@ -129,8 +140,8 @@ internal sealed class XInputProto : IXinputRequest
     public ResponseProto XiUngrabDevice(uint time, InputDevice deviceId) =>
         XiUngrabDeviceBase(time, deviceId);
 
-    public ResponseProto XiAllowEvents(uint time, InputDevice deviceId, byte eventMode, uint touchId, uint grabWindow) =>
-        XiAllowEventsBase(time, deviceId, eventMode, touchId, grabWindow);
+    public ResponseProto XiAllowEvents(uint time, InputDevice deviceId, byte eventMode, uint touchId,
+        uint grabWindow) => XiAllowEventsBase(time, deviceId, eventMode, touchId, grabWindow);
 
     public ResponseProto XiPassiveUngrabDevice(uint grabWindow, uint detail, InputDevice deviceId, GrabType grabType,
         ReadOnlySpan<uint> modifiers) =>
@@ -152,7 +163,6 @@ internal sealed class XInputProto : IXinputRequest
     public ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, byte numEvents,
         ReadOnlySpan<int> classes) =>
         SendExtensionEventBase(destination, deviceId, propagate, numEvents, classes);
-
     
     public void CloseDeviceChecked(byte deviceId)
     {
@@ -555,6 +565,13 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
+    private ResponseProto ListInputDevicesBase()
+    {
+        var request = new ListInputDevicesType(this._response.MajorOpcode);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
+    }
+
     private ResponseProto CloseDeviceBase(byte deviceId)
     {
         var request = new CloseDeviceType(this._response.MajorOpcode, deviceId);
@@ -617,8 +634,9 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto GrabDeviceButtonBase(uint grabWindow, byte grabbedDevice, byte modifierDevice, ushort modifiers,
-        byte thisDeviceMode, byte otherDeviceMode, byte button, byte ownerEvents, ReadOnlySpan<uint> classes)
+    private ResponseProto GrabDeviceButtonBase(uint grabWindow, byte grabbedDevice, byte modifierDevice, 
+        ushort modifiers, byte thisDeviceMode, byte otherDeviceMode, byte button, byte ownerEvents, 
+        ReadOnlySpan<uint> classes)
     {
         var request = new GrabDeviceButtonType(this._response.MajorOpcode, grabWindow, grabbedDevice, modifierDevice,
             modifiers, thisDeviceMode, otherDeviceMode, button, ownerEvents, (ushort)classes.Length);
@@ -654,7 +672,8 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto ChangeFeedbackControlBase<T>(FeedbackControlMask mask, byte deviceId, byte feedbackId, T feedback)
+    private ResponseProto ChangeFeedbackControlBase<T>(FeedbackControlMask mask, byte deviceId, byte feedbackId,
+        T feedback)
         where T : IFeedback
     {
         var request = new ChangeFeedbackControlType(this._response.MajorOpcode, mask, deviceId, feedbackId,
@@ -678,10 +697,12 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto ChangeDeviceKeyMappingBase(byte deviceId, byte firstKeycode, byte keysymsPerKeycode, byte keycodeCount,
+    private ResponseProto ChangeDeviceKeyMappingBase(byte deviceId, byte firstKeycode, byte keysymsPerKeycode,
+        byte keycodeCount,
         ReadOnlySpan<uint> keysyms)
     {
-        var request = new ChangeDeviceKeyMappingType(this._response.MajorOpcode, deviceId, firstKeycode, keysymsPerKeycode,
+        var request = new ChangeDeviceKeyMappingType(this._response.MajorOpcode, deviceId, firstKeycode,
+            keysymsPerKeycode,
             keycodeCount);
         var requestSize = request.Length * 4;
         Span<byte> scratchBuffer = stackalloc byte[requestSize];
@@ -727,8 +748,8 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiWarpPointerBase(uint srcWin, uint dstWin, int srcX, int srcY, ushort srcWidth, ushort srcHeight,
-        int dstX, int dstY, InputDevice deviceId)
+    private ResponseProto XiWarpPointerBase(uint srcWin, uint dstWin, int srcX, int srcY, ushort srcWidth,
+        ushort srcHeight, int dstX, int dstY, InputDevice deviceId)
     {
         var request = new XiWarpPointerType(this._response.MajorOpcode, srcWin, dstWin, srcX, srcY, srcWidth, srcHeight,
             dstX, dstY, deviceId);
@@ -789,15 +810,16 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiAllowEventsBase(uint time, InputDevice deviceId, byte eventMode, uint touchId, uint grabWindow)
+    private ResponseProto XiAllowEventsBase(uint time, InputDevice deviceId, byte eventMode, uint touchId,
+        uint grabWindow)
     {
         var request = new XiAllowEventsType(this._response.MajorOpcode, time, deviceId, eventMode, touchId, grabWindow);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiPassiveUngrabDeviceBase(uint grabWindow, uint detail, InputDevice deviceId, GrabType grabType,
-        ReadOnlySpan<uint> modifiers)
+    private ResponseProto XiPassiveUngrabDeviceBase(uint grabWindow, uint detail, InputDevice deviceId,
+        GrabType grabType, ReadOnlySpan<uint> modifiers)
     {
         var request = new XiPassiveUngrabDeviceType(this._response.MajorOpcode, grabWindow, detail, deviceId,
             (ushort)modifiers.Length, grabType);
