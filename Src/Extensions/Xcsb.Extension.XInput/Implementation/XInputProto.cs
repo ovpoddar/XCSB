@@ -9,6 +9,7 @@ using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Extension.XInput.Infrastructure;
+using Xcsb.Extension.XInput.Infrastructure.ResponceProto;
 using Xcsb.Extension.XInput.Models;
 using Xcsb.Extension.XInput.Models.Writers;
 using Xcsb.Extension.XInput.Requests;
@@ -18,6 +19,7 @@ using Xcsb.Models;
 
 namespace Xcsb.Extension.XInput.Implementation;
 
+// https://xorg.freedesktop.org/archive/X11R7.7/doc/libXi/inputlib.pdf
 internal sealed class XInputProto : IXinputRequest
 {
     private readonly QueryExtensionReply _response;
