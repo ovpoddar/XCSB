@@ -22,16 +22,17 @@ public struct ValuatorInfo : IInputInfo
         AxisCount = axisInfo.AxisCount;
         DeviceMode = axisInfo.DeviceMode;
         MotionBufferSize = axisInfo.MotionBufferSize;
-        var axislength = AxisCount * Unsafe.SizeOf<AxisInfo>();
-        AxisInfos = MemoryMarshal.Cast<byte, AxisInfo>(span.Slice(8, axislength)).ToArray();
+        var axisLength = AxisCount * Unsafe.SizeOf<AxisInfo>();
+        AxisInfos = MemoryMarshal.Cast<byte, AxisInfo>(span.Slice(Unsafe.SizeOf<_AxisInfo>(), axisLength))
+            .ToArray();
     }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 file readonly struct _AxisInfo
 {
-    public readonly ClassId ClassId ;
-    public readonly byte Length ;
+    public readonly ClassId ClassId;
+    public readonly byte Length;
     public readonly byte AxisCount;
     public readonly byte DeviceMode;
     public readonly uint MotionBufferSize;
