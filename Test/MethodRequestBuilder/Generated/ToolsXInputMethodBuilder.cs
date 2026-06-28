@@ -14,35 +14,35 @@ var monitorFile = GenerateMonitorFile(compiler);
 using var fileStream = File.Open("./BufferVoidXInputMethodsTest.Generated.cs", FileMode.OpenOrCreate);
 
 IBuilder[] noParamMethod = [
-    //InputCloseDevice(byte DeviceId);
-	//InputSelectExtensionEvent(uint Window, ushort NumClasses);
-	//InputUngrabDevice(xcb_timestamp_t Time, byte DeviceId);
-	//InputChangeDeviceDontPropagateList(uint Window, ushort NumClasses, byte Mode);
-	//InputAllowDeviceEvents(xcb_timestamp_t Time, byte Mode, byte DeviceId);
-	//InputGrabDeviceKey(uint GrabWindow, ushort NumClasses, ushort Modifiers, byte ModifierDevice, byte GrabbedDevice, byte Key, byte ThisDeviceMode, byte OtherDeviceMode, byte OwnerEvents);
-	//InputUngrabDeviceKey(uint GrabWindow, ushort Modifiers, byte ModifierDevice, byte Key, byte GrabbedDevice);
-	//InputGrabDeviceButton(uint GrabWindow, byte GrabbedDevice, byte ModifierDevice, ushort NumClasses, ushort Modifiers, byte ThisDeviceMode, byte OtherDeviceMode, byte Button, byte OwnerEvents);
-	//InputUngrabDeviceButton(uint GrabWindow, ushort Modifiers, byte ModifierDevice, byte Button, byte GrabbedDevice);
-	//InputSetDeviceFocus(uint Focus, xcb_timestamp_t Time, byte RevertTo, byte DeviceId);
-	//InputChangeFeedbackControl(uint32_t Mask, byte DeviceId, byte FeedbackId);
-	//InputChangeDeviceKeyMapping(byte DeviceId, xcb_input_key_code_t FirstKeycode, byte KeysymsPerKeycode, byte KeycodeCount);
-	//InputDeviceBell(byte DeviceId, byte FeedbackId, byte FeedbackClass, int8_t Percent);
-	//InputChangeDeviceProperty(ATOM Property, ATOM Type, byte DeviceId, byte Format, byte Mode, uint32_t NumItems);
-	//InputDeleteDeviceProperty(ATOM Property, byte DeviceId);
-	//InputXiWarpPointer(uint SrcWin, uint DstWin, xcb_input_fp1616_t SrcX, xcb_input_fp1616_t SrcY, ushort SrcWidth, ushort SrcHeight, xcb_input_fp1616_t DstX, xcb_input_fp1616_t DstY, xcb_input_device_id_t Deviceid);
-	//InputXiChangeCursor(uint Window, xcb_cursor_t Cursor, xcb_input_device_id_t Deviceid);
-	//InputXiChangeHierarchy(byte NumChanges);
-	//InputXiSetClientPointer(uint Window, xcb_input_device_id_t Deviceid);
-	//InputXiSelectEvents(uint Window, ushort NumMask);
-	//InputXiSetFocus(uint Window, xcb_timestamp_t Time, xcb_input_device_id_t Deviceid);
-	//InputXiUngrabDevice(xcb_timestamp_t Time, xcb_input_device_id_t Deviceid);
-	//InputXiAllowEvents(xcb_timestamp_t Time, xcb_input_device_id_t Deviceid, byte EventMode, uint32_t Touchid, uint GrabWindow);
-	//InputXiPassiveUngrabDevice(uint GrabWindow, uint32_t Detail, xcb_input_device_id_t Deviceid, ushort NumModifiers, byte GrabType);
-	//InputXiChangeProperty(xcb_input_device_id_t Deviceid, byte Mode, byte Format, ATOM Property, ATOM Type, uint32_t NumItems);
-	//InputXiDeleteProperty(xcb_input_device_id_t Deviceid, ATOM Property);  
-	//InputXiBarrierReleasePointer(uint32_t NumBarriers);
-	//InputSendExtensionEvent(uint Destination, byte DeviceId, byte Propagate, ushort NumClasses, byte NumEvents);
-new MethodDetails9("DependOnDeviceId", "InputCloseDevice", ["$0"], ["byte"], false, STRType.RawBuffer, [MethodDetails9.ImplType.DeviceId])
+    //CloseDevice(byte DeviceId);
+	//SelectExtensionEvent(uint Window, ushort NumClasses);
+	//UngrabDevice(xcb_timestamp_t Time, byte DeviceId);
+	//ChangeDeviceDontPropagateList(uint Window, ushort NumClasses, byte Mode);
+	//AllowDeviceEvents(xcb_timestamp_t Time, byte Mode, byte DeviceId);
+	//GrabDeviceKey(uint GrabWindow, ushort NumClasses, ushort Modifiers, byte ModifierDevice, byte GrabbedDevice, byte Key, byte ThisDeviceMode, byte OtherDeviceMode, byte OwnerEvents);
+	//UngrabDeviceKey(uint GrabWindow, ushort Modifiers, byte ModifierDevice, byte Key, byte GrabbedDevice);
+	//GrabDeviceButton(uint GrabWindow, byte GrabbedDevice, byte ModifierDevice, ushort NumClasses, ushort Modifiers, byte ThisDeviceMode, byte OtherDeviceMode, byte Button, byte OwnerEvents);
+	//UngrabDeviceButton(uint GrabWindow, ushort Modifiers, byte ModifierDevice, byte Button, byte GrabbedDevice);
+	//SetDeviceFocus(uint Focus, xcb_timestamp_t Time, byte RevertTo, byte DeviceId);
+	//ChangeFeedbackControl(uint32_t Mask, byte DeviceId, byte FeedbackId);
+	//ChangeDeviceKeyMapping(byte DeviceId, xcb_input_key_code_t FirstKeycode, byte KeysymsPerKeycode, byte KeycodeCount);
+	//DeviceBell(byte DeviceId, byte FeedbackId, byte FeedbackClass, int8_t Percent);
+	//ChangeDeviceProperty(ATOM Property, ATOM Type, byte DeviceId, byte Format, byte Mode, uint32_t NumItems);
+	//DeleteDeviceProperty(ATOM Property, byte DeviceId);
+	//XiWarpPointer(uint SrcWin, uint DstWin, xcb_input_fp1616_t SrcX, xcb_input_fp1616_t SrcY, ushort SrcWidth, ushort SrcHeight, xcb_input_fp1616_t DstX, xcb_input_fp1616_t DstY, xcb_input_device_id_t Deviceid);
+	//XiChangeCursor(uint Window, xcb_cursor_t Cursor, xcb_input_device_id_t Deviceid);
+	//XiChangeHierarchy(byte NumChanges);
+	//XiSetClientPointer(uint Window, xcb_input_device_id_t Deviceid);
+	//XiSelectEvents(uint Window, ushort NumMask);
+	//XiSetFocus(uint Window, xcb_timestamp_t Time, xcb_input_device_id_t Deviceid);
+	//XiUngrabDevice(xcb_timestamp_t Time, xcb_input_device_id_t Deviceid);
+	//XiAllowEvents(xcb_timestamp_t Time, xcb_input_device_id_t Deviceid, byte EventMode, uint32_t Touchid, uint GrabWindow);
+	//XiPassiveUngrabDevice(uint GrabWindow, uint32_t Detail, xcb_input_device_id_t Deviceid, ushort NumModifiers, byte GrabType);
+	//XiChangeProperty(xcb_input_device_id_t Deviceid, byte Mode, byte Format, ATOM Property, ATOM Type, uint32_t NumItems);
+	//XiDeleteProperty(xcb_input_device_id_t Deviceid, ATOM Property);  
+	//XiBarrierReleasePointer(uint32_t NumBarriers);
+	//SendExtensionEvent(uint Destination, byte DeviceId, byte Propagate, ushort NumClasses, byte NumEvents);
+new MethodDetails9("DependOnDeviceId", "CloseDevice", ["$0"], ["byte"], false, STRType.RawBuffer, [MethodDetails9.ImplType.DeviceId])
 #if DOCKERENV
     // AVOID RUNNING IN YOUR PC. IT COULD BE CHANGE YOUR KEYBOARD KEYS
     new  ChangeKeyboardMapping(),
@@ -55,6 +55,8 @@ fileStream.Write(
 // IT WILL BE OVERWRITTEN WHEN GENERATING
 #nullable enable
 using Xcsb;
+using Xcsb.Extension.XInput;
+
 namespace MethodRequestBuilder.Test.Generated;
 [Collection("Sequential Execution of Generated Methods")]
 public class VoidXInputMethodsTest
@@ -720,6 +722,11 @@ $"""
         
         _xProto.CreateCursorChecked(item{name}, srcPixmap, maskPixmap, 0, 0, 0, 65535, 65535, 65535, 0, 0);
 """,
+            ImplType.DeviceId => 
+$"""
+        var devices = xinput.ListInputDevices();
+        var item{name} = devices.DeviceInfos[0].DeviceId;
+""",
             _ => throw new NotImplementedException(type.ToString())
         };
     }
@@ -803,7 +810,7 @@ $$"""
         var bufferProtoOut = BufferOutField.GetValue(bufferClient)
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
         var screen = connect.HandshakeSuccessResponseBody!.Screens[0];
-        var damage = connect.Extension.XInput();
+        var xinput = connect.Extension.XInput();
         {{WriteMembers(GetCsImpl)}}
         
         // act
