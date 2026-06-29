@@ -42,7 +42,7 @@ IBuilder[] noParamMethod = [
 	//XiDeleteProperty(xcb_input_device_id_t Deviceid, ATOM Property);  
 	//XiBarrierReleasePointer(uint32_t NumBarriers);
 	//SendExtensionEvent(uint Destination, byte DeviceId, byte Propagate, ushort NumClasses, byte NumEvents);
-new MethodDetails9("DependOnDeviceId", "CloseDevice", ["$0"], ["byte"], false, STRType.RawBuffer, [MethodDetails9.ImplType.DeviceId])
+    new MethodDetails9("DependOnDeviceId", "CloseDevice", ["$0"], ["byte"], false, STRType.RawBuffer, [MethodDetails9.ImplType.DeviceId])
 #if DOCKERENV
     // AVOID RUNNING IN YOUR PC. IT COULD BE CHANGE YOUR KEYBOARD KEYS
     new  ChangeKeyboardMapping(),
@@ -766,7 +766,7 @@ int main()
     {{WriteOutPutofCDynamic(marker)}}
 
     fprintf(stderr, "{{marker}}\n");
-    xcb_void_cookie_t cookie = xcb_{{method.ToSnakeCase()}}_checked({{parameter.ToCParams(IsXcbStr, AddLenInCCall, dynamicNames)}});
+    xcb_void_cookie_t cookie = xcb_input_{{method.ToSnakeCase()}}_checked({{parameter.ToCParams(IsXcbStr, AddLenInCCall, dynamicNames)}});
     xcb_flush(connection);
     fprintf(stderr, "{{marker}}\n");
 
@@ -814,7 +814,7 @@ $$"""
         {{WriteMembers(GetCsImpl)}}
         
         // act
-        bufferClient.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
+        xinput.{{(MethodName.Contains("gc", StringComparison.OrdinalIgnoreCase) ? MethodName.Fix() : MethodName)}}({{FillPassingParameter(ParamSignature.Length)}});
         var buffer = (List<byte>?)WorkingField.GetValue(bufferProtoOut);
 
         // assert
