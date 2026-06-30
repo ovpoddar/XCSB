@@ -540,6 +540,21 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
 
+    
+    public ResponseProto OpenDeviceBase(byte deviceId)
+    {
+        var request = new OpenDeviceType(this._response.MajorOpcode, deviceId);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
+    }
+
+    private ResponseProto ListInputDevicesBase()
+    {
+        var request = new ListInputDevicesType(this._response.MajorOpcode);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
+    }
+    
     private ResponseProto GetExtensionVersionBase(ReadOnlySpan<byte> name)
     {
         var request = new GetExtensionVersionType(this._response.MajorOpcode, (ushort)name.Length);
@@ -560,6 +575,8 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
+    
+    
     private ResponseProto ChangeDeviceControlBase(ushort controlId, byte deviceId)
     {
         var request = new ChangeDeviceControlType(this._response.MajorOpcode, controlId, deviceId);
