@@ -1,3 +1,4 @@
+using Xcsb.Extension.XInput.Models;
 using Xcsb.Extension.XInput.Requests;
 using Xcsb.Extension.XInput.Response.Replies;
 using Xcsb.Models;
@@ -30,17 +31,17 @@ public interface IResponceProto
     ListDevicePropertiesReply ListDeviceProperties(byte deviceId);
     GetDevicePropertyReply GetDeviceProperty(ATOM property, ATOM type, uint offset, uint len, byte deviceId,
         byte delete);
-    XiQueryPointerReply XiQueryPointer(uint window, ushort deviceid);
+    XiQueryPointerReply XiQueryPointer(uint window, InputDevice deviceId);
     XiGetClientPointerReply XiGetClientPointer(uint window);
     XiQueryVersionReply XiQueryVersion(ushort majorVersion, ushort minorVersion);
-    XiQueryDeviceReply XiQueryDevice(ushort deviceid);
-    XiGetFocusReply XiGetFocus(ushort deviceid);
-    XiGrabDeviceReply XiGrabDevice(uint window, uint time, uint cursor, ushort deviceid, byte mode,
+    XiQueryDeviceReply XiQueryDevice(InputDevice deviceId);
+    XiGetFocusReply XiGetFocus(InputDevice deviceId);
+    XiGrabDeviceReply XiGrabDevice(uint window, uint time, uint cursor, InputDevice deviceId, byte mode,
         byte pairedDeviceMode, byte ownerEvents, byte pad0, ushort maskLen);
-    XiPassiveGrabDeviceReply XiPassiveGrabDevice(uint time, uint grabWindow, uint cursor, uint detail, ushort deviceid,
+    XiPassiveGrabDeviceReply XiPassiveGrabDevice(uint time, uint grabWindow, uint cursor, uint detail, InputDevice deviceId,
         ushort numModifiers, ushort maskLen, byte grabType, byte grabMode, byte pairedDeviceMode, byte ownerEvents);
-    XiListPropertiesReply XiListProperties(ushort deviceid);
-    XiGetPropertyReply XiGetProperty(ushort deviceid, byte delete, byte pad0, ATOM property, ATOM type, uint offset,
+    XiListPropertiesReply XiListProperties(InputDevice deviceId);
+    XiGetPropertyReply XiGetProperty(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type, uint offset,
         uint len);
     XiGetSelectedEventsReply XiGetSelectedEvents(uint window);
 }
