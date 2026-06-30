@@ -8,7 +8,6 @@ public interface IResponceProto
 {
     ChangeDeviceControlReply ChangeDeviceControl(ushort controlId, byte deviceId);
     ListInputDevicesReply ListInputDevices();
-    GetExtensionVersionReply GetExtensionVersion(ushort nameLen);
     OpenDeviceReply OpenDevice(byte deviceId);
     SetDeviceModeReply SetDeviceMode(byte deviceId, byte mode);
     GetSelectedExtensionEventsReply GetSelectedExtensionEvents(uint window);
