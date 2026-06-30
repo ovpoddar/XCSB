@@ -694,198 +694,198 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
     
-    public ResponseProto OpenDeviceBase(byte deviceId)
+    private ResponseProto OpenDeviceBase(byte deviceId)
     {
         var request = new OpenDeviceType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto SetDeviceModeBase(byte deviceId, byte mode)
+    private ResponseProto SetDeviceModeBase(byte deviceId, byte mode)
     {
         var request = new SetDeviceModeType(this._response.MajorOpcode, deviceId, mode);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto GetSelectedExtensionEventsBase(uint window)
+    private ResponseProto GetSelectedExtensionEventsBase(uint window)
     {
         var request = new GetSelectedExtensionEventsType(this._response.MajorOpcode, window);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto GetDeviceDontPropagateListBase(uint window)
+    private ResponseProto GetDeviceDontPropagateListBase(uint window)
     {
         var request = new GetDeviceDontPropagateListType(this._response.MajorOpcode, window);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto GetDeviceMotionEventsBase(uint start, uint stop, byte deviceId)
+    private ResponseProto GetDeviceMotionEventsBase(uint start, uint stop, byte deviceId)
     {
         var request = new GetDeviceMotionEventsType(this._response.MajorOpcode, start, stop, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto ChangeKeyboardDeviceBase(byte deviceId)
+    private ResponseProto ChangeKeyboardDeviceBase(byte deviceId)
     {
         var request = new ChangeKeyboardDeviceType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto ChangePointerDeviceBase(byte xAxis, byte yAxis, byte deviceId)
+    private ResponseProto ChangePointerDeviceBase(byte xAxis, byte yAxis, byte deviceId)
     {
         var request = new ChangePointerDeviceType(this._response.MajorOpcode, xAxis, yAxis, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto GrabDeviceBase(uint grabWindow, uint time, ushort numClasses, byte thisDeviceMode, byte otherDeviceMode,
+    private ResponseProto GrabDeviceBase(uint grabWindow, uint time, ushort numClasses, byte thisDeviceMode, byte otherDeviceMode,
         byte ownerEvents, byte deviceId)
     {
         throw new NotImplementedException();
     }
 
-    public ResponseProto GetDeviceFocusBase(byte deviceId)
+    private ResponseProto GetDeviceFocusBase(byte deviceId)
     {
         var request = new GetDeviceFocusType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto GetFeedbackControlBase(byte deviceId)
+    private ResponseProto GetFeedbackControlBase(byte deviceId)
     {
         var request = new GetFeedbackControlType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto GetDeviceKeyMappingBase(byte deviceId, byte firstKeycode, byte count)
+    private ResponseProto GetDeviceKeyMappingBase(byte deviceId, byte firstKeycode, byte count)
     {
         var request = new GetDeviceKeyMappingType(this._response.MajorOpcode, deviceId, firstKeycode, count);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto GetDeviceModifierMappingBase(byte deviceId)
+    private ResponseProto GetDeviceModifierMappingBase(byte deviceId)
     {
         var request = new GetDeviceModifierMappingType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto SetDeviceModifierMappingBase(byte deviceId, byte keycodesPerModifier)
+    private ResponseProto SetDeviceModifierMappingBase(byte deviceId, byte keycodesPerModifier)
     {
         throw new NotImplementedException();
     }
 
-    public ResponseProto GetDeviceButtonMappingBase(byte deviceId)
+    private ResponseProto GetDeviceButtonMappingBase(byte deviceId)
     {
         var request = new GetDeviceButtonMappingType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto SetDeviceButtonMappingBase(byte deviceId, byte mapSize)
+    private ResponseProto SetDeviceButtonMappingBase(byte deviceId, byte mapSize)
     {
         throw new NotImplementedException();
     }
 
-    public ResponseProto QueryDeviceStateBase(byte deviceId)
+    private ResponseProto QueryDeviceStateBase(byte deviceId)
     {
         var request = new QueryDeviceStateType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto SetDeviceValuatorsBase(byte deviceId, byte firstValuator, byte numValuators)
+    private ResponseProto SetDeviceValuatorsBase(byte deviceId, byte firstValuator, byte numValuators)
     {
         throw new NotImplementedException();
     }
 
-    public ResponseProto GetDeviceControlBase(ushort controlId, byte deviceId)
+    private ResponseProto GetDeviceControlBase(ushort controlId, byte deviceId)
     {
         var request = new GetDeviceControlType(this._response.MajorOpcode, controlId, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto ListDevicePropertiesBase(byte deviceId)
+    private ResponseProto ListDevicePropertiesBase(byte deviceId)
     {
         var request = new ListDevicePropertiesType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto GetDevicePropertyBase(ATOM property, ATOM type, uint offset, uint len, byte deviceId, byte delete)
+    private ResponseProto GetDevicePropertyBase(ATOM property, ATOM type, uint offset, uint len, byte deviceId, byte delete)
     {
         var request = new GetDevicePropertyType(this._response.MajorOpcode, property, type, offset, len, deviceId, delete);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto XiQueryPointerBase(uint window, InputDevice deviceId)
+    private ResponseProto XiQueryPointerBase(uint window, InputDevice deviceId)
     {
         var request = new XiQueryPointerType(this._response.MajorOpcode, window, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto XiGetClientPointerBase(uint window)
+    private ResponseProto XiGetClientPointerBase(uint window)
     {
         var request = new XiGetClientPointerType(this._response.MajorOpcode, window);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto XiQueryVersionBase(ushort majorVersion, ushort minorVersion)
+    private ResponseProto XiQueryVersionBase(ushort majorVersion, ushort minorVersion)
     {
         throw new NotImplementedException();
     }
 
-    public ResponseProto XiQueryDeviceBase(InputDevice deviceId)
+    private ResponseProto XiQueryDeviceBase(InputDevice deviceId)
     {
         var request = new XiQueryDeviceType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto XiGetFocusBase(InputDevice deviceId)
+    private ResponseProto XiGetFocusBase(InputDevice deviceId)
     {
         var request = new XiGetFocusType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto XiGrabDeviceBase(uint window, uint time, uint cursor, InputDevice deviceId, byte mode, byte pairedDeviceMode,
+    private ResponseProto XiGrabDeviceBase(uint window, uint time, uint cursor, InputDevice deviceId, byte mode, byte pairedDeviceMode,
         byte ownerEvents, byte pad0, ushort maskLen)
     {
         throw new NotImplementedException();
     }
 
-    public ResponseProto XiPassiveGrabDeviceBase(uint time, uint grabWindow, uint cursor, uint detail, InputDevice deviceId,
+    private ResponseProto XiPassiveGrabDeviceBase(uint time, uint grabWindow, uint cursor, uint detail, InputDevice deviceId,
         ushort numModifiers, ushort maskLen, byte grabType, byte grabMode, byte pairedDeviceMode, byte ownerEvents)
     {
         throw new NotImplementedException();
     }
 
-    public ResponseProto XiListPropertiesBase(InputDevice deviceId)
+    private ResponseProto XiListPropertiesBase(InputDevice deviceId)
     {
         var request = new XiListPropertiesType(this._response.MajorOpcode, deviceId);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    public ResponseProto XiGetPropertyBase(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type, uint offset,
+    private ResponseProto XiGetPropertyBase(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type, uint offset,
         uint len)
     {
         throw new NotImplementedException();
     }
 
-    public ResponseProto XiGetSelectedEventsBase(uint window)
+    private ResponseProto XiGetSelectedEventsBase(uint window)
     {
         var request = new XiGetSelectedEventsType(this._response.MajorOpcode, window);
         _extensionInternal.Transport.SocketOut.Send(ref request);
