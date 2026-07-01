@@ -65,127 +65,221 @@ internal sealed class XInputProto : IXinputRequest
     public OpenDeviceReply OpenDevice(byte deviceId)
     {
         var cookie = OpenDeviceBase(deviceId);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<OpenDeviceResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new OpenDeviceReply(result);
     }
 
     public SetDeviceModeReply SetDeviceMode(byte deviceId, byte mode)
     {
         var cookie = SetDeviceModeBase(deviceId, mode);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceModeReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().AsStruct<SetDeviceModeReply>();
     }
 
     public GetSelectedExtensionEventsReply GetSelectedExtensionEvents(uint window)
     {
         var cookie = GetSelectedExtensionEventsBase(window);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetSelectedExtensionEventsResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetSelectedExtensionEventsReply(result);
     }
 
     public GetDeviceDontPropagateListReply GetDeviceDontPropagateList(uint window)
     {
-        var cookie =  GetDeviceDontPropagateListBase(window);
+        var cookie = GetDeviceDontPropagateListBase(window);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceDontPropagateListResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetDeviceDontPropagateListReply(result);
     }
 
     public GetDeviceMotionEventsReply GetDeviceMotionEvents(uint start, uint stop, byte deviceId)
     {
-        var cookie =  GetDeviceMotionEventsBase(start, stop, deviceId);
+        var cookie = GetDeviceMotionEventsBase(start, stop, deviceId);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceMotionEventsResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetDeviceMotionEventsReply(result);
     }
 
     public ChangeKeyboardDeviceReply ChangeKeyboardDevice(byte deviceId)
     {
-        var cookie =  ChangeKeyboardDeviceBase( deviceId);
+        var cookie = ChangeKeyboardDeviceBase(deviceId);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangeKeyboardDeviceReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<ChangeKeyboardDeviceReply>();
     }
 
     public ChangePointerDeviceReply ChangePointerDevice(byte xAxis, byte yAxis, byte deviceId)
     {
-        var cookie =  ChangePointerDeviceBase( xAxis, yAxis, deviceId);
+        var cookie = ChangePointerDeviceBase(xAxis, yAxis, deviceId);
+        var (result, error) =_extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangePointerDeviceReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<ChangePointerDeviceReply>();
     }
 
-    public GrabDeviceReply GrabDevice(uint grabWindow, uint time, ushort numClasses, byte thisDeviceMode, byte otherDeviceMode,
-        byte ownerEvents, byte deviceId)
+    public GrabDeviceReply GrabDevice(uint grabWindow, uint time, ushort numClasses, byte thisDeviceMode,
+        byte otherDeviceMode, byte ownerEvents, byte deviceId)
     {
         throw new NotImplementedException();
+
+        return result!.AsSpan().ToStruct<GrabDeviceReply>();
     }
 
     public GetDeviceFocusReply GetDeviceFocus(byte deviceId)
     {
-        var cookie =  GetDeviceFocusBase( deviceId);
+        var cookie = GetDeviceFocusBase(deviceId);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceFocusReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<GetDeviceFocusReply>();
     }
 
     public GetFeedbackControlReply GetFeedbackControl(byte deviceId)
     {
-        var cookie =  GetFeedbackControlBase( deviceId);
+        var cookie = GetFeedbackControlBase(deviceId);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetFeedbackControlResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetFeedbackControlReply(result);
     }
 
     public GetDeviceKeyMappingReply GetDeviceKeyMapping(byte deviceId, byte firstKeycode, byte count)
     {
-        var cookie =  GetDeviceKeyMappingBase( deviceId, firstKeycode, count);
+        var cookie = GetDeviceKeyMappingBase(deviceId, firstKeycode, count);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceKeyMappingResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetDeviceKeyMappingReply(result);
     }
 
     public GetDeviceModifierMappingReply GetDeviceModifierMapping(byte deviceId)
     {
-        var cookie =  GetDeviceModifierMappingBase(deviceId);
+        var cookie = GetDeviceModifierMappingBase(deviceId);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceModifierMappingResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetDeviceModifierMappingReply(result);
     }
 
     public SetDeviceModifierMappingReply SetDeviceModifierMapping(byte deviceId, byte keycodesPerModifier)
     {
-        var cookie =  SetDeviceModifierMappingBase( deviceId, keycodesPerModifier);
+        var cookie = SetDeviceModifierMappingBase(deviceId, keycodesPerModifier);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceModifierMappingReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<SetDeviceModifierMappingReply>();
     }
 
     public GetDeviceButtonMappingReply GetDeviceButtonMapping(byte deviceId)
     {
-        var cookie =  GetDeviceButtonMappingBase(deviceId);
+        var cookie = GetDeviceButtonMappingBase(deviceId);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceButtonMappingResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetDeviceButtonMappingReply(result);
     }
 
     public SetDeviceButtonMappingReply SetDeviceButtonMapping(byte deviceId, byte mapSize)
     {
-        var cookie =  SetDeviceButtonMappingBase(deviceId, mapSize);
+        var cookie = SetDeviceButtonMappingBase(deviceId, mapSize);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceButtonMappingReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<SetDeviceButtonMappingReply>();
     }
 
     public QueryDeviceStateReply QueryDeviceState(byte deviceId)
     {
-        var cookie =  QueryDeviceStateBase(deviceId);
+        var cookie = QueryDeviceStateBase(deviceId);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<QueryDeviceStateResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new QueryDeviceStateReply(result);
     }
 
     public SetDeviceValuatorsReply SetDeviceValuators(byte deviceId, byte firstValuator, byte numValuators)
     {
-        var cookie =  SetDeviceValuatorsBase(deviceId, firstValuator, numValuators);
+        var cookie = SetDeviceValuatorsBase(deviceId, firstValuator, numValuators);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceValuatorsReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<SetDeviceValuatorsReply>();
     }
 
     public GetDeviceControlReply GetDeviceControl(ushort controlId, byte deviceId)
     {
-        var cookie =  GetDeviceControlBase(controlId, deviceId);
+        var cookie = GetDeviceControlBase(controlId, deviceId);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceControlResponse>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : new GetDeviceControlReply(result);
     }
 
     public ListDevicePropertiesReply ListDeviceProperties(byte deviceId)
     {
-        var cookie =  ListDevicePropertiesBase(deviceId);
+        var cookie = ListDevicePropertiesBase(deviceId);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ListDevicePropertiesReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<ListDevicePropertiesReply>();
     }
 
-    public GetDevicePropertyReply GetDeviceProperty(ATOM property, ATOM type, uint offset, uint len, byte deviceId, byte delete)
+    public GetDevicePropertyReply GetDeviceProperty(ATOM property, ATOM type, uint offset, uint len, byte deviceId,
+        byte delete)
     {
-        var cookie =  GetDevicePropertyBase(property, type, offset, len, deviceId, delete);
+        var cookie = GetDevicePropertyBase(property, type, offset, len, deviceId, delete);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDevicePropertyReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<GetDevicePropertyReply>();
     }
 
     public XiQueryPointerReply XiQueryPointer(uint window, InputDevice deviceId)
     {
-        var cookie =  XiQueryPointerBase(window, deviceId);
+        var cookie = XiQueryPointerBase(window, deviceId);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiQueryPointerReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<XiQueryPointerReply>();
     }
 
     public XiGetClientPointerReply XiGetClientPointer(uint window)
     {
-        var cookie =  XiGetClientPointerBase(window);
+        var cookie = XiGetClientPointerBase(window);
+        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetClientPointerReply>(cookie.Id);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : result!.AsSpan().ToStruct<XiGetClientPointerReply>();
     }
 
     public XiQueryVersionReply XiQueryVersion(ushort majorVersion, ushort minorVersion)
     {
-        var cookie =  XiQueryVersionBase(majorVersion, minorVersion);
+        var cookie = XiQueryVersionBase(majorVersion, minorVersion);
     }
 
     public XiQueryDeviceReply XiQueryDevice(InputDevice deviceId)
     {
-        var cookie =  XiQueryDeviceBase(deviceId);
+        var cookie = XiQueryDeviceBase(deviceId);
     }
 
     public XiGetFocusReply XiGetFocus(InputDevice deviceId)
     {
-        var cookie =  XiGetFocusBase(deviceId);
+        var cookie = XiGetFocusBase(deviceId);
     }
 
     public XiGrabDeviceReply XiGrabDevice(uint window, uint time, uint cursor, InputDevice deviceId, byte mode,
@@ -194,7 +288,8 @@ internal sealed class XInputProto : IXinputRequest
         throw new NotImplementedException();
     }
 
-    public XiPassiveGrabDeviceReply XiPassiveGrabDevice(uint time, uint grabWindow, uint cursor, uint detail, InputDevice deviceId,
+    public XiPassiveGrabDeviceReply XiPassiveGrabDevice(uint time, uint grabWindow, uint cursor, uint detail,
+        InputDevice deviceId,
         ushort numModifiers, ushort maskLen, byte grabType, byte grabMode, byte pairedDeviceMode, byte ownerEvents)
     {
         throw new NotImplementedException();
@@ -202,18 +297,18 @@ internal sealed class XInputProto : IXinputRequest
 
     public XiListPropertiesReply XiListProperties(InputDevice deviceId)
     {
-        var cookie =  XiListPropertiesBase(deviceId);
+        var cookie = XiListPropertiesBase(deviceId);
     }
 
-    public XiGetPropertyReply XiGetProperty(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type, uint offset,
-        uint len)
+    public XiGetPropertyReply XiGetProperty(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type,
+        uint offset, uint len)
     {
         throw new NotImplementedException();
     }
 
     public XiGetSelectedEventsReply XiGetSelectedEvents(uint window)
     {
-        var cookie =  XiGetSelectedEventsBase(window);
+        var cookie = XiGetSelectedEventsBase(window);
     }
 
     public ResponseProto CloseDevice(byte deviceId) =>
@@ -319,7 +414,7 @@ internal sealed class XInputProto : IXinputRequest
     public ResponseProto SendExtensionEvent(uint destination, byte deviceId, byte propagate, byte numEvents,
         ReadOnlySpan<int> classes) =>
         SendExtensionEventBase(destination, deviceId, propagate, numEvents, classes);
-    
+
     public void CloseDeviceChecked(byte deviceId)
     {
         var cookie = CloseDeviceBase(deviceId);
@@ -693,7 +788,7 @@ internal sealed class XInputProto : IXinputRequest
         var cookie = SendExtensionEventBase(destination, deviceId, propagate, numEvents, classes);
         _extensionInternal.Transport.SkipErrorForSequence(cookie.Id, false);
     }
-    
+
     private ResponseProto OpenDeviceBase(byte deviceId)
     {
         var request = new OpenDeviceType(this._response.MajorOpcode, deviceId);
@@ -743,7 +838,8 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto GrabDeviceBase(uint grabWindow, uint time, ushort numClasses, byte thisDeviceMode, byte otherDeviceMode,
+    private ResponseProto GrabDeviceBase(uint grabWindow, uint time, ushort numClasses, byte thisDeviceMode,
+        byte otherDeviceMode,
         byte ownerEvents, byte deviceId)
     {
         throw new NotImplementedException();
@@ -820,9 +916,11 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto GetDevicePropertyBase(ATOM property, ATOM type, uint offset, uint len, byte deviceId, byte delete)
+    private ResponseProto GetDevicePropertyBase(ATOM property, ATOM type, uint offset, uint len, byte deviceId,
+        byte delete)
     {
-        var request = new GetDevicePropertyType(this._response.MajorOpcode, property, type, offset, len, deviceId, delete);
+        var request =
+            new GetDevicePropertyType(this._response.MajorOpcode, property, type, offset, len, deviceId, delete);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
@@ -860,13 +958,15 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiGrabDeviceBase(uint window, uint time, uint cursor, InputDevice deviceId, byte mode, byte pairedDeviceMode,
+    private ResponseProto XiGrabDeviceBase(uint window, uint time, uint cursor, InputDevice deviceId, byte mode,
+        byte pairedDeviceMode,
         byte ownerEvents, byte pad0, ushort maskLen)
     {
         throw new NotImplementedException();
     }
 
-    private ResponseProto XiPassiveGrabDeviceBase(uint time, uint grabWindow, uint cursor, uint detail, InputDevice deviceId,
+    private ResponseProto XiPassiveGrabDeviceBase(uint time, uint grabWindow, uint cursor, uint detail,
+        InputDevice deviceId,
         ushort numModifiers, ushort maskLen, byte grabType, byte grabMode, byte pairedDeviceMode, byte ownerEvents)
     {
         throw new NotImplementedException();
@@ -879,7 +979,8 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiGetPropertyBase(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type, uint offset,
+    private ResponseProto XiGetPropertyBase(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type,
+        uint offset,
         uint len)
     {
         throw new NotImplementedException();
@@ -899,7 +1000,7 @@ internal sealed class XInputProto : IXinputRequest
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
-    
+
     private ResponseProto GetExtensionVersionBase(ReadOnlySpan<byte> name)
     {
         var request = new GetExtensionVersionType(this._response.MajorOpcode, (ushort)name.Length);
@@ -919,8 +1020,8 @@ internal sealed class XInputProto : IXinputRequest
 
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
-    
-    
+
+
     private ResponseProto ChangeDeviceControlBase(ushort controlId, byte deviceId)
     {
         var request = new ChangeDeviceControlType(this._response.MajorOpcode, controlId, deviceId);
@@ -990,8 +1091,8 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto GrabDeviceButtonBase(uint grabWindow, byte grabbedDevice, byte modifierDevice, 
-        ushort modifiers, byte thisDeviceMode, byte otherDeviceMode, byte button, byte ownerEvents, 
+    private ResponseProto GrabDeviceButtonBase(uint grabWindow, byte grabbedDevice, byte modifierDevice,
+        ushort modifiers, byte thisDeviceMode, byte otherDeviceMode, byte button, byte ownerEvents,
         ReadOnlySpan<uint> classes)
     {
         var request = new GrabDeviceButtonType(this._response.MajorOpcode, grabWindow, grabbedDevice, modifierDevice,
