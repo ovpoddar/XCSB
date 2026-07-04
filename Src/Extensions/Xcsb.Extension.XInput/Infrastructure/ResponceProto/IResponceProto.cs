@@ -37,11 +37,11 @@ public interface IResponceProto
     XiQueryDeviceReply XiQueryDevice(InputDevice deviceId);
     XiGetFocusReply XiGetFocus(InputDevice deviceId);
     XiGrabDeviceReply XiGrabDevice(uint window, uint time, uint cursor, InputDevice deviceId, byte mode,
-        byte pairedDeviceMode, byte ownerEvents, byte pad0, ushort maskLen);
+        byte pairedDeviceMode, byte ownerEvents, ushort maskLen);
     XiPassiveGrabDeviceReply XiPassiveGrabDevice(uint time, uint grabWindow, uint cursor, uint detail, InputDevice deviceId,
         ushort numModifiers, ushort maskLen, byte grabType, byte grabMode, byte pairedDeviceMode, byte ownerEvents);
     XiListPropertiesReply XiListProperties(InputDevice deviceId);
-    XiGetPropertyReply XiGetProperty(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type, uint offset,
+    XiGetPropertyReply XiGetProperty(InputDevice deviceId, byte delete, ATOM property, ATOM type, uint offset,
         uint len);
     XiGetSelectedEventsReply XiGetSelectedEvents(uint window);
 }

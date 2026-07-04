@@ -93,7 +93,8 @@ internal sealed class XInputProto : IXinputRequest
     public GetDeviceDontPropagateListReply GetDeviceDontPropagateList(uint window)
     {
         var cookie = GetDeviceDontPropagateListBase(window);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceDontPropagateListResponse>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceDontPropagateListResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetDeviceDontPropagateListReply(result);
@@ -122,7 +123,8 @@ internal sealed class XInputProto : IXinputRequest
     public ChangePointerDeviceReply ChangePointerDevice(byte xAxis, byte yAxis, byte deviceId)
     {
         var cookie = ChangePointerDeviceBase(xAxis, yAxis, deviceId);
-        var (result, error) =_extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangePointerDeviceReply>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangePointerDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.AsSpan().ToStruct<ChangePointerDeviceReply>();
@@ -149,7 +151,8 @@ internal sealed class XInputProto : IXinputRequest
     public GetFeedbackControlReply GetFeedbackControl(byte deviceId)
     {
         var cookie = GetFeedbackControlBase(deviceId);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetFeedbackControlResponse>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetFeedbackControlResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetFeedbackControlReply(result);
@@ -158,7 +161,8 @@ internal sealed class XInputProto : IXinputRequest
     public GetDeviceKeyMappingReply GetDeviceKeyMapping(byte deviceId, byte firstKeycode, byte count)
     {
         var cookie = GetDeviceKeyMappingBase(deviceId, firstKeycode, count);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceKeyMappingResponse>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceKeyMappingResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetDeviceKeyMappingReply(result);
@@ -167,7 +171,8 @@ internal sealed class XInputProto : IXinputRequest
     public GetDeviceModifierMappingReply GetDeviceModifierMapping(byte deviceId)
     {
         var cookie = GetDeviceModifierMappingBase(deviceId);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceModifierMappingResponse>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceModifierMappingResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetDeviceModifierMappingReply(result);
@@ -196,7 +201,8 @@ internal sealed class XInputProto : IXinputRequest
     public SetDeviceButtonMappingReply SetDeviceButtonMapping(byte deviceId, byte mapSize)
     {
         var cookie = SetDeviceButtonMappingBase(deviceId, mapSize);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceButtonMappingReply>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceButtonMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.AsSpan().ToStruct<SetDeviceButtonMappingReply>();
@@ -215,7 +221,8 @@ internal sealed class XInputProto : IXinputRequest
     public SetDeviceValuatorsReply SetDeviceValuators(byte deviceId, byte firstValuator, byte numValuators)
     {
         var cookie = SetDeviceValuatorsBase(deviceId, firstValuator, numValuators);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceValuatorsReply>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceValuatorsReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.AsSpan().ToStruct<SetDeviceValuatorsReply>();
@@ -224,7 +231,8 @@ internal sealed class XInputProto : IXinputRequest
     public GetDeviceControlReply GetDeviceControl(ushort controlId, byte deviceId)
     {
         var cookie = GetDeviceControlBase(controlId, deviceId);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceControlResponse>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceControlResponse>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : new GetDeviceControlReply(result);
@@ -233,7 +241,8 @@ internal sealed class XInputProto : IXinputRequest
     public ListDevicePropertiesReply ListDeviceProperties(byte deviceId)
     {
         var cookie = ListDevicePropertiesBase(deviceId);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ListDevicePropertiesReply>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ListDevicePropertiesReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.AsSpan().ToStruct<ListDevicePropertiesReply>();
@@ -243,7 +252,8 @@ internal sealed class XInputProto : IXinputRequest
         byte delete)
     {
         var cookie = GetDevicePropertyBase(property, type, offset, len, deviceId, delete);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDevicePropertyReply>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDevicePropertyReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.AsSpan().ToStruct<GetDevicePropertyReply>();
@@ -252,7 +262,8 @@ internal sealed class XInputProto : IXinputRequest
     public XiQueryPointerReply XiQueryPointer(uint window, InputDevice deviceId)
     {
         var cookie = XiQueryPointerBase(window, deviceId);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiQueryPointerReply>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiQueryPointerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.AsSpan().ToStruct<XiQueryPointerReply>();
@@ -261,7 +272,8 @@ internal sealed class XInputProto : IXinputRequest
     public XiGetClientPointerReply XiGetClientPointer(uint window)
     {
         var cookie = XiGetClientPointerBase(window);
-        var (result, error) = _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetClientPointerReply>(cookie.Id);
+        var (result, error) =
+            _extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetClientPointerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result!.AsSpan().ToStruct<XiGetClientPointerReply>();
@@ -283,16 +295,18 @@ internal sealed class XInputProto : IXinputRequest
     }
 
     public XiGrabDeviceReply XiGrabDevice(uint window, uint time, uint cursor, InputDevice deviceId, byte mode,
-        byte pairedDeviceMode, byte ownerEvents, byte pad0, ushort maskLen)
+        byte pairedDeviceMode, byte ownerEvents, ushort maskLen)
     {
-        throw new NotImplementedException();
+        var cookie = new XiGrabDeviceType(this._response.MajorOpcode, window, time, cursor, deviceId, mode,
+            pairedDeviceMode, ownerEvents, maskLen);
     }
 
     public XiPassiveGrabDeviceReply XiPassiveGrabDevice(uint time, uint grabWindow, uint cursor, uint detail,
-        InputDevice deviceId,
-        ushort numModifiers, ushort maskLen, byte grabType, byte grabMode, byte pairedDeviceMode, byte ownerEvents)
+        InputDevice deviceId, ushort numModifiers, ushort maskLen, byte grabType, byte grabMode, byte pairedDeviceMode,
+        byte ownerEvents)
     {
-        throw new NotImplementedException();
+        var cookie = new XiPassiveGrabDeviceType(this._response.MajorOpcode, time, grabWindow, cursor, detail, 
+            deviceId, numModifiers, maskLen, grabType, grabMode, pairedDeviceMode, ownerEvents);
     }
 
     public XiListPropertiesReply XiListProperties(InputDevice deviceId)
@@ -300,10 +314,10 @@ internal sealed class XInputProto : IXinputRequest
         var cookie = XiListPropertiesBase(deviceId);
     }
 
-    public XiGetPropertyReply XiGetProperty(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type,
+    public XiGetPropertyReply XiGetProperty(InputDevice deviceId, byte delete, ATOM property, ATOM type,
         uint offset, uint len)
     {
-        throw new NotImplementedException();
+        var cookie = XiGetPropertyBase(deviceId, delete, property, type, offset, len);
     }
 
     public XiGetSelectedEventsReply XiGetSelectedEvents(uint window)
@@ -839,8 +853,7 @@ internal sealed class XInputProto : IXinputRequest
     }
 
     private ResponseProto GrabDeviceBase(uint grabWindow, uint time, ushort numClasses, byte thisDeviceMode,
-        byte otherDeviceMode,
-        byte ownerEvents, byte deviceId)
+        byte otherDeviceMode, byte ownerEvents, byte deviceId)
     {
         throw new NotImplementedException();
     }
@@ -941,7 +954,9 @@ internal sealed class XInputProto : IXinputRequest
 
     private ResponseProto XiQueryVersionBase(ushort majorVersion, ushort minorVersion)
     {
-        throw new NotImplementedException();
+        var request = new XiQueryVersionType(this._response.MajorOpcode, majorVersion, minorVersion);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto XiQueryDeviceBase(InputDevice deviceId)
@@ -959,15 +974,14 @@ internal sealed class XInputProto : IXinputRequest
     }
 
     private ResponseProto XiGrabDeviceBase(uint window, uint time, uint cursor, InputDevice deviceId, byte mode,
-        byte pairedDeviceMode,
-        byte ownerEvents, byte pad0, ushort maskLen)
+        byte pairedDeviceMode, byte ownerEvents, byte pad0, ushort maskLen)
     {
         throw new NotImplementedException();
     }
 
     private ResponseProto XiPassiveGrabDeviceBase(uint time, uint grabWindow, uint cursor, uint detail,
-        InputDevice deviceId,
-        ushort numModifiers, ushort maskLen, byte grabType, byte grabMode, byte pairedDeviceMode, byte ownerEvents)
+        InputDevice deviceId, ushort numModifiers, ushort maskLen, byte grabType, byte grabMode, byte pairedDeviceMode,
+        byte ownerEvents)
     {
         throw new NotImplementedException();
     }
@@ -979,11 +993,13 @@ internal sealed class XInputProto : IXinputRequest
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
-    private ResponseProto XiGetPropertyBase(InputDevice deviceId, byte delete, byte pad0, ATOM property, ATOM type,
-        uint offset,
-        uint len)
+    private ResponseProto XiGetPropertyBase(InputDevice deviceId, byte delete, ATOM property, ATOM type,
+        uint offset, uint len)
     {
-        throw new NotImplementedException();
+        var request = new XiGetPropertyType(this._response.MajorOpcode, deviceId, delete, property, type, offset,
+            len);
+        _extensionInternal.Transport.SocketOut.Send(ref request);
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto XiGetSelectedEventsBase(uint window)
