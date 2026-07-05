@@ -3,7 +3,7 @@ using Xcsb.Extension.XInput.Requests;
 using Xcsb.Extension.XInput.Response.Replies;
 using Xcsb.Models;
 
-namespace Xcsb.Extension.XInput.Infrastructure.ResponseProto;
+namespace Xcsb.Extension.XInput.Infrastructure.ResponceProto;
 
 public interface IResponceProto
 {
