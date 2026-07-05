@@ -4,10 +4,11 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <RootNamespace>Xcsb.Extension.XInput</RootNamespace>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Xcsb.Connection" Version="1.0.1-beta" />
+        <PackageReference Include="Xcsb.Connection" Version="1.0.2-beta" />
         <PackageReference Include="Xcsb.Models" Version="1.0.0.1-beta" />
     </ItemGroup>
 </Project>

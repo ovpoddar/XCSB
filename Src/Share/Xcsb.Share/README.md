@@ -1,4 +1,4 @@
-# Xcsb.Models
+# Xcsb.Share
 
 This project contains the public models and data transfer objects (DTOs) used by the end users of the Xcsb library. The primary goal of this project is to provide a shared, logic-free set of classes that can be used across different projects within the Xcsb ecosystem.
 

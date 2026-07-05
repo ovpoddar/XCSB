@@ -6,6 +6,6 @@ namespace Xcsb.Connection.Models.Handshake;
 internal unsafe struct HandshakeResponseHeadAuthenticate
 {
     public HandshakeStatus HandshakeStatus;
-    public fixed byte Pad[5];
+    private fixed byte _pad[5];
     public short AdditionalDataLength;
 }

@@ -65,7 +65,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Extension.Damage", "Sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Extension.XInput", "Src\Extensions\Xcsb.Extension.XInput\Xcsb.Extension.XInput.csproj", "{C0FBD4CF-1531-4BC8-95D1-FA7A0EAF1233}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Models", "Src\Share\Xcsb.Models\Xcsb.Models.csproj", "{572EFF05-1799-40DD-B42A-5227DCE15410}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Share", "Src\Share\Xcsb.Share\Xcsb.Share.csproj", "{572EFF05-1799-40DD-B42A-5227DCE15410}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncMethodsTester", "Test\AsyncMethodsTester\AsyncMethodsTester.csproj", "{31D7EF8F-6C3F-4438-BBF1-1399635959F7}"
 EndProject

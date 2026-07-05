@@ -89,7 +89,7 @@ IBuilder[] noParamMethod = [
     new MethodDetails9("DependentOnGc", "ChangeGc", ["$0, 4, new uint[] {4294967295}"], ["uint", "Xcsb.Masks.GcMask", "uint[]"], false, STRType.XcbUint, MethodDetails9.ImplType.GC),
     new MethodDetails9("DependentOnGc", "SetDashes", ["$0, 0, new byte[] {10, 5, 3, 7}"], ["uint", "ushort", "byte[]"], true, STRType.XcbByte, MethodDetails9.ImplType.GC),
 #if DOCKERENV
-    // AVOIDE RUNNING IN YOU PC IT COULD BE CHANGE YOU KEYBOARD KEYS
+    // AVOID RUNNING IN YOUR PC. IT COULD BE CHANGE YOUR KEYBOARD KEYS
     new  ChangeKeyboardMapping(),
 #endif
     new NoOperation(),

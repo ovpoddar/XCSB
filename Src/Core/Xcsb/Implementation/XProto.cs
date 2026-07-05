@@ -33,6 +33,7 @@ namespace Xcsb.Implementation;
 #if !NETSTANDARD
 [SkipLocalsInit]
 #endif
+// https://xorg.freedesktop.org/archive/X11R7.7/doc/xproto/x11protocol.pdf
 internal sealed class XProto : IXProto
 {
     private XBufferProto? _xBufferProto;

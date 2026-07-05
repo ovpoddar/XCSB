@@ -50,6 +50,9 @@ static void Generate(string path)
     var responseItems = headerParser.TypeDefinitions
         .Where(x => x.Name != null && x.Name.EndsWith("_reply_t"))
         .ToArray();
+    var enums = headerParser.TypeDefinitions
+        .Where(x => x.Type == TypeDefinition.TypeKind.Enum)
+        .ToArray();
     writeStream.Write("namespace Xcsb."u8);
     writeStream.Write(Encoding.UTF8.GetBytes(typeName + ';'));
     writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
@@ -63,15 +66,16 @@ static void Generate(string path)
 
         foreach (var field in item.Fields)
         {
-            writeStream.Write("\tpublic "u8);
+            writeStream.Write("\n\tpublic "u8);
             writeStream.Write(field.GetFieldType.MapCsType());
             writeStream.Write(" "u8);
             writeStream.Write(field.GetFieldName.FixName());
-            writeStream.Write(Encoding.UTF8.GetBytes(";" + Environment.NewLine));
+            writeStream.Write(";"u8);
         }
 
         writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
     }
+
     // attempt of writting response only
     foreach (var item in responseItems)
     {
@@ -80,11 +84,11 @@ static void Generate(string path)
 
         foreach (var field in item.Fields)
         {
-            writeStream.Write("\tpublic "u8);
+            writeStream.Write("\n\tpublic "u8);
             writeStream.Write(field.GetFieldType.MapCsType());
             writeStream.Write(" "u8);
             writeStream.Write(field.GetFieldName.FixName());
-            writeStream.Write(Encoding.UTF8.GetBytes(";" + Environment.NewLine));
+            writeStream.Write(";"u8);
         }
 
         writeStream.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
@@ -100,7 +104,7 @@ static void Generate(string path)
         var itemName = item.Name!.FixName("xcb_", "_request_t");
         var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
         var responseType = responseItems.FirstOrDefault(a => a.Name != null
-                && a.Name == responseName);
+                                                             && a.Name == responseName);
 
         if (responseType == null)
             writeStream.Write("\tResponseProto "u8);
@@ -125,6 +129,7 @@ static void Generate(string path)
 
         writeStream.Write(");\n"u8);
     }
+
     writeStream.Write("\n}\n"u8);
 
     // return
@@ -136,7 +141,7 @@ static void Generate(string path)
         var itemName = item.Name!.FixName("xcb_", "_request_t");
         var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
         var responseType = responseItems.FirstOrDefault(a => a.Name != null
-                && a.Name == responseName);
+                                                             && a.Name == responseName);
 
         if (responseType == null)
             continue;
@@ -161,6 +166,7 @@ static void Generate(string path)
 
         writeStream.Write(");\n"u8);
     }
+
     writeStream.Write("\n}\n"u8);
 
     // return async
@@ -172,7 +178,7 @@ static void Generate(string path)
         var itemName = item.Name!.FixName("xcb_", "_request_t");
         var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
         var responseType = responseItems.FirstOrDefault(a => a.Name != null
-                && a.Name == responseName);
+                                                             && a.Name == responseName);
 
         if (responseType == null)
             continue;
@@ -197,6 +203,7 @@ static void Generate(string path)
 
         writeStream.Write(");\n"u8);
     }
+
     writeStream.Write("\n}\n"u8);
 
     // checked
@@ -208,7 +215,7 @@ static void Generate(string path)
         var itemName = item.Name!.FixName("xcb_", "_request_t");
         var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
         var responseType = responseItems.FirstOrDefault(a => a.Name != null
-                && a.Name == responseName);
+                                                             && a.Name == responseName);
 
         if (responseType == null)
             writeStream.Write("\tvoid "u8);
@@ -233,6 +240,7 @@ static void Generate(string path)
 
         writeStream.Write(");\n"u8);
     }
+
     writeStream.Write("\n}\n"u8);
 
     // Unchecked
@@ -244,7 +252,7 @@ static void Generate(string path)
         var itemName = item.Name!.FixName("xcb_", "_request_t");
         var responseName = item.Name!.Trim(string.Empty, "_request_t") + "_reply_t";
         var responseType = responseItems.FirstOrDefault(a => a.Name != null
-                && a.Name == responseName);
+                                                             && a.Name == responseName);
 
         if (responseType == null)
             writeStream.Write("\tvoid "u8);
@@ -269,6 +277,7 @@ static void Generate(string path)
 
         writeStream.Write(");\n"u8);
     }
+
     writeStream.Write("\n}\n"u8);
 }
 
@@ -458,95 +467,95 @@ public class Parser
             switch (buffer[0])
             {
                 case (byte)'/':
+                {
+                    if (file.Position >= file.Length)
+                        return new Token(TokenType.Operator, "/", _line, file.Position - _startOfLine);
+                    file.ReadExactly(buffer);
+                    switch (buffer[0])
                     {
-                        if (file.Position >= file.Length)
-                            return new Token(TokenType.Operator, "/", _line, file.Position - _startOfLine);
-                        file.ReadExactly(buffer);
-                        switch (buffer[0])
+                        case (byte)'/':
                         {
-                            case (byte)'/':
-                                {
-                                    var sb = new StringBuilder();
-                                    sb.Append("//");
-                                    while (file.Position < file.Length)
-                                    {
-                                        file.ReadExactly(buffer);
-                                        if (buffer[0] == (byte)'\n')
-                                        {
-                                            _line++;
-                                            _startOfLine = file.Position;
-                                            break;
-                                        }
-
-                                        sb.Append((char)buffer[0]);
-                                    }
-
-                                    return new Token(TokenType.Comment, sb.ToString(), _line, file.Position - _startOfLine);
-                                }
-                            case (byte)'*':
-                                {
-                                    var sb = new StringBuilder();
-                                    sb.Append("/*");
-                                    while (file.Position < file.Length)
-                                    {
-                                        file.ReadExactly(buffer);
-                                        sb.Append((char)buffer[0]);
-                                        if (buffer[0] == (byte)'\n')
-                                        {
-                                            _line++;
-                                            _startOfLine = file.Position;
-                                        }
-
-                                        if (buffer[0] != (byte)'*') continue;
-
-                                        file.ReadExactly(buffer);
-                                        if (buffer[0] == (byte)'/')
-                                        {
-                                            sb.Append((char)buffer[0]);
-                                            break;
-                                        }
-
-                                        file.Seek(-1, SeekOrigin.Current);
-                                    }
-
-                                    return new Token(TokenType.Comment, sb.ToString(), _line, file.Position - _startOfLine);
-                                }
-                            default:
-                                file.Seek(-1, SeekOrigin.Current);
-                                return new Token(TokenType.Operator, "/", _line, file.Position - _startOfLine);
-                        }
-                    }
-                case (byte)'#':
-                    {
-                        var sb = new StringBuilder();
-                        while (file.Position < file.Length)
-                        {
-                            sb.Append((char)buffer[0]);
-                            file.ReadExactly(buffer);
-                            if (buffer[0] == (byte)'\\')
+                            var sb = new StringBuilder();
+                            sb.Append("//");
+                            while (file.Position < file.Length)
                             {
                                 file.ReadExactly(buffer);
-                                if (buffer[0] != (byte)'\n')
-                                    file.Seek(-1, SeekOrigin.Current);
-                                else
+                                if (buffer[0] == (byte)'\n')
                                 {
                                     _line++;
                                     _startOfLine = file.Position;
-                                    continue;
+                                    break;
                                 }
+
+                                sb.Append((char)buffer[0]);
                             }
 
-                            if (buffer[0] == (byte)'\n')
+                            return new Token(TokenType.Comment, sb.ToString(), _line, file.Position - _startOfLine);
+                        }
+                        case (byte)'*':
+                        {
+                            var sb = new StringBuilder();
+                            sb.Append("/*");
+                            while (file.Position < file.Length)
+                            {
+                                file.ReadExactly(buffer);
+                                sb.Append((char)buffer[0]);
+                                if (buffer[0] == (byte)'\n')
+                                {
+                                    _line++;
+                                    _startOfLine = file.Position;
+                                }
+
+                                if (buffer[0] != (byte)'*') continue;
+
+                                file.ReadExactly(buffer);
+                                if (buffer[0] == (byte)'/')
+                                {
+                                    sb.Append((char)buffer[0]);
+                                    break;
+                                }
+
+                                file.Seek(-1, SeekOrigin.Current);
+                            }
+
+                            return new Token(TokenType.Comment, sb.ToString(), _line, file.Position - _startOfLine);
+                        }
+                        default:
+                            file.Seek(-1, SeekOrigin.Current);
+                            return new Token(TokenType.Operator, "/", _line, file.Position - _startOfLine);
+                    }
+                }
+                case (byte)'#':
+                {
+                    var sb = new StringBuilder();
+                    while (file.Position < file.Length)
+                    {
+                        sb.Append((char)buffer[0]);
+                        file.ReadExactly(buffer);
+                        if (buffer[0] == (byte)'\\')
+                        {
+                            file.ReadExactly(buffer);
+                            if (buffer[0] != (byte)'\n')
+                                file.Seek(-1, SeekOrigin.Current);
+                            else
                             {
                                 _line++;
                                 _startOfLine = file.Position;
-                                break;
+                                continue;
                             }
                         }
 
-                        return new Token(TokenType.PreprocessorDirective, sb.ToString(), _line,
-                            file.Position - _startOfLine);
+                        if (buffer[0] == (byte)'\n')
+                        {
+                            _line++;
+                            _startOfLine = file.Position;
+                            break;
+                        }
                     }
+
+                    return new Token(TokenType.PreprocessorDirective, sb.ToString(), _line,
+                        file.Position - _startOfLine);
+                }
                 case (byte)'\n':
                     _line++;
                     _startOfLine = file.Position;
@@ -555,49 +564,49 @@ public class Parser
                 case (byte)'\t':
                     return NextToken();
                 case (byte)'\'':
+                {
+                    var sb = new StringBuilder();
+                    sb.Append((char)buffer[0]);
+                    while (file.Position < file.Length)
                     {
-                        var sb = new StringBuilder();
+                        file.ReadExactly(buffer);
                         sb.Append((char)buffer[0]);
-                        while (file.Position < file.Length)
+                        if (buffer[0] == (byte)'\\')
                         {
                             file.ReadExactly(buffer);
                             sb.Append((char)buffer[0]);
-                            if (buffer[0] == (byte)'\\')
-                            {
-                                file.ReadExactly(buffer);
-                                sb.Append((char)buffer[0]);
-                                continue;
-                            }
-
-                            if (buffer[0] == (byte)'\'')
-                                break;
+                            continue;
                         }
 
-                        return new Token(TokenType.StringInSingleQuotes, sb.ToString(), _line,
-                            file.Position - _startOfLine);
+                        if (buffer[0] == (byte)'\'')
+                            break;
                     }
+
+                    return new Token(TokenType.StringInSingleQuotes, sb.ToString(), _line,
+                        file.Position - _startOfLine);
+                }
                 case (byte)'"':
+                {
+                    var sb = new StringBuilder();
+                    sb.Append('"');
+                    while (file.Position < file.Length)
                     {
-                        var sb = new StringBuilder();
-                        sb.Append('"');
-                        while (file.Position < file.Length)
+                        file.ReadExactly(buffer);
+                        sb.Append((char)buffer[0]);
+
+                        if (buffer[0] == (byte)'\\')
                         {
                             file.ReadExactly(buffer);
                             sb.Append((char)buffer[0]);
-
-                            if (buffer[0] == (byte)'\\')
-                            {
-                                file.ReadExactly(buffer);
-                                sb.Append((char)buffer[0]);
-                            }
-
-                            if (buffer[0] == (byte)'"')
-                                break;
                         }
 
-                        return new Token(TokenType.StringInDoubleQuotes, sb.ToString(), _line,
-                            file.Position - _startOfLine);
+                        if (buffer[0] == (byte)'"')
+                            break;
                     }
+
+                    return new Token(TokenType.StringInDoubleQuotes, sb.ToString(), _line,
+                        file.Position - _startOfLine);
+                }
                 case (byte)'+':
                 case (byte)'-':
                 case (byte)'*':
@@ -609,26 +618,26 @@ public class Parser
                 case (byte)'&':
                 case (byte)'|':
                 case (byte)'^':
+                {
+                    var sb = new StringBuilder();
+                    sb.Append((char)buffer[0]);
+                    if (file.Position < file.Length)
                     {
-                        var sb = new StringBuilder();
-                        sb.Append((char)buffer[0]);
-                        if (file.Position < file.Length)
+                        file.ReadExactly(buffer);
+                        if ((buffer[0] == (byte)'=' || buffer[0] == (byte)'&' || buffer[0] == (byte)'|') &&
+                            (sb[0] == '+' || sb[0] == '-' || sb[0] == '*' || sb[0] == '%' || sb[0] == '=' ||
+                             sb[0] == '!' || sb[0] == '<' || sb[0] == '>'))
                         {
-                            file.ReadExactly(buffer);
-                            if ((buffer[0] == (byte)'=' || buffer[0] == (byte)'&' || buffer[0] == (byte)'|') &&
-                                (sb[0] == '+' || sb[0] == '-' || sb[0] == '*' || sb[0] == '%' || sb[0] == '=' ||
-                                 sb[0] == '!' || sb[0] == '<' || sb[0] == '>'))
-                            {
-                                sb.Append((char)buffer[0]);
-                            }
-                            else
-                            {
-                                file.Seek(-1, SeekOrigin.Current);
-                            }
+                            sb.Append((char)buffer[0]);
                         }
-
-                        return new Token(TokenType.Operator, sb.ToString(), _line, file.Position - _startOfLine);
+                        else
+                        {
+                            file.Seek(-1, SeekOrigin.Current);
+                        }
                     }
+
+                    return new Token(TokenType.Operator, sb.ToString(), _line, file.Position - _startOfLine);
+                }
                 case (byte)'?':
                     return new Token(TokenType.TernaryQuestion, "?", _line, file.Position - _startOfLine);
                 case (byte)':':
@@ -653,53 +662,53 @@ public class Parser
                 case (byte)'.':
                     return new Token(TokenType.Dot, ".", _line, file.Position - _startOfLine);
                 case >= (byte)'0' and <= (byte)'9':
+                {
+                    var sb = new StringBuilder();
+                    sb.Append((char)buffer[0]);
+                    while (file.Position < file.Length)
                     {
-                        var sb = new StringBuilder();
-                        sb.Append((char)buffer[0]);
-                        while (file.Position < file.Length)
+                        file.ReadExactly(buffer);
+                        if ((buffer[0] >= (byte)'A' && buffer[0] <= (byte)'Z') ||
+                            (buffer[0] >= (byte)'a' && buffer[0] <= (byte)'z') ||
+                            (buffer[0] >= (byte)'0' && buffer[0] <= (byte)'9') ||
+                            buffer[0] == (byte)'.' || buffer[0] == (byte)'\'')
                         {
-                            file.ReadExactly(buffer);
-                            if ((buffer[0] >= (byte)'A' && buffer[0] <= (byte)'Z') ||
-                                (buffer[0] >= (byte)'a' && buffer[0] <= (byte)'z') ||
-                                (buffer[0] >= (byte)'0' && buffer[0] <= (byte)'9') ||
-                                buffer[0] == (byte)'.' || buffer[0] == (byte)'\'')
-                            {
-                                sb.Append((char)buffer[0]);
-                            }
-                            else
-                            {
-                                file.Seek(-1, SeekOrigin.Current);
-                                break;
-                            }
+                            sb.Append((char)buffer[0]);
                         }
-
-                        return new Token(TokenType.Number, sb.ToString(), _line, file.Position - _startOfLine);
+                        else
+                        {
+                            file.Seek(-1, SeekOrigin.Current);
+                            break;
+                        }
                     }
+
+                    return new Token(TokenType.Number, sb.ToString(), _line, file.Position - _startOfLine);
+                }
                 case >= (byte)'A' and <= (byte)'Z':
                 case >= (byte)'a' and <= (byte)'z':
                 case (byte)'_':
+                {
+                    var sb = new StringBuilder();
+                    sb.Append((char)buffer[0]);
+                    while (file.Position < file.Length)
                     {
-                        var sb = new StringBuilder();
-                        sb.Append((char)buffer[0]);
-                        while (file.Position < file.Length)
+                        file.ReadExactly(buffer);
+                        if ((buffer[0] >= (byte)'A' && buffer[0] <= (byte)'Z') ||
+                            (buffer[0] >= (byte)'a' && buffer[0] <= (byte)'z') ||
+                            (buffer[0] >= (byte)'0' && buffer[0] <= (byte)'9') ||
+                            buffer[0] == (byte)'_')
                         {
-                            file.ReadExactly(buffer);
-                            if ((buffer[0] >= (byte)'A' && buffer[0] <= (byte)'Z') ||
-                                (buffer[0] >= (byte)'a' && buffer[0] <= (byte)'z') ||
-                                (buffer[0] >= (byte)'0' && buffer[0] <= (byte)'9') ||
-                                buffer[0] == (byte)'_')
-                            {
-                                sb.Append((char)buffer[0]);
-                            }
-                            else
-                            {
-                                file.Seek(-1, SeekOrigin.Current);
-                                break;
-                            }
+                            sb.Append((char)buffer[0]);
                         }
-
-                        return new Token(TokenType.Symbol, sb.ToString(), _line, file.Position - _startOfLine);
+                        else
+                        {
+                            file.Seek(-1, SeekOrigin.Current);
+                            break;
+                        }
                     }
+
+                    return new Token(TokenType.Symbol, sb.ToString(), _line, file.Position - _startOfLine);
+                }
                 default:
                     return new Token(TokenType.Unknown, ((char)buffer[0]).ToString(), _line,
                         file.Position - _startOfLine);
@@ -829,6 +838,7 @@ public static class Helpers
                 isUpperCase = true;
                 continue;
             }
+
             if (isUpperCase)
             {
                 sb.Append(char.ToUpper(value[i]));
@@ -855,6 +865,7 @@ public static class Helpers
                 isUpperCase = true;
                 continue;
             }
+
             if (isUpperCase)
             {
                 var tempI = item;
@@ -867,7 +878,6 @@ public static class Helpers
                 result[wIndex] = item;
                 wIndex++;
             }
-
         }
 
         return result;
@@ -888,6 +898,7 @@ public static class Helpers
                 isUpperCase = true;
                 continue;
             }
+
             if (isUpperCase)
             {
                 sb.Append(char.ToUpper(value[i]));
@@ -901,6 +912,7 @@ public static class Helpers
 
         return sb.ToString();
     }
+
     public static string Trim(this string value, string startsWith, string endWith)
     {
         Span<char> result = stackalloc char[value.Length - (startsWith.Length + endWith.Length)];
@@ -910,14 +922,15 @@ public static class Helpers
 
         return new string(result);
     }
+
     private static readonly FrozenDictionary<string, byte[]> _map = new Dictionary<string, byte[]>
-        {
-            {"uint8_t", "byte"u8.ToArray()},
-            {"uint16_t", "ushort"u8.ToArray()},
-            {"int16_t", "short"u8.ToArray()},
-            {"xcb_window_t", "uint"u8.ToArray()},
-            {"xcb_atom_t", "ATOM"u8.ToArray()},
-        }.ToFrozenDictionary();
+    {
+        { "uint8_t", "byte"u8.ToArray() },
+        { "uint16_t", "ushort"u8.ToArray() },
+        { "int16_t", "short"u8.ToArray() },
+        { "xcb_window_t", "uint"u8.ToArray() },
+        { "xcb_atom_t", "ATOM"u8.ToArray() },
+    }.ToFrozenDictionary();
 
     public static ReadOnlySpan<byte> MapCsType(this ReadOnlySpan<byte> value)
     {
