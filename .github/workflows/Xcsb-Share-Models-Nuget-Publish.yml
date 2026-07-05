@@ -12,10 +12,10 @@ jobs:
         with:
           dotnet-version: '9.0.x'
       - name: Cleaning project
-        run: dotnet clean ./Src/Share/Xcsb.Models/Xcsb.Models.csproj
+        run: dotnet clean ./Src/Share/Xcsb.Share/Xcsb.Share.csproj
       - name: Building Project
-        run: dotnet build ./Src/Share/Xcsb.Models/Xcsb.Models.csproj -c Release
+        run: dotnet build ./Src/Share/Xcsb.Share/Xcsb.Share.csproj -c Release
       - name: Pack Project
-        run: dotnet pack ./Src/Share/Xcsb.Models/Xcsb.Models.csproj -c Release -o ./output --no-restore
+        run: dotnet pack ./Src/Share/Xcsb.Share/Xcsb.Share.csproj -c Release -o ./output --no-restore
       - name: Publish to Nuget pack
         run: dotnet nuget push ./output/Xcsb.*.nupkg --skip-duplicate -k ${{ secrets.NUGET_PERMANANT_API_KEY }} -s https://api.nuget.org/v3/index.json 
