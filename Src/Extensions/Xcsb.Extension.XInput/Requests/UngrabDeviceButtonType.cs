@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Extension.XInput.Models;
+using Xcsb.Masks;
 
 namespace Xcsb.Extension.XInput.Requests;
 
@@ -9,7 +10,7 @@ namespace Xcsb.Extension.XInput.Requests;
 internal readonly struct UngrabDeviceButtonType(
     byte majorOpCode,
     uint grabWindow,
-    ushort modifiers,
+    ModifierMask modifiers,
     byte modifierDevice,
     byte button,
     byte grabbedDevice)
@@ -18,7 +19,7 @@ internal readonly struct UngrabDeviceButtonType(
     public readonly OpCode Opcode = OpCode.UngrabDeviceButton;
     public readonly ushort Length = 5;
     public readonly uint GrabWindow = grabWindow;
-    public readonly ushort Modifiers = modifiers;
+    public readonly ModifierMask Modifiers = modifiers;
     public readonly byte ModifierDevice = modifierDevice;
     public readonly byte Button = button;
     public readonly byte GrabbedDevice = grabbedDevice;
