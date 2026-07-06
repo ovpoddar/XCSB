@@ -14,7 +14,7 @@ internal readonly struct GetDevicePropertyType(
     uint offset,
     uint len,
     byte deviceId,
-    byte delete)
+    bool delete)
 {
     public readonly byte MajorOpcode = majorOpCode;
     public readonly OpCode Opcode = OpCode.GetDeviceProperty;
@@ -24,5 +24,5 @@ internal readonly struct GetDevicePropertyType(
     public readonly uint Offset = offset;
     public readonly uint Len = len;
     public readonly byte DeviceId = deviceId;
-    public readonly byte Delete = delete;
+    public readonly byte Delete = delete ? (byte)1 : (byte)0;
 }
