@@ -1,17 +1,10 @@
 using System;
-using System.Net.Sockets;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Xcsb.Connection;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
-using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Extension.XInput.Infrastructure;
-using Xcsb.Extension.XInput.Infrastructure.ResponceProto;
 using Xcsb.Extension.XInput.Models;
-using Xcsb.Extension.XInput.Models.Writers;
 using Xcsb.Extension.XInput.Requests;
 using Xcsb.Extension.XInput.Response.Replies;
 using Xcsb.Extension.XInput.Response.Replies.Internals;
@@ -49,7 +42,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangeDeviceControlReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<ChangeDeviceControlReply>();
+            : result.AsSpan().AsStruct<ChangeDeviceControlReply>();
     }
 
     public ListInputDevicesReply ListInputDevices()
@@ -69,7 +62,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<OpenDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<OpenDeviceReply>();
+            : result.AsSpan().AsStruct<OpenDeviceReply>();
     }
 
     public SetDeviceModeReply SetDeviceMode(byte deviceId, ValuatorMode mode)
@@ -79,7 +72,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceModeReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<SetDeviceModeReply>();
+            : result.AsSpan().AsStruct<SetDeviceModeReply>();
     }
 
     public GetSelectedExtensionEventsReply GetSelectedExtensionEvents(uint window)
@@ -119,7 +112,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangeKeyboardDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<ChangeKeyboardDeviceReply>();
+            : result.AsSpan().AsStruct<ChangeKeyboardDeviceReply>();
     }
 
     public ChangePointerDeviceReply ChangePointerDevice(byte xAxis, byte yAxis, byte deviceId)
@@ -129,7 +122,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangePointerDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<ChangePointerDeviceReply>();
+            : result.AsSpan().AsStruct<ChangePointerDeviceReply>();
     }
 
     public GrabDeviceReply GrabDevice(uint grabWindow, uint time, GrabMode thisDeviceMode, GrabMode otherDeviceMode,
@@ -141,7 +134,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GrabDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<GrabDeviceReply>();
+            : result.AsSpan().AsStruct<GrabDeviceReply>();
     }
 
     public GetDeviceFocusReply GetDeviceFocus(byte deviceId)
@@ -151,7 +144,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceFocusReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<GetDeviceFocusReply>();
+            : result.AsSpan().AsStruct<GetDeviceFocusReply>();
     }
 
     public GetFeedbackControlReply GetFeedbackControl(byte deviceId)
@@ -191,7 +184,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceModifierMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<SetDeviceModifierMappingReply>();
+            : result.AsSpan().AsStruct<SetDeviceModifierMappingReply>();
     }
 
     public GetDeviceButtonMappingReply GetDeviceButtonMapping(byte deviceId)
@@ -201,7 +194,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceButtonMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<GetDeviceButtonMappingReply>();
+            : result.AsSpan().AsStruct<GetDeviceButtonMappingReply>();
     }
 
     public SetDeviceButtonMappingReply SetDeviceButtonMapping(byte deviceId, ReadOnlySpan<uint> map)
@@ -211,7 +204,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceButtonMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<SetDeviceButtonMappingReply>();
+            : result.AsSpan().AsStruct<SetDeviceButtonMappingReply>();
     }
 
     public QueryDeviceStateReply QueryDeviceState(byte deviceId)
@@ -231,7 +224,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceValuatorsReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<SetDeviceValuatorsReply>();
+            : result.AsSpan().AsStruct<SetDeviceValuatorsReply>();
     }
 
     public GetDeviceControlReply GetDeviceControl(DeviceControl controlId, byte deviceId)
@@ -241,7 +234,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceControlReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<GetDeviceControlReply>();
+            : result.AsSpan().AsStruct<GetDeviceControlReply>();
     }
 
     public ListDevicePropertiesReply ListDeviceProperties(byte deviceId)
@@ -262,7 +255,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDevicePropertyReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<GetDevicePropertyReply>();
+            : result.AsSpan().AsStruct<GetDevicePropertyReply>();
     }
 
     public XiQueryPointerReply XiQueryPointer(uint window, InputDevice deviceId)
@@ -282,7 +275,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetClientPointerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<XiGetClientPointerReply>();
+            : result.AsSpan().AsStruct<XiGetClientPointerReply>();
     }
 
     public XiQueryVersionReply XiQueryVersion(ushort majorVersion, ushort minorVersion)
@@ -292,7 +285,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiQueryVersionReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<XiQueryVersionReply>();
+            : result.AsSpan().AsStruct<XiQueryVersionReply>();
     }
 
     public XiQueryDeviceReply XiQueryDevice(InputDevice deviceId)
@@ -312,7 +305,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetFocusReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<XiGetFocusReply>();
+            : result.AsSpan().AsStruct<XiGetFocusReply>();
     }
 
     public XiGrabDeviceReply XiGrabDevice(uint window, uint time, uint cursor, InputDevice deviceId, GrabMode mode,
@@ -323,18 +316,15 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGrabDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<XiGrabDeviceReply>();
+            : result.AsSpan().AsStruct<XiGrabDeviceReply>();
     }
 
     public XiPassiveGrabDeviceReply XiPassiveGrabDevice(uint time, uint grabWindow, uint cursor, uint detail,
-        InputDevice deviceId,
-        GrabType grabType, GrabMode22 grabMode, GrabMode pairedDeviceMode, GrabOwner ownerEvents,
-        ReadOnlySpan<uint> mask,
-        ReadOnlySpan<uint> modifiers)
+        InputDevice deviceId, GrabType grabType, GrabMode22 grabMode, GrabMode pairedDeviceMode, GrabOwner ownerEvents,
+        ReadOnlySpan<uint> mask, ReadOnlySpan<uint> modifiers)
     {
         var cookie = XiPassiveGrabDeviceBase(time, grabWindow, cursor, detail, deviceId, grabType, grabMode,
-            pairedDeviceMode,
-            ownerEvents, mask, modifiers);
+            pairedDeviceMode, ownerEvents, mask, modifiers);
         var (result, error) =
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiPassiveGrabDeviceResponse>(cookie.Id);
         return error.HasValue
@@ -360,7 +350,7 @@ internal sealed partial class XInputProto : IXinputRequest
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetPropertyReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
-            : result!.AsSpan().AsStruct<XiGetPropertyReply>();
+            : result.AsSpan().AsStruct<XiGetPropertyReply>();
     }
 
     public XiGetSelectedEventsReply XiGetSelectedEvents(uint window)
