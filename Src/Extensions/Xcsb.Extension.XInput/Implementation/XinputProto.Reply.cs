@@ -1,5 +1,7 @@
 using System;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response;
 using Xcsb.Extension.XInput.Models;
@@ -96,7 +98,23 @@ internal sealed partial class XInputProto
     private ResponseProto GrabDeviceBase(uint grabWindow, uint time, GrabMode thisDeviceMode, GrabMode otherDeviceMode,
         bool ownerEvents, byte deviceId, ReadOnlySpan<uint> classes)
     {
-        throw new NotImplementedException();
+        var request = new GrabDeviceType(this._response.MajorOpcode, grabWindow, time, (ushort)classes.Length, 
+            thisDeviceMode, otherDeviceMode, ownerEvents, deviceId);
+        var requestSize = request.Length * 4;
+        if (requestSize < _minStackSupport)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requestSize];
+            scratchBuffer.WriteRequest(ref request, 20, MemoryMarshal.Cast<uint, byte>(classes));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requestSize);
+            scratchBuffer[..requestSize].WriteRequest(ref request, 20, MemoryMarshal.Cast<uint, byte>(classes));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer[..requestSize], SocketFlags.None);
+        }
+
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto GetDeviceFocusBase(byte deviceId)
@@ -129,7 +147,22 @@ internal sealed partial class XInputProto
 
     private ResponseProto SetDeviceModifierMappingBase(byte deviceId, ReadOnlySpan<uint> keycodesPerModifier)
     {
-        throw new NotImplementedException();
+        var request= new SetDeviceModifierMappingType(this._response.MajorOpcode, deviceId, (byte)keycodesPerModifier.Length);
+        var requestSize = request.Length * 4;
+        if (requestSize < _minStackSupport)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requestSize];
+            scratchBuffer.WriteRequest(ref request, 8, MemoryMarshal.Cast<uint, byte>(keycodesPerModifier));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requestSize);
+            scratchBuffer[..requestSize].WriteRequest(ref request, 8, MemoryMarshal.Cast<uint, byte>(keycodesPerModifier));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer[..requestSize], SocketFlags.None);
+        }
+
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto GetDeviceButtonMappingBase(byte deviceId)
@@ -141,7 +174,22 @@ internal sealed partial class XInputProto
 
     private ResponseProto SetDeviceButtonMappingBase(byte deviceId, ReadOnlySpan<uint> map)
     {
-        throw new NotImplementedException();
+        var request = new SetDeviceButtonMappingType(this._response.MajorOpcode, deviceId, (byte)map.Length);
+        var requestSize = request.Length * 4;
+        if (requestSize < _minStackSupport)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requestSize];
+            scratchBuffer.WriteRequest(ref request, 8, MemoryMarshal.Cast<uint, byte>(map));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requestSize);
+            scratchBuffer[..requestSize].WriteRequest(ref request, 8, MemoryMarshal.Cast<uint, byte>(map));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer[..requestSize], SocketFlags.None);
+        }
+
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto QueryDeviceStateBase(byte deviceId)
@@ -153,7 +201,22 @@ internal sealed partial class XInputProto
 
     private ResponseProto SetDeviceValuatorsBase(byte deviceId, byte firstValuator, ReadOnlySpan<uint> valuators)
     {
-        throw new NotImplementedException();
+        var request = new SetDeviceValuatorsType(this._response.MajorOpcode, deviceId, firstValuator, (byte)valuators.Length);
+        var requestSize = request.Length * 4;
+        if (requestSize < _minStackSupport)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requestSize];
+            scratchBuffer.WriteRequest(ref request, 20, MemoryMarshal.Cast<uint, byte>(valuators));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requestSize);
+            scratchBuffer[..requestSize].WriteRequest(ref request, 20, MemoryMarshal.Cast<uint, byte>(valuators));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer[..requestSize], SocketFlags.None);
+        }
+
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto GetDeviceControlBase(DeviceControl controlId, byte deviceId)
@@ -215,16 +278,54 @@ internal sealed partial class XInputProto
     }
 
     private ResponseProto XiGrabDeviceBase(uint window, uint time, uint cursor, InputDevice deviceId, GrabMode mode,
-        GrabMode pairedDeviceMode, GrabOwner ownerEvents, ReadOnlySpan<uint> classes)
+        GrabMode pairedDeviceMode, GrabOwner ownerEvents, ReadOnlySpan<uint> mask)
     {
-        throw new NotImplementedException();
+        var request = new XiGrabDeviceType(this._response.MajorOpcode, window, time, cursor, deviceId, mode, 
+            pairedDeviceMode, ownerEvents, (ushort)mask.Length);
+        var requestSize = request.Length * 4;
+        if (requestSize < _minStackSupport)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requestSize];
+            scratchBuffer.WriteRequest(ref request, 24, MemoryMarshal.Cast<uint, byte>(mask));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requestSize);
+            scratchBuffer[..requestSize].WriteRequest(ref request, 24, MemoryMarshal.Cast<uint, byte>(mask));
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer[..requestSize], SocketFlags.None);
+        }
+
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto XiPassiveGrabDeviceBase(uint time, uint grabWindow, uint cursor, uint detail,
         InputDevice deviceId, GrabType grabType, GrabMode22 grabMode, GrabMode pairedDeviceMode, GrabOwner ownerEvents,
         ReadOnlySpan<uint> mask, ReadOnlySpan<uint> modifiers)
     {
-        throw new NotImplementedException();
+        var request = new XiPassiveGrabDeviceType(this._response.MajorOpcode, time, grabWindow, cursor, detail, deviceId,
+            (ushort)modifiers.Length, (ushort)mask.Length, grabType, grabMode, pairedDeviceMode, ownerEvents);
+        var maskCast = MemoryMarshal.Cast<uint, byte>(mask);
+        var modifiersCast = MemoryMarshal.Cast<uint, byte>(modifiers);
+        var requestSize = request.Length * 4;
+        if (requestSize < _minStackSupport)
+        {
+            Span<byte> scratchBuffer = stackalloc byte[requestSize];
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(scratchBuffer), request);
+            maskCast.CopyTo(scratchBuffer[32..]);
+            modifiersCast.CopyTo(scratchBuffer[(32 + maskCast.Length)..]);
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer, SocketFlags.None);
+        }
+        else
+        {
+            using var scratchBuffer = new ArrayPoolUsing<byte>(requestSize);
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(scratchBuffer[..]), request);
+            maskCast.CopyTo(scratchBuffer[32..]);
+            modifiersCast.CopyTo(scratchBuffer[(32 + maskCast.Length)..]);
+            _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer[..requestSize], SocketFlags.None);
+        }
+
+        return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
 
     private ResponseProto XiListPropertiesBase(InputDevice deviceId)

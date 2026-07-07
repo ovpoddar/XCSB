@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Extension.XInput.Models;
+using Xcsb.Models;
 
 namespace Xcsb.Extension.XInput.Requests;
 
@@ -12,13 +13,13 @@ internal readonly struct XiPassiveGrabDeviceType(
     uint grabWindow,
     uint cursor,
     uint detail,
-    ushort deviceId,
+    InputDevice deviceId,
     ushort numModifiers,
     ushort maskLen,
-    byte grabType,
-    byte grabMode,
-    byte pairedDeviceMode,
-    byte ownerEvents)
+    GrabType grabType,
+    GrabMode22 grabMode,
+    GrabMode pairedDeviceMode,
+    GrabOwner ownerEvents)
 {
     public readonly byte MajorOpcode = majorOpCode;
     public readonly OpCode Opcode = OpCode.XiPassiveGrabDevice;
@@ -27,11 +28,11 @@ internal readonly struct XiPassiveGrabDeviceType(
     public readonly uint GrabWindow = grabWindow;
     public readonly uint Cursor = cursor;
     public readonly uint Detail = detail;
-    public readonly ushort DeviceId = deviceId;
+    public readonly InputDevice DeviceId = deviceId;
     public readonly ushort NumModifiers = numModifiers;
     public readonly ushort MaskLen = maskLen;
-    public readonly byte GrabType = grabType;
-    public readonly byte GrabMode = grabMode;
-    public readonly byte PairedDeviceMode = pairedDeviceMode;
-    public readonly byte OwnerEvents = ownerEvents;
+    public readonly GrabType GrabType = grabType;
+    public readonly GrabMode22 GrabMode = grabMode;
+    public readonly GrabMode PairedDeviceMode = pairedDeviceMode;
+    public readonly GrabOwner OwnerEvents = ownerEvents;
 }

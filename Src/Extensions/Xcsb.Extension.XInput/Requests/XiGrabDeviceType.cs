@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Extension.XInput.Models;
+using Xcsb.Models;
 
 namespace Xcsb.Extension.XInput.Requests;
 
@@ -11,10 +12,10 @@ internal readonly struct XiGrabDeviceType(
     uint window,
     uint time,
     uint cursor,
-    ushort deviceId,
-    byte mode,
-    byte pairedDeviceMode,
-    byte ownerEvents,
+    InputDevice deviceId,
+    GrabMode mode,
+    GrabMode pairedDeviceMode,
+    GrabOwner ownerEvents,
     ushort maskLen)
 {
     public readonly byte MajorOpcode = majorOpCode;
@@ -23,10 +24,10 @@ internal readonly struct XiGrabDeviceType(
     public readonly uint Window = window;
     public readonly uint Time = time;
     public readonly uint Cursor = cursor;
-    public readonly ushort DeviceId = deviceId;
-    public readonly byte Mode = mode;
-    public readonly byte PairedDeviceMode = pairedDeviceMode;
-    public readonly byte OwnerEvents = ownerEvents;
+    public readonly InputDevice DeviceId = deviceId;
+    public readonly GrabMode Mode = mode;
+    public readonly GrabMode PairedDeviceMode = pairedDeviceMode;
+    public readonly GrabOwner OwnerEvents = ownerEvents;
     public readonly byte Pad0 = 0;
     public readonly ushort MaskLen = maskLen;
 }
