@@ -13,7 +13,7 @@ internal readonly struct GetDeviceMotionEventsResponse : IXReply
     public readonly uint Length;
     public readonly uint NumEvents;
     public readonly byte NumAxes;
-    public readonly byte DeviceMode;
+    public readonly ValuatorMode DeviceMode;
 
     public bool Verify(in int sequence)
     {
