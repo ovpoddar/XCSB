@@ -1,30 +1,42 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Connection.Response.Contract;
+using Xcsb.Connection.Helpers;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public readonly struct XiQueryPointerReply : IXReply
+public struct XiQueryPointerReply
 {
-    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
-    public readonly uint Length;
+    public readonly ResponseType Reply;
+    public readonly ushort Sequence;
     public readonly uint Root;
     public readonly uint Child;
-    public readonly int RootX; //xcb_input_fp1616_t
-    public readonly int RootY; //xcb_input_fp1616_t
-    public readonly int WinX; //xcb_input_fp1616_t
-    public readonly int WinY; //xcb_input_fp1616_t
-    public readonly byte SameScreen;
-    public readonly byte Pad1;
-    public readonly ushort ButtonsLen;
-    // public readonly xcb_input_modifier_info_t Mods;
-    // public readonly xcb_input_group_info_t Group;
+    public readonly int RootX;
+    public readonly int RootY;
+    public readonly int WindowX;
+    public readonly int WindowY;
+    public readonly bool SameScreen;
+    public readonly int[] Buttons;
 
-    public bool Verify(in int sequence)
+    public XiQueryPointerReply(Span<byte> result)
     {
-        return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
+        ref readonly var response = ref result.AsStruct<XiQueryPointerResponse>();
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
+        Root = response.Root;
+        Child = response.Child;
+        RootX = response.RootX;
+        RootY = response.RootY;
+        WindowX = response.WinX;
+        WindowY = response.WinY;
+        SameScreen = response.SameScreen == 1;
+        if (response.ButtonsLen == 0)
+            Buttons = Array.Empty<int>();
+        else
+        {
+            var responseLength = Unsafe.SizeOf<XiQueryPointerResponse>();
+            Buttons = MemoryMarshal.Cast<byte, int>(result[responseLength..]).ToArray();
+        }
     }
 }

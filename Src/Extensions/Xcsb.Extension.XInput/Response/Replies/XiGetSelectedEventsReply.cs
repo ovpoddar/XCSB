@@ -1,20 +1,28 @@
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Xcsb.Connection.Response.Contract;
+using System;
+using Xcsb.Connection.Helpers;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public readonly struct XiGetSelectedEventsReply : IXReply
+public struct XiGetSelectedEventsReply
 {
-    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
-    public readonly uint Length;
-    public readonly ushort NumMasks;
+    public readonly ResponseType Reply;
+    public readonly ushort Sequence;
+    public readonly EventMask[] Masks;
 
-    public bool Verify(in int sequence)
+    internal XiGetSelectedEventsReply(Span<byte> result)
     {
-        return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
+        ref readonly var response = ref result.AsStruct<XiGetSelectedEventsResponse>();
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
+        if (response.NumMasks == 0)
+            Masks = Array.Empty<EventMask>();
+        else
+        {
+            Masks = new EventMask[response.NumMasks];
+            var index = 32;
+            for (var i = 0; i < Masks.Length; i++)
+                Masks[i] = EventMask.Parse(result[index..], ref index);
+        }
     }
 }

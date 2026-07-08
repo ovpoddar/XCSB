@@ -1,20 +1,28 @@
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Xcsb.Connection.Response.Contract;
+using System;
+using Xcsb.Connection.Helpers;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public readonly struct XiQueryDeviceReply : IXReply
+public struct XiQueryDeviceReply
 {
-    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
-    public readonly uint Length;
-    public readonly ushort NumInfos;
+    public readonly ResponseType Reply;
+    public readonly ushort Sequence;
+    public readonly XIDeviceInfo[] DeviceInfos;
 
-    public bool Verify(in int sequence)
+    public XiQueryDeviceReply(Span<byte> result)
     {
-        return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
+        ref readonly var response = ref result.AsStruct<XiQueryDeviceResponse>();
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
+        if (response.NumInfos == 0)
+            DeviceInfos = Array.Empty<XIDeviceInfo>();
+        else
+        {
+            DeviceInfos = new XIDeviceInfo[response.NumInfos];
+            var index = 32;
+            for (var i = 0; i < DeviceInfos.Length; i++)
+                DeviceInfos[i] = XIDeviceInfo.Parse(result[index..], ref index);
+        }
     }
 }

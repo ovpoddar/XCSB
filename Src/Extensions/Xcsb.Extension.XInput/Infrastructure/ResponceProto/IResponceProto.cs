@@ -1,3 +1,4 @@
+using System;
 using Xcsb.Extension.XInput.Models;
 using Xcsb.Extension.XInput.Requests;
 using Xcsb.Extension.XInput.Response.Replies;
@@ -17,16 +18,16 @@ public interface IResponceProto
     ChangeKeyboardDeviceReply ChangeKeyboardDevice(byte deviceId);
     ChangePointerDeviceReply ChangePointerDevice(byte xAxis, byte yAxis, byte deviceId);
     GrabDeviceReply GrabDevice(uint grabWindow, uint time, GrabMode thisDeviceMode, GrabMode otherDeviceMode,
-        bool ownerEvents, byte deviceId, uint[] classes);
+        bool ownerEvents, byte deviceId, ReadOnlySpan<uint> classes);
     GetDeviceFocusReply GetDeviceFocus(byte deviceId);
     GetFeedbackControlReply GetFeedbackControl(byte deviceId);
     GetDeviceKeyMappingReply GetDeviceKeyMapping(byte deviceId, byte firstKeycode, byte count);
     GetDeviceModifierMappingReply GetDeviceModifierMapping(byte deviceId);
-    SetDeviceModifierMappingReply SetDeviceModifierMapping(byte deviceId, byte[] keycodesPerModifier);
+    SetDeviceModifierMappingReply SetDeviceModifierMapping(byte deviceId, ReadOnlySpan<uint> keycodesPerModifier);
     GetDeviceButtonMappingReply GetDeviceButtonMapping(byte deviceId);
-    SetDeviceButtonMappingReply SetDeviceButtonMapping(byte deviceId, byte[] map);
+    SetDeviceButtonMappingReply SetDeviceButtonMapping(byte deviceId, ReadOnlySpan<uint> map);
     QueryDeviceStateReply QueryDeviceState(byte deviceId);
-    SetDeviceValuatorsReply SetDeviceValuators(byte deviceId, byte firstValuator, int[] valuators);
+    SetDeviceValuatorsReply SetDeviceValuators(byte deviceId, byte firstValuator, ReadOnlySpan<uint>valuators);
     GetDeviceControlReply GetDeviceControl(DeviceControl controlId, byte deviceId);
     ListDevicePropertiesReply ListDeviceProperties(byte deviceId);
     GetDevicePropertyReply GetDeviceProperty(ATOM property, ATOM type, uint offset, uint len, byte deviceId,
@@ -37,10 +38,10 @@ public interface IResponceProto
     XiQueryDeviceReply XiQueryDevice(InputDevice deviceId);
     XiGetFocusReply XiGetFocus(InputDevice deviceId);
     XiGrabDeviceReply XiGrabDevice(uint window, uint time, uint cursor, InputDevice deviceId, GrabMode mode,
-        GrabMode pairedDeviceMode, GrabOwner ownerEvents, uint[] classes);
+        GrabMode pairedDeviceMode, GrabOwner ownerEvents, ReadOnlySpan<uint> classes);
     XiPassiveGrabDeviceReply XiPassiveGrabDevice(uint time, uint grabWindow, uint cursor, uint detail,
         InputDevice deviceId, GrabType grabType, GrabMode22 grabMode, GrabMode pairedDeviceMode, GrabOwner ownerEvents, 
-        uint[] mask, uint[] modifiers);
+        ReadOnlySpan<uint> mask, ReadOnlySpan<uint> modifiers);
     XiListPropertiesReply XiListProperties(InputDevice deviceId);
     XiGetPropertyReply XiGetProperty(InputDevice deviceId, byte delete, ATOM property, ATOM type, uint offset,
         uint len);

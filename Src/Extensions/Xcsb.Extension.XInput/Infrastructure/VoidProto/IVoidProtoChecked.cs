@@ -2,27 +2,30 @@ using System;
 using System.Numerics;
 using Xcsb.Extension.XInput.Models;
 using Xcsb.Extension.XInput.Models.Writers;
+using Xcsb.Masks;
 using Xcsb.Models;
 
 namespace Xcsb.Extension.XInput.Infrastructure.VoidProto;
 
 public interface IVoidProtoChecked
 {
-   void CloseDeviceChecked(byte deviceId);
+    void CloseDeviceChecked(byte deviceId);
     void SelectExtensionEventChecked(uint window, ReadOnlySpan<uint> classes); //xcb_input_event_class_t
     void ChangeDeviceDontPropagateListChecked(uint window, PropagateMode mode, ReadOnlySpan<uint> classes);
     void UngrabDeviceChecked(uint time, byte deviceId);
-    void GrabDeviceKeyChecked(uint grabWindow, ushort modifiers, byte modifierDevice, byte grabbedDevice, byte key,
-        GrabMode thisDeviceMode, GrabMode otherDeviceMode, bool ownerEvents, ReadOnlySpan<uint> classes); // modifier mask
-    void UngrabDeviceKeyChecked(uint grabWindow, ushort modifiers, byte modifierDevice, byte key, byte grabbedDevice);// modifier mask
-    void GrabDeviceButtonChecked(uint grabWindow, byte grabbedDevice, byte modifierDevice, ushort modifiers,
-        GrabMode thisDeviceMode, GrabMode otherDeviceMode, byte button, bool ownerEvents, ReadOnlySpan<uint> classes);// modifier mask
-    void UngrabDeviceButtonChecked(uint grabWindow, ushort modifiers, byte modifierDevice, byte button,
-        byte grabbedDevice);// modifier mask
+    void GrabDeviceKeyChecked(uint grabWindow, ModifierMask modifiers, byte modifierDevice, byte grabbedDevice,
+        byte key, GrabMode thisDeviceMode, GrabMode otherDeviceMode, bool ownerEvents, ReadOnlySpan<uint> classes);
+    void UngrabDeviceKeyChecked(uint grabWindow, ModifierMask modifiers, byte modifierDevice, byte key,
+        byte grabbedDevice);
+    void GrabDeviceButtonChecked(uint grabWindow, byte grabbedDevice, byte modifierDevice, ModifierMask modifiers,
+        GrabMode thisDeviceMode, GrabMode otherDeviceMode, byte button, bool ownerEvents, ReadOnlySpan<uint> classes);
+    void UngrabDeviceButtonChecked(uint grabWindow, ModifierMask modifiers, byte modifierDevice, byte button,
+        byte grabbedDevice);
     void AllowDeviceEventsChecked(uint time, DeviceInputMode mode, byte deviceId);
     void SetDeviceFocusChecked(uint focus, uint time, InputFocusMode revertTo, byte deviceId);
     void ChangeFeedbackControlChecked<T>(FeedbackControlMask mask, byte deviceId, byte feedbackId, T feedback)
         where T : IFeedback;
+
     // suppose need changes
     void ChangeDeviceKeyMappingChecked(byte deviceId, byte firstKeycode, byte keysymsPerKeycode, byte keycodeCount,
         ReadOnlySpan<uint> keysyms);

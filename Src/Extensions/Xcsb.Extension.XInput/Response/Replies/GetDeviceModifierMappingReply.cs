@@ -1,20 +1,29 @@
+using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Xcsb.Connection.Response.Contract;
+using Xcsb.Connection.Helpers;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public readonly struct GetDeviceModifierMappingReply : IXReply
+public struct GetDeviceModifierMappingReply
 {
-    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
-    public readonly uint Length;
-    public readonly byte KeycodesPerModifier;
+    public readonly ResponseType Reply;
+    public readonly ushort Sequence;
+    public readonly byte ReplyType;
+    public readonly byte[] Keymaps;
 
-    public bool Verify(in int sequence)
+    public GetDeviceModifierMappingReply(Span<byte> result)
     {
-        return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
+        ref readonly var response = ref result.AsStruct<GetDeviceModifierMappingResponse>();
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
+        ReplyType = response.ResponseHeader.GetValue();
+        if (response.KeycodesPerModifier == 0)
+            Keymaps = Array.Empty<byte>();
+        else
+        {
+            var responseLength = Unsafe.SizeOf<GetDeviceModifierMappingResponse>();
+            Keymaps = result[responseLength..].ToArray();
+        }
     }
 }

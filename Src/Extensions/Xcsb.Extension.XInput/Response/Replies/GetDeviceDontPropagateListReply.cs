@@ -1,20 +1,28 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xcsb.Connection.Response.Contract;
+using Xcsb.Connection.Helpers;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public readonly struct GetDeviceDontPropagateListReply : IXReply
+public struct GetDeviceDontPropagateListReply
 {
-    public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
-    public readonly uint Length;
-    public readonly ushort NumClasses;
+    public readonly ResponseType Reply;
+    public readonly ushort Sequence;
+    public uint[] Classes;
 
-    public bool Verify(in int sequence)
+    public GetDeviceDontPropagateListReply(Span<byte> result)
     {
-        return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
+        ref readonly var response = ref result.AsStruct<GetDeviceDontPropagateListResponse>();
+        Reply = response.ResponseHeader.Reply;
+        Sequence = response.ResponseHeader.Sequence;
+        if (response.NumClasses == 0)
+            Classes = Array.Empty<uint>();
+        else
+        {
+            var responseLength = Unsafe.SizeOf<GetDeviceDontPropagateListResponse>();
+            Classes = MemoryMarshal.Cast<byte, uint>(result[responseLength..]).ToArray();
+        }
     }
 }
