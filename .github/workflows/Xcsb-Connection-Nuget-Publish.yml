@@ -1,4 +1,4 @@
-name: Build and Publish to nuget
+name: Xcsb-Connection Build and Publish to nuget
 on: workflow_dispatch
 jobs:
   Build:
