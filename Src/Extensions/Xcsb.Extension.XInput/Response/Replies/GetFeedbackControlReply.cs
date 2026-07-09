@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Xcsb.Connection.Helpers;
 using Xcsb.Extension.XInput.Models;
 
@@ -9,7 +10,7 @@ public struct GetFeedbackControlReply
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public readonly byte ReplyType;
-    public FeedbackState[] Feedbacks;
+    public FeedbackState Feedbacks;
 
     public GetFeedbackControlReply(Span<byte> result)
     {
@@ -17,5 +18,8 @@ public struct GetFeedbackControlReply
         Reply = response.ResponseHeader.Reply;
         Sequence = response.ResponseHeader.Sequence;
         ReplyType = response.ResponseHeader.GetValue();
+        
+        var responseLength = Unsafe.SizeOf<GetFeedbackControlResponse>();
+        Feedbacks = new FeedbackState(result[responseLength..]);
     }
 }
