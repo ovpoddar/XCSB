@@ -1,5 +1,6 @@
-﻿namespace Xcsb.Response.Event;
+﻿namespace Xcsb.Masks;
 
+[Flags]
 public enum KeyButMask : ushort
 {
     Shift = 0,

@@ -15,10 +15,10 @@ namespace Xcsb.Connection.Handlers;
 internal class SocketIn : ISocketIn
 {
     private readonly Socket _socket;
-    private readonly ConcurrentDictionary<(byte, byte?), MappingDetails> _responseMap;
+    private readonly ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> _responseMap;
     private readonly XcsbClientConfiguration _configuration;
 
-    public SocketIn(Socket socket, ConcurrentDictionary<(byte, byte?), MappingDetails> responseMap,
+    public SocketIn(Socket socket, ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> responseMap,
         XcsbClientConfiguration configuration)
     {
         _socket = socket;
@@ -362,18 +362,19 @@ internal class SocketIn : ISocketIn
         var detail = reply.Bytes[1];
         var type = (byte)(rawType & 0x7F);
 
-        if (_responseMap.TryGetValue((type, detail), out var response)
-            || _responseMap.TryGetValue((type, null), out response))
+        if (_responseMap.TryGetValue((type, detail, null), out var response)
+            || _responseMap.TryGetValue((type, null, null), out response))
             return response;
 
         if (rawType != type)
-            if (_responseMap.TryGetValue((rawType, detail), out response)
-                || _responseMap.TryGetValue((rawType, null), out response))
+            if (_responseMap.TryGetValue((rawType, detail, null), out response)
+                || _responseMap.TryGetValue((rawType, null, null), out response))
                 return response;
 
         return new MappingDetails(
             XResponseType.Unknown,
-            UnknownResponse.Unknown(type)
+            UnknownResponse.Unknown(type),
+            false
         );
     }
 }
