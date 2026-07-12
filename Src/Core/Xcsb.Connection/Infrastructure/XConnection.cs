@@ -16,8 +16,8 @@ internal class XConnection : IXConnectionInternal
     private readonly Socket _socket;
     private bool _disposed;
     private int _globalId;
-    private readonly ConcurrentDictionary<(byte, byte?), MappingDetails> _responseMap =
-        new ConcurrentDictionary<(byte, byte?), MappingDetails>();
+    private readonly ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> _responseMap =
+        new ConcurrentDictionary<(byte, byte?, byte?), MappingDetails>();
 
     public HandshakeSuccessResponseBody? HandshakeSuccessResponseBody { get; private set; }
     public HandshakeStatus HandshakeStatus { get; private set; }
