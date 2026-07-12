@@ -25,7 +25,7 @@ internal sealed class DamageProto : IDamageRequest
         _response = response;
         _extensionInternal = extensionInternal;
 
-        _extensionInternal.RegisterEvent<DamageNotifyEvent>(DamageErrorCode.DamageNotify,
+        _extensionInternal.RegisterX1Event<DamageNotifyEvent>(DamageErrorCode.DamageNotify,
             (byte?)(response.FirstEvent + DamageErrorCode.DamageNotify));
         _extensionInternal.RegisterError<BadDamageError>((byte)(response.FirstError + DamageErrorCode.BadDamage),
             DamageErrorCode.BadDamage);
