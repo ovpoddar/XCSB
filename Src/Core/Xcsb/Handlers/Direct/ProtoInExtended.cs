@@ -131,7 +131,7 @@ internal static class ProtoInExtended
                 if (socketAccessor.AvailableData == 0)
                     return new XEvent(
                         new byte[32].AsSpan().ToStruct<XResponse>(),
-                        new MappingDetails(XResponseType.Event, EventType.LastEvent));
+                        new MappingDetails(XResponseType.Event, EventType.LastEvent, false));
 
             socketAccessor.SocketIn.FlushSocket();
         }
@@ -150,6 +150,6 @@ internal static class ProtoInExtended
         if (type.HasValue)
             return new XEvent(buffer.ToStruct<XResponse>(), type.Value);
         return new XEvent(buffer.ToStruct<XResponse>(),
-            new MappingDetails(XResponseType.Event, EventType.LastEvent));
+            new MappingDetails(XResponseType.Event, EventType.LastEvent, false));
     }
 }

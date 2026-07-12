@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Xcsb.Connection.Response.Contract;
+using Xcsb.Masks;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
