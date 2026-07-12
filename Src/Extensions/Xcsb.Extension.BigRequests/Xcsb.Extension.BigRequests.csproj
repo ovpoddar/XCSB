@@ -6,7 +6,7 @@
         <LangVersion>latest</LangVersion>
         <RootNamespace>Xcsb.Extension.BigRequests</RootNamespace>
         <Title>Xcsb.Extension.BigRequests</Title>
-        <Version>1.0.0-beta</Version>
+        <Version>1.0.1-beta</Version>
         <Authors>Ov Poddar</Authors>
         <Description>Xcsb.Extension.BigRequests is part of the Xcsb extension family and enables Big Requests support for Xcsb-based applications.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -16,7 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Xcsb.Connection" Version="1.0.1-beta"/>
+        <PackageReference Include="Xcsb.Connection" Version="1.0.3-beta"/>
     </ItemGroup>
 
     <ItemGroup>

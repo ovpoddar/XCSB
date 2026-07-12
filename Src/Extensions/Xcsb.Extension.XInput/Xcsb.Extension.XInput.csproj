@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Xcsb.Connection" Version="1.0.2-beta" />
-        <PackageReference Include="Xcsb.Share" Version="1.0.1-beta" />
+        <PackageReference Include="Xcsb.Connection" Version="1.0.3-beta" />
+        <PackageReference Include="Xcsb.Share" Version="1.0.2-beta" />
     </ItemGroup>
 </Project>
