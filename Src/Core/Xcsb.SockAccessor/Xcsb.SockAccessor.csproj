@@ -6,6 +6,6 @@
         <RootNamespace>Xcsb.SockAccessor</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Xcsb.Connection" Version="1.0.1-beta"/>
+        <PackageReference Include="Xcsb.Connection" Version="1.0.3-beta"/>
     </ItemGroup>
 </Project>
