@@ -17,7 +17,7 @@ internal sealed class SocketAccessor : ISocketAccessor
     public ISocketIn SocketIn { get; }
     public ISocketOut SocketOut { get; }
     
-    public SocketAccessor(Socket socket, ConcurrentDictionary<(byte, byte?), MappingDetails> responseMap,
+    public SocketAccessor(Socket socket, ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> responseMap,
         XcsbClientConfiguration configuration)
     {
         _socket = socket;

@@ -16,14 +16,14 @@ internal sealed class XcsbExtension : IXExtensionInternal
 {
     private int _bigRequestLength = 262140;
 
-    private readonly ConcurrentDictionary<string, QueryExtensionReply> _extensitionReply =
+    private readonly ConcurrentDictionary<string, QueryExtensionReply> _extensionReplies =
         new ConcurrentDictionary<string, QueryExtensionReply>();
     private readonly ConcurrentDictionary<Type, Lazy<object>> _store = new ConcurrentDictionary<Type, Lazy<object>>();
-    private readonly ConcurrentDictionary<(byte, byte?), MappingDetails> _responseMap;
+    private readonly ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> _responseMap;
 
     public ISocketAccessor Transport { get; }
 
-    public XcsbExtension(ISocketAccessor accessor, ConcurrentDictionary<(byte, byte?), MappingDetails> responseMap)
+    public XcsbExtension(ISocketAccessor accessor, ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> responseMap)
     {
         Transport = accessor;
         this._responseMap = responseMap;
@@ -80,10 +80,10 @@ internal sealed class XcsbExtension : IXExtensionInternal
     }
 
     public void ActivateExtension(ReadOnlySpan<char> name, QueryExtensionReply reply) =>
-        _extensitionReply.TryAdd(name.ToString(), reply);
+        _extensionReplies.TryAdd(name.ToString(), reply);
 
     public bool IsExtensionEnable(string name) =>
-        _extensitionReply.ContainsKey(name);
+        _extensionReplies.ContainsKey(name);
 
     public T GetOrCreate<T>(Func<T> factory) where T : class
     {
@@ -99,21 +99,28 @@ internal sealed class XcsbExtension : IXExtensionInternal
     
     public void RegisterReply()
     {
-        _responseMap[(1, null)] = new MappingDetails(XResponseType.Reply, null);
+        _responseMap[(1, null, null)] = new MappingDetails(XResponseType.Reply, null, false);
     }
 
-    public void RegisterEvent<T>(XEventType type, byte? typeValue = null) where T : unmanaged, IXEvent
+    public void RegisterX1Event<T>(XEventType type, byte? typeValue = null) where T : unmanaged, IXEvent
     {
-        var value = new MappingDetails(type == 11 ? XResponseType.Notify : XResponseType.Event, type);
+        var value = new MappingDetails(type == 11 ? XResponseType.Notify : XResponseType.Event, type, false);
         value.SetEventType<T>();
         typeValue ??= type;
-        _responseMap[(typeValue.Value, null)] = value;
+        _responseMap[(typeValue.Value, null, null)] = value;
+    }
+
+    public void RegisterX2Event<T>(byte extension, XEventType type) where T : unmanaged, IXEvent
+    {
+        var value = new MappingDetails(XResponseType.Event, type, true);
+        value.SetEventType<T>();
+        _responseMap[(35, extension, type)] = value;
     }
 
     public void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError
     {
-        var value = new MappingDetails(XResponseType.Error, type);
+        var value = new MappingDetails(XResponseType.Error, type, false);
         value.SetErrorType<T>();
-        _responseMap[(typeValue, type)] = value;
+        _responseMap[(typeValue, type, null)] = value;
     }
 }

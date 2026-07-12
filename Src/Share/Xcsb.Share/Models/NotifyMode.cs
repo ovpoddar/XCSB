@@ -1,4 +1,4 @@
-﻿namespace Xcsb.Response.Event;
+﻿namespace Xcsb.Models;
 
 public enum NotifyMode : byte
 {
