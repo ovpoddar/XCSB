@@ -69,8 +69,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Share", "Src\Share\Xcs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncMethodsTester", "Test\AsyncMethodsTester\AsyncMethodsTester.csproj", "{31D7EF8F-6C3F-4438-BBF1-1399635959F7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generators", "Generators", "{57BDBDBC-21F5-4ED0-8C95-D98A7FB4A95B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generators", "Generators", "{6DA82ABF-23E2-4C3F-9F39-E070CB1B98E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcsb.Generators", "Gen\Generators\Xcsb.Generators\Xcsb.Generators\Xcsb.Generators.csproj", "{C8425A76-C989-466C-9C8F-5A5672C7DC46}"
