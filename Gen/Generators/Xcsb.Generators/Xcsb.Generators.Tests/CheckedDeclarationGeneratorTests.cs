@@ -4,6 +4,7 @@ using System.Linq;
 using Xunit;
 using Xcsb.Generators;
 using System.Reflection;
+using Xcsb.Generators.SourceGenerator;
 
 namespace Xcsb.Generators.Tests;
 
