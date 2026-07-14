@@ -36,7 +36,8 @@ public static class CheckedDeclarationImplCode
             {
                 var param = method.Parameters[i];
                 if (i > 0) sb.Append(", ");
-                sb.Append(param.Type.ToDisplayString()).Append(" ").Append(param.Name);
+                sb.Append(param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                    .Append(" ").Append(param.Name);
                 if (param.HasExplicitDefaultValue) sb.Append(" = ").Append(param.ExplicitDefaultValue);
             }
 

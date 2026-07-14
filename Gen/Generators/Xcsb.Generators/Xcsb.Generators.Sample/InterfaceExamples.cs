@@ -4,6 +4,7 @@ namespace Xcsb.Generators.Sample;
 
 [CheckedDeclaration]
 [UncheckedDeclaration]
+[AsyncDeclaration]
 public interface IMyService
 {
     int Do();

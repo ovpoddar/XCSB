@@ -4,14 +4,14 @@ using Xcsb.Generators.Tests.Utils;
 
 namespace Xcsb.Generators.Tests;
 
-public class CheckedDeclarationGeneratorTests
+public class AsyncDeclarationGeneratorTests
 {
     private const string AttributeSource = @"
 using System;
 namespace Xcsb.Generators
 {
     [AttributeUsage(AttributeTargets.Interface)]
-    public class CheckedDeclarationAttribute : Attribute {}
+    public class AsyncDeclarationAttribute : Attribute {}
 }";
 
     [Fact]
@@ -21,15 +21,15 @@ namespace Xcsb.Generators
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [CheckedDeclaration]
+    [AsyncDeclaration]
     public partial interface ITestService
     {
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<CheckedDeclarationGenerator>(source, AttributeSource, "ITestServiceChecked.g.cs");
+        var generatedSource = TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
         
-        Assert.Contains("public interface ITestServiceChecked", generatedSource);
+        Assert.Contains("public interface ITestServiceAsync", generatedSource);
         Assert.Contains("namespace TestNamespace", generatedSource);
     }
 
@@ -40,7 +40,7 @@ namespace TestNamespace
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [CheckedDeclaration]
+    [AsyncDeclaration]
     public partial interface ITestService
     {
         int DoStaff();
@@ -49,9 +49,9 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<CheckedDeclarationGenerator>(source, AttributeSource, "ITestServiceChecked.g.cs");
+        var generatedSource = TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
         
-        Assert.Contains("void DoStaffChecked();", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoStaffAsync();", generatedSource);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ namespace TestNamespace
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [CheckedDeclaration]
+    [AsyncDeclaration]
     public partial interface ITestService
     {
         int DoSomething<T>(int a, int b, T c);
@@ -75,11 +75,11 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<CheckedDeclarationGenerator>(source, AttributeSource, "ITestServiceChecked.g.cs");
+        var generatedSource = TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
         
-        Assert.Contains("void DoSomethingChecked<T>(int a, int b, T c);", generatedSource);
-        Assert.Contains("void DoSomething1Checked<T>(int a, int b, ReadonlySpan<T> c);", generatedSource);
-        Assert.Contains("void DoSomething2Checked<T>(int a, int b, ReadonlySpan<T> c) where T : struct;", generatedSource);
-        Assert.Contains("void DoSomething3Checked<T>(int a, int b, ReadonlySpan<T> c) where T : struct\n#if !NETSTANDARD\n    , unmanaged\n#endif\n;", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoSomethingAsync<T>(int a, int b, T c);", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething1Async<T>(int a, int b, ReadonlySpan<T> c);", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething2Async<T>(int a, int b, ReadonlySpan<T> c) where T : struct;", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething3Async<T>(int a, int b, ReadonlySpan<T> c) where T : struct\n#if !NETSTANDARD\n    , unmanaged\n#endif\n;", generatedSource);
     }
 }
