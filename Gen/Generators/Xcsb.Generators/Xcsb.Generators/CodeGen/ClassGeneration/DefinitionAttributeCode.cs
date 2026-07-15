@@ -15,6 +15,7 @@ internal static class DefinitionAttributeCode
     
     private static DeclarationConfiguration Create(string name) => new(
         fullName: $"Xcsb.Generators.{name}ImplementationAttribute",
+        suffixName: name,
         source:
         $$"""
           using System;
@@ -36,11 +37,13 @@ internal static class DefinitionAttributeCode
     internal readonly record struct DeclarationConfiguration
     {
         public readonly string FullName;
+        public readonly string SuffixName;
         public readonly string Source;
 
-        public DeclarationConfiguration(string fullName, string source)
+        public DeclarationConfiguration(string fullName, string suffixName, string source)
         {
             FullName = fullName;
+            SuffixName = suffixName;
             Source = source;
         }
     }

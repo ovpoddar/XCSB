@@ -27,7 +27,9 @@ public static class TestHelper
 
     private static Compilation CreateCompilation(params string[] sources)
     {
-        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s));
+        var syntaxTrees = sources
+            .Where(s => !string.IsNullOrEmpty(s))
+            .Select(s => CSharpSyntaxTree.ParseText(s));
         
         var references = new[]
         {
