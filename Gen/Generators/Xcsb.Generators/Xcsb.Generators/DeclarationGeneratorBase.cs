@@ -10,7 +10,7 @@ public abstract class DeclarationGeneratorBase : IIncrementalGenerator
 {
     protected abstract string AttributeFullName { get; }
     protected abstract string AttributeSourceCode { get; }
-    protected abstract string GeneratedFileSuffix { get; }
+    protected abstract string GeneratedSuffix { get; }
 
     protected abstract string GenerateInterfaceImplementation(INamedTypeSymbol interfaceSymbol);
 
@@ -32,7 +32,7 @@ public abstract class DeclarationGeneratorBase : IIncrementalGenerator
         context.RegisterSourceOutput(provider, (ctx, interfaceSymbol) =>
         {
             var code = GenerateInterfaceImplementation(interfaceSymbol);
-            ctx.AddSource($"{interfaceSymbol.Name}{GeneratedFileSuffix}.g.cs", SourceText.From(code, Encoding.UTF8));
+            ctx.AddSource($"{interfaceSymbol.Name}{GeneratedSuffix}.g.cs", SourceText.From(code, Encoding.UTF8));
         });
     }
 }
