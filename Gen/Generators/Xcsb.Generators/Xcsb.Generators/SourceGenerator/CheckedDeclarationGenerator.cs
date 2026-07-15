@@ -1,10 +1,11 @@
 using Microsoft.CodeAnalysis;
 using Xcsb.Generators.CodeGen;
+using Xcsb.Generators.CodeGen.InterfaceGeneration;
 
 namespace Xcsb.Generators.SourceGenerator;
 
 [Generator]
-public class CheckedDeclarationGenerator : DeclarationGeneratorBase
+public sealed class CheckedDeclarationGenerator : DeclarationGeneratorBase
 {
     protected override string AttributeFullName => DeclarationAttributeCode.Checked.FullName;
     protected override string AttributeSourceCode => DeclarationAttributeCode.Checked.Source;

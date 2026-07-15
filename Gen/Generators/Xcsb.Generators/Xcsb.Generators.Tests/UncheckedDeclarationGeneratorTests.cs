@@ -1,6 +1,7 @@
 using Xunit;
 using Xcsb.Generators.SourceGenerator;
 using Xcsb.Generators.Tests.Utils;
+using System;
 
 namespace Xcsb.Generators.Tests;
 
@@ -81,5 +82,26 @@ namespace TestNamespace
         Assert.Contains("void DoSomething1Unchecked<T>(int a, int b, ReadonlySpan<T> c);", generatedSource);
         Assert.Contains("void DoSomething2Unchecked<T>(int a, int b, ReadonlySpan<T> c) where T : struct;", generatedSource);
         Assert.Contains("void DoSomething3Unchecked<T>(int a, int b, ReadonlySpan<T> c) where T : struct\n#if !NETSTANDARD\n    , unmanaged\n#endif\n;", generatedSource);
+    }
+
+    [Fact]
+    public void Test()
+    {
+        var source = 
+        """
+
+        public interface IMyServiceChecked
+        {
+            int DoStaff();
+        }
+
+        [CheckedImplementation(typeof(IMyServiceChecked))]
+        public partial class Service
+        {
+        }
+
+        """;
+        var generatedSource = TestHelper.GenerateSource<ImplementationGeneratorBase>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
+        Assert.NotEmpty(generatedSource);
     }
 }

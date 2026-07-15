@@ -1,11 +1,11 @@
-namespace Xcsb.Generators.CodeGen;
+namespace Xcsb.Generators.CodeGen.InterfaceGeneration;
 
 internal static class DeclarationAttributeCode
 {
-    public static readonly AttributeInfo Async;
-    public static readonly AttributeInfo Checked;
-    public static readonly AttributeInfo Unchecked;
-    public static readonly AttributeInfo Buffer;
+    public static readonly DeclarationConfiguration Async;
+    public static readonly DeclarationConfiguration Checked;
+    public static readonly DeclarationConfiguration Unchecked;
+    public static readonly DeclarationConfiguration Buffer;
 
     static DeclarationAttributeCode()
     {
@@ -15,7 +15,7 @@ internal static class DeclarationAttributeCode
         Buffer = Create("Buffer");
     }
 
-    private static AttributeInfo Create(string name) => new(
+    private static DeclarationConfiguration Create(string name) => new(
         fullName: $"Xcsb.Generators.{name}DeclarationAttribute",
         suffixName: name,
         source:
@@ -32,13 +32,13 @@ internal static class DeclarationAttributeCode
           """
     );
 
-    internal readonly record struct AttributeInfo
+    internal readonly record struct DeclarationConfiguration
     {
         public readonly string FullName;
         public readonly string SuffixName;
         public readonly string Source;
 
-        public AttributeInfo(string fullName, string suffixName, string source)
+        public DeclarationConfiguration(string fullName, string suffixName, string source)
         {
             FullName = fullName;
             SuffixName = suffixName;

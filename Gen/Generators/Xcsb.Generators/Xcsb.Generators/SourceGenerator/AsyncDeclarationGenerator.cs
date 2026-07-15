@@ -1,10 +1,11 @@
 using Microsoft.CodeAnalysis;
 using Xcsb.Generators.CodeGen;
+using Xcsb.Generators.CodeGen.InterfaceGeneration;
 
 namespace Xcsb.Generators.SourceGenerator;
 
 [Generator]
-public class AsyncDeclarationGenerator : DeclarationGeneratorBase
+public sealed class AsyncDeclarationGenerator : DeclarationGeneratorBase
 {
     protected override string AttributeFullName => DeclarationAttributeCode.Async.FullName;
     protected override string AttributeSourceCode => DeclarationAttributeCode.Async.Source;

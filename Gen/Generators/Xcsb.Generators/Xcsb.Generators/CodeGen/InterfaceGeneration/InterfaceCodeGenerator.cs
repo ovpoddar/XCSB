@@ -5,11 +5,11 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Xcsb.Generators.CodeGen;
+namespace Xcsb.Generators.CodeGen.InterfaceGeneration;
 
-public static class InterfaceCodeGenerator
+internal static class InterfaceCodeGenerator
 {
-    public static string Generate(
+    internal static string Generate(
         INamedTypeSymbol symbol, 
         string interfaceSuffix, 
         string methodSuffix, 

@@ -1,8 +1,7 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xcsb.Generators;
-
-
 
 namespace Xcsb.Generators.Sample;
 
@@ -24,7 +23,8 @@ public interface IServiceBuffer : IMyServiceBuffer
 {
 }
 
-public class Sercice : IService
+[CheckedImplementation(typeof(IMyServiceChecked))]
+public partial class Service : IService
 {
     public int Do()
     {
