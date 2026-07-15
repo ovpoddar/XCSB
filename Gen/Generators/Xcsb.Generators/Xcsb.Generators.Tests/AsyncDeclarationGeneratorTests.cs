@@ -51,7 +51,7 @@ namespace TestNamespace
 
         var generatedSource = TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
         
-        Assert.Contains("System.Threading.Tasks.Task<int> DoStaffAsync();", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoStaffAsync(System.Threading.CancellationToken token = default);", generatedSource);
     }
 
     [Fact]
@@ -77,9 +77,9 @@ namespace TestNamespace
 
         var generatedSource = TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
         
-        Assert.Contains("System.Threading.Tasks.Task<int> DoSomethingAsync<T>(int a, int b, T c);", generatedSource);
-        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething1Async<T>(int a, int b, ReadonlySpan<T> c);", generatedSource);
-        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething2Async<T>(int a, int b, ReadonlySpan<T> c) where T : struct;", generatedSource);
-        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething3Async<T>(int a, int b, ReadonlySpan<T> c) where T : struct\n#if !NETSTANDARD\n    , unmanaged\n#endif\n;", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoSomethingAsync<T>(int a, int b, T c, System.Threading.CancellationToken token = default);", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething1Async<T>(int a, int b, ReadonlySpan<T> c, System.Threading.CancellationToken token = default);", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething2Async<T>(int a, int b, ReadonlySpan<T> c, System.Threading.CancellationToken token = default) where T : struct;", generatedSource);
+        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething3Async<T>(int a, int b, ReadonlySpan<T> c, System.Threading.CancellationToken token = default) where T : struct\n#if !NETSTANDARD\n    , unmanaged\n#endif\n;", generatedSource);
     }
 }

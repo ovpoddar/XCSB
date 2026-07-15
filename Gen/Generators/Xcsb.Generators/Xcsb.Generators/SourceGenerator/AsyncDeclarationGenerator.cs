@@ -16,7 +16,8 @@ public class AsyncDeclarationGenerator : DeclarationGeneratorBase
             interfaceSymbol,
             interfaceSuffix: DeclarationAttributeCode.Async.SuffixName,
             methodSuffix: DeclarationAttributeCode.Async.SuffixName,
-            returnTypeProvider: method => $"System.Threading.Tasks.Task<{method.ReturnType}>"
+            returnTypeProvider: method => $"System.Threading.Tasks.Task<{method.ReturnType}>",
+            addCancellationToken: true
         );
     }
 }
