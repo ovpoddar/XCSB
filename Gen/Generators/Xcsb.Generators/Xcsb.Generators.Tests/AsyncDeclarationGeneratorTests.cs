@@ -27,8 +27,9 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
-        
+        var generatedSource =
+            TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
+
         Assert.Contains("public interface ITestServiceAsync", generatedSource);
         Assert.Contains("namespace TestNamespace", generatedSource);
     }
@@ -49,15 +50,19 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
-        
-        Assert.Contains("System.Threading.Tasks.Task<int> DoStaffAsync(System.Threading.CancellationToken token = default);", generatedSource);
+        var generatedSource =
+            TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
+
+        Assert.Contains(
+            "System.Threading.Tasks.Task<int> DoStaffAsync(System.Threading.CancellationToken token = default);",
+            generatedSource);
     }
 
     [Fact]
     public void Generator_ShouldGenerateClass_ContainsConstrainMethods_WhenInterfaceHasAttribute()
     {
         var source = @"
+#define STANDARD
 using Xcsb.Generators;
 namespace TestNamespace
 {
@@ -65,21 +70,36 @@ namespace TestNamespace
     public partial interface ITestService
     {
         int DoSomething<T>(int a, int b, T c);
-        int DoSomething1<T>(int a, int b, ReadonlySpan<T> c);
-        int DoSomething2<T>(int a, int b, ReadonlySpan<T> c) where T : struct;
-        int DoSomething3<T>(int a, int b, ReadonlySpan<T> c) where T : struct
-#if !NETSTANDARD
+        int DoSomething1<T>(int a, int b, System.ReadOnlySpan<T> c);
+        int DoSomething2<T>(int a, int b, System.ReadOnlySpan<T> c) where T : struct;
+        int DoSomething3<T>(int a, int b, System.ReadOnlySpan<T> c) where T : struct
+#if !STANDARD
     , unmanaged
 #endif
 ;
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
-        
-        Assert.Contains("System.Threading.Tasks.Task<int> DoSomethingAsync<T>(int a, int b, T c, System.Threading.CancellationToken token = default);", generatedSource);
-        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething1Async<T>(int a, int b, ReadonlySpan<T> c, System.Threading.CancellationToken token = default);", generatedSource);
-        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething2Async<T>(int a, int b, ReadonlySpan<T> c, System.Threading.CancellationToken token = default) where T : struct;", generatedSource);
-        Assert.Contains("System.Threading.Tasks.Task<int> DoSomething3Async<T>(int a, int b, ReadonlySpan<T> c, System.Threading.CancellationToken token = default) where T : struct\n#if !NETSTANDARD\n    , unmanaged\n#endif\n;", generatedSource);
+        var generatedSource =
+            TestHelper.GenerateSource<AsyncDeclarationGenerator>(source, AttributeSource, "ITestServiceAsync.g.cs");
+
+        Assert.Contains(
+            "System.Threading.Tasks.Task<int> DoSomethingAsync<T>(int a, int b, T c, System.Threading.CancellationToken token = default);",
+            generatedSource);
+        Assert.Contains(
+            "System.Threading.Tasks.Task<int> DoSomething1Async<T>(int a, int b, global::System.ReadOnlySpan<T> c, System.Threading.CancellationToken token = default);",
+            generatedSource);
+        Assert.Contains(
+            "System.Threading.Tasks.Task<int> DoSomething2Async<T>(int a, int b, global::System.ReadOnlySpan<T> c, System.Threading.CancellationToken token = default) where T : struct;",
+            generatedSource);
+        Assert.Contains(
+            """
+            System.Threading.Tasks.Task<int> DoSomething3Async<T>(int a, int b, global::System.ReadOnlySpan<T> c, System.Threading.CancellationToken token = default) where T : struct
+            #if !STANDARD
+                , unmanaged
+            #endif
+            ;
+            """,
+            generatedSource);
     }
 }

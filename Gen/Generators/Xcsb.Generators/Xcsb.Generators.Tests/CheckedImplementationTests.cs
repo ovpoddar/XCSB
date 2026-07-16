@@ -34,7 +34,7 @@ namespace Xcsb.Generators
                 {
                     int DoStaff();
                 }
-
+                
                 [CheckedImplementation(typeof(IMyService))]
                 public partial class Service
                 {

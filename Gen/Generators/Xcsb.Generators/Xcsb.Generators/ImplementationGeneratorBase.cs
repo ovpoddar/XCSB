@@ -31,13 +31,12 @@ public sealed class ImplementationGeneratorBase : IIncrementalGenerator
             transform: static (ctx, _) =>
             {
                 var classSymbol = (INamedTypeSymbol)ctx.TargetSymbol;
-                var interfaceSymbol = ctx.Attributes.FirstOrDefault(a =>
+                var interfaceSymbol = ctx.Attributes.Single(a =>
                     a.AttributeClass?.ToDisplayString(_symbolDisplayFormat) == DefinitionAttributeCode.Checked.FullName
                     && a.ConstructorArguments.Length == 1)
-                    ?.ConstructorArguments[0].Value as INamedTypeSymbol;
+                    .ConstructorArguments[0].Value as INamedTypeSymbol;
                 return (classSymbol, interfaceSymbol);
-            })
-            .Where(static a => a is { classSymbol: not null, interfaceSymbol: not null });
+            });
 
         context.RegisterSourceOutput(provider, (ctx, symbols) =>
         {

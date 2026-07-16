@@ -17,8 +17,10 @@ public static class TestHelper
 
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
-        Assert.Empty(diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-
+        var errors = compilation.GetDiagnostics().ToList();
+        errors.AddRange(diagnostics);
+        Assert.Empty(errors.Where(d => d.Severity == DiagnosticSeverity.Error));
+        
         var runResult = driver.GetRunResult();
         Assert.Equal(2, runResult.GeneratedTrees.Length);
         
