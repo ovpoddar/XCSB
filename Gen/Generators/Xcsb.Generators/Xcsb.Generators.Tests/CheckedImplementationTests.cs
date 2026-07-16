@@ -14,20 +14,20 @@ namespace Xcsb.Generators
     public class CheckedImplementationAttribute : Attribute
     {
         public Type Name { get; }
-        public CheckedImplementationAttribute(Type name) 
+        public CheckedImplementationAttribute(Type name)
         {
             Name = name;
         }
     }
 }";
-    
+
     [Fact]
     public void Test()
     {
-        var source = 
+        var source =
             """
             using Xcsb.Generators;
-            
+
             namespace TestNamespace
             {
                 public interface IMyService
@@ -38,27 +38,9 @@ namespace Xcsb.Generators
                 [CheckedImplementation(typeof(IMyService))]
                 public partial class Service
                 {
-                    private readonly TestService _socketAccessor;
                     
-                    
-                    private Cookie DoStaffBase()
-                    {
-                        return new Cookie();
-                    }
                 }
                 
-                public class Cookie
-                {
-                    public int Sequence { get; set; }
-                }
-                
-                public class TestService
-                {
-                    public void SkipErrorForSequence(int sequence, bool isError)
-                    {
-                            
-                    }
-                }
             }
             """;
         var generatedSource = TestHelper.GenerateSource<ImplementationGeneratorBase>(source,

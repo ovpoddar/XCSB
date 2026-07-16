@@ -31,16 +31,27 @@ public sealed class ImplementationGeneratorBase : IIncrementalGenerator
             transform: static (ctx, _) =>
             {
                 var classSymbol = (INamedTypeSymbol)ctx.TargetSymbol;
-                var interfaceSymbol = ctx.Attributes.Single(a =>
-                    a.AttributeClass?.ToDisplayString(_symbolDisplayFormat) == DefinitionAttributeCode.Checked.FullName
-                    && a.ConstructorArguments.Length == 1)
-                    .ConstructorArguments[0].Value as INamedTypeSymbol;
+                var attribute = ctx.Attributes.Single(a =>
+                    a.AttributeClass?.ToDisplayString(_symbolDisplayFormat) ==
+                    DefinitionAttributeCode.Checked.FullName);
+                INamedTypeSymbol? interfaceSymbol;
+                if (attribute.ConstructorArguments.Length != 0)
+                    interfaceSymbol = attribute.ConstructorArguments[0].Value as INamedTypeSymbol;
+                else
+                {
+                    var attributeSyntax = attribute.ApplicationSyntaxReference?.GetSyntax() as AttributeSyntax;
+                    interfaceSymbol =
+                        attributeSyntax?.ArgumentList?.Arguments[0].Expression is TypeOfExpressionSyntax attributeType
+                            ? ctx.SemanticModel.GetTypeInfo(attributeType.Type).Type as INamedTypeSymbol
+                            : null;
+                }
+
                 return (classSymbol, interfaceSymbol);
             });
 
         context.RegisterSourceOutput(provider, (ctx, symbols) =>
         {
-            var code = ClassCodeGenerator.Generate(symbols.classSymbol, symbols.interfaceSymbol!);
+            var code = ClassCodeGenerator.Generate(symbols.classSymbol, symbols.interfaceSymbol);
             ctx.AddSource($"{symbols.classSymbol.Name}.{DefinitionAttributeCode.Checked.SuffixName}.g.cs",
                 SourceText.From(code, Encoding.UTF8));
         });
