@@ -26,32 +26,33 @@ public sealed class ImplementationGeneratorBase : IIncrementalGenerator
         });
 
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-            DefinitionAttributeCode.Checked.FullName,
-            predicate: static (node, _) => node is ClassDeclarationSyntax,
-            transform: static (ctx, _) =>
-            {
-                var classSymbol = (INamedTypeSymbol)ctx.TargetSymbol;
-                var attribute = ctx.Attributes.Single(a =>
-                    a.AttributeClass?.ToDisplayString(_symbolDisplayFormat) ==
-                    DefinitionAttributeCode.Checked.FullName);
-                INamedTypeSymbol? interfaceSymbol;
-                if (attribute.ConstructorArguments.Length != 0)
-                    interfaceSymbol = attribute.ConstructorArguments[0].Value as INamedTypeSymbol;
-                else
+                DefinitionAttributeCode.Checked.FullName,
+                predicate: static (node, _) => node is ClassDeclarationSyntax,
+                transform: static (ctx, _) =>
                 {
-                    var attributeSyntax = attribute.ApplicationSyntaxReference?.GetSyntax() as AttributeSyntax;
-                    interfaceSymbol =
-                        attributeSyntax?.ArgumentList?.Arguments[0].Expression is TypeOfExpressionSyntax attributeType
-                            ? ctx.SemanticModel.GetTypeInfo(attributeType.Type).Type as INamedTypeSymbol
-                            : null;
-                }
+                    var classSymbol = (INamedTypeSymbol)ctx.TargetSymbol;
+                    var attribute = ctx.Attributes.Single(a =>
+                        a.AttributeClass?.ToDisplayString(_symbolDisplayFormat) ==
+                        DefinitionAttributeCode.Checked.FullName);
+                    INamedTypeSymbol? interfaceSymbol;
+                    if (attribute.ConstructorArguments.Length != 0)
+                        interfaceSymbol = attribute.ConstructorArguments[0].Value as INamedTypeSymbol;
+                    else
+                    {
+                        var attributeSyntax = attribute.ApplicationSyntaxReference?.GetSyntax() as AttributeSyntax;
+                        interfaceSymbol =
+                            attributeSyntax?.ArgumentList?.Arguments[0].Expression is TypeOfExpressionSyntax attributeType
+                                ? ctx.SemanticModel.GetTypeInfo(attributeType.Type).Type as INamedTypeSymbol
+                                : null;
+                    }
 
-                return (classSymbol, interfaceSymbol);
-            });
+                    return (classSymbol, interfaceSymbol);
+                })
+            .Where(static a => a.interfaceSymbol is not null);
 
         context.RegisterSourceOutput(provider, (ctx, symbols) =>
         {
-            var code = ClassCodeGenerator.Generate(symbols.classSymbol, symbols.interfaceSymbol);
+            var code = ClassCodeGenerator.Generate(symbols.classSymbol, symbols.interfaceSymbol!);
             ctx.AddSource($"{symbols.classSymbol.Name}.{DefinitionAttributeCode.Checked.SuffixName}.g.cs",
                 SourceText.From(code, Encoding.UTF8));
         });
