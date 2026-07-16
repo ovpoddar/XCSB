@@ -22,29 +22,12 @@ public interface IServiceBuffer : IMyServiceBuffer
 }
 
 [CheckedImplementation(typeof(IMyService))]
+[UncheckedImplementation(typeof(IMyService))]
+[BaseImplementation(typeof(IMyService))]
 public partial class Service : IService
 {
     private readonly TestService _socketAccessor;
-    public int Do()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public int Doing(int a)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void DoUnchecked()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void DoingUnchecked(int a)
-    {
-        throw new System.NotImplementedException();
-    }
-
+    
     public Task<int> DoAsync(CancellationToken cancellationToken = default)
     {
         throw new System.NotImplementedException();

@@ -2,17 +2,22 @@ namespace Xcsb.Generators.CodeGen.ClassGeneration;
 
 internal static class DefinitionAttributeCode
 {
-    // public static readonly DeclarationConfiguration Async;
+    public static readonly DeclarationConfiguration Async;
+    public static readonly DeclarationConfiguration Base;
     public static readonly DeclarationConfiguration Checked;
-    // public static readonly DeclarationConfiguration Unchecked;
-    // public static readonly DeclarationConfiguration Buffer;
-    
-    
+    public static readonly DeclarationConfiguration Unchecked;
+    public static readonly DeclarationConfiguration Buffer;
+
+
     static DefinitionAttributeCode()
     {
+        Async = Create("Async");
+        Base = Create("Base");
         Checked = Create("Checked");
+        Unchecked = Create("Unchecked");
+        Buffer = Create("Buffer");
     }
-    
+
     private static DeclarationConfiguration Create(string name) => new(
         fullName: $"Xcsb.Generators.{name}ImplementationAttribute",
         suffixName: name,

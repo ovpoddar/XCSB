@@ -1,3 +1,4 @@
+using Xcsb.Generators.SourceGenerator;
 using Xcsb.Generators.Tests.Utils;
 using Xunit;
 
@@ -11,10 +12,10 @@ using System;
 namespace Xcsb.Generators
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class CheckedImplementationAttribute : Attribute
+    public class BaseImplementationAttribute : Attribute
     {
         public Type Name { get; }
-        public CheckedImplementationAttribute(Type name)
+        public BaseImplementationAttribute(Type name)
         {
             Name = name;
         }
@@ -35,7 +36,7 @@ namespace Xcsb.Generators
                     int DoStaff();
                 }
                 
-                [CheckedImplementation(typeof(IMyService))]
+                [BaseImplementation(typeof(IMyService))]
                 public partial class Service
                 {
                     
@@ -43,9 +44,9 @@ namespace Xcsb.Generators
                 
             }
             """;
-        var generatedSource = TestHelper.GenerateSource<ImplementationGeneratorBase>(source,
+        var generatedSource = TestHelper.GenerateSource<BaseImplementationGenerator>(source,
             AttributeSource,
-            "Service.Checked.g.cs");
+            "Service.Base.g.cs");
         Assert.NotEmpty(generatedSource);
     }
 }

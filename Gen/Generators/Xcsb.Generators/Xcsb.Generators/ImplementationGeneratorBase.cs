@@ -9,31 +9,31 @@ using Xcsb.Generators.SourceGenerator;
 
 namespace Xcsb.Generators;
 
-[Generator]
-public sealed class ImplementationGeneratorBase : IIncrementalGenerator
+public abstract class ImplementationGeneratorBase : IIncrementalGenerator
 {
     private static readonly SymbolDisplayFormat _symbolDisplayFormat =
         new SymbolDisplayFormat(
             typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
-
+    protected abstract string AttributeFullName { get; }
+    protected abstract string AttributeSourceCode { get; }
+    protected abstract string GeneratedSuffix { get; }
+    protected abstract string ClassGenerator(INamedTypeSymbol classSymbol, INamedTypeSymbol interfaceSymbol);
+    
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(ctx =>
         {
-            ctx.AddSource(
-                $"{DefinitionAttributeCode.Checked.FullName}.g.cs",
-                SourceText.From(DefinitionAttributeCode.Checked.Source, Encoding.UTF8));
+            ctx.AddSource($"{AttributeFullName}.g.cs", SourceText.From(AttributeSourceCode, Encoding.UTF8));
         });
 
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-                DefinitionAttributeCode.Checked.FullName,
+                AttributeFullName,
                 predicate: static (node, _) => node is ClassDeclarationSyntax,
-                transform: static (ctx, _) =>
+                transform: (ctx, _) =>
                 {
                     var classSymbol = (INamedTypeSymbol)ctx.TargetSymbol;
                     var attribute = ctx.Attributes.Single(a =>
-                        a.AttributeClass?.ToDisplayString(_symbolDisplayFormat) ==
-                        DefinitionAttributeCode.Checked.FullName);
+                        a.AttributeClass?.ToDisplayString(_symbolDisplayFormat) == AttributeFullName);
                     INamedTypeSymbol? interfaceSymbol;
                     if (attribute.ConstructorArguments.Length != 0)
                         interfaceSymbol = attribute.ConstructorArguments[0].Value as INamedTypeSymbol;
@@ -52,8 +52,8 @@ public sealed class ImplementationGeneratorBase : IIncrementalGenerator
 
         context.RegisterSourceOutput(provider, (ctx, symbols) =>
         {
-            var code = ClassCodeGenerator.Generate(symbols.classSymbol, symbols.interfaceSymbol!);
-            ctx.AddSource($"{symbols.classSymbol.Name}.{DefinitionAttributeCode.Checked.SuffixName}.g.cs",
+            var code = ClassGenerator(symbols.classSymbol, symbols.interfaceSymbol!);
+            ctx.AddSource($"{symbols.classSymbol.Name}.{GeneratedSuffix}.g.cs",
                 SourceText.From(code, Encoding.UTF8));
         });
     }
