@@ -77,9 +77,7 @@ internal static class ClassCodeGenerator
                 sb.Append(" : ");
                 sb.Append(string.Join(", ", parts));
             }
-
-            WriteConstraintClausesFromSyntax(sb, method);
-
+            ConstrainPragmaWriter.Write(sb, method, false);
             writeMethodBody(sb, method);
         }
 
@@ -87,27 +85,5 @@ internal static class ClassCodeGenerator
         sb.AppendLine("    }");
         sb.AppendLine("}");
         return sb.ToString();
-    }
-
-    private const string startSequence = "#if";
-    private const string endSequence = "#endif";
-
-    private static void WriteConstraintClausesFromSyntax(StringBuilder sb, IMethodSymbol method)
-    {
-        var syntaxRef = method.DeclaringSyntaxReferences.FirstOrDefault();
-        if (syntaxRef?.GetSyntax() is not MethodDeclarationSyntax node || node.ConstraintClauses.Count == 0)
-            return;
-
-        var methodText = node.SyntaxTree.GetText().ToString(node.FullSpan).AsSpan();
-        var startIndex = methodText.IndexOf(startSequence.AsSpan());
-        if (startIndex == -1)
-            return;
-
-        var remaining = methodText.Slice(startIndex);
-        var endIndex = remaining.IndexOf(endSequence.AsSpan());
-
-        if (endIndex == -1) return;
-        sb.AppendLine();
-        sb.AppendLine(remaining.Slice(0, endIndex + endSequence.Length).ToString());
     }
 }

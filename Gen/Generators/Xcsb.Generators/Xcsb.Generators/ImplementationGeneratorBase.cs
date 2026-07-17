@@ -11,9 +11,6 @@ namespace Xcsb.Generators;
 
 public abstract class ImplementationGeneratorBase : IIncrementalGenerator
 {
-    private static readonly SymbolDisplayFormat _symbolDisplayFormat =
-        new SymbolDisplayFormat(
-            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
     protected abstract string AttributeFullName { get; }
     protected abstract string AttributeSourceCode { get; }
     protected abstract string GeneratedSuffix { get; }
@@ -32,8 +29,7 @@ public abstract class ImplementationGeneratorBase : IIncrementalGenerator
                 transform: (ctx, _) =>
                 {
                     var classSymbol = (INamedTypeSymbol)ctx.TargetSymbol;
-                    var attribute = ctx.Attributes.Single(a =>
-                        a.AttributeClass?.ToDisplayString(_symbolDisplayFormat) == AttributeFullName);
+                    var attribute = ctx.Attributes.Single();
                     INamedTypeSymbol? interfaceSymbol;
                     if (attribute.ConstructorArguments.Length != 0)
                         interfaceSymbol = attribute.ConstructorArguments[0].Value as INamedTypeSymbol;
@@ -48,13 +44,14 @@ public abstract class ImplementationGeneratorBase : IIncrementalGenerator
 
                     return (classSymbol, interfaceSymbol);
                 })
-            .Where(static a => a.interfaceSymbol is not null);
+            .Where(static a => a.interfaceSymbol is not null)
+            .Select((a, _) => (
+                HintName: $"{a.classSymbol.Name}.{GeneratedSuffix}.g.cs",
+                Source: ClassGenerator(a.classSymbol, a.interfaceSymbol!)));
 
-        context.RegisterSourceOutput(provider, (ctx, symbols) =>
+        context.RegisterSourceOutput(provider, (ctx, file) =>
         {
-            var code = ClassGenerator(symbols.classSymbol, symbols.interfaceSymbol!);
-            ctx.AddSource($"{symbols.classSymbol.Name}.{GeneratedSuffix}.g.cs",
-                SourceText.From(code, Encoding.UTF8));
+            ctx.AddSource(file.HintName, SourceText.From(file.Source, Encoding.UTF8));
         });
     }
 }

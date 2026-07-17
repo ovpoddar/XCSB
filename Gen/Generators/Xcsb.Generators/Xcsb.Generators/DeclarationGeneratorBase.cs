@@ -24,15 +24,18 @@ public abstract class DeclarationGeneratorBase : IIncrementalGenerator
         });
 
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-            AttributeFullName,
-            predicate: static (node, _) => node is InterfaceDeclarationSyntax,
-            transform: static (ctx, _) => (INamedTypeSymbol)ctx.TargetSymbol)
-            .WithComparer(SymbolEqualityComparer.Default);
+                AttributeFullName,
+                predicate: static (node, _) => node is InterfaceDeclarationSyntax,
+                transform: static (ctx, _) => (INamedTypeSymbol)ctx.TargetSymbol)
+            .WithComparer(SymbolEqualityComparer.Default)
+            .Select((interfaceSymbol, _) => (
+                HintName: $"{interfaceSymbol.Name}{GeneratedSuffix}.g.cs",
+                Source: GenerateInterfaceImplementation(interfaceSymbol)
+            ));
 
-        context.RegisterSourceOutput(provider, (ctx, interfaceSymbol) =>
+        context.RegisterSourceOutput(provider, (ctx, file) =>
         {
-            var code = GenerateInterfaceImplementation(interfaceSymbol);
-            ctx.AddSource($"{interfaceSymbol.Name}{GeneratedSuffix}.g.cs", SourceText.From(code, Encoding.UTF8));
+            ctx.AddSource(file.HintName, SourceText.From(file.Source, Encoding.UTF8));
         });
     }
 }

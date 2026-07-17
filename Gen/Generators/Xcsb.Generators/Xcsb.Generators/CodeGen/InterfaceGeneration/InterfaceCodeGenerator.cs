@@ -75,7 +75,7 @@ internal static class InterfaceCodeGenerator
                 sb.Append(string.Join(", ", parts));
             }
 
-            WriteConstraintClausesFromSyntax(sb, method);
+            ConstrainPragmaWriter.Write(sb, method, true);
         }
 
         sb.AppendLine("    }");
@@ -83,33 +83,4 @@ internal static class InterfaceCodeGenerator
         return sb.ToString();
     }
 
-    private const string startSequence = "#if"; 
-    private const string endSequence = "#endif"; 
-    private static void WriteConstraintClausesFromSyntax(StringBuilder sb, IMethodSymbol method)
-    {
-        var syntaxRef = method.DeclaringSyntaxReferences.FirstOrDefault();
-        if (syntaxRef?.GetSyntax() is not MethodDeclarationSyntax node || node.ConstraintClauses.Count == 0)
-        {
-            sb.AppendLine(";");
-            return;
-        }
-
-        var methodText = node.SyntaxTree.GetText().ToString(node.FullSpan).AsSpan();
-        var startIndex = methodText.IndexOf(startSequence.AsSpan());
-        if (startIndex == -1)
-        {
-            sb.AppendLine(";");
-            return;
-        }
-        var remaining = methodText.Slice(startIndex);
-        var endIndex = remaining.IndexOf(endSequence.AsSpan());
-
-        if (endIndex != -1)
-        {
-            sb.AppendLine();
-            sb.AppendLine(remaining.Slice(0, endIndex + endSequence.Length).ToString());
-        }
-
-        sb.AppendLine(";");
-    }
 }
