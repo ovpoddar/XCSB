@@ -49,7 +49,7 @@ public partial class Service : IService
 
     public class Cookie
     {
-        public int Sequence { get; set; }
+        public int Id { get; set; }
     }
 
     public class TestService

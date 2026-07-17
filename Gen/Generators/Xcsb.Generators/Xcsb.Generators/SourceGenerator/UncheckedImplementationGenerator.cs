@@ -26,7 +26,7 @@ public sealed class UncheckedImplementationGenerator : ImplementationGeneratorBa
             }
 
             sb.AppendLine(");");
-            sb.AppendLine("            _socketAccessor.SkipErrorForSequence(cookie.Sequence, false);");
+            sb.AppendLine("            _socketAccessor.SkipErrorForSequence(cookie.Id, false);");
             sb.AppendLine("        }");
         });
 
