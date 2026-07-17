@@ -60,7 +60,6 @@ namespace TestNamespace
     public void Generator_ShouldGenerateClass_ContainsConstrainMethods_WhenInterfaceHasAttribute()
     {
         var source = @"
-#define STANDARD
 using Xcsb.Generators;
 namespace TestNamespace
 {
@@ -71,8 +70,8 @@ namespace TestNamespace
         int DoSomething1<T>(int a, int b, System.ReadOnlySpan<T> c);
         int DoSomething2<T>(int a, int b, System.ReadOnlySpan<T> c) where T : struct;
         int DoSomething3<T>(int a, int b, System.ReadOnlySpan<T> c) where T : struct
-#if !STANDARD
-    , unmanaged
+#if !NETSTANDARD
+    , System.Numerics.INumber<T>
 #endif
 ;
     }
@@ -88,8 +87,8 @@ namespace TestNamespace
         Assert.Contains(
             """
             void DoSomething3Checked<T>(int a, int b, global::System.ReadOnlySpan<T> c) where T : struct
-            #if !STANDARD
-                , unmanaged
+            #if !NETSTANDARD
+                , System.Numerics.INumber<T>
             #endif
             ;
             """,

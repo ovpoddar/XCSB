@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using System.Linq;
@@ -20,23 +21,58 @@ internal static class ConstrainPragmaWriter
             return;
         }
 
-        var methodText = node.SyntaxTree.GetText().ToString(node.FullSpan).AsSpan();
-        var startIndex = methodText.IndexOf(startSequence.AsSpan());
-        if (startIndex == -1)
+        var methodText = node.SyntaxTree.GetText().ToString(node.FullSpan);
+        var fullText = methodText.AsSpan();
+        while (true)
         {
-            if (appendTrailingSemicolon) builder.AppendLine(";");
-            return;
-        }
+            var startIndex = fullText.IndexOf(startSequence.AsSpan());
+            if (startIndex == -1) break;
 
-        var remaining = methodText.Slice(startIndex);
-        var endIndex = remaining.IndexOf(endSequence.AsSpan());
+            fullText = fullText.Slice(startIndex);
+            var endIndex = fullText.IndexOf(endSequence.AsSpan());
 
-        if (endIndex != -1)
-        {
+            if (endIndex == -1) break;
             builder.AppendLine();
-            builder.AppendLine(remaining.Slice(0, endIndex + endSequence.Length).ToString());
+            builder.AppendLine(fullText.Slice(0, endIndex + endSequence.Length).ToString());
+            fullText = fullText.Slice(endIndex + endSequence.Length);
+            
+            startIndex = fullText.IndexOf(startSequence.AsSpan());
+            if (startIndex == -1) break;
         }
         
         if (appendTrailingSemicolon) builder.AppendLine(";");
+    }
+
+    internal static bool Contain(IMethodSymbol method, string type)
+    {
+        var syntaxRef = method.DeclaringSyntaxReferences.FirstOrDefault();
+        if (syntaxRef?.GetSyntax() is not MethodDeclarationSyntax node || node.ConstraintClauses.Count == 0)
+        {
+            return false;
+        }
+
+        var methodText = node.SyntaxTree.GetText().ToString(node.FullSpan);
+        var fullText = methodText.AsSpan();
+        while (true)
+        {
+            var startIndex = fullText.IndexOf(startSequence.AsSpan());
+            if (startIndex == -1)
+            {
+                break;
+            }
+
+            fullText = fullText.Slice(startIndex);
+            var endIndex = fullText.IndexOf(endSequence.AsSpan());
+
+            if (endIndex == -1) break;
+            if (fullText.Slice(startSequence.Length, endIndex).Contains(type.AsSpan(), StringComparison.InvariantCultureIgnoreCase))
+                return true;
+            fullText = fullText.Slice(endIndex + endSequence.Length);
+            
+            startIndex = fullText.IndexOf(startSequence.AsSpan());
+            if (startIndex == -1) break;
+        }
+        
+        return false;
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -10,9 +11,9 @@ namespace Xcsb.Generators.CodeGen.InterfaceGeneration;
 internal static class InterfaceCodeGenerator
 {
     internal static string Generate(
-        INamedTypeSymbol symbol, 
-        string interfaceSuffix, 
-        string methodSuffix, 
+        INamedTypeSymbol symbol,
+        string interfaceSuffix,
+        string methodSuffix,
         Func<IMethodSymbol, string> returnTypeProvider,
         bool addCancellationToken = false)
     {
@@ -28,13 +29,13 @@ internal static class InterfaceCodeGenerator
         foreach (var method in symbol.GetMembers().OfType<IMethodSymbol>())
         {
             if (method.MethodKind != MethodKind.Ordinary) continue;
-            
+
             sb.Append("       ")
-              .Append(returnTypeProvider(method))
-              .Append(" ")
-              .Append(method.Name)
-              .Append(methodSuffix);
-              
+                .Append(returnTypeProvider(method))
+                .Append(" ")
+                .Append(method.Name)
+                .Append(methodSuffix);
+
             if (method.TypeParameters.Length > 0)
             {
                 sb.Append('<');
@@ -52,7 +53,7 @@ internal static class InterfaceCodeGenerator
                 if (param.HasExplicitDefaultValue) sb.Append(" = ").Append(param.ExplicitDefaultValue);
             }
 
-            if(addCancellationToken && method.Parameters.Length != 0) sb.Append(", ");
+            if (addCancellationToken && method.Parameters.Length != 0) sb.Append(", ");
             if (addCancellationToken)
                 sb.Append("System.Threading.CancellationToken token = default");
 
@@ -61,12 +62,19 @@ internal static class InterfaceCodeGenerator
             foreach (var tp in method.TypeParameters)
             {
                 var parts = new List<string>();
-                if (tp.HasReferenceTypeConstraint) parts.Add("class");
-                if (tp.HasValueTypeConstraint) parts.Add("struct");
-                if (tp.HasUnmanagedTypeConstraint) parts.Add("unmanaged");
+                if (tp.HasReferenceTypeConstraint && !ConstrainPragmaWriter.Contain(method, "class"))
+                    parts.Add("class");
+                if (tp.HasValueTypeConstraint && !ConstrainPragmaWriter.Contain(method, "struct"))
+                    parts.Add("struct");
+                if (tp.HasUnmanagedTypeConstraint && !ConstrainPragmaWriter.Contain(method, "unmanaged"))
+                    parts.Add("unmanaged");
                 foreach (var ct in tp.ConstraintTypes)
-                    parts.Add(ct.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-                if (tp.HasConstructorConstraint) parts.Add("new()");
+                    if (!ConstrainPragmaWriter.Contain(method, ct.ToDisplayString(new SymbolDisplayFormat(
+                            typeQualificationStyle: SymbolDisplayTypeQualificationStyle
+                                .NameAndContainingTypesAndNamespaces)
+                        )))
+                        parts.Add(ct.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                if (tp.HasConstructorConstraint && !ConstrainPragmaWriter.Contain(method, "new()")) parts.Add("new()");
 
                 if (parts.Count <= 0) continue;
                 sb.Append(" where ");
@@ -82,5 +90,4 @@ internal static class InterfaceCodeGenerator
         sb.AppendLine("}");
         return sb.ToString();
     }
-
 }

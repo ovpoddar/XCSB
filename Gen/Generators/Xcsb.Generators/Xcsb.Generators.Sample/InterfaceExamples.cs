@@ -5,7 +5,6 @@ using Xcsb.Generators;
 namespace Xcsb.Generators.Sample;
 [CheckedDeclaration]
 [UncheckedDeclaration]
-[AsyncDeclaration]
 [BufferDeclaration]
 public interface IMyService
 {
@@ -13,7 +12,7 @@ public interface IMyService
     int Doing(int a);
 }
 
-public interface IService : IMyService, IMyServiceChecked, IMyServiceUnchecked, IMyServiceAsync
+public interface IService : IMyService, IMyServiceChecked, IMyServiceUnchecked
 {
 }
 
@@ -27,7 +26,7 @@ public interface IServiceBuffer : IMyServiceBuffer
 public partial class Service : IService
 {
     private readonly TestService _socketAccessor;
-    
+
     public Task<int> DoAsync(CancellationToken cancellationToken = default)
     {
         throw new System.NotImplementedException();
@@ -47,17 +46,17 @@ public partial class Service : IService
     {
         return new Cookie();
     }
-    
+
     public class Cookie
     {
         public int Sequence { get; set; }
     }
-    
+
     public class TestService
     {
         public void SkipErrorForSequence(int sequence, bool isError)
         {
-                
+
         }
     }
 }
