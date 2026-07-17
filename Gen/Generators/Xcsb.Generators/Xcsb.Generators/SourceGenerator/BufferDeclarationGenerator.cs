@@ -15,7 +15,7 @@ public sealed class BufferDeclarationGenerator : DeclarationGeneratorBase
     {
         return InterfaceCodeGenerator.Generate(
             interfaceSymbol,
-            interfaceSuffix: DeclarationAttributeCode.Buffer.SuffixName,
+            interfaceSuffix: GeneratedSuffix,
             methodSuffix: string.Empty,
             returnTypeProvider: _ => "void"
         );

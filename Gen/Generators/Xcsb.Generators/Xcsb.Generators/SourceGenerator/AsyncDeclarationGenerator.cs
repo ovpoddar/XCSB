@@ -15,8 +15,8 @@ public sealed class AsyncDeclarationGenerator : DeclarationGeneratorBase
     {
         return InterfaceCodeGenerator.Generate(
             interfaceSymbol,
-            interfaceSuffix: DeclarationAttributeCode.Async.SuffixName,
-            methodSuffix: DeclarationAttributeCode.Async.SuffixName,
+            interfaceSuffix: GeneratedSuffix,
+            methodSuffix: GeneratedSuffix,
             returnTypeProvider: method => $"System.Threading.Tasks.Task<{method.ReturnType}>",
             addCancellationToken: true
         );

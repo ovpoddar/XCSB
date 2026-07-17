@@ -15,8 +15,8 @@ public sealed class CheckedDeclarationGenerator : DeclarationGeneratorBase
     {
         return InterfaceCodeGenerator.Generate(
             interfaceSymbol,
-            interfaceSuffix: DeclarationAttributeCode.Checked.SuffixName,
-            methodSuffix: DeclarationAttributeCode.Checked.SuffixName,
+            interfaceSuffix: GeneratedSuffix,
+            methodSuffix: GeneratedSuffix,
             returnTypeProvider: _ => "void"
         );
     }

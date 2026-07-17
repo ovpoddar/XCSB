@@ -15,8 +15,8 @@ public sealed class UncheckedDeclarationGenerator : DeclarationGeneratorBase
     {
         return InterfaceCodeGenerator.Generate(
             interfaceSymbol,
-            interfaceSuffix: DeclarationAttributeCode.Unchecked.SuffixName,
-            methodSuffix: DeclarationAttributeCode.Unchecked.SuffixName,
+            interfaceSuffix: GeneratedSuffix,
+            methodSuffix: GeneratedSuffix,
             returnTypeProvider: _ => "void"
         );
     }
