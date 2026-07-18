@@ -5,7 +5,9 @@ using Xcsb.Connection.Infrastructure.Exceptions;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Extension.XInput.Infrastructure;
 using Xcsb.Extension.XInput.Models;
+using Xcsb.Extension.XInput.Models.TypeInfo;
 using Xcsb.Extension.XInput.Requests;
+using Xcsb.Extension.XInput.Response.Event;
 using Xcsb.Extension.XInput.Response.Replies;
 using Xcsb.Extension.XInput.Response.Replies.Internals;
 using Xcsb.Models;
@@ -23,8 +25,16 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         _response = response;
         _extensionInternal = extensionInternal;
+        Resister(response.MajorOpcode, extensionInternal);
     }
 
+    static void Resister(byte responseMajorOpcode, IXExtensionInternal extension)
+    {
+        extension.RegisterX1Event<DeviceValuatorEvent>(XiInputEventType.DeviceValuator);
+        
+        // extension.RegisterX2Event<DeviceChangedEvent>(responseMajorOpcode, XiInputEventType.DeviceChanged);
+    }
+    
     public GetExtensionVersionReply GetExtensionVersion(ReadOnlySpan<byte> name)
     {
         var cookie = GetExtensionVersionBase(name);

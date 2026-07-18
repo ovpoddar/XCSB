@@ -13,7 +13,7 @@ public readonly struct XiGetClientPointerReply : IXReply
     public readonly uint Length;
     public readonly byte Set;
     public readonly byte Pad1;
-    public readonly ushort Deviceid; //xcb_input_device_id_t
+    public readonly InputDevice Deviceid; //xcb_input_device_id_t
 
     public bool Verify(in int sequence)
     {
