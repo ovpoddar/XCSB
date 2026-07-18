@@ -1,16 +1,15 @@
 ﻿using Xcsb.Connection.Models;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
+using Xcsb.Generators;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Models.String;
 
-#if !NETSTANDARD
-using System.Numerics;
-#endif
-
 namespace Xcsb.Infrastructure.VoidProto;
 
+[CheckedDeclaration]
+[UncheckedDeclaration]
 public interface IVoidProto
 {
     ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,
@@ -37,7 +36,7 @@ public interface IVoidProto
     ResponseProto ChangeProperty<T>(PropertyMode mode, uint window, ATOM property, ATOM type, ReadOnlySpan<T> args)
         where T : struct
 #if !NETSTANDARD
-        , INumber<T>
+        , System.Numerics.INumber<T>
 #endif
     ;
 
@@ -86,17 +85,17 @@ public interface IVoidProto
 
     ResponseProto FreePixmap(uint pixmapId);
 
-    ResponseProto CreateGC(uint gc, uint drawable, GcMask mask, ReadOnlySpan<uint> args);
+    ResponseProto CreateGc(uint gc, uint drawable, GcMask mask, ReadOnlySpan<uint> args);
 
-    ResponseProto ChangeGC(uint gc, GcMask mask, ReadOnlySpan<uint> args);
+    ResponseProto ChangeGc(uint gc, GcMask mask, ReadOnlySpan<uint> args);
 
-    ResponseProto CopyGC(uint srcGc, uint dstGc, GcMask mask);
+    ResponseProto CopyGc(uint srcGc, uint dstGc, GcMask mask);
 
     ResponseProto SetDashes(uint gc, ushort dashOffset, ReadOnlySpan<byte> dashes);
 
     ResponseProto SetClipRectangles(ClipOrdering ordering, uint gc, ushort clipX, ushort clipY, ReadOnlySpan<Rectangle> rectangles);
 
-    ResponseProto FreeGC(uint gc);
+    ResponseProto FreeGc(uint gc);
 
     ResponseProto ClearArea(bool exposures, uint window, short x, short y, ushort width, ushort height);
 
@@ -178,6 +177,4 @@ public interface IVoidProto
 
     ResponseProto PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data);
     ResponseProto PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data);
-    GenericError? CheckResponseProtoResult(ResponseProto response);
-    void VerifyResponseProtoResult(ResponseProto response);
 }

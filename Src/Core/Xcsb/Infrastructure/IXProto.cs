@@ -1,4 +1,6 @@
 ﻿using Xcsb.Connection.Models;
+using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Infrastructure.ResponceProto;
 using Xcsb.Infrastructure.VoidProto;
 
@@ -25,4 +27,6 @@ public interface IXProto : IResponseProto, IResponseProtoAsync, IVoidProto, IVoi
     Task<XEvent> GetEventAsync(CancellationToken token = default);
     bool IsEventAvailable();
     void WaitForEvent();
+    GenericError? CheckResponseProtoResult(ResponseProto response);
+    void VerifyResponseProtoResult(ResponseProto response);
 }
