@@ -67,7 +67,7 @@ ChangeWindowColor(x, window1, colorFocused);
 ChangeWindowColor(x, window2, colorUnfocused);
 
 var gc = connection.NewId();
-x.CreateGCUnchecked(gc, window1, GcMask.Foreground | GcMask.Background, [screen.BlackPixel, screen.WhitePixel]);
+x.CreateGcUnchecked(gc, window1, GcMask.Foreground | GcMask.Background, [screen.BlackPixel, screen.WhitePixel]);
 
 // Track current focused window
 

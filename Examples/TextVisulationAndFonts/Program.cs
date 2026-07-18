@@ -76,16 +76,16 @@ while (isRunning)
             c.OpenFontChecked("fixed", fontId1);
 
             var gc = connection.NewId();
-            c.CreateGCChecked(gc, window, GcMask.Foreground | GcMask.Background | GcMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId]);
+            c.CreateGcChecked(gc, window, GcMask.Foreground | GcMask.Background | GcMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId]);
             var gc1 = connection.NewId();
-            c.CreateGCChecked(gc1, window, GcMask.Foreground | GcMask.Background | GcMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId1]);
+            c.CreateGcChecked(gc1, window, GcMask.Foreground | GcMask.Background | GcMask.Font, [connection.HandshakeSuccessResponseBody.Screens[0].BlackPixel, connection.HandshakeSuccessResponseBody.Screens[0].WhitePixel, fontId1]);
 
             c.ImageText16Checked(window, gc, 10, 15, "this is a utf 16 string");
             c.ImageText8Checked(window, gc, 10, 40, "this is a utf 8 string"u8);
             c.PolyText8Checked(window, gc, 10, 80, ["Helloworld with polytext"u8, "polytext2"u8]);
             c.PolyText16Checked(window, gc, 10, 100, ["Hello world"]);
-            c.FreeGCChecked(gc);
-            c.FreeGCChecked(gc1);
+            c.FreeGcChecked(gc);
+            c.FreeGcChecked(gc1);
 
             c.CloseFontChecked(fontId1);
             c.CloseFontChecked(fontId);
@@ -94,13 +94,13 @@ while (isRunning)
         if (keyPressEvent.Detail == 54) //c
         {
             var gc = connection.NewId();
-            c.CreateGCChecked(gc, window, GcMask.Foreground, [0x00ffffff]);
+            c.CreateGcChecked(gc, window, GcMask.Foreground, [0x00ffffff]);
 
             c.PolyFillRectangleChecked(window, gc, [new Rectangle{
                 X = 0,Y= 0,Width =  500, Height = 500
             }]);
 
-            c.FreeGCChecked(gc);
+            c.FreeGcChecked(gc);
         }
 
         c.BellChecked(100);
@@ -109,13 +109,13 @@ while (isRunning)
     else if (Event.ReplyType == EventType.Expose)
     {
         var gc = connection.NewId();
-        c.CreateGCChecked(gc, window, GcMask.Foreground, [0x00ff0000]);
+        c.CreateGcChecked(gc, window, GcMask.Foreground, [0x00ff0000]);
 
         c.PolyFillRectangleChecked(window, gc, [new Rectangle{
                 X = 0,Y= 0,Width =  500, Height = 500
             }]);
 
-        c.FreeGCChecked(gc);
+        c.FreeGcChecked(gc);
     }
     else if (Event.ReplyType == EventType.ButtonPress)
     {

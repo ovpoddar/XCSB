@@ -46,7 +46,7 @@ var fontId = connection.NewId();
 x.OpenFontUnchecked("fixed", fontId);
 
 var _gc = connection.NewId();
-x.CreateGCUnchecked(_gc, win, GcMask.Foreground | GcMask.Background | GcMask.Font, [screen.BlackPixel, screen.WhitePixel, fontId]);
+x.CreateGcUnchecked(_gc, win, GcMask.Foreground | GcMask.Background | GcMask.Font, [screen.BlackPixel, screen.WhitePixel, fontId]);
 
 x.ImageText8Unchecked(win, _gc, 10, 40, "the background will change"u8);
 Thread.Sleep(5000);
@@ -84,10 +84,10 @@ for (var i = 0; i < 6; i++)
 foreach (var atom in atoms)
     x.DeletePropertyUnchecked(win, atom);
 
-x.ImageText8Unchecked(win, _gc, 10, 40, "Change the GC's foreground red to white"u8);
+x.ImageText8Unchecked(win, _gc, 10, 40, "Change the Gc's foreground red to white"u8);
 Thread.Sleep(5000);
 var gc = connection.NewId();
-x.CreateGCUnchecked(gc, win, GcMask.Foreground, [0xFF0000]);
+x.CreateGcUnchecked(gc, win, GcMask.Foreground, [0xFF0000]);
 var rect = new Rectangle()
 {
     X = 10,
@@ -98,30 +98,30 @@ var rect = new Rectangle()
 x.PolyFillRectangleUnchecked(win, gc, [rect]);
 
 Thread.Sleep(1000);
-x.ChangeGCUnchecked(gc, GcMask.Foreground, [screen.WhitePixel]);
+x.ChangeGcUnchecked(gc, GcMask.Foreground, [screen.WhitePixel]);
 rect.X += 20;
 rect.Y += 60;
 
 x.PolyFillRectangleUnchecked(win, gc, [rect]);
-x.FreeGCUnchecked(gc);
+x.FreeGcUnchecked(gc);
 Thread.Sleep(3000);
 
 var gc1 = connection.NewId();
 var gc2 = connection.NewId();
-x.CreateGCUnchecked(gc1, win, GcMask.Foreground, [0x0000FF]);
-x.CreateGCUnchecked(gc2, win, 0, []);
+x.CreateGcUnchecked(gc1, win, GcMask.Foreground, [0x0000FF]);
+x.CreateGcUnchecked(gc2, win, 0, []);
 rect.X -= 15;
 rect.Y -= 65;
 x.PolyFillRectangleUnchecked(win, gc1, [rect]);
 Thread.Sleep(1500);
 
-x.CopyGCUnchecked(gc1, gc2, GcMask.Foreground);
+x.CopyGcUnchecked(gc1, gc2, GcMask.Foreground);
 rect.X += 20;
 rect.Y += 60;
 
 x.PolyFillRectangleUnchecked(win, gc2, [rect]);
 
-x.FreeGCUnchecked(gc1);
+x.FreeGcUnchecked(gc1);
 Thread.Sleep(3000);
 
 var accl = new Acceleration
