@@ -64,12 +64,20 @@ internal static class ClassCodeGenerator
             foreach (var tp in method.TypeParameters)
             {
                 var parts = new List<string>();
-                if (tp.HasReferenceTypeConstraint) parts.Add("class");
-                if (tp.HasValueTypeConstraint) parts.Add("struct");
-                if (tp.HasUnmanagedTypeConstraint) parts.Add("unmanaged");
+                if (tp.HasReferenceTypeConstraint && !ConstrainPragmaWriter.Contain(method, "class"))
+                    parts.Add("class");
+                if (tp.HasValueTypeConstraint && !ConstrainPragmaWriter.Contain(method, "struct"))
+                    parts.Add("struct");
+                if (tp.HasUnmanagedTypeConstraint && !ConstrainPragmaWriter.Contain(method, "unmanaged"))
+                    parts.Add("unmanaged");
                 foreach (var ct in tp.ConstraintTypes)
-                    parts.Add(ct.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-                if (tp.HasConstructorConstraint) parts.Add("new()");
+                    if (!ConstrainPragmaWriter.Contain(method, ct.ToDisplayString(new SymbolDisplayFormat(
+                            typeQualificationStyle: SymbolDisplayTypeQualificationStyle
+                                .NameAndContainingTypesAndNamespaces)
+                        )))
+                        parts.Add(ct.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                if (tp.HasConstructorConstraint && !ConstrainPragmaWriter.Contain(method, "new()")) parts.Add("new()");
+
 
                 if (parts.Count <= 0) continue;
                 sb.Append(" where ");

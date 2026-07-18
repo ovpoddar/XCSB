@@ -32,7 +32,7 @@ client.MapWindowChecked(window);
 
 var isRunning = true;
 var gc = con.NewId();
-client.CreateGCUnchecked(gc, window, Xcsb.Masks.GcMask.Foreground | Xcsb.Masks.GcMask.Background, [screen.WhitePixel, screen.BlackPixel]);
+client.CreateGcUnchecked(gc, window, Xcsb.Masks.GcMask.Foreground | Xcsb.Masks.GcMask.Background, [screen.WhitePixel, screen.BlackPixel]);
 while (isRunning)
 {
     var evnt = client.GetEvent();
