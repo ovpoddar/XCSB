@@ -1,13 +1,15 @@
 using System;
-using System.Numerics;
 using Xcsb.Connection.Response;
 using Xcsb.Extension.XInput.Models;
 using Xcsb.Extension.XInput.Models.Writers;
+using Xcsb.Generators;
 using Xcsb.Masks;
 using Xcsb.Models;
 
 namespace Xcsb.Extension.XInput.Infrastructure.VoidProto;
 
+[CheckedDeclaration]
+[UncheckedDeclaration]
 public interface IVoidProto
 {
     ResponseProto CloseDevice(byte deviceId);
@@ -34,7 +36,7 @@ public interface IVoidProto
     ResponseProto ChangeDeviceProperty<T>(ATOM property, ATOM type, byte deviceId, PropertyMode mode,
         ReadOnlySpan<T> items) where T : struct
 #if !NETSTANDARD
-        , INumber<T>
+        , System.Numerics.INumber<T>
 #endif
     ;
     ResponseProto DeleteDeviceProperty(ATOM property, byte deviceId);
@@ -52,7 +54,7 @@ public interface IVoidProto
     ResponseProto XiChangeProperty<T>(InputDevice deviceId, PropertyMode mode, ATOM property, ATOM type,
         ReadOnlySpan<T> items) where T : struct
 #if !NETSTANDARD
-        , INumber<T>
+        , System.Numerics.INumber<T>
 #endif
     ;
     ResponseProto XiDeleteProperty(InputDevice deviceId, ATOM property);
