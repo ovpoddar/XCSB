@@ -16,7 +16,7 @@ using Xcsb.Models;
 namespace Xcsb.Extension.XInput.Implementation;
 
 // https://xorg.freedesktop.org/archive/X11R7.7/doc/libXi/inputlib.pdf
-internal sealed partial class XInputProto : IXInputBufferRequest
+internal class XInputBufferProto : IXInputBufferRequest
 {
     void IVoidBufferProto.CloseDevice(byte deviceId)
     {
