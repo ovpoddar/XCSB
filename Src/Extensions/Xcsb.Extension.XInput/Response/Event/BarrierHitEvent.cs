@@ -1,12 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
+using Xcsb.Connection;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct BarrierHitEvent : IXEvent
+public struct BarrierHitEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -14,10 +15,15 @@ public struct BarrierHitEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct ButtonPressEvent : IXEvent
+public struct ButtonPressEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -25,10 +31,15 @@ public struct ButtonPressEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public unsafe struct DeviceChangedEvent : IXEvent
+public unsafe struct DeviceChangedEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
@@ -46,10 +57,15 @@ public unsafe struct DeviceChangedEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public unsafe struct DeviceKeyStateNotifyEvent : IXEvent
+public unsafe struct DeviceKeyStateNotifyEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public fixed byte Keys[28];
@@ -58,10 +74,15 @@ public unsafe struct DeviceKeyStateNotifyEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct EnterEvent : IXEvent
+public struct EnterEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -69,10 +90,15 @@ public struct EnterEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct GesturePinchBeginEvent : IXEvent
+public struct GesturePinchBeginEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -80,10 +106,15 @@ public struct GesturePinchBeginEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct GestureSwipeBeginEvent : IXEvent
+public struct GestureSwipeBeginEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -91,10 +122,15 @@ public struct GestureSwipeBeginEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct HierarchyEvent : IXEvent
+public struct HierarchyEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -102,10 +138,15 @@ public struct HierarchyEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct KeyPressEvent : IXEvent
+public struct KeyPressEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -113,10 +154,15 @@ public struct KeyPressEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct PropertyEvent : IXEvent
+public struct PropertyEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -124,10 +170,15 @@ public struct PropertyEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct RawButtonPressEvent : IXEvent
+public struct RawButtonPressEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -135,10 +186,15 @@ public struct RawButtonPressEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct RawKeyPressEvent : IXEvent
+public struct RawKeyPressEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -146,22 +202,32 @@ public struct RawKeyPressEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct RawTouchBeginEvent : IXEvent
+public struct RawTouchBeginEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
-    private IXEvent _ixEventImplementation;
+    private IXExtensionEvent _ixEventImplementation;
 
     public bool Verify()
     {
         return _ixEventImplementation.Verify();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct TouchBeginEvent : IXEvent
+public struct TouchBeginEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
@@ -169,15 +235,25 @@ public struct TouchBeginEvent : IXEvent
     {
         throw new System.NotImplementedException();
     }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct TouchOwnershipEvent : IXEvent
+public struct TouchOwnershipEvent : IXExtensionEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
 
     public bool Verify()
     {
         throw new System.NotImplementedException();
+    }
+
+    public T Create<T>(Span<byte> data) where T : struct
+    {
+        throw new NotImplementedException();
     }
 }
