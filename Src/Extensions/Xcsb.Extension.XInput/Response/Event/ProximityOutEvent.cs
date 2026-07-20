@@ -6,7 +6,7 @@ using Xcsb.Masks;
 namespace Xcsb.Extension.XInput.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct DeviceKeyRelease : IXEvent
+public readonly struct ProximityOutEvent : IXEvent
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint TimeStamp;

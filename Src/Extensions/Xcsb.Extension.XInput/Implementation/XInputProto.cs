@@ -46,6 +46,22 @@ internal sealed partial class XInputProto : IXinputRequest
     static void Resister(byte responseMajorOpcode, IXExtensionInternal extension)
     {
         extension.RegisterX1Event<DeviceValuatorEvent>(XiInputEventType.DeviceValuator);
+        extension.RegisterX1Event<DeviceKeyPressEvent>(XiInputEventType. DeviceKeyPress);
+        extension.RegisterX1Event<DeviceKeyReleaseEvent>(XiInputEventType. DeviceKeyRelease);
+        extension.RegisterX1Event<DeviceButtonPressEvent>(XiInputEventType. DeviceButtonPress);
+        extension.RegisterX1Event<DeviceButtonReleaseEvent>(XiInputEventType. DeviceButtonRelease);
+        extension.RegisterX1Event<DeviceMotionNotifyEvent>(XiInputEventType. DeviceMotionNotify);
+        extension.RegisterX1Event<DeviceFocusInEvent>(XiInputEventType. DeviceFocusIn);
+        extension.RegisterX1Event<DeviceFocusOutEvent>(XiInputEventType. DeviceFocusOut);
+        extension.RegisterX1Event<ProximityInEvent>(XiInputEventType. ProximityIn);
+        extension.RegisterX1Event<ProximityOutEvent>(XiInputEventType. ProximityOut);
+        extension.RegisterX1Event<DeviceStateNotifyEvent>(XiInputEventType. DeviceStateNotify);
+        extension.RegisterX1Event<DeviceMappingNotifyEvent>(XiInputEventType. DeviceMappingNotify);
+        extension.RegisterX1Event<ChangeDeviceNotifyEvent>(XiInputEventType. ChangeDeviceNotify);
+        extension.RegisterX1Event<DeviceKeyStateNotifyEvent>(XiInputEventType. DeviceKeyStateNotify);
+        extension.RegisterX1Event<DeviceButtonStateNotifyEvent>(XiInputEventType. DeviceButtonStateNotify);
+        extension.RegisterX1Event<DevicePresenceNotifyEvent>(XiInputEventType. DevicePresenceNotify);
+        extension.RegisterX1Event<DevicePropertyNotifyEvent>(XiInputEventType. DevicePropertyNotify);
 
         // extension.RegisterX2Event<DeviceChangedEvent>(responseMajorOpcode, XiInputEventType.DeviceChanged);
     }

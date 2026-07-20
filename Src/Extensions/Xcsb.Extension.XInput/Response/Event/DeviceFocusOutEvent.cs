@@ -6,7 +6,7 @@ using Xcsb.Models;
 namespace Xcsb.Extension.XInput.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct DeviceFocusOut : IXEvent
+public struct DeviceFocusOutEvent : IXEvent
 {
     public readonly ResponseHeader<ResponseType, NotifyDetail> ResponseHeader;
     public readonly uint Time;
