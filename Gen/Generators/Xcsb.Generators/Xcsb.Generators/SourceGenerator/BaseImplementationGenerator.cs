@@ -17,7 +17,7 @@ public class BaseImplementationGenerator : ImplementationGeneratorBase
                 sb.AppendLine(" =>");
                 sb.Append("            this.")
                     .Append(method.Name)
-                    .Append("(");
+                    .Append("Base(");
                 for (var i = 0; i < method.Parameters.Length; i++)
                 {
                     var param = method.Parameters[i];
