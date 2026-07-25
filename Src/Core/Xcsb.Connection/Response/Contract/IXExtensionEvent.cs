@@ -1,6 +1,6 @@
 namespace Xcsb.Connection.Response.Contract;
 
-internal interface IXExtensionEvent : IXEvent
+internal interface IXExtensionEvent<out T> : IXEvent where T : struct
 {
-    T Create<T>(Span<byte> data) where T : struct;
+    T Create(Span<byte> data);
 }

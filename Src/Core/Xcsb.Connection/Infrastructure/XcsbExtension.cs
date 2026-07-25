@@ -18,12 +18,14 @@ internal sealed class XcsbExtension : IXExtensionInternal
 
     private readonly ConcurrentDictionary<string, QueryExtensionReply> _extensionReplies =
         new ConcurrentDictionary<string, QueryExtensionReply>();
+
     private readonly ConcurrentDictionary<Type, Lazy<object>> _store = new ConcurrentDictionary<Type, Lazy<object>>();
     private readonly ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> _responseMap;
 
     public ISocketAccessor Transport { get; }
 
-    public XcsbExtension(ISocketAccessor accessor, ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> responseMap)
+    public XcsbExtension(ISocketAccessor accessor,
+        ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> responseMap)
     {
         Transport = accessor;
         this._responseMap = responseMap;
@@ -95,26 +97,49 @@ internal sealed class XcsbExtension : IXExtensionInternal
     {
         _store.Clear();
     }
-    
-    
+
+
     public void RegisterReply()
     {
         _responseMap[(1, null, null)] = new MappingDetails(XResponseType.Reply, null, false);
     }
 
-    public void RegisterX1Event<T>(XEventType type, byte? typeValue = null) where T : unmanaged, IXEvent
+    public void RegisterX1Event<T>(XEventType type, string extensionName = "") where T : unmanaged, IXEvent
     {
-        var value = new MappingDetails(type == 11 ? XResponseType.Notify : XResponseType.Event, type, false);
-        value.SetEventType<T>();
-        typeValue ??= type;
-        _responseMap[(typeValue.Value, null, null)] = value;
+        var responseType = type == 11
+            ? XResponseType.Notify
+            : XResponseType.Event;
+
+        var mapping = new MappingDetails(responseType, type, false);
+        mapping.SetEventType<T>();
+        var key = ResolveKey(type, extensionName, false); 
+        _responseMap[(key , null, null)] = mapping;
     }
 
-    public void RegisterX2Event<T>(byte extension, XEventType type) where T : unmanaged, IXEvent
+    private byte ResolveKey(XEventType type, string extensionName, bool isError)
     {
+        if (string.IsNullOrWhiteSpace(extensionName))
+            return type;
+
+        if (!_extensionReplies.TryGetValue(extensionName, out var extension))
+            throw new ArgumentException(
+                $"{nameof(extensionName)} '{extensionName}' has not been activated or is invalid.");
+
+        var offset = isError ? extension.FirstError : extension.FirstEvent;
+        return (byte)(type + offset);
+    }
+    
+    public void RegisterX2Event<T>(XEventType type, string extensionName) where T : struct, IXExtensionEvent<T>
+    {
+        if (string.IsNullOrWhiteSpace(extensionName))
+            throw new ArgumentException($"{nameof(extensionName)} is invalid, {nameof(extensionName)} is null or empty.");
+        
+        if (!_extensionReplies.TryGetValue(extensionName, out var extension))
+            throw new ArgumentException($"{nameof(extensionName)} '{extensionName}' has not been activated or is invalid.");
+        
         var value = new MappingDetails(XResponseType.Event, type, true);
         value.SetEventType<T>();
-        _responseMap[(35, extension, type)] = value;
+        _responseMap[(35, extension.MajorOpcode, type)] = value;
     }
 
     public void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError

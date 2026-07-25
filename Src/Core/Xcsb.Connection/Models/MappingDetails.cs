@@ -23,7 +23,7 @@ internal record struct MappingDetails
         ErrorMessageAction = ErrorProcesser.GetErrorMessage<T>;
     }
 
-    public void SetEventType<T>() where T : unmanaged, IXEvent
+    public void SetEventType<T>() where T : IXEvent
     {
         ErrorMessageAction = null;
     }

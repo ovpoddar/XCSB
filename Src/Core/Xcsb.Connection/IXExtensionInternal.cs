@@ -14,9 +14,9 @@ internal interface IXExtensionInternal : IXExtension
 
     T GetOrCreate<T>(Func<T> factory) where T : class;
     void Clear();
-    
+
     void RegisterReply();
-    void RegisterX1Event<T>(XEventType type, byte? typeValue = null) where T : unmanaged, IXEvent;
-    void RegisterX2Event<T>(byte extension, XEventType type) where T : unmanaged, IXEvent;
+    void RegisterX1Event<T>(XEventType type, string extensionName = "") where T : unmanaged, IXEvent;
+    void RegisterX2Event<T>(XEventType type, string extensionName) where T : struct, IXExtensionEvent<T>;
     void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError;
 }
