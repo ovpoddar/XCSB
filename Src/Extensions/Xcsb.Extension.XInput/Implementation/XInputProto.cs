@@ -40,30 +40,55 @@ internal sealed partial class XInputProto : IXinputRequest
         _response = response;
         _extensionInternal = extensionInternal;
         _socketAccessor = extensionInternal.Transport;
-        Resister(response.MajorOpcode, extensionInternal);
+        Resister(extensionInternal);
     }
 
-    static void Resister(byte responseMajorOpcode, IXExtensionInternal extension)
+    static void Resister(IXExtensionInternal extension)
     {
-        extension.RegisterX1Event<DeviceValuatorEvent>(XiInputEventType.DeviceValuator);
-        extension.RegisterX1Event<DeviceKeyPressEvent>(XiInputEventType. DeviceKeyPress);
-        extension.RegisterX1Event<DeviceKeyReleaseEvent>(XiInputEventType. DeviceKeyRelease);
-        extension.RegisterX1Event<DeviceButtonPressEvent>(XiInputEventType. DeviceButtonPress);
-        extension.RegisterX1Event<DeviceButtonReleaseEvent>(XiInputEventType. DeviceButtonRelease);
-        extension.RegisterX1Event<DeviceMotionNotifyEvent>(XiInputEventType. DeviceMotionNotify);
-        extension.RegisterX1Event<DeviceFocusInEvent>(XiInputEventType. DeviceFocusIn);
-        extension.RegisterX1Event<DeviceFocusOutEvent>(XiInputEventType. DeviceFocusOut);
-        extension.RegisterX1Event<ProximityInEvent>(XiInputEventType. ProximityIn);
-        extension.RegisterX1Event<ProximityOutEvent>(XiInputEventType. ProximityOut);
-        extension.RegisterX1Event<DeviceStateNotifyEvent>(XiInputEventType. DeviceStateNotify);
-        extension.RegisterX1Event<DeviceMappingNotifyEvent>(XiInputEventType. DeviceMappingNotify);
-        extension.RegisterX1Event<ChangeDeviceNotifyEvent>(XiInputEventType. ChangeDeviceNotify);
-        extension.RegisterX1Event<DeviceKeyStateNotifyEvent>(XiInputEventType. DeviceKeyStateNotify);
-        extension.RegisterX1Event<DeviceButtonStateNotifyEvent>(XiInputEventType. DeviceButtonStateNotify);
-        extension.RegisterX1Event<DevicePresenceNotifyEvent>(XiInputEventType. DevicePresenceNotify);
-        extension.RegisterX1Event<DevicePropertyNotifyEvent>(XiInputEventType. DevicePropertyNotify);
+        extension.RegisterX1Event<DeviceValuatorEvent>(XiInputEventType.DeviceValuator, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceKeyPressEvent>(XiInputEventType.DeviceKeyPress, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceKeyReleaseEvent>(XiInputEventType.DeviceKeyRelease, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceButtonPressEvent>(XiInputEventType.DeviceButtonPress, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceButtonReleaseEvent>(XiInputEventType.DeviceButtonRelease, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceMotionNotifyEvent>(XiInputEventType.DeviceMotionNotify, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceFocusInEvent>(XiInputEventType.DeviceFocusIn, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceFocusOutEvent>(XiInputEventType.DeviceFocusOut, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<ProximityInEvent>(XiInputEventType.ProximityIn, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<ProximityOutEvent>(XiInputEventType.ProximityOut, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceStateNotifyEvent>(XiInputEventType.DeviceStateNotify, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceMappingNotifyEvent>(XiInputEventType.DeviceMappingNotify, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<ChangeDeviceNotifyEvent>(XiInputEventType.ChangeDeviceNotify, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceKeyStateNotifyEvent>(XiInputEventType.DeviceKeyStateNotify, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DeviceButtonStateNotifyEvent>(XiInputEventType.DeviceButtonStateNotify, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DevicePresenceNotifyEvent>(XiInputEventType.DevicePresenceNotify, XInputExtension.ExtensionName);
+        extension.RegisterX1Event<DevicePropertyNotifyEvent>(XiInputEventType.DevicePropertyNotify, XInputExtension.ExtensionName);
 
-        // extension.RegisterX2Event<DeviceChangedEvent>(responseMajorOpcode, XiInputEventType.DeviceChanged);
+        extension.RegisterX2Event<DeviceChangedEvent>(XiInputEventType.DeviceChanged, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<KeyPressEvent>(XiInputEventType.KeyPress, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<KeyRelease>(XiInputEventType.KeyRelease, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<ButtonPressEvent>(XiInputEventType.ButtonPress, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<ButtonRelease>(XiInputEventType.ButtonRelease, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<Motion>(XiInputEventType.Motion, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<EnterEvent>(XiInputEventType.Enter, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<Leave>(XiInputEventType.Leave, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<FocusIn>(XiInputEventType.FocusIn, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<FocusOut>(XiInputEventType.FocusOut, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<HierarchyEvent>(XiInputEventType.Hierarchy, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<PropertyEvent>(XiInputEventType.Property, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<RawKeyPressEvent>(XiInputEventType.RawKeyPress, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<RawKeyRelease>(XiInputEventType.RawKeyRelease, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<RawButtonPressEvent>(XiInputEventType.RawButtonPress, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<RawButtonRelease>(XiInputEventType.RawButtonRelease, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<RawMotion>(XiInputEventType.RawMotion, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<TouchBeginEvent>(XiInputEventType.TouchBegin, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<TouchUpdate>(XiInputEventType.TouchUpdate, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<TouchEnd>(XiInputEventType.TouchEnd, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<TouchOwnershipEvent>(XiInputEventType.TouchOwnership, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<RawTouchBeginEvent>(XiInputEventType.RawTouchBegin, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<RawTouchUpdate>(XiInputEventType.RawTouchUpdate, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<RawTouchEnd>(XiInputEventType.RawTouchEnd, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<BarrierHitEvent>(XiInputEventType.BarrierHit, XInputExtension.ExtensionName);
+        extension.RegisterX2Event<BarrierLeave>(XiInputEventType.BarrierLeave, XInputExtension.ExtensionName);
     }
 
     public GetExtensionVersionReply GetExtensionVersion(ReadOnlySpan<byte> name)
@@ -556,7 +581,8 @@ internal sealed partial class XInputProto : IXinputRequest
 
     private ResponseProto XiSelectEventsBase(uint window, EventMaskBuilder mask)
     {
-        var request = new XiSelectEventsType(this._response.MajorOpcode, window, (ushort)mask.m_length);
+        var request =
+            new XiSelectEventsType(this._response.MajorOpcode, window, (ushort)mask.m_length, mask.m_data.Length);
         Span<byte> scratchBuffer = stackalloc byte[request.Length * 4];
         scratchBuffer.WriteRequest(
             ref request,
@@ -719,7 +745,7 @@ internal sealed partial class XInputProto : IXinputRequest
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
     }
-    
+
     private ResponseProto GetExtensionVersionBase(ReadOnlySpan<byte> name)
     {
         var request = new GetExtensionVersionType(this._response.MajorOpcode, (ushort)name.Length);
@@ -806,7 +832,7 @@ internal sealed partial class XInputProto : IXinputRequest
     private ResponseProto GrabDeviceBase(uint grabWindow, uint time, GrabMode thisDeviceMode, GrabMode otherDeviceMode,
         bool ownerEvents, byte deviceId, ReadOnlySpan<uint> classes)
     {
-        var request = new GrabDeviceType(this._response.MajorOpcode, grabWindow, time, (ushort)classes.Length, 
+        var request = new GrabDeviceType(this._response.MajorOpcode, grabWindow, time, (ushort)classes.Length,
             thisDeviceMode, otherDeviceMode, ownerEvents, deviceId);
         var requestSize = request.Length * 4;
         if (requestSize < _minStackSupport)
@@ -855,7 +881,8 @@ internal sealed partial class XInputProto : IXinputRequest
 
     private ResponseProto SetDeviceModifierMappingBase(byte deviceId, ReadOnlySpan<uint> keycodesPerModifier)
     {
-        var request= new SetDeviceModifierMappingType(this._response.MajorOpcode, deviceId, (byte)keycodesPerModifier.Length);
+        var request =
+            new SetDeviceModifierMappingType(this._response.MajorOpcode, deviceId, (byte)keycodesPerModifier.Length);
         var requestSize = request.Length * 4;
         if (requestSize < _minStackSupport)
         {
@@ -866,7 +893,8 @@ internal sealed partial class XInputProto : IXinputRequest
         else
         {
             using var scratchBuffer = new ArrayPoolUsing<byte>(requestSize);
-            scratchBuffer[..requestSize].WriteRequest(ref request, 8, MemoryMarshal.Cast<uint, byte>(keycodesPerModifier));
+            scratchBuffer[..requestSize]
+                .WriteRequest(ref request, 8, MemoryMarshal.Cast<uint, byte>(keycodesPerModifier));
             _extensionInternal.Transport.SocketOut.SendRequest(scratchBuffer[..requestSize], SocketFlags.None);
         }
 
@@ -909,7 +937,8 @@ internal sealed partial class XInputProto : IXinputRequest
 
     private ResponseProto SetDeviceValuatorsBase(byte deviceId, byte firstValuator, ReadOnlySpan<uint> valuators)
     {
-        var request = new SetDeviceValuatorsType(this._response.MajorOpcode, deviceId, firstValuator, (byte)valuators.Length);
+        var request =
+            new SetDeviceValuatorsType(this._response.MajorOpcode, deviceId, firstValuator, (byte)valuators.Length);
         var requestSize = request.Length * 4;
         if (requestSize < _minStackSupport)
         {
@@ -944,7 +973,7 @@ internal sealed partial class XInputProto : IXinputRequest
     private ResponseProto GetDevicePropertyBase(ATOM property, ATOM type, uint offset, uint len, byte deviceId,
         bool delete)
     {
-        var request = new GetDevicePropertyType(this._response.MajorOpcode, property, type, offset, len, deviceId, 
+        var request = new GetDevicePropertyType(this._response.MajorOpcode, property, type, offset, len, deviceId,
             delete);
         _extensionInternal.Transport.SocketOut.Send(ref request);
         return new ResponseProto(_extensionInternal.Transport.SocketOut.Sequence);
@@ -988,7 +1017,7 @@ internal sealed partial class XInputProto : IXinputRequest
     private ResponseProto XiGrabDeviceBase(uint window, uint time, uint cursor, InputDevice deviceId, GrabMode mode,
         GrabMode pairedDeviceMode, GrabOwner ownerEvents, ReadOnlySpan<uint> mask)
     {
-        var request = new XiGrabDeviceType(this._response.MajorOpcode, window, time, cursor, deviceId, mode, 
+        var request = new XiGrabDeviceType(this._response.MajorOpcode, window, time, cursor, deviceId, mode,
             pairedDeviceMode, ownerEvents, (ushort)mask.Length);
         var requestSize = request.Length * 4;
         if (requestSize < _minStackSupport)
@@ -1011,7 +1040,8 @@ internal sealed partial class XInputProto : IXinputRequest
         InputDevice deviceId, GrabType grabType, GrabMode22 grabMode, GrabMode pairedDeviceMode, GrabOwner ownerEvents,
         ReadOnlySpan<uint> mask, ReadOnlySpan<uint> modifiers)
     {
-        var request = new XiPassiveGrabDeviceType(this._response.MajorOpcode, time, grabWindow, cursor, detail, deviceId,
+        var request = new XiPassiveGrabDeviceType(this._response.MajorOpcode, time, grabWindow, cursor, detail,
+            deviceId,
             (ushort)modifiers.Length, (ushort)mask.Length, grabType, grabMode, pairedDeviceMode, ownerEvents);
         var maskCast = MemoryMarshal.Cast<uint, byte>(mask);
         var modifiersCast = MemoryMarshal.Cast<uint, byte>(modifiers);

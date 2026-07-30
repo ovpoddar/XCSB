@@ -14,6 +14,8 @@ internal interface ISocketIn
     byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true);
     ValueTask<Memory<byte>> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true,
         CancellationToken token = default);
+    byte[] ComposeEvent(byte[] buffer);
+    ValueTask<Memory<byte>> ComposeEventAsync(Memory<byte> buffer, CancellationToken token = default);
     void FlushSocket();
     void FlushSocket(int outProtoSequence, bool shouldThrowOnError);
     T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct;

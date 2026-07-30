@@ -20,12 +20,12 @@ internal sealed class XcsbExtension : IXExtensionInternal
         new ConcurrentDictionary<string, QueryExtensionReply>();
 
     private readonly ConcurrentDictionary<Type, Lazy<object>> _store = new ConcurrentDictionary<Type, Lazy<object>>();
-    private readonly ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> _responseMap;
+    private readonly ConcurrentDictionary<(byte, byte?, ushort?), MappingDetails> _responseMap;
 
     public ISocketAccessor Transport { get; }
 
     public XcsbExtension(ISocketAccessor accessor,
-        ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> responseMap)
+        ConcurrentDictionary<(byte, byte?, ushort?), MappingDetails> responseMap)
     {
         Transport = accessor;
         this._responseMap = responseMap;
@@ -101,7 +101,7 @@ internal sealed class XcsbExtension : IXExtensionInternal
 
     public void RegisterReply()
     {
-        _responseMap[(1, null, null)] = new MappingDetails(XResponseType.Reply, null, false);
+        _responseMap[(1, null, null)] = new MappingDetails(XResponseType.Reply, null);
     }
 
     public void RegisterX1Event<T>(XEventType type, string extensionName = "") where T : unmanaged, IXEvent
@@ -110,7 +110,7 @@ internal sealed class XcsbExtension : IXExtensionInternal
             ? XResponseType.Notify
             : XResponseType.Event;
 
-        var mapping = new MappingDetails(responseType, type, false);
+        var mapping = new MappingDetails(responseType, type);
         mapping.SetEventType<T>();
         var key = ResolveKey(type, extensionName, false); 
         _responseMap[(key , null, null)] = mapping;
@@ -137,14 +137,14 @@ internal sealed class XcsbExtension : IXExtensionInternal
         if (!_extensionReplies.TryGetValue(extensionName, out var extension))
             throw new ArgumentException($"{nameof(extensionName)} '{extensionName}' has not been activated or is invalid.");
         
-        var value = new MappingDetails(XResponseType.Event, type, true);
+        var value = new MappingDetails(XResponseType.Event, type);
         value.SetEventType<T>();
         _responseMap[(35, extension.MajorOpcode, type)] = value;
     }
 
     public void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError
     {
-        var value = new MappingDetails(XResponseType.Error, type, false);
+        var value = new MappingDetails(XResponseType.Error, type);
         value.SetErrorType<T>();
         _responseMap[(typeValue, type, null)] = value;
     }

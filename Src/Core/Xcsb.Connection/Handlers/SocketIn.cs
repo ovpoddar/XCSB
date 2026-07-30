@@ -15,10 +15,10 @@ namespace Xcsb.Connection.Handlers;
 internal class SocketIn : ISocketIn
 {
     private readonly Socket _socket;
-    private readonly ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> _responseMap;
+    private readonly ConcurrentDictionary<(byte, byte?, ushort?), MappingDetails> _responseMap;
     private readonly XcsbClientConfiguration _configuration;
 
-    public SocketIn(Socket socket, ConcurrentDictionary<(byte, byte?, byte?), MappingDetails> responseMap,
+    public SocketIn(Socket socket, ConcurrentDictionary<(byte, byte?, ushort?), MappingDetails> responseMap,
         XcsbClientConfiguration configuration)
     {
         _socket = socket;
@@ -73,12 +73,8 @@ internal class SocketIn : ISocketIn
                     ReplyBuffer[content.Sequence] = (ComputeResponse(scratchBuffer), responseType);
                     break;
                 case XResponseType.Event:
-                    BufferEvents.Enqueue((buffer, responseType));
-                    break;
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue((content.ReplyType == 35
-                        ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
-                        : buffer, responseType));
+                    BufferEvents.Enqueue((ComposeEvent(buffer), responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -118,12 +114,8 @@ internal class SocketIn : ISocketIn
                     ReplyBuffer[content.Sequence] = (ComputeResponse(scratchBuffer), responseType);
                     break;
                 case XResponseType.Event:
-                    BufferEvents.Enqueue((buffer, responseType));
-                    break;
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue((content.ReplyType == 35
-                        ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
-                        : buffer, responseType));
+                    BufferEvents.Enqueue((ComposeEvent(buffer), responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer));
@@ -218,12 +210,9 @@ internal class SocketIn : ISocketIn
                     ReplyBuffer[key] = (response.ToArray(), responseType);
                     break;
                 case XResponseType.Event:
-                    BufferEvents.Enqueue((buffer.Span.ToArray(), responseType));
-                    break;
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue((content.ReplyType == 35
-                        ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
-                        : buffer.Span.ToArray(), responseType));
+                    var result = await ComposeEventAsync(buffer, token).ConfigureAwait(false);
+                    BufferEvents.Enqueue((result.ToArray(), responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -252,7 +241,6 @@ internal class SocketIn : ISocketIn
             Debug.Assert(totalRead == bufferSize);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = GetResponseType(in content);
-
             switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
@@ -267,17 +255,47 @@ internal class SocketIn : ISocketIn
                     ReplyBuffer[key] = (response.ToArray(), responseType);
                     break;
                 case XResponseType.Event:
-                    return responseType;
                 case XResponseType.Unknown:
-                    return (content.ReplyType == 35
-                        ? throw new NotImplementedException() // ComputeResponse(ref buffer, false)
-                        : responseType);
+                    // ComposeEvent
+                    return responseType;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
             }
         }
     }
 
+    public byte[] ComposeEvent(byte[] buffer)
+    {
+        ref readonly var content = ref buffer.AsStruct<XResponse>();
+        if (!content.ExtensionEventType.HasValue)
+            return buffer;
+
+        var replySize = content.Length * 4;
+        if (replySize == 0)
+            return buffer;
+        
+        using var result = new ArrayPoolUsing<byte>((int)replySize);
+        buffer.CopyTo(result[..32]);
+        _ = Received(result[32..], true);
+        return result.Slice(0, (int)replySize).ToArray();
+    }
+
+    public async ValueTask<Memory<byte>> ComposeEventAsync(Memory<byte> buffer, CancellationToken token = default)
+    {
+        ref readonly var content = ref buffer.AsStruct<XResponse>();
+        if (!content.ExtensionEventType.HasValue)
+            return buffer;
+        var replySize = content.Length * 4;
+        if (replySize == 0)
+            return buffer;
+        Memory<byte> result = new byte[replySize];
+        buffer.CopyTo(result[..32]);
+        var totalRead = await ReceivedAsync(result[32..], token).ConfigureAwait(false);
+        Debug.Assert(totalRead == result.Length - 32);
+        return result;
+    }
+    
+    
     public byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
@@ -299,7 +317,7 @@ internal class SocketIn : ISocketIn
         _ = Received(combined[(priorLen + 32)..(priorLen + 32 + replySize)]);
         return combined.Slice(0, totalSize).ToArray();
     }
-
+    
     public async ValueTask<Memory<byte>> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true,
         CancellationToken token = default)
     {
@@ -360,21 +378,32 @@ internal class SocketIn : ISocketIn
     {
         var rawType = reply.Bytes[0];
         var detail = reply.Bytes[1];
-        var type = (byte)(rawType & 0x7F);
+        if (reply.ExtensionEventType.HasValue)
+        {
+            return _responseMap.TryGetValue((rawType, detail, reply.ExtensionEventType.Value), out var response)
+                ? response
+                : new MappingDetails(
+                    XResponseType.Unknown,
+                    UnknownResponse.Unknown(rawType)
+                );
+        }
+        else
+        {
+            var type = (byte)(rawType & 0x7F);
 
-        if (_responseMap.TryGetValue((type, detail, null), out var response)
-            || _responseMap.TryGetValue((type, null, null), out response))
-            return response;
-
-        if (rawType != type)
-            if (_responseMap.TryGetValue((rawType, detail, null), out response)
-                || _responseMap.TryGetValue((rawType, null, null), out response))
+            if (_responseMap.TryGetValue((type, detail, null), out var response)
+                || _responseMap.TryGetValue((type, null, null), out response))
                 return response;
 
-        return new MappingDetails(
-            XResponseType.Unknown,
-            UnknownResponse.Unknown(type),
-            false
-        );
+            if (rawType != type)
+                if (_responseMap.TryGetValue((rawType, detail, null), out response)
+                    || _responseMap.TryGetValue((rawType, null, null), out response))
+                    return response;
+
+            return new MappingDetails(
+                XResponseType.Unknown,
+                UnknownResponse.Unknown(type)
+            );
+        }
     }
 }

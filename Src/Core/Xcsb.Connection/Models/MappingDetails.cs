@@ -6,16 +6,14 @@ namespace Xcsb.Connection.Models;
 
 internal record struct MappingDetails
 {
-    public MappingDetails(XResponseType responseType, XEventType? responseTypeDetails, bool isExtension)
+    public MappingDetails(XResponseType responseType, XEventType? responseTypeDetails)
     {
         ResponseType = responseType;
         ResponseTypeDetails = responseTypeDetails;
-        IsExtension = isExtension;
     }
 
     public XResponseType ResponseType { get; }
     public XEventType? ResponseTypeDetails { get; }
-    public bool IsExtension { get; }
     public ActionDelegates.ErrorMessageAction? ErrorMessageAction { get; private set; }
 
     public void SetErrorType<T>() where T : unmanaged, IXError
