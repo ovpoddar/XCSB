@@ -221,45 +221,40 @@ internal class SocketIn : ISocketIn
     }
 
     // logic 4
-    public async Task<MappingDetails?> FlushAsync(Memory<byte> buffer, CancellationToken token = default)
+    public async Task<(MappingDetails?, byte[])> FlushAsync(CancellationToken token = default)
     {
-        if (buffer.IsEmpty || buffer.Length < Unsafe.SizeOf<XResponse>())
-            throw new ArgumentException("Buffer is too small.", nameof(buffer));
-
         if (this.BufferEvents.TryDequeue(out var item))
         {
-            item.Item1.CopyTo(buffer.Span);
-            return item.Item2;
+            return (item.Item2, item.Item1);
         }
 
-        var bufferSize = Unsafe.SizeOf<XResponse>();
+        Memory<byte> tempBuffer = new byte[32]; 
         while (true)
         {
-            var totalRead = await ReceivedAsync(buffer, token).ConfigureAwait(false);
+            var totalRead = await ReceivedAsync(tempBuffer, token).ConfigureAwait(false);
             if (totalRead == 0)
-                return null;
-            Debug.Assert(totalRead == bufferSize);
-            ref readonly var content = ref buffer.AsStruct<XResponse>();
+                return (null, Array.Empty<byte>());
+            ref readonly var content = ref tempBuffer.AsStruct<XResponse>();
             var responseType = GetResponseType(in content);
             switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
                     Sequence++;
-                    ReplyBuffer[content.Sequence] = (buffer.Span.ToArray(), responseType);
+                    ReplyBuffer[content.Sequence] = (tempBuffer.ToArray(), responseType);
                     break;
                 case XResponseType.Notify:
-                    return responseType;
+                    return (responseType, tempBuffer.ToArray());
                 case XResponseType.Reply:
                     var key = content.Sequence;
-                    var response = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
+                    var response = await ComputeResponseAsync(tempBuffer, token: token).ConfigureAwait(false);
                     ReplyBuffer[key] = (response.ToArray(), responseType);
                     break;
                 case XResponseType.Event:
                 case XResponseType.Unknown:
-                    // ComposeEvent
-                    return responseType;
+                    tempBuffer = await ComposeEventAsync(tempBuffer, token).ConfigureAwait(false);
+                    return (responseType, tempBuffer.ToArray());
                 default:
-                    throw new Exception(string.Join(", ", buffer.ToArray()));
+                    throw new Exception(string.Join(", ", tempBuffer.ToArray()));
             }
         }
     }

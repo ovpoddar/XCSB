@@ -24,13 +24,14 @@ x.MapWindow(wnd);
 var ext = con.Extension.XInput();
 if (ext is null)
 	return;
-ext.XiSelectEventsChecked(wnd, 	EventMaskBuilder.Create().AddEventMask(InputDevice.DeviceAllMaster, [XiEventMask.RawButtonRelease]));
+ext.XiSelectEventsChecked(wnd, 	EventMaskBuilder.Create().AddEventMask(InputDevice.DeviceAllMaster, [XiEventMask.ButtonPress]));
 while(true)
 {
-	var evnt = x.GetEvent();
-
-	if (evnt.ReplyType ==EventType.LastEvent) break;
-
-	Console.WriteLine(evnt.ReplyType);
+	// var evnt = x.GetEvent();
+	var evnt = await x.GetEventAsync();
+	if (evnt.ReplyType == EventType.LastEvent) break;
+	Console.WriteLine("*****");
+	Console.WriteLine(evnt.ReplyType.ToString());
+	Console.WriteLine("*****");
 }
 

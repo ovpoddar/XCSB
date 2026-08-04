@@ -21,8 +21,14 @@ internal struct ArrayPoolUsing<T> : IDisposable
 
     public ArrayPoolUsing<T> Rent(int size)
     {
-        if (size == 0) return this;
-        if (size < 0) throw new ArgumentOutOfRangeException(nameof(size));
+        switch (size)
+        {
+            case 0:
+            case var _ when size == Length:
+                return this;
+            case < 0:
+                throw new ArgumentOutOfRangeException(nameof(size));
+        }
 
         if (_values != null)
             _arrayPool.Return(_values, _clearArray);

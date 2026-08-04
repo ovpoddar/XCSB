@@ -125,12 +125,12 @@ internal static class ProtoInExtended
         while (true)
         {
             if (socketAccessor.SocketIn.BufferEvents.TryDequeue(out var result))
-                return new XEvent(result.Item1.AsSpan().ToStruct<XResponse>(), result.Item2);
+                return new XEvent(result.Item1, result.Item2);
 
             if (socketAccessor.PollRead())
                 if (socketAccessor.AvailableData == 0)
                     return new XEvent(
-                        new byte[32].AsSpan().ToStruct<XResponse>(),
+                        new byte[32],
                         new MappingDetails(XResponseType.Event, EventType.LastEvent));
 
             socketAccessor.SocketIn.FlushSocket();
@@ -141,15 +141,12 @@ internal static class ProtoInExtended
         CancellationToken token)
     {
         if (socketAccessor.SocketIn.BufferEvents.TryDequeue(out var result))
-            return new XEvent(result.Item1.AsSpan().ToStruct<XResponse>(), result.Item2);
+            return new XEvent(result.Item1, result.Item2);
 
-        var bufferSize = Unsafe.SizeOf<XResponse>();
-        var buffer = new byte[bufferSize];
-        var type = await socketAccessor.SocketIn.FlushAsync(buffer, token).ConfigureAwait(false);
+        var type = await socketAccessor.SocketIn.FlushAsync(token).ConfigureAwait(false);
 
-        if (type.HasValue)
-            return new XEvent(buffer.ToStruct<XResponse>(), type.Value);
-        return new XEvent(buffer.ToStruct<XResponse>(),
-            new MappingDetails(XResponseType.Event, EventType.LastEvent));
+        return type.Item1.HasValue 
+            ? new XEvent(type.Item2, type.Item1.Value) 
+            : new XEvent(type.Item2, new MappingDetails(XResponseType.Event, EventType.LastEvent));
     }
 }

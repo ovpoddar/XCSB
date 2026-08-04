@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Models;
 using Xcsb.Connection.Response;
 using Xcsb.Connection.Response.Contract;
@@ -23,5 +24,5 @@ internal interface ISocketIn
     Task<int> ReceivedAsync(Memory<byte> buffer, CancellationToken token = default);
     (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply;
     Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default) where T : unmanaged, IXReply;
-    Task<MappingDetails?> FlushAsync(Memory<byte> buffer, CancellationToken token = default);
+    Task<(MappingDetails?, byte[])> FlushAsync(CancellationToken token = default);
 }
