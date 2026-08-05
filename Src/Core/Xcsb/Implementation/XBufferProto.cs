@@ -19,6 +19,8 @@ namespace Xcsb.Implementation;
 
 internal sealed class XBufferProto : IXBufferProto
 {
+    private static readonly byte[] _pad = new byte[4];
+    
     private readonly BufferProtoOut _bufferProtoOut;
     private readonly BufferProtoIn _bufferProtoIn;
 
@@ -65,7 +67,7 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new ChangeHostsType(mode, family, address.Length);
         _bufferProtoOut.Add(ref request);
         _bufferProtoOut.AddRange<byte>(address);
-        _bufferProtoOut.AddRange<byte>(new byte[address.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, address.Length.Padding()));
 
     }
 
@@ -102,7 +104,7 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new ChangePropertyType(mode, window, property, type, args.Length, size);
         _bufferProtoOut.Add(ref request);
         _bufferProtoOut.AddRange<T>(args);
-        _bufferProtoOut.AddRange<byte>(new byte[(args.Length * size).Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, (args.Length * size).Padding()));
     }
 
     public void ChangeSaveSet(ChangeSaveSetMode changeSaveSetMode, uint window)
@@ -352,7 +354,7 @@ internal sealed class XBufferProto : IXBufferProto
         var textBytes = new byte[textByteCount];
         Encoding.BigEndianUnicode.GetBytes(text, textBytes);
         _bufferProtoOut.AddRange<byte>(textBytes);
-        _bufferProtoOut.AddRange<byte>(new byte[(16 + textByteCount).Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, (16 + textByteCount).Padding()));
 
     }
 
@@ -361,7 +363,7 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new ImageText8Type(drawable, gc, x, y, text.Length);
         _bufferProtoOut.Add(ref request);
         _bufferProtoOut.AddRange<byte>(text);
-        _bufferProtoOut.AddRange<byte>(new byte[text.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, text.Length.Padding()));
     }
 
     public void InstallColormap(uint colormapId)
@@ -404,7 +406,7 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new OpenFontType(fontId, fontName.Length);
         _bufferProtoOut.Add(ref request);
         _bufferProtoOut.AddRange<byte>(Encoding.ASCII.GetBytes(fontName));
-        _bufferProtoOut.AddRange<byte>(new byte[fontName.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, fontName.Length.Padding()));
 
     }
 
@@ -459,20 +461,22 @@ internal sealed class XBufferProto : IXBufferProto
 
     public void PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
-        var request = new PolyText16Type(drawable, gc, x, y, data.Sum(a => a.Count));
+        var totalLength = data.Sum(a => a.Count);
+        var request = new PolyText16Type(drawable, gc, x, y, totalLength);
         _bufferProtoOut.Add(ref request);
         foreach (var item in data)
             _bufferProtoOut.AddRange<byte>(item.ToArray());
-        _bufferProtoOut.AddRange<byte>(new byte[data.Sum(a => a.Count).Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, totalLength.Padding()));
     }
 
     public void PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
-        var request = new PolyText8Type(drawable, gc, x, y, data.Sum(a => a.Count));
+        var totalLength = data.Sum(a => a.Count);
+        var request = new PolyText8Type(drawable, gc, x, y, totalLength);
         _bufferProtoOut.Add(ref request);
         foreach (var item in data)
             _bufferProtoOut.AddRange<byte>(item.ToArray());
-        _bufferProtoOut.AddRange<byte>(new byte[data.Sum(a => a.Count).Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, totalLength.Padding()));
     }
 
     public void PutImage(ImageFormatBitmap format, uint drawable, uint gc, ushort width, ushort height, short x, short y,
@@ -481,7 +485,7 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new PutImageType(format, drawable, gc, width, height, x, y, leftPad, depth, data.Length);
         _bufferProtoOut.Add(ref request);
         _bufferProtoOut.AddRange<byte>(data);
-        _bufferProtoOut.AddRange<byte>(new byte[data.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, data.Length.Padding()));
     }
 
     public void RecolorCursor(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue, ushort backRed,
@@ -534,21 +538,22 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new SetDashesType(gc, dashOffset, dashes.Length);
         _bufferProtoOut.Add(ref request);
         _bufferProtoOut.AddRange<byte>(dashes);
-        _bufferProtoOut.AddRange<byte>(new byte[dashes.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, dashes.Length.Padding()));
     }
 
     public void SetFontPath(string[] strPaths)
     {
         var length = strPaths.Length;
         strPaths = strPaths.Where(a => a != "fixed").ToArray();
-        var request = new SetFontPathType((ushort)length, strPaths.Sum(a => a.Length + 1).AddPadding());
+        var totalPathLength = strPaths.Sum(a => a.Length + 1);
+        var request = new SetFontPathType((ushort)length, totalPathLength.AddPadding());
         _bufferProtoOut.Add(ref request);
         foreach (var path in strPaths.OrderBy(a => a.Length))
         {
             _bufferProtoOut.Add((byte)path.Length);
             _bufferProtoOut.AddRange<byte>(Encoding.ASCII.GetBytes(path));
         }
-        _bufferProtoOut.AddRange<byte>(new byte[strPaths.Sum(a => a.Length + 1).Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, totalPathLength.Padding()));
     }
 
     public void SetInputFocus(InputFocusMode mode, uint focus, uint time)
@@ -581,7 +586,7 @@ internal sealed class XBufferProto : IXBufferProto
         var request = new StoreNamedColorType(mode, colormapId, pixels, name.Length);
         _bufferProtoOut.Add(ref request);
         _bufferProtoOut.AddRange<byte>(name);
-        _bufferProtoOut.AddRange<byte>(new byte[name.Length.Padding()]);
+        _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, name.Length.Padding()));
     }
 
     public void UngrabButton(Button button, uint grabWindow, ModifierMask mask)
