@@ -130,24 +130,31 @@ internal static class GenericHelper
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
 
-    // todo: if the size goes 8+ it should throw
-    // could be optamice.
     internal static int CountFlags<T>(this T value) where T : struct, Enum
-#if NETSTANDARD
     {
-        var v = Convert.ToUInt64(value);
+        var size = Unsafe.SizeOf<T>() switch
+        {
+            1 => Unsafe.As<T, byte>(ref value),
+            2 => Unsafe.As<T, ushort>(ref value),
+            4 => Unsafe.As<T, uint>(ref value),
+            8 => Unsafe.As<T, ulong>(ref value),
+            _ => throw new ArgumentException($"Count Flags not Supported for {nameof(T)}")
+        };
+        
+#if NETSTANDARD
         var count = 0;
 
-        while (v != 0)
+        while (size != 0)
         {
-            count += (int)(v & 1);
-            v >>= 1;
+            count += (int)(size & 1);
+            size >>= 1;
         }
 
         return count;
-    }
 #else
-        => BitOperations.PopCount(Convert.ToUInt64(value));
+        return BitOperations.PopCount(size);
 #endif
+    }
 
+    
 }
