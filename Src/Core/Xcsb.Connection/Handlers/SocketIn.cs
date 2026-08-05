@@ -64,10 +64,10 @@ internal class SocketIn : ISocketIn
             {
                 case XResponseType.Error:
                     Sequence++;
-                    ReplyBuffer[content.Sequence] = (buffer, responseType);
+                    ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue((buffer, responseType));
+                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
                     break;
                 case XResponseType.Reply:
                     ReplyBuffer[content.Sequence] = (ComputeResponse(scratchBuffer), responseType);
@@ -77,7 +77,7 @@ internal class SocketIn : ISocketIn
                     BufferEvents.Enqueue((ComposeEvent(buffer), responseType));
                     break;
                 default:
-                    throw new Exception(string.Join(", ", buffer.ToArray()));
+                    throw new Exception(string.Join(", ", buffer));
             }
         }
     }
@@ -98,7 +98,7 @@ internal class SocketIn : ISocketIn
                 case XResponseType.Error:
                     Sequence++;
                     if (Sequence > outProtoSequence)
-                        ReplyBuffer[content.Sequence] = (buffer, responseType);
+                        ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
                     else
                     {
                         if (shouldThrowOnError)
@@ -108,7 +108,7 @@ internal class SocketIn : ISocketIn
 
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue((buffer, responseType));
+                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
                     break;
                 case XResponseType.Reply:
                     ReplyBuffer[content.Sequence] = (ComputeResponse(scratchBuffer), responseType);

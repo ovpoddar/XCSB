@@ -130,6 +130,8 @@ internal static class GenericHelper
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
 
+    // todo: if the size goes 8+ it should throw
+    // could be optamice.
     internal static int CountFlags<T>(this T value) where T : struct, Enum
 #if NETSTANDARD
     {

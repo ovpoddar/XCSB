@@ -29,9 +29,19 @@ internal sealed class BufferProtoOut
 
     internal void AddRange<T>(ReadOnlySpan<T> content) where T : struct
     {
-        ReadOnlySpan<byte> buffers = MemoryMarshal.Cast<T, byte>(content);
-        foreach (var item in buffers)
-            _buffer.Add(item);
+        var buffers = MemoryMarshal.Cast<T, byte>(content);
+        if (buffers.IsEmpty)
+            return;
+#if NETSTANDARD
+        var array = new byte[buffers.Length];
+        buffers.CopyTo(array);
+        _buffer.AddRange(array);
+#else
+        // it might be the fastest. but might be slower than span copy directly.
+        var start = _buffer.Count;
+        CollectionsMarshal.SetCount(_buffer, start + buffers.Length);
+        buffers.CopyTo(CollectionsMarshal.AsSpan(_buffer)[start..]);
+#endif
     }
 
     internal void Add(byte value) =>

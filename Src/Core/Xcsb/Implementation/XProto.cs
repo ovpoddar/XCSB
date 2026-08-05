@@ -886,7 +886,6 @@ internal sealed partial class XProto : IXProto
             : new ListHostsReply(result.Span);
     }
 
-    // todo: move to base class
     public XEvent GetEvent() => this._socketAccessor.ReceivedEvent();
 
     public async Task<XEvent> GetEventAsync(CancellationToken token = default) => 
@@ -1424,6 +1423,7 @@ internal sealed partial class XProto : IXProto
                 ref request,
                 4,
                 MemoryMarshal.Cast<uint, byte>(args));
+            _socketAccessor.SocketOut.SendExact(workingBuffer[..requiredBuffer]);
         }
 
         return new ResponseProto(_socketAccessor.SocketOut.Sequence);
