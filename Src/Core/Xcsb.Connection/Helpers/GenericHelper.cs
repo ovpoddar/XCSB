@@ -130,31 +130,27 @@ internal static class GenericHelper
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
 
-    internal static int CountFlags<T>(this T value) where T : struct, Enum
+    internal static int CountFlags<T>(this T value) where T : struct, Enum  => Unsafe.SizeOf<T>() switch
     {
-        var size = Unsafe.SizeOf<T>() switch
-        {
-            1 => Unsafe.As<T, byte>(ref value),
-            2 => Unsafe.As<T, ushort>(ref value),
-            4 => Unsafe.As<T, uint>(ref value),
-            8 => Unsafe.As<T, ulong>(ref value),
-            _ => throw new ArgumentException($"Count Flags not Supported for {nameof(T)}")
-        };
-        
+        1 => PopCount(Unsafe.As<T, byte>(ref value)),
+        2 => PopCount(Unsafe.As<T, ushort>(ref value)),
+        4 => PopCount(Unsafe.As<T, uint>(ref value)),
+        8 => PopCount(Unsafe.As<T, ulong>(ref value)),
+        _ => throw new ArgumentException($"Count Flags not Supported for {nameof(T)}")
+    };
+
+    private static int PopCount(ulong value)
+    {
 #if NETSTANDARD
         var count = 0;
-
-        while (size != 0)
+        while (value != 0)
         {
-            count += (int)(size & 1);
-            size >>= 1;
+            count += (int)(value & 1);
+            value >>= 1;
         }
-
         return count;
 #else
-        return BitOperations.PopCount(size);
+        return BitOperations.PopCount(value);
 #endif
     }
-
-    
 }
