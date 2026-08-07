@@ -74,7 +74,7 @@ internal class SocketIn : ISocketIn
                     break;
                 case XResponseType.Event:
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue((ComposeEvent(buffer), responseType));
+                    BufferEvents.Enqueue((ComposeEvent(scratchBuffer), responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer));
@@ -115,7 +115,7 @@ internal class SocketIn : ISocketIn
                     break;
                 case XResponseType.Event:
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue((ComposeEvent(buffer), responseType));
+                    BufferEvents.Enqueue((ComposeEvent(scratchBuffer), responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer));
@@ -259,17 +259,17 @@ internal class SocketIn : ISocketIn
         }
     }
 
-    public byte[] ComposeEvent(byte[] buffer)
+    public byte[] ComposeEvent(Span<byte> buffer)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
         if (!content.ExtensionEventType.HasValue)
-            return buffer;
+            return buffer.ToArray();
 
         var replySize = content.Length * 4;
         if (replySize == 0)
-            return buffer;
+            return buffer.ToArray();
         
-        using var result = new ArrayPoolUsing<byte>((int)replySize);
+        using var result = new ArrayPoolUsing<byte>((int)replySize + 32);
         buffer.CopyTo(result[..32]);
         _ = Received(result[32..], true);
         return result.Slice(0, (int)replySize).ToArray();
@@ -283,7 +283,7 @@ internal class SocketIn : ISocketIn
         var replySize = content.Length * 4;
         if (replySize == 0)
             return buffer;
-        Memory<byte> result = new byte[replySize];
+        Memory<byte> result = new byte[replySize + 32];
         buffer.CopyTo(result[..32]);
         var totalRead = await ReceivedAsync(result[32..], token).ConfigureAwait(false);
         Debug.Assert(totalRead == result.Length - 32);
