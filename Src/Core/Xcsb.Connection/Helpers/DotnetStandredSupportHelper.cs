@@ -19,10 +19,14 @@ internal static class DotnetStandardSupportHelper
         var array = ArrayPool<byte>.Shared.Rent(buffer.Length);
         try
         {
-            buffer.CopyTo(array);
             while (total < buffer.Length)
-                total += stream.Read(array, total, buffer.Length - total);
-
+            {
+                var read = stream.Read(array, total, buffer.Length - total);
+                if (read == 0)
+                    throw new EndOfStreamException();
+                total += read;
+            }
+            array.AsSpan(0, total).CopyTo(buffer);
         }
         finally
         {

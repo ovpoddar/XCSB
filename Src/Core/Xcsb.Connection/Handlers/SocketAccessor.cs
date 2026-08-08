@@ -47,7 +47,7 @@ internal sealed class SocketAccessor : ISocketAccessor
             PollRead(1000);
 
         this.SocketIn.FlushSocket();
-        if (!this.SocketIn.ReplyBuffer.Remove(sequence, out var response))
+        if (!this.SocketIn.ReplyBuffer.TryRemove(sequence, out var response))
             return;
 
         if (response.Item2.ResponseType != XResponseType.Error)

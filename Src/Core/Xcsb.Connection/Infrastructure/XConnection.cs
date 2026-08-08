@@ -123,8 +123,8 @@ internal class XConnection : IXConnectionInternal
             }
             else
             {
-                using var buffer = new ArrayPoolUsing<byte>(dataLength);
-                var workingBuffer = buffer.Slice(0, dataLength);
+                using var buffer = new ArrayPoolUsing<byte>(requiredBuffer);
+                var workingBuffer = buffer.Slice(0, requiredBuffer);
                 this.Accessor.SocketIn.Received(workingBuffer);
                 FailReason = Encoding.ASCII.GetString(workingBuffer).TrimEnd();
             }

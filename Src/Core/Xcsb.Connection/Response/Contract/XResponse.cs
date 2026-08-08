@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Xcsb.Connection.Response.Contract;
 
@@ -16,14 +17,8 @@ internal unsafe struct XResponse : IXBaseResponse
         return this.Sequence == sequence;
     }
 
-    internal readonly unsafe Span<byte> Bytes
-    {
-        get
-        {
-            fixed (byte* ptr = this._data)
-                return new Span<byte>(ptr, 32);
-        }
-    }
+    internal readonly unsafe Span<byte> Bytes =>
+        MemoryMarshal.CreateSpan(ref Unsafe.AsRef(in ReplyType), 32);
 
     public ushort? ExtensionEventType =>
         ReplyType != 35 ? null : EventType;

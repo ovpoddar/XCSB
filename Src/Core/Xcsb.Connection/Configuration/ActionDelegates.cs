@@ -2,9 +2,9 @@
 
 public static class ActionDelegates
 {
-    public delegate void SendAction(scoped in ReadOnlySpan<byte> request);
+    public delegate void SendAction(scoped ReadOnlySpan<byte> request);
 
-    public delegate void ReceivedAction(scoped in ReadOnlySpan<byte> response);
+    public delegate void ReceivedAction(scoped ReadOnlySpan<byte> response);
 
     public delegate string ErrorMessageAction(Span<byte> data);
 }

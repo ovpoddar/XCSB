@@ -149,16 +149,13 @@ internal class SocketIn : ISocketIn
     public async Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence,
         CancellationToken token = default) where T : unmanaged, IXReply
     {
-        if (sequence < Sequence)
+        if (sequence < Sequence && ReplyBuffer.TryGetValue(sequence, out var result1))
         {
-            if (ReplyBuffer.TryGetValue(sequence, out var result))
-            {
-                var response = result.Item1.AsStruct<T>();
-                return response.Verify(in sequence)
-                    ? (result.Item1, null)
-                    : (Array.Empty<byte>(),
-                        new GenericError(result.Item1.ToStruct<XResponse>(), result.Item2.ErrorMessageAction!));
-            }
+            var response = result1.Item1.AsStruct<T>();
+            return response.Verify(in sequence)
+                ? (result1.Item1, null)
+                : (Array.Empty<byte>(),
+                    new GenericError(result1.Item1.ToStruct<XResponse>(), result1.Item2.ErrorMessageAction!));
         }
 
         var bufferSize = Unsafe.SizeOf<XResponse>();
@@ -228,7 +225,7 @@ internal class SocketIn : ISocketIn
             return (item.Item2, item.Item1);
         }
 
-        Memory<byte> tempBuffer = new byte[32]; 
+        Memory<byte> tempBuffer = new byte[32];
         while (true)
         {
             var totalRead = await ReceivedAsync(tempBuffer, token).ConfigureAwait(false);
@@ -268,11 +265,11 @@ internal class SocketIn : ISocketIn
         var replySize = content.Length * 4;
         if (replySize == 0)
             return buffer.ToArray();
-        
+
         using var result = new ArrayPoolUsing<byte>((int)replySize + 32);
         buffer.CopyTo(result[..32]);
         _ = Received(result[32..], true);
-        return result.Slice(0, (int)replySize).ToArray();
+        return result.Slice(0, (int)replySize + 32).ToArray();
     }
 
     public async ValueTask<Memory<byte>> ComposeEventAsync(Memory<byte> buffer, CancellationToken token = default)
@@ -289,8 +286,8 @@ internal class SocketIn : ISocketIn
         Debug.Assert(totalRead == result.Length - 32);
         return result;
     }
-    
-    
+
+
     public byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
@@ -312,7 +309,7 @@ internal class SocketIn : ISocketIn
         _ = Received(combined[(priorLen + 32)..(priorLen + 32 + replySize)]);
         return combined.Slice(0, totalSize).ToArray();
     }
-    
+
     public async ValueTask<Memory<byte>> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true,
         CancellationToken token = default)
     {
@@ -345,7 +342,7 @@ internal class SocketIn : ISocketIn
                 continue;
             }
 
-            if (!ReplyBuffer.Remove(sequence, out var reply))
+            if (!ReplyBuffer.TryRemove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
             var response = reply.Item1.AsSpan().AsStruct<T>();
@@ -361,7 +358,7 @@ internal class SocketIn : ISocketIn
         if (Sequence < response.Id && !ReplyBuffer.ContainsKey(response.Id))
             FlushSocket();
 
-        var hasAnyData = ReplyBuffer.Remove(response.Id, out var buffer);
+        var hasAnyData = ReplyBuffer.TryRemove(response.Id, out var buffer);
         return hasAnyData
             ? buffer.Item1.AsSpan().AsStruct<T>()
             : response.HasReturn

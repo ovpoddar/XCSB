@@ -89,7 +89,9 @@ internal sealed class XcsbExtension : IXExtensionInternal
 
     public T GetOrCreate<T>(Func<T> factory) where T : class
     {
-        var lazy = _store.GetOrAdd(typeof(T), new Lazy<object>(factory, LazyThreadSafetyMode.ExecutionAndPublication));
+        var lazy = _store.GetOrAdd(typeof(T),
+            static (_, f) => new Lazy<object>(f, LazyThreadSafetyMode.ExecutionAndPublication),
+            factory);
         return (T)lazy.Value;
     }
 
@@ -112,8 +114,8 @@ internal sealed class XcsbExtension : IXExtensionInternal
 
         var mapping = new MappingDetails(responseType, type);
         mapping.SetEventType<T>();
-        var key = ResolveKey(type, extensionName, false); 
-        _responseMap[(key , null, null)] = mapping;
+        var key = ResolveKey(type, extensionName, false);
+        _responseMap[(key, null, null)] = mapping;
     }
 
     private byte ResolveKey(XEventType type, string extensionName, bool isError)
@@ -128,15 +130,17 @@ internal sealed class XcsbExtension : IXExtensionInternal
         var offset = isError ? extension.FirstError : extension.FirstEvent;
         return (byte)(type + offset);
     }
-    
+
     public void RegisterX2Event<T>(XEventType type, string extensionName) where T : struct, IXExtensionEvent<T>
     {
         if (string.IsNullOrWhiteSpace(extensionName))
-            throw new ArgumentException($"{nameof(extensionName)} is invalid, {nameof(extensionName)} is null or empty.");
-        
+            throw new ArgumentException(
+                $"{nameof(extensionName)} is invalid, {nameof(extensionName)} is null or empty.");
+
         if (!_extensionReplies.TryGetValue(extensionName, out var extension))
-            throw new ArgumentException($"{nameof(extensionName)} '{extensionName}' has not been activated or is invalid.");
-        
+            throw new ArgumentException(
+                $"{nameof(extensionName)} '{extensionName}' has not been activated or is invalid.");
+
         var value = new MappingDetails(XResponseType.Event, type);
         value.SetEventType<T>();
         _responseMap[(35, extension.MajorOpcode, type)] = value;
