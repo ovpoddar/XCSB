@@ -1743,9 +1743,9 @@ internal sealed partial class XProto : IXProto
 
     private ResponseProto SetFontPathBase(string[] strPaths)
     {
-        var length = strPaths.Length;
         strPaths = strPaths.Where(a => a != "fixed").ToArray();
-        var request = new SetFontPathType((ushort)length, strPaths.Sum(a => a.Length + 1).AddPadding());
+        var totalPathLength = strPaths.Sum(a => a.Length + 1);
+        var request = new SetFontPathType((ushort)strPaths.Length, totalPathLength.AddPadding());
         var requiredBuffer = request.Length * 4;
         var writIndex = 8;
         if (requiredBuffer < _bigRequestLength)
@@ -1762,7 +1762,7 @@ internal sealed partial class XProto : IXProto
                 writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
             }
 
-            scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
+            scratchBuffer[^totalPathLength.Padding()..].Clear();
             _socketAccessor.SocketOut.SendExact(scratchBuffer);
         }
         else
@@ -1779,7 +1779,7 @@ internal sealed partial class XProto : IXProto
                 writIndex += Encoding.ASCII.GetBytes(item, scratchBuffer.Slice(writIndex, item.Length));
             }
 
-            scratchBuffer[^strPaths.Sum(a => a.Length + 1).Padding()..].Clear();
+            scratchBuffer[^totalPathLength.Padding()..].Clear();
             _socketAccessor.SocketOut.SendExact(scratchBuffer[..requiredBuffer]);
         }
 

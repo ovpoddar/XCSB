@@ -461,21 +461,43 @@ internal sealed class XBufferProto : IXBufferProto
 
     public void PolyText16(uint drawable, uint gc, ushort x, ushort y, TextItem16[] data)
     {
-        var totalLength = data.Sum(a => a.Count);
+        var totalLength = 0;
+        var maxItemCount = 0;
+        foreach (var item in data)
+        {
+            totalLength += item.Count;
+            if (item.Count > maxItemCount) maxItemCount = item.Count;
+        }
         var request = new PolyText16Type(drawable, gc, x, y, totalLength);
         _bufferProtoOut.Add(ref request);
+        Span<byte> buffer = stackalloc byte[totalLength];
         foreach (var item in data)
-            _bufferProtoOut.AddRange<byte>(item.ToArray());
+        {
+            var itemSpan = buffer[..item.Count];
+            item.CopyTo(itemSpan);
+            _bufferProtoOut.AddRange<byte>(itemSpan);
+        }
         _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, totalLength.Padding()));
     }
 
     public void PolyText8(uint drawable, uint gc, ushort x, ushort y, TextItem8[] data)
     {
-        var totalLength = data.Sum(a => a.Count);
+        var totalLength = 0;
+        var maxItemCount = 0;
+        foreach (var item in data)
+        {
+            totalLength += item.Count;
+            if (item.Count > maxItemCount) maxItemCount = item.Count;
+        }
         var request = new PolyText8Type(drawable, gc, x, y, totalLength);
         _bufferProtoOut.Add(ref request);
+        Span<byte> buffer = stackalloc byte[totalLength];
         foreach (var item in data)
-            _bufferProtoOut.AddRange<byte>(item.ToArray());
+        {
+            var itemSpan = buffer[..item.Count];
+            item.CopyTo(itemSpan);
+            _bufferProtoOut.AddRange<byte>(itemSpan);
+        }
         _bufferProtoOut.AddRange<byte>(_pad.AsSpan(0, totalLength.Padding()));
     }
 
@@ -543,10 +565,9 @@ internal sealed class XBufferProto : IXBufferProto
 
     public void SetFontPath(string[] strPaths)
     {
-        var length = strPaths.Length;
         strPaths = strPaths.Where(a => a != "fixed").ToArray();
         var totalPathLength = strPaths.Sum(a => a.Length + 1);
-        var request = new SetFontPathType((ushort)length, totalPathLength.AddPadding());
+        var request = new SetFontPathType((ushort)strPaths.Length, totalPathLength.AddPadding());
         _bufferProtoOut.Add(ref request);
         foreach (var path in strPaths.OrderBy(a => a.Length))
         {

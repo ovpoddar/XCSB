@@ -23,7 +23,7 @@ public readonly struct QueryColorsReply
         {
 
             var cursor = Unsafe.SizeOf<QueryColorsResponse>();
-            var length = context.NumberOfColors * Marshal.SizeOf<Pixel>();
+            var length = context.NumberOfColors * Unsafe.SizeOf<Pixel>();
             Colors = MemoryMarshal.Cast<byte, Pixel>(response.Slice(cursor, length)).ToArray();
         }
     }

@@ -13,6 +13,8 @@ namespace Xcsb.Handlers.Direct;
 
 internal static class ProtoInExtended
 {
+    private static readonly byte[] _lastEventBuffer = new byte[32];
+    
     internal static (ListFontsWithInfoReply[], GenericError?) ReceivedResponseArray(this ISocketAccessor socketAccessor,
         int sequence, int maxNames, int timeOut = 1000)
     {
@@ -26,7 +28,7 @@ internal static class ProtoInExtended
                 continue;
             }
 
-            if (!socketAccessor.SocketIn.ReplyBuffer.Remove(sequence, out var reply))
+            if (!socketAccessor.SocketIn.ReplyBuffer.TryRemove(sequence, out var reply))
                 throw new Exception("Should not happen.");
 
             var response = reply.Item1.AsSpan().AsStruct<ListFontsWithInfoResponse>();
@@ -130,7 +132,7 @@ internal static class ProtoInExtended
             if (socketAccessor.PollRead())
                 if (socketAccessor.AvailableData == 0)
                     return new XEvent(
-                        new byte[32],
+                        _lastEventBuffer,
                         new MappingDetails(XResponseType.Event, EventType.LastEvent));
 
             socketAccessor.SocketIn.FlushSocket();
