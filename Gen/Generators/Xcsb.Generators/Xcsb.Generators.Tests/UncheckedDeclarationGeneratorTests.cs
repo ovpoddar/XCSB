@@ -92,4 +92,26 @@ namespace TestNamespace
             """,
             generatedSource);
     }
+
+    [Theory]
+    [InlineData("void")]
+    [InlineData("System.Threading.Tasks.Task")]
+    [InlineData("System.Threading.Tasks.Task<int>")]
+    [InlineData("System.Threading.Tasks.ValueTask")]
+    [InlineData("System.Threading.Tasks.ValueTask<int>")]
+    public void Generator_ShouldReportDiagnostic_WhenMethodReturnsVoidOrTaskLike(string returnType)
+    {
+        var source = $@"
+using Xcsb.Generators;
+namespace TestNamespace
+{{
+    [UncheckedDeclaration]
+    public partial interface ITestService
+    {{
+        {returnType} DoBad();
+    }}
+}}";
+
+        TestHelper.AssertDiagnostic<UncheckedDeclarationGenerator>(source, AttributeSource, "XCSBGEN001");
+    }
 }

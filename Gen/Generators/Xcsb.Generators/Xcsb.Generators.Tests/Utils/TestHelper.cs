@@ -15,16 +15,30 @@ public static class TestHelper
         var generator = new TGenerator();
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
 
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
 
         var errors = compilation.GetDiagnostics().ToList();
         errors.AddRange(diagnostics);
         Assert.Empty(errors.Where(d => d.Severity == DiagnosticSeverity.Error));
-        
+
         var runResult = driver.GetRunResult();
         Assert.Equal(2, runResult.GeneratedTrees.Length);
-        
+
         return runResult.GeneratedTrees.First(t => t.FilePath.Contains(expectedFileSubstring)).GetText().ToString();
+    }
+
+    public static void AssertDiagnostic<TGenerator>(
+        string source, string attributeSource, string expectedDiagnosticId, int expectedGeneratedTreeCount = 1)
+        where TGenerator : IIncrementalGenerator, new()
+    {
+        var compilation = CreateCompilation(source, attributeSource);
+        var generator = new TGenerator();
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
+
+        Assert.Contains(diagnostics, d => d.Id == expectedDiagnosticId && d.Severity == DiagnosticSeverity.Error);
+        Assert.Equal(expectedGeneratedTreeCount, driver.GetRunResult().GeneratedTrees.Length);
     }
 
     private static Compilation CreateCompilation(params string[] sources)
