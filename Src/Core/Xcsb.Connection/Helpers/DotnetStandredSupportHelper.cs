@@ -9,6 +9,7 @@ internal static class DotnetStandardSupportHelper
     internal static void AddRange(this List<byte> list, ReadOnlySpan<byte> buffer)
     {
         var scratchBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
+        buffer.CopyTo(scratchBuffer);
         list.AddRange(scratchBuffer.Take(buffer.Length));
         ArrayPool<byte>.Shared.Return(scratchBuffer);
     }
