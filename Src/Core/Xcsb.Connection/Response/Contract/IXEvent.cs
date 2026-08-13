@@ -1,6 +1,9 @@
-﻿namespace Xcsb.Connection.Response.Contract;
+﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 
-internal interface IXEvent
+namespace Xcsb.Connection.Response.Contract;
+
+internal interface IXEvent<T> where T : struct
 {
-    bool Verify();
+    ref readonly T Cast(Span<byte> response);
 }

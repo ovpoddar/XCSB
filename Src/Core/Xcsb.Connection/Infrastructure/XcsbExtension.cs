@@ -106,7 +106,7 @@ internal sealed class XcsbExtension : IXExtensionInternal
         _responseMap[(1, null, null)] = new MappingDetails(XResponseType.Reply, null);
     }
 
-    public void RegisterX1Event<T>(XEventType type, string extensionName = "") where T : unmanaged, IXEvent
+    public void RegisterX1Event<T>(XEventType type, string extensionName = "") where T : unmanaged, IXEvent<T>
     {
         var responseType = type == 11
             ? XResponseType.Notify
@@ -131,7 +131,7 @@ internal sealed class XcsbExtension : IXExtensionInternal
         return (byte)(type + offset);
     }
 
-    public void RegisterX2Event<T>(XEventType type, string extensionName) where T : struct, IXExtensionEvent<T>
+    public void RegisterX2Event<T>(XEventType type, string extensionName) where T : struct, IXEvent<T>
     {
         if (string.IsNullOrWhiteSpace(extensionName))
             throw new ArgumentException(

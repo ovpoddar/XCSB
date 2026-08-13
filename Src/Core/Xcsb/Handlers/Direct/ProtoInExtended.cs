@@ -13,8 +13,11 @@ namespace Xcsb.Handlers.Direct;
 
 internal static class ProtoInExtended
 {
-    private static readonly byte[] _lastEventBuffer = new byte[32];
-    
+    private static readonly byte[] _lastEventBuffer = new byte[32]
+    {
+        36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
     internal static (ListFontsWithInfoReply[], GenericError?) ReceivedResponseArray(this ISocketAccessor socketAccessor,
         int sequence, int maxNames, int timeOut = 1000)
     {
@@ -131,9 +134,7 @@ internal static class ProtoInExtended
 
             if (socketAccessor.PollRead())
                 if (socketAccessor.AvailableData == 0)
-                    return new XEvent(
-                        _lastEventBuffer,
-                        new MappingDetails(XResponseType.Event, EventType.LastEvent));
+                    return new XEvent(_lastEventBuffer, new MappingDetails(XResponseType.Event, EventType.LastEvent));
 
             socketAccessor.SocketIn.FlushSocket();
         }
@@ -147,8 +148,8 @@ internal static class ProtoInExtended
 
         var type = await socketAccessor.SocketIn.FlushAsync(token).ConfigureAwait(false);
 
-        return type.Item1.HasValue 
-            ? new XEvent(type.Item2, type.Item1.Value) 
-            : new XEvent(type.Item2, new MappingDetails(XResponseType.Event, EventType.LastEvent));
+        return type.Item1.HasValue
+            ? new XEvent(type.Item2, type.Item1.Value)
+            : new XEvent(_lastEventBuffer, new MappingDetails(XResponseType.Event, EventType.LastEvent));
     }
 }

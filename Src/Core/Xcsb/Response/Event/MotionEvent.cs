@@ -1,11 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct MotionNotifyEvent : IXEvent
+public struct MotionNotifyEvent : IXEvent<MotionNotifyEvent>
 {
     public readonly ResponseHeader<ResponseType, Motion> ResponseHeader;
     public uint Time;
@@ -20,8 +21,12 @@ public struct MotionNotifyEvent : IXEvent
     private sbyte _sameScreen;
 
     public bool IsSameScreen => _sameScreen == 1;
-    public readonly bool Verify()
+
+    public ref readonly MotionNotifyEvent Cast(Span<byte> response)
     {
-        return ResponseHeader.Reply == ResponseType.MotionNotify;
+        ref readonly var result = ref response.AsStruct<MotionNotifyEvent>();
+        if (result.ResponseHeader.Reply == ResponseType.MotionNotify || response.Length != 32)
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
@@ -6,7 +7,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct LeaveNotifyEvent : IXEvent
+public struct LeaveNotifyEvent : IXEvent<LeaveNotifyEvent>
 {
     public readonly ResponseHeader<ResponseType, NotifyDetail> ResponseHeader;
     public uint Time;
@@ -21,8 +22,11 @@ public struct LeaveNotifyEvent : IXEvent
     public NotifyMode Mode;
     public byte SameScreenFocus; // 1 true, 0 false
 
-    public readonly bool Verify()
+    public ref readonly LeaveNotifyEvent Cast(Span<byte> response)
     {
-        return ResponseHeader.Reply == ResponseType.LeaveNotify;
+        ref readonly var result = ref response.AsStruct<LeaveNotifyEvent>();
+        if (result.ResponseHeader.Reply == ResponseType.LeaveNotify || response.Length != 32)
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }

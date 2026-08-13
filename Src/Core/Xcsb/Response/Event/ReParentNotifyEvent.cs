@@ -1,11 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct ReParentNotifyEvent : IXEvent
+public struct ReParentNotifyEvent : IXEvent<ReParentNotifyEvent>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Event;
@@ -15,8 +16,12 @@ public struct ReParentNotifyEvent : IXEvent
     public short Y;
     public bool OverrideRedirect;
 
-    public readonly bool Verify()
+    public ref readonly ReParentNotifyEvent Cast(Span<byte> response)
     {
-        return ResponseHeader.Reply == ResponseType.ReParentNotify && ResponseHeader.GetValue() == 0;
+        ref readonly var result = ref response.AsStruct<ReParentNotifyEvent>();
+        if (result.ResponseHeader.Reply == ResponseType.ReParentNotify && result.ResponseHeader.GetValue() == 0||
+            response.Length != 32)
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }

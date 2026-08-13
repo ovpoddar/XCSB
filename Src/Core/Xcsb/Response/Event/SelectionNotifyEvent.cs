@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
@@ -6,7 +7,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct SelectionNotifyEvent : IXEvent
+public struct SelectionNotifyEvent : IXEvent<SelectionNotifyEvent>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Time;
@@ -15,8 +16,12 @@ public struct SelectionNotifyEvent : IXEvent
     public ATOM Target;
     public ATOM Property;
 
-    public readonly bool Verify()
+    public ref readonly SelectionNotifyEvent Cast(Span<byte> response)
     {
-        return ResponseHeader.Reply == ResponseType.SelectionNotify && ResponseHeader.GetValue() == 0;
+        ref readonly var result = ref response.AsStruct<SelectionNotifyEvent>();
+        if (result.ResponseHeader.Reply == ResponseType.SelectionNotify && result.ResponseHeader.GetValue() == 0||
+            response.Length != 32)
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }

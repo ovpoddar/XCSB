@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Masks;
 using Xcsb.Response.Contract;
@@ -7,7 +8,7 @@ namespace Xcsb.Response.Event;
 
 // TODO: need a way to access similar event in a single type
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct KeyPressEvent : IXEvent
+public struct KeyPressEvent : IXEvent<KeyPressEvent>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint TimeStamp;
@@ -24,8 +25,11 @@ public struct KeyPressEvent : IXEvent
 
     public byte Detail => ResponseHeader.GetValue();
 
-    public readonly bool Verify()
+    public ref readonly KeyPressEvent Cast(Span<byte> response)
     {
-        return ResponseHeader.Reply == ResponseType.KeyPress;
+        ref readonly var result = ref response.AsStruct<KeyPressEvent>();
+        if (result.ResponseHeader.Reply == ResponseType.KeyPress || response.Length != 32)
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }

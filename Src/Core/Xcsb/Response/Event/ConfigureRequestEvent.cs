@@ -1,11 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct ConfigureRequestEvent : IXEvent
+public struct ConfigureRequestEvent : IXEvent<ConfigureRequestEvent>
 {
     public readonly ResponseHeader<ResponseType, StackMode> ResponseHeader;
     public uint Parent;
@@ -18,8 +19,11 @@ public struct ConfigureRequestEvent : IXEvent
     public ushort BorderWidth;
     public ushort ValueMask;
 
-    public readonly bool Verify()
+    public ref readonly ConfigureRequestEvent Cast(Span<byte> response)
     {
-        return ResponseHeader.Reply == ResponseType.ConfigureRequest;
+        ref readonly var result = ref response.AsStruct<ConfigureRequestEvent>();
+        if (result.ResponseHeader.Reply != ResponseType.ConfigureRequest || response.Length != 32)
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }

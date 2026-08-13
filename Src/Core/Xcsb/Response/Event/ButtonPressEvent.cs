@@ -1,13 +1,15 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Masks;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
+using Xcsb.Connection.Helpers;
 
 namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct ButtonPressEvent : IXEvent
+public struct ButtonPressEvent : IXEvent<ButtonPressEvent>
 {
     public readonly ResponseHeader<ResponseType, Button> ResponseHeader;
     public uint TimeStamp;
@@ -23,8 +25,11 @@ public struct ButtonPressEvent : IXEvent
     public bool IsSameScreen => _isSameScreen == 1;
     public Button Detail => ResponseHeader.GetValue();
 
-    public readonly bool Verify()
+    public ref readonly ButtonPressEvent Cast(Span<byte> response)
     {
-        return ResponseHeader.Reply == ResponseType.ButtonPress;
+        ref readonly var result = ref response.AsStruct<ButtonPressEvent>();
+        if (result.ResponseHeader.Reply != ResponseType.ButtonPress || response.Length != 32) 
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }

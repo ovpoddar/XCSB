@@ -16,7 +16,7 @@ internal interface IXExtensionInternal : IXExtension
     void Clear();
 
     void RegisterReply();
-    void RegisterX1Event<T>(XEventType type, string extensionName = "") where T : unmanaged, IXEvent;
-    void RegisterX2Event<T>(XEventType type, string extensionName) where T : struct, IXExtensionEvent<T>;
+    void RegisterX1Event<T>(XEventType type, string extensionName = "") where T : unmanaged, IXEvent<T>;
+    void RegisterX2Event<T>(XEventType type, string extensionName) where T : struct, IXEvent<T>;
     void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError;
 }

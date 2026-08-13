@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
@@ -6,7 +7,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct EnterNotifyEvent : IXEvent
+public struct EnterNotifyEvent : IXEvent<EnterNotifyEvent>
 {
     public readonly ResponseHeader<ResponseType, NotifyDetail> ResponseHeader;
     public uint Time;
@@ -23,8 +24,11 @@ public struct EnterNotifyEvent : IXEvent
 
     public bool IsSameScreenFocus => _sameScreenFocus == 1;
 
-    public readonly bool Verify()
+    public ref readonly EnterNotifyEvent Cast(Span<byte> response)
     {
-        return ResponseHeader.Reply == ResponseType.EnterNotify;
+        ref readonly var result = ref response.AsStruct<EnterNotifyEvent>();
+        if (result.ResponseHeader.Reply != ResponseType.EnterNotify || response.Length != 32)
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }

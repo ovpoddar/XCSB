@@ -1,11 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct ColorMapNotifyEvent : IXEvent
+public struct ColorMapNotifyEvent : IXEvent<ColorMapNotifyEvent>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Window;
@@ -14,8 +15,11 @@ public struct ColorMapNotifyEvent : IXEvent
     public ColormapState State;
 
 
-    public readonly bool Verify()
+    public ref readonly ColorMapNotifyEvent Cast(Span<byte> response)
     {
-        return ResponseHeader.Reply == ResponseType.ColormapNotify;
+        ref readonly var result = ref response.AsStruct<ColorMapNotifyEvent>();
+        if (result.ResponseHeader.Reply != ResponseType.ColormapNotify || response.Length != 32)
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }
