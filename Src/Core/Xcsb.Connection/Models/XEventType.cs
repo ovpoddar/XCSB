@@ -2,7 +2,7 @@
 
 public abstract record XEventType
 {
-    private readonly byte _value;
+    private byte _value;
     private readonly string _name;
 
     public XEventType(byte value, string name)
@@ -16,4 +16,9 @@ public abstract record XEventType
 
     public static explicit operator string(XEventType type) =>
         type._name;
+
+    internal void SetValue(byte value)
+    {
+        this._value = value;
+    }
 }

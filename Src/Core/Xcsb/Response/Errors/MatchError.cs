@@ -6,7 +6,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct MatchError : IXError
+public readonly struct MatchError : IXError<MatchError>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint BadValue;

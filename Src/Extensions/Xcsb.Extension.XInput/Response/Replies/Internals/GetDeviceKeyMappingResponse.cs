@@ -7,7 +7,7 @@ namespace Xcsb.Extension.XInput.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct GetDeviceKeyMappingResponse : IXReply
+internal readonly struct GetDeviceKeyMappingResponse : IXReply<GetDeviceKeyMappingResponse>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

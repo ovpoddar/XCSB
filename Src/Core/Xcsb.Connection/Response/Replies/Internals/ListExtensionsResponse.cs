@@ -4,7 +4,7 @@ using Xcsb.Connection.Response.Contract;
 namespace Xcsb.Connection.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-internal readonly struct ListExtensionsResponse : IXReply
+internal readonly struct ListExtensionsResponse : IXReply<ListExtensionsResponse>
 {
     public readonly ResponseHeader<byte, byte> ResponseHeader;
     public readonly uint Length;

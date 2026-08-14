@@ -8,7 +8,7 @@ namespace Xcsb.Extension.XInput.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public readonly struct XiGetPropertyReply : IXReply
+public readonly struct XiGetPropertyReply : IXReply<XiGetPropertyReply>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

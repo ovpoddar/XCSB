@@ -6,7 +6,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-internal readonly struct ListHostsResponse : IXReply
+internal readonly struct ListHostsResponse : IXReply<ListHostsResponse>
 {
     public readonly ResponseHeader<ResponseType, AccessControlMode> ResponseHeader;
     public readonly uint Length;

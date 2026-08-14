@@ -14,13 +14,13 @@ public readonly struct XEvent
         _mappingDetails = mappingDetails;
     }
 
-    public readonly bool IsSyntheticReply => 
+    public readonly bool IsSyntheticReply =>
         _mappingDetails.ResponseTypeDetails != null && _response[0] == (byte)_mappingDetails.ResponseTypeDetails;
 
     public readonly XEventType ReplyType => _mappingDetails.ResponseTypeDetails!;
 
-    public readonly unsafe ref readonly T As<T>() where T : struct =>
-        ref _response.AsStruct<T>();
+    public readonly unsafe ref readonly T As<T>() where T : struct, IXBaseResponse<T> =>
+        ref default(T).Cast(_response);
 
     public readonly GenericError? Error =>
         _mappingDetails.ResponseType != XResponseType.Error || _mappingDetails.ErrorMessageAction is null

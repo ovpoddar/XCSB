@@ -111,7 +111,7 @@ internal static class ProtoInExtended
     }
 
     internal static (T?, GenericError?) ReceivedResponse<T>(this ISocketIn socketIn, int sequence, int timeout = 1000)
-        where T : unmanaged, IXReply
+        where T : unmanaged, IXReply<T>
     {
         var (result, error) = socketIn.ReceivedResponseSpan<T>(sequence, timeout);
         return (result?.AsSpan().ToStruct<T>(), error);
@@ -119,7 +119,7 @@ internal static class ProtoInExtended
 
 
     internal static async Task<(T?, GenericError?)> ReceivedResponseAsync<T>(this ISocketIn socketIn, int sequence,
-        CancellationToken token = default) where T : unmanaged, IXReply
+        CancellationToken token = default) where T : unmanaged, IXReply<T>
     {
         var (result, error) = await socketIn.ReceivedResponseSpanAsync<T>(sequence, token).ConfigureAwait(false);
         return (result.Span.ToStruct<T>(), error);

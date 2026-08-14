@@ -6,7 +6,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 52)]
-internal unsafe struct GetKeyboardControlResponse : IXReply
+internal unsafe struct GetKeyboardControlResponse : IXReply<GetKeyboardControlResponse>
 {
     public readonly ResponseHeader<ResponseType, AutoRepeatMode> ResponseHeader;
     public readonly uint Length;

@@ -22,7 +22,7 @@ internal interface ISocketIn
     T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct;
     int Received(scoped in Span<byte> buffer, bool readAll = true);
     Task<int> ReceivedAsync(Memory<byte> buffer, CancellationToken token = default);
-    (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply;
-    Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default) where T : unmanaged, IXReply;
+    (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply<T>;
+    Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default) where T : unmanaged, IXReply<T>;
     Task<(MappingDetails?, byte[])> FlushAsync(CancellationToken token = default);
 }

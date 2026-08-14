@@ -7,7 +7,7 @@ namespace Xcsb.Extension.XInput.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public readonly struct ListInputDevicesResponse : IXReply
+public readonly struct ListInputDevicesResponse : IXReply<ListInputDevicesResponse>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

@@ -7,7 +7,7 @@ namespace Xcsb.Extension.XInput.Requests;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public readonly struct ChangeDeviceControlReply(byte majorOpCode) : IXReply
+public readonly struct ChangeDeviceControlReply(byte majorOpCode) : IXReply<ChangeDeviceControlReply>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

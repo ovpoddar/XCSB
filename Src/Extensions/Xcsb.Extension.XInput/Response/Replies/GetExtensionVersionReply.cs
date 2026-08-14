@@ -5,7 +5,7 @@ using Xcsb.Extension.XInput.Models;
 namespace Xcsb.Extension.XInput.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct GetExtensionVersionReply : IXReply
+public readonly struct GetExtensionVersionReply : IXReply<GetExtensionVersionReply>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

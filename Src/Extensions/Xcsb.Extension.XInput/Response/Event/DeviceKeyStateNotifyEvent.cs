@@ -7,17 +7,17 @@ using Xcsb.Extension.XInput.Models.TypeInfo;
 
 namespace Xcsb.Extension.XInput.Response.Event;
 
+
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public unsafe struct DeviceButtonStateNotifyEvent : IXEvent<DeviceButtonStateNotifyEvent>
+public unsafe struct DeviceKeyStateNotifyEvent : IXEvent<DeviceKeyStateNotifyEvent>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
-    public fixed byte Buttons[28];
+    public fixed byte Keys[28];
 
-    
-    public ref readonly DeviceButtonStateNotifyEvent Cast(Span<byte> response)
+    public ref readonly DeviceKeyStateNotifyEvent Cast(Span<byte> response)
     {
-        ref readonly var result = ref response.AsStruct<DeviceButtonStateNotifyEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceButtonStateNotify || response.Length != 32)
+        ref readonly var result = ref response.AsStruct<DeviceKeyStateNotifyEvent>();
+        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceKeyStateNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
     }

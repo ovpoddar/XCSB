@@ -16,7 +16,7 @@ internal record struct MappingDetails
     public XEventType? ResponseTypeDetails { get; }
     public ActionDelegates.ErrorMessageAction? ErrorMessageAction { get; private set; }
 
-    public void SetErrorType<T>() where T : unmanaged, IXError
+    public void SetErrorType<T>() where T : unmanaged, IXError<T>
     {
         ErrorMessageAction = ErrorProcesser.GetErrorMessage<T>;
     }

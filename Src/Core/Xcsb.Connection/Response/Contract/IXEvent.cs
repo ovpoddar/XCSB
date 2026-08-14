@@ -3,7 +3,6 @@ using Xcsb.Connection.Helpers;
 
 namespace Xcsb.Connection.Response.Contract;
 
-internal interface IXEvent<T> where T : struct
+internal interface IXEvent<T> : IXBaseResponse<T> where T : struct
 {
-    ref readonly T Cast(Span<byte> response);
 }

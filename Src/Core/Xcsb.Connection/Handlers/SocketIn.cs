@@ -147,7 +147,7 @@ internal class SocketIn : ISocketIn
 
     // logic 3
     public async Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence,
-        CancellationToken token = default) where T : unmanaged, IXReply
+        CancellationToken token = default) where T : unmanaged, IXReply<T>
     {
         if (sequence < Sequence && ReplyBuffer.TryGetValue(sequence, out var result1))
         {
@@ -330,7 +330,7 @@ internal class SocketIn : ISocketIn
     }
 
     public (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000)
-        where T : unmanaged, IXReply
+        where T : unmanaged, IXReply<T>
     {
         while (true)
         {

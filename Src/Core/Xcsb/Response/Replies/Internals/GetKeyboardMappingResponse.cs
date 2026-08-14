@@ -5,7 +5,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-internal readonly struct GetKeyboardMappingResponse : IXReply
+internal readonly struct GetKeyboardMappingResponse : IXReply<GetKeyboardMappingResponse>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

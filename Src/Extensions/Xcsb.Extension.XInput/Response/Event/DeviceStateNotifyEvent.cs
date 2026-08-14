@@ -1,13 +1,15 @@
 using System;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Masks;
 using Xcsb.Extension.XInput.Models;
+using Xcsb.Extension.XInput.Models.TypeInfo;
 
 namespace Xcsb.Extension.XInput.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public unsafe struct DeviceStateNotifyEvent : IXEvent
+public unsafe struct DeviceStateNotifyEvent : IXEvent<DeviceStateNotifyEvent>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Time;
@@ -46,8 +48,11 @@ public unsafe struct DeviceStateNotifyEvent : IXEvent
         }
     }
 
-    public bool Verify()
+    public ref readonly DeviceStateNotifyEvent Cast(Span<byte> response)
     {
-        throw new System.NotImplementedException();
+        ref readonly var result = ref response.AsStruct<DeviceStateNotifyEvent>();
+        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceStateNotify || response.Length != 32)
+            throw new Exception("Invalid response");
+        return ref result;
     }
 }

@@ -6,7 +6,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Errors;
 
 [StructLayout(LayoutKind.Sequential, Size = 1)]
-public readonly struct ColormapError : IXError
+public readonly struct ColormapError : IXError<ColormapError>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint BadResourceId;

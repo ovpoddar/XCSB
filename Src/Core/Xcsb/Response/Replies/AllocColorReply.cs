@@ -5,7 +5,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct AllocColorReply : IXReply
+public readonly struct AllocColorReply : IXReply<AllocColorReply>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

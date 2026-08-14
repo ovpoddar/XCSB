@@ -7,7 +7,7 @@ namespace Xcsb.Extension.XInput.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal readonly struct GetDeviceModifierMappingResponse : IXReply
+internal readonly struct GetDeviceModifierMappingResponse : IXReply<GetDeviceModifierMappingResponse>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

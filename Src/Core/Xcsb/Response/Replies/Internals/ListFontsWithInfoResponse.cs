@@ -6,7 +6,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 60)]
-internal readonly struct ListFontsWithInfoResponse : IXReply
+internal readonly struct ListFontsWithInfoResponse : IXReply<ListFontsWithInfoResponse>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

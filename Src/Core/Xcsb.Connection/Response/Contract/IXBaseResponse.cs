@@ -1,6 +1,11 @@
-﻿namespace Xcsb.Connection.Response.Contract;
+﻿using Xcsb.Connection.Helpers;
 
-internal interface IXBaseResponse
+namespace Xcsb.Connection.Response.Contract;
+
+public interface IXBaseResponse<T> where T : struct
 {
-    bool Verify(in int sequence);
+    ref readonly T Cast(Span<byte> response)
+    {
+        return ref response.AsStruct<T>();
+    }
 }

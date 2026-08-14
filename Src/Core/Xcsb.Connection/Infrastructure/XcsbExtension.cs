@@ -115,6 +115,7 @@ internal sealed class XcsbExtension : IXExtensionInternal
         var mapping = new MappingDetails(responseType, type);
         mapping.SetEventType<T>();
         var key = ResolveKey(type, extensionName, false);
+        type.SetValue(key);
         _responseMap[(key, null, null)] = mapping;
     }
 
@@ -146,7 +147,7 @@ internal sealed class XcsbExtension : IXExtensionInternal
         _responseMap[(35, extension.MajorOpcode, type)] = value;
     }
 
-    public void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError
+    public void RegisterError<T>(byte typeValue, XEventType type) where T : unmanaged, IXError<T>
     {
         var value = new MappingDetails(XResponseType.Error, type);
         value.SetErrorType<T>();

@@ -6,6 +6,6 @@ namespace Xcsb.Connection.Helpers;
 internal class ErrorProcesser
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string GetErrorMessage<T>(Span<byte> data) where T : unmanaged, IXError =>
+    public static string GetErrorMessage<T>(Span<byte> data) where T : unmanaged, IXError<T> =>
         data.ToStruct<T>().GetErrorMessage();
 }
