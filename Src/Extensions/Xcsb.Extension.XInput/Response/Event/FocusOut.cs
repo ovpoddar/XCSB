@@ -6,27 +6,31 @@ using Xcsb.Extension.XInput.Models;
 namespace Xcsb.Extension.XInput.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct BarrierHitEvent : IXEvent<BarrierHitEvent>
+public struct FocusOut : IXEvent<FocusOut>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
     public readonly ushort EventType;
     public readonly InputDevice DeviceId;
     public readonly uint Time;
-    public readonly uint EventId;
+    public readonly InputDevice SourceId;
+    public readonly NotifyMode Mode;
+    public readonly NotifyDetail Detail;
     public readonly uint Root;
     public readonly uint Event;
-    public readonly uint Barrier;
-    public readonly uint DeltaTime;
-    public readonly BarrierFlags Flags;
-    public readonly InputDevice SourceId;
-    private readonly ushort _pad0;
+    public readonly uint Child;
     public readonly uint RootX;
     public readonly uint RootY;
-    public readonly Fp3232 DX;
-    public readonly Fp3232 DY;
-
-    public ref readonly BarrierHitEvent Cast(Span<byte> response)
+    public readonly uint EventX;
+    public readonly uint EventY;
+    private readonly byte _sameScreen;
+    private readonly byte _focus;
+    private readonly ushort _buttonsLength;
+    public readonly ModifierInfo Modifier;
+    public readonly GroupInfo Group;
+    public readonly uint[] Buttons;
+    
+    public ref readonly FocusOut Cast(Span<byte> response)
     {
         throw new NotImplementedException();
     }

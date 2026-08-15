@@ -1,6 +1,6 @@
 namespace Xcsb.Extension.XInput.Models;
 
-public enum DeviceType : ushort
+public enum DeviceType : byte
 {
     MasterPointer = 1,
     MasterKeyboard = 2,

@@ -5,6 +5,8 @@ using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 using Xcsb.Extension.XInput.Models.TypeInfo;
 using Xcsb.Models;
+using NotifyDetail = Xcsb.Extension.XInput.Models.NotifyDetail;
+using NotifyMode = Xcsb.Extension.XInput.Models.NotifyMode;
 
 namespace Xcsb.Extension.XInput.Response.Event;
 

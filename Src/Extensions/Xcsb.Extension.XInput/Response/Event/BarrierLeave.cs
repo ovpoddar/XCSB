@@ -6,7 +6,7 @@ using Xcsb.Extension.XInput.Models;
 namespace Xcsb.Extension.XInput.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct BarrierHitEvent : IXEvent<BarrierHitEvent>
+public struct BarrierLeave : IXEvent<BarrierLeave>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
@@ -25,8 +25,7 @@ public struct BarrierHitEvent : IXEvent<BarrierHitEvent>
     public readonly uint RootY;
     public readonly Fp3232 DX;
     public readonly Fp3232 DY;
-
-    public ref readonly BarrierHitEvent Cast(Span<byte> response)
+    public ref readonly BarrierLeave Cast(Span<byte> response)
     {
         throw new NotImplementedException();
     }

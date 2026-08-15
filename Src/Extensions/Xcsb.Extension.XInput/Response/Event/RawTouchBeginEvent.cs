@@ -6,27 +6,23 @@ using Xcsb.Extension.XInput.Models;
 namespace Xcsb.Extension.XInput.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct BarrierHitEvent : IXEvent<BarrierHitEvent>
+public struct RawTouchBeginEvent : IXEvent<RawTouchBeginEvent>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
     public readonly ushort EventType;
     public readonly InputDevice DeviceId;
     public readonly uint Time;
-    public readonly uint EventId;
-    public readonly uint Root;
-    public readonly uint Event;
-    public readonly uint Barrier;
-    public readonly uint DeltaTime;
-    public readonly BarrierFlags Flags;
+    public readonly uint Detail;
     public readonly InputDevice SourceId;
-    private readonly ushort _pad0;
-    public readonly uint RootX;
-    public readonly uint RootY;
-    public readonly Fp3232 DX;
-    public readonly Fp3232 DY;
+    private readonly ushort ValuatorsLength;
+    public readonly TouchEventFlags Flags;
+    private readonly int _pad0;
+    public readonly uint[] ValuatorsMask;
+    public readonly Fp3232[] AxisValues;
+    public readonly Fp3232[] AxisValuesRaw;
 
-    public ref readonly BarrierHitEvent Cast(Span<byte> response)
+    public ref readonly RawTouchBeginEvent Cast(Span<byte> response)
     {
         throw new NotImplementedException();
     }
