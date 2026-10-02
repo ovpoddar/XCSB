@@ -26,4 +26,9 @@ public struct RawKeyRelease : IXEvent<RawKeyRelease>
     {
         throw new NotImplementedException();
     }
+
+    public RawKeyRelease FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -126,770 +126,1085 @@ internal sealed partial class XProto : IXProto
     public bool IsEventAvailable() =>
         _socketAccessor.HasEventToProcesses();
 
-    public AllocColorReply AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
+    public ReplyLease<AllocColorReply> AllocColor(uint colorMap, ushort red, ushort green, ushort blue)
     {
         var cookie = AllocColorBase(colorMap, red, green, blue);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<AllocColorReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<AllocColorReply, AllocColorReply>(cookie.Id);
+
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<AllocColorReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public AllocColorCellsReply AllocColorCells(bool contiguous, uint colorMap, ushort colors, ushort planes)
+    public ReplyLease<AllocColorCellsReply> AllocColorCells(bool contiguous, uint colorMap, ushort colors,
+        ushort planes)
     {
         var cookie = AllocColorCellsBase(contiguous, colorMap, colors, planes);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<AllocColorCellsResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new AllocColorCellsReply(result);
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<AllocColorCellsReply, AllocColorCellsResponse>(cookie.Id);
+
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<AllocColorCellsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public AllocColorPlanesReply AllocColorPlanes(bool contiguous, uint colorMap, ushort colors, ushort reds,
-        ushort greens, ushort blues)
+    public ReplyLease<AllocColorPlanesReply> AllocColorPlanes(bool contiguous, uint colorMap, ushort colors,
+        ushort reds, ushort greens, ushort blues)
     {
         var cookie = AllocColorPlanesBase(contiguous, colorMap, colors, reds, greens, blues);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<AllocColorPlanesResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new AllocColorPlanesReply(result);
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<AllocColorPlanesReply, AllocColorPlanesResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<AllocColorPlanesReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public AllocNamedColorReply AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name)
-    {
-        var cookie = AllocNamedColorBase(colorMap, name);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<AllocNamedColorReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
-    }
-
-
-    public GetAtomNameReply GetAtomName(ATOM atom)
-    {
-        var cookie = GetAtomNameBase(atom);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<GetAtomNameResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetAtomNameReply(result);
-    }
-
-    public InternAtomReply InternAtom(bool onlyIfExist, string atomName)
-    {
-        var cookie = InternAtomBase(onlyIfExist, atomName);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<InternAtomReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
-    }
-
-    public GetFontPathReply GetFontPath()
-    {
-        var cookie = GetFontPathBase();
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<GetFontPathResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetFontPathReply(result);
-    }
-
-    public GetGeometryReply GetGeometry(uint drawable)
-    {
-        var cookie = GetGeometryBase(drawable);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<GetGeometryReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
-    }
-
-    public GetImageReply GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
-        uint planeMask)
-    {
-        var cookie = GetImageBase(format, drawable, x, y, width, height, planeMask);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<GetImageResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetImageReply(result);
-    }
-
-    public GetInputFocusReply GetInputFocus()
-    {
-        var cookie = GetInputFocusBase();
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<GetInputFocusReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
-    }
-
-    public GetKeyboardControlReply GetKeyboardControl()
-    {
-        var cookie = GetKeyboardControlBase();
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<GetKeyboardControlResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetKeyboardControlReply(result!.Value);
-    }
-
-    public GetKeyboardMappingReply GetKeyboardMapping(byte firstKeycode, byte count)
-    {
-        var cookie = GetKeyboardMappingBase(firstKeycode, count);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<GetKeyboardMappingResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetKeyboardMappingReply(result, count);
-    }
-
-    public GetModifierMappingReply GetModifierMapping()
-    {
-        var cookie = GetModifierMappingBase();
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<GetModifierMappingResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetModifierMappingReply(result);
-    }
-
-    public GetMotionEventsReply GetMotionEvents(uint window, uint startTime, uint endTime)
-    {
-        var cookie = GetMotionEventsBase(window, startTime, endTime);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<GetMotionEventsResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetMotionEventsReply(result);
-    }
-
-    public GetPointerControlReply GetPointerControl()
-    {
-        var cookie = GetPointerControlBase();
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<GetPointerControlReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
-    }
-
-    public GetPointerMappingReply GetPointerMapping()
-    {
-        var cookie = GetPointerMappingBase();
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<GetPointerMappingResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetPointerMappingReply(result);
-    }
-
-    public GetPropertyReply GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset, uint length)
-    {
-        var cookie = GetPropertyBase(delete, window, property, type, offset, length);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<GetPropertyResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetPropertyReply(result);
-    }
-
-    public GetScreenSaverReply GetScreenSaver()
-    {
-        var cookie = GetScreenSaverBase();
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<GetScreenSaverReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
-    }
-
-    public GetSelectionOwnerReply GetSelectionOwner(ATOM atom)
-    {
-        var cookie = GetSelectionOwnerBase(atom);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<GetSelectionOwnerReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
-    }
-
-    public GetWindowAttributesReply GetWindowAttributes(uint window)
-    {
-        var cookie = GetWindowAttributesBase(window);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<GetWindowAttributesReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
-    }
-
-    public ListFontsReply ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
-    {
-        var cookie = ListFontsBase(pattern, maxNames);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<ListFontsResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListFontsReply(result);
-    }
-
-    public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames)
-    {
-        var cookie = ListFontsWithInfoBase(pattan, maxNames);
-        var (result, error) = this._socketAccessor.ReceivedResponseArray(cookie.Id, maxNames);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result;
-    }
-
-    public ListHostsReply ListHosts()
+    public ReplyLease<ListHostsReply> ListHosts()
     {
         var cookie = ListHostsBase();
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<ListHostsResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListHostsReply(result);
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<ListHostsReply, ListHostsResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ListHostsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public ListInstalledColormapsReply ListInstalledColormaps(uint window)
+    public ReplyLease<AllocNamedColorReply> AllocNamedColor(uint colorMap, ReadOnlySpan<byte> name)
+    {
+        var cookie = AllocNamedColorBase(colorMap, name);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<AllocNamedColorReply, AllocNamedColorReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<AllocNamedColorReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetAtomNameReply> GetAtomName(ATOM atom)
+    {
+        var cookie = GetAtomNameBase(atom);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<GetAtomNameReply, GetAtomNameResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetAtomNameReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<InternAtomReply> InternAtom(bool onlyIfExist, string atomName)
+    {
+        var cookie = InternAtomBase(onlyIfExist, atomName);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<InternAtomReply, InternAtomReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<InternAtomReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetFontPathReply> GetFontPath()
+    {
+        var cookie = GetFontPathBase();
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<GetFontPathReply, GetFontPathResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetFontPathReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetGeometryReply> GetGeometry(uint drawable)
+    {
+        var cookie = GetGeometryBase(drawable);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<GetGeometryReply, GetGeometryReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetGeometryReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetImageReply> GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width,
+        ushort height, uint planeMask)
+    {
+        var cookie = GetImageBase(format, drawable, x, y, width, height, planeMask);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<GetImageReply, GetImageResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetImageReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetInputFocusReply> GetInputFocus()
+    {
+        var cookie = GetInputFocusBase();
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<GetInputFocusReply, GetInputFocusReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetInputFocusReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetKeyboardControlReply> GetKeyboardControl()
+    {
+        var cookie = GetKeyboardControlBase();
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<GetKeyboardControlReply, GetKeyboardControlResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetKeyboardControlReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetKeyboardMappingReply> GetKeyboardMapping(byte firstKeycode, byte count)
+    {
+        var cookie = GetKeyboardMappingBase(firstKeycode, count);
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<GetKeyboardMappingReply, GetKeyboardMappingResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetKeyboardMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetModifierMappingReply> GetModifierMapping()
+    {
+        var cookie = GetModifierMappingBase();
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<GetModifierMappingReply, GetModifierMappingResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetModifierMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetMotionEventsReply> GetMotionEvents(uint window, uint startTime, uint endTime)
+    {
+        var cookie = GetMotionEventsBase(window, startTime, endTime);
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<GetMotionEventsReply, GetMotionEventsResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetMotionEventsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetPointerControlReply> GetPointerControl()
+    {
+        var cookie = GetPointerControlBase();
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<GetPointerControlReply, GetPointerControlReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetPointerControlReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetPointerMappingReply> GetPointerMapping()
+    {
+        var cookie = GetPointerMappingBase();
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<GetPointerMappingReply, GetPointerMappingResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetPointerMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetPropertyReply> GetProperty(bool delete, uint window, ATOM property, ATOM type, uint offset,
+        uint length)
+    {
+        var cookie = GetPropertyBase(delete, window, property, type, offset, length);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<GetPropertyReply, GetPropertyResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetPropertyReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetScreenSaverReply> GetScreenSaver()
+    {
+        var cookie = GetScreenSaverBase();
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<GetScreenSaverReply, GetScreenSaverReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetScreenSaverReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetSelectionOwnerReply> GetSelectionOwner(ATOM atom)
+    {
+        var cookie = GetSelectionOwnerBase(atom);
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<GetSelectionOwnerReply, GetSelectionOwnerReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetSelectionOwnerReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<GetWindowAttributesReply> GetWindowAttributes(uint window)
+    {
+        var cookie = GetWindowAttributesBase(window);
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<GetWindowAttributesReply, GetWindowAttributesReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetWindowAttributesReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    public ReplyLease<ListFontsReply> ListFonts(ReadOnlySpan<byte> pattern, int maxNames)
+    {
+        var cookie = ListFontsBase(pattern, maxNames);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<ListFontsReply, ListFontsResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ListFontsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+    }
+
+    // public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattern, int maxNames)
+    // {
+    //     var cookie = ListFontsWithInfoBase(pattern, maxNames);
+    //     var (result, mapping) = this._socketAccessor.ReceivedResponseArray(cookie.Id, maxNames);
+    // }
+
+    public ReplyLease<ListInstalledColormapsReply> ListInstalledColormaps(uint window)
     {
         var cookie = ListInstalledColormapsBase(window);
-        var (result, error) =
-            this._socketAccessor.SocketIn.ReceivedResponseSpan<ListInstalledColormapsResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListInstalledColormapsReply(result);
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<ListInstalledColormapsReply, ListInstalledColormapsResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ListInstalledColormapsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public ListPropertiesReply ListProperties(uint window)
+    public ReplyLease<ListPropertiesReply> ListProperties(uint window)
     {
         var cookie = ListPropertiesBase(window);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<ListPropertiesResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListPropertiesReply(result);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<ListPropertiesReply, ListPropertiesResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ListPropertiesReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public LookupColorReply LookupColor(uint colorMap, ReadOnlySpan<byte> name)
+    public ReplyLease<LookupColorReply> LookupColor(uint colorMap, ReadOnlySpan<byte> name)
     {
         var cookie = LookupColorBase(colorMap, name);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<LookupColorReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<LookupColorReply, LookupColorReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<LookupColorReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public QueryBestSizeReply QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height)
+    public ReplyLease<QueryBestSizeReply> QueryBestSize(QueryShapeOf shape, uint drawable, ushort width, ushort height)
     {
         var cookie = QueryBestSizeBase(shape, drawable, width, height);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<QueryBestSizeReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryBestSizeReply, QueryBestSizeReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryBestSizeReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public QueryColorsReply QueryColors(uint colorMap, ReadOnlySpan<uint> pixels)
+    public ReplyLease<QueryColorsReply> QueryColors(uint colorMap, ReadOnlySpan<uint> pixels)
     {
         var cookie = QueryColorsBase(colorMap, pixels);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryColorsResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new QueryColorsReply(result);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryColorsReply, QueryColorsResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryColorsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public QueryFontReply QueryFont(uint fontId)
+    public ReplyLease<QueryFontReply> QueryFont(uint fontId)
     {
         var cookie = QueryFontBase(fontId);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryFontResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new QueryFontReply(result);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryFontReply, QueryFontResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryFontReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public QueryKeymapReply QueryKeymap()
+    public ReplyLease<QueryKeymapReply> QueryKeymap()
     {
         var cookie = QueryKeymapBase();
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<QueryKeymapResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new QueryKeymapReply(result!.Value);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryKeymapReply, QueryKeymapResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryKeymapReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public QueryPointerReply QueryPointer(uint window)
+    public ReplyLease<QueryPointerReply> QueryPointer(uint window)
     {
         var cookie = QueryPointerBase(window);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<QueryPointerReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryPointerReply, QueryPointerReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryPointerReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public QueryTextExtentsReply QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery)
+    public ReplyLease<QueryTextExtentsReply> QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery)
     {
         var cookie = QueryTextExtentsBase(font, stringForQuery);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<QueryTextExtentsReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryTextExtentsReply, QueryTextExtentsReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryTextExtentsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public QueryTreeReply QueryTree(uint window)
+    public ReplyLease<QueryTreeReply> QueryTree(uint window)
     {
         var cookie = QueryTreeBase(window);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryTreeResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new QueryTreeReply(result);
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<QueryTreeReply, QueryTreeResponse>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryTreeReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-
-    public GrabKeyboardReply GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp, GrabMode pointerMode,
+    public ReplyLease<GrabKeyboardReply> GrabKeyboard(bool ownerEvents, uint grabWindow, uint timeStamp,
+        GrabMode pointerMode,
         GrabMode keyboardMode)
     {
         var cookie = GrabKeyboardBase(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<GrabKeyboardReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<GrabKeyboardReply, GrabKeyboardReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GrabKeyboardReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public GrabPointerReply GrabPointer(bool ownerEvents, uint grabWindow, ushort mask, GrabMode pointerMode,
+    public ReplyLease<GrabPointerReply> GrabPointer(bool ownerEvents, uint grabWindow, ushort mask,
+        GrabMode pointerMode,
         GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp)
     {
         var cookie = GrabPointerBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<GrabPointerReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) =
+            this._socketAccessor.SocketIn.ReceivedResponseSpan<GrabPointerReply, GrabPointerReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GrabPointerReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public SetModifierMappingReply SetModifierMapping(ReadOnlySpan<ulong> keycodes)
+    public ReplyLease<SetModifierMappingReply> SetModifierMapping(ReadOnlySpan<ulong> keycodes)
     {
         var cookie = SetModifierMappingBase(keycodes);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<SetModifierMappingReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<SetModifierMappingReply, SetModifierMappingReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<SetModifierMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public SetPointerMappingReply SetPointerMapping(ReadOnlySpan<byte> maps)
+    public ReplyLease<SetPointerMappingReply> SetPointerMapping(ReadOnlySpan<byte> maps)
     {
         var cookie = SetPointerMappingBase(maps);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<SetPointerMappingReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<SetPointerMappingReply, SetPointerMappingReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<SetPointerMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public TranslateCoordinatesReply TranslateCoordinates(uint srcWindow, uint destinationWindow, ushort srcX,
+    public ReplyLease<TranslateCoordinatesReply> TranslateCoordinates(uint srcWindow, uint destinationWindow,
+        ushort srcX,
         ushort srcY)
     {
         var cookie = TranslateCoordinatesBase(srcWindow, destinationWindow, srcX, srcY);
-        var (result, error) = this._socketAccessor.SocketIn.ReceivedResponse<TranslateCoordinatesReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = this._socketAccessor.SocketIn
+            .ReceivedResponseSpan<TranslateCoordinatesReply, TranslateCoordinatesReply>(cookie.Id);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<TranslateCoordinatesReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
 
-    public async Task<AllocColorReply> AllocColorAsync(uint colorMap, ushort red, ushort green, ushort blue,
+    public async ValueTask<ReplyLease<AllocColorReply>> AllocColorAsync(uint colorMap, ushort red, ushort green,
+        ushort blue,
         CancellationToken token = default)
     {
         var cookie = AllocColorBase(colorMap, red, green, blue);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<AllocColorReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<AllocColorReply, AllocColorReply>(cookie.Id, token).ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<AllocColorReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<QueryPointerReply> QueryPointerAsync(uint window, CancellationToken token = default)
+    public async ValueTask<ReplyLease<QueryPointerReply>> QueryPointerAsync(uint window,
+        CancellationToken token = default)
     {
         var cookie = QueryPointerBase(window);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<QueryPointerReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<QueryPointerReply, QueryPointerReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryPointerReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GrabPointerReply> GrabPointerAsync(bool ownerEvents, uint grabWindow, ushort mask,
+    public async ValueTask<ReplyLease<GrabPointerReply>> GrabPointerAsync(bool ownerEvents, uint grabWindow,
+        ushort mask,
         GrabMode pointerMode, GrabMode keyboardMode, uint confineTo, uint cursor, uint timeStamp,
         CancellationToken token = default)
     {
         var cookie = GrabPointerBase(ownerEvents, grabWindow, mask, pointerMode, keyboardMode, confineTo, cursor,
             timeStamp);
-        var (result, error) = await this._socketAccessor.SocketIn
-            .ReceivedResponseAsync<GrabPointerReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GrabPointerReply, GrabPointerReply>(cookie.Id, token).ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GrabPointerReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<InternAtomReply> InternAtomAsync(bool onlyIfExist, string atomName,
+    public async ValueTask<ReplyLease<InternAtomReply>> InternAtomAsync(bool onlyIfExist, string atomName,
         CancellationToken token = default)
     {
         var cookie = InternAtomBase(onlyIfExist, atomName);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<InternAtomReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<InternAtomReply, InternAtomReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<InternAtomReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetPropertyReply> GetPropertyAsync(bool delete, uint window, ATOM property, ATOM type,
-        uint offset,
-        uint length, CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetPropertyReply>> GetPropertyAsync(bool delete, uint window, ATOM property,
+        ATOM type, uint offset, uint length, CancellationToken token = default)
     {
         var cookie = GetPropertyBase(delete, window, property, type, offset, length);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<GetPropertyResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetPropertyReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetPropertyReply, GetPropertyResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetPropertyReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetWindowAttributesReply> GetWindowAttributesAsync(uint window, CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetWindowAttributesReply>> GetWindowAttributesAsync(uint window,
+        CancellationToken token = default)
     {
         var cookie = GetWindowAttributesBase(window);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<GetWindowAttributesReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetWindowAttributesReply, GetWindowAttributesReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetWindowAttributesReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetGeometryReply> GetGeometryAsync(uint drawable, CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetGeometryReply>> GetGeometryAsync(uint drawable,
+        CancellationToken token = default)
     {
         var cookie = GetGeometryBase(drawable);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<GetGeometryReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetGeometryReply, GetGeometryReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetGeometryReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<QueryTreeReply> QueryTreeAsync(uint window, CancellationToken token = default)
+    public async ValueTask<ReplyLease<QueryTreeReply>> QueryTreeAsync(uint window, CancellationToken token = default)
     {
         var cookie = QueryTreeBase(window);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<QueryTreeResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new QueryTreeReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<QueryTreeReply, QueryTreeResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryTreeReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetAtomNameReply> GetAtomNameAsync(ATOM atom, CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetAtomNameReply>> GetAtomNameAsync(ATOM atom, CancellationToken token = default)
     {
         var cookie = GetAtomNameBase(atom);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<GetAtomNameResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetAtomNameReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetAtomNameReply, GetAtomNameResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetAtomNameReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<ListPropertiesReply> ListPropertiesAsync(uint window, CancellationToken token = default)
+    public async ValueTask<ReplyLease<ListPropertiesReply>> ListPropertiesAsync(uint window,
+        CancellationToken token = default)
     {
         var cookie = ListPropertiesBase(window);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<ListPropertiesResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListPropertiesReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<ListPropertiesReply, ListPropertiesResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ListPropertiesReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetSelectionOwnerReply> GetSelectionOwnerAsync(ATOM atom, CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetSelectionOwnerReply>> GetSelectionOwnerAsync(ATOM atom,
+        CancellationToken token = default)
     {
         var cookie = GetSelectionOwnerBase(atom);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<GetSelectionOwnerReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetSelectionOwnerReply, GetSelectionOwnerReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetSelectionOwnerReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GrabKeyboardReply> GrabKeyboardAsync(bool ownerEvents, uint grabWindow, uint timeStamp,
+    public async ValueTask<ReplyLease<GrabKeyboardReply>> GrabKeyboardAsync(bool ownerEvents, uint grabWindow,
+        uint timeStamp,
         GrabMode pointerMode, GrabMode keyboardMode, CancellationToken token = default)
     {
         var cookie = GrabKeyboardBase(ownerEvents, grabWindow, timeStamp, pointerMode, keyboardMode);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<GrabKeyboardReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GrabKeyboardReply, GrabKeyboardReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GrabKeyboardReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetMotionEventsReply> GetMotionEventsAsync(uint window, uint startTime, uint endTime,
+    public async ValueTask<ReplyLease<GetMotionEventsReply>> GetMotionEventsAsync(uint window, uint startTime,
+        uint endTime,
         CancellationToken token = default)
     {
         var cookie = GetMotionEventsBase(window, startTime, endTime);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<GetMotionEventsResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetMotionEventsReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetMotionEventsReply, GetMotionEventsResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetMotionEventsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<TranslateCoordinatesReply> TranslateCoordinatesAsync(uint srcWindow, uint destinationWindow,
+    public async ValueTask<ReplyLease<TranslateCoordinatesReply>> TranslateCoordinatesAsync(uint srcWindow,
+        uint destinationWindow,
         ushort srcX, ushort srcY, CancellationToken token = default)
     {
         var cookie = TranslateCoordinatesBase(srcWindow, destinationWindow, srcX, srcY);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<TranslateCoordinatesReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<TranslateCoordinatesReply, TranslateCoordinatesReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<TranslateCoordinatesReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetInputFocusReply> GetInputFocusAsync(CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetInputFocusReply>> GetInputFocusAsync(CancellationToken token = default)
     {
         var cookie = GetInputFocusBase();
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<GetInputFocusReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetInputFocusReply, GetInputFocusReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetInputFocusReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<QueryKeymapReply> QueryKeymapAsync(CancellationToken token = default)
+    public async ValueTask<ReplyLease<QueryKeymapReply>> QueryKeymapAsync(CancellationToken token = default)
     {
         var cookie = QueryKeymapBase();
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<QueryKeymapResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new QueryKeymapReply(result!.Value);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<QueryKeymapReply, QueryKeymapResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryKeymapReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<QueryFontReply> QueryFontAsync(uint fontId, CancellationToken token = default)
+    public async ValueTask<ReplyLease<QueryFontReply>> QueryFontAsync(uint fontId, CancellationToken token = default)
     {
         var cookie = QueryFontBase(fontId);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<QueryFontResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new QueryFontReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<QueryFontReply, QueryFontResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryFontReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<QueryTextExtentsReply> QueryTextExtentsAsync(uint font, string stringForQuery,
+    public async ValueTask<ReplyLease<QueryTextExtentsReply>> QueryTextExtentsAsync(uint font, string stringForQuery,
         CancellationToken token = default)
     {
         var cookie = QueryTextExtentsBase(font, stringForQuery);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<QueryTextExtentsReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<QueryTextExtentsReply, QueryTextExtentsReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryTextExtentsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<ListFontsReply> ListFontsAsync(ReadOnlyMemory<byte> pattern, int maxNames,
+    public async ValueTask<ReplyLease<ListFontsReply>> ListFontsAsync(ReadOnlyMemory<byte> pattern, int maxNames,
         CancellationToken token = default)
     {
         var cookie = ListFontsBase(pattern.Span, maxNames);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<ListFontsResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListFontsReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<ListFontsReply, ListFontsResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ListFontsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<ListFontsWithInfoReply[]> ListFontsWithInfoAsync(ReadOnlyMemory<byte> pattan, int maxNames,
-        CancellationToken token = default)
-    {
-        var cookie = ListFontsWithInfoBase(pattan.Span, maxNames);
-        var (result, error) = await this._socketAccessor.ReceivedResponseArrayAsync(cookie.Id, maxNames, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result;
-    }
+    // public async ValueTask<ReplyLease<ListFontsWithInfoReply>[]> ListFontsWithInfoAsync(ReadOnlyMemory<byte> pattan, int maxNames,
+    //     CancellationToken token = default)
+    // {
+    //     var cookie = ListFontsWithInfoBase(pattan.Span, maxNames);
+    //     var (result, mapping) = await this._socketAccessor.ReceivedResponseArrayAsync(cookie.Id, maxNames, token).ConfigureAwait(false);
+    //     return error.HasValue
+    //         ? throw new XEventException(error.Value)
+    //         : result;
+    // }
 
-    public async Task<GetFontPathReply> GetFontPathAsync(CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetFontPathReply>> GetFontPathAsync(CancellationToken token = default)
     {
         var cookie = GetFontPathBase();
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<GetFontPathResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetFontPathReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetFontPathReply, GetFontPathResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetFontPathReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetImageReply> GetImageAsync(ImageFormat format, uint drawable, ushort x, ushort y, ushort width,
+    public async ValueTask<ReplyLease<GetImageReply>> GetImageAsync(ImageFormat format, uint drawable, ushort x,
+        ushort y, ushort width,
         ushort height, uint planeMask, CancellationToken token = default)
     {
         var cookie = GetImageBase(format, drawable, x, y, width, height, planeMask);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<GetImageResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetImageReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetImageReply, GetImageResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetImageReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<ListInstalledColormapsReply> ListInstalledColormapsAsync(uint window,
+    public async ValueTask<ReplyLease<ListInstalledColormapsReply>> ListInstalledColormapsAsync(uint window,
         CancellationToken token = default)
     {
         var cookie = ListInstalledColormapsBase(window);
-        var (result, error) = await
-            this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<ListInstalledColormapsResponse>(cookie.Id, token)
+        var (result, mapping) = await
+            this._socketAccessor.SocketIn
+                .ReceivedResponseSpanAsync<ListInstalledColormapsReply, ListInstalledColormapsResponse>(cookie.Id,
+                    token)
                 .ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListInstalledColormapsReply(result.Span);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ListInstalledColormapsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<AllocNamedColorReply> AllocNamedColorAsync(uint colorMap, ReadOnlyMemory<byte> name,
+    public async ValueTask<ReplyLease<AllocNamedColorReply>> AllocNamedColorAsync(uint colorMap,
+        ReadOnlyMemory<byte> name,
         CancellationToken token = default)
     {
         var cookie = AllocNamedColorBase(colorMap, name.Span);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<AllocNamedColorReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<AllocNamedColorReply, AllocNamedColorReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<AllocNamedColorReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<AllocColorCellsReply> AllocColorCellsAsync(bool contiguous, uint colorMap, ushort colors,
+    public async ValueTask<ReplyLease<AllocColorCellsReply>> AllocColorCellsAsync(bool contiguous, uint colorMap,
+        ushort colors,
         ushort planes,
         CancellationToken token = default)
     {
         var cookie = AllocColorCellsBase(contiguous, colorMap, colors, planes);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<AllocColorCellsResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new AllocColorCellsReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<AllocColorCellsReply, AllocColorCellsResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<AllocColorCellsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<AllocColorPlanesReply> AllocColorPlanesAsync(bool contiguous, uint colorMap, ushort colors,
+    public async ValueTask<ReplyLease<AllocColorPlanesReply>> AllocColorPlanesAsync(bool contiguous, uint colorMap,
+        ushort colors,
         ushort reds,
         ushort greens, ushort blues,
         CancellationToken token = default)
     {
         var cookie = AllocColorPlanesBase(contiguous, colorMap, colors, reds, greens, blues);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<AllocColorPlanesResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new AllocColorPlanesReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<AllocColorPlanesReply, AllocColorPlanesResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<AllocColorPlanesReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<QueryColorsReply> QueryColorsAsync(uint colorMap, ReadOnlyMemory<uint> pixels,
+    public async ValueTask<ReplyLease<QueryColorsReply>> QueryColorsAsync(uint colorMap, ReadOnlyMemory<uint> pixels,
         CancellationToken token = default)
     {
         var cookie = QueryColorsBase(colorMap, pixels.Span);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<QueryColorsResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new QueryColorsReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<QueryColorsReply, QueryColorsResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryColorsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<LookupColorReply> LookupColorAsync(uint colorMap, ReadOnlyMemory<byte> name,
+    public async ValueTask<ReplyLease<LookupColorReply>> LookupColorAsync(uint colorMap, ReadOnlyMemory<byte> name,
         CancellationToken token = default)
     {
         var cookie = LookupColorBase(colorMap, name.Span);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<LookupColorReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<LookupColorReply, LookupColorReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<LookupColorReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<QueryBestSizeReply> QueryBestSizeAsync(QueryShapeOf shape, uint drawable, ushort width,
+    public async ValueTask<ReplyLease<QueryBestSizeReply>> QueryBestSizeAsync(QueryShapeOf shape, uint drawable,
+        ushort width,
         ushort height,
         CancellationToken token = default)
     {
         var cookie = QueryBestSizeBase(shape, drawable, width, height);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<QueryBestSizeReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<QueryBestSizeReply, QueryBestSizeReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryBestSizeReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<SetModifierMappingReply> SetModifierMappingAsync(ReadOnlyMemory<ulong> keycodes,
+    public async ValueTask<ReplyLease<SetModifierMappingReply>> SetModifierMappingAsync(ReadOnlyMemory<ulong> keycodes,
         CancellationToken token = default)
     {
         var cookie = SetModifierMappingBase(keycodes.Span);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<SetModifierMappingReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<SetModifierMappingReply, SetModifierMappingReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<SetModifierMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetModifierMappingReply> GetModifierMappingAsync(CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetModifierMappingReply>> GetModifierMappingAsync(
+        CancellationToken token = default)
     {
         var cookie = GetModifierMappingBase();
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<GetModifierMappingResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetModifierMappingReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetModifierMappingReply, GetModifierMappingResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetModifierMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetKeyboardMappingReply> GetKeyboardMappingAsync(byte firstKeycode, byte count,
+    public async ValueTask<ReplyLease<GetKeyboardMappingReply>> GetKeyboardMappingAsync(byte firstKeycode, byte count,
         CancellationToken token = default)
     {
         var cookie = GetKeyboardMappingBase(firstKeycode, count);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<GetKeyboardMappingResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetKeyboardMappingReply(result.Span, count);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetKeyboardMappingReply, GetKeyboardMappingResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetKeyboardMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetKeyboardControlReply> GetKeyboardControlAsync(CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetKeyboardControlReply>> GetKeyboardControlAsync(
+        CancellationToken token = default)
     {
         var cookie = GetKeyboardControlBase();
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<GetKeyboardControlResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetKeyboardControlReply(result!.Value);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetKeyboardControlReply, GetKeyboardControlResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetKeyboardControlReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<SetPointerMappingReply> SetPointerMappingAsync(ReadOnlyMemory<byte> maps,
+    public async ValueTask<ReplyLease<SetPointerMappingReply>> SetPointerMappingAsync(ReadOnlyMemory<byte> maps,
         CancellationToken token = default)
     {
         var cookie = SetPointerMappingBase(maps.Span);
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<SetPointerMappingReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<SetPointerMappingReply, SetPointerMappingReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<SetPointerMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetPointerMappingReply> GetPointerMappingAsync(CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetPointerMappingReply>> GetPointerMappingAsync(CancellationToken token = default)
     {
         var cookie = GetPointerMappingBase();
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<GetPointerMappingResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new GetPointerMappingReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetPointerMappingReply, GetPointerMappingResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetPointerMappingReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetPointerControlReply> GetPointerControlAsync(CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetPointerControlReply>> GetPointerControlAsync(CancellationToken token = default)
     {
         var cookie = GetPointerControlBase();
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<GetPointerControlReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetPointerControlReply, GetPointerControlReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetPointerControlReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<GetScreenSaverReply> GetScreenSaverAsync(CancellationToken token = default)
+    public async ValueTask<ReplyLease<GetScreenSaverReply>> GetScreenSaverAsync(CancellationToken token = default)
     {
         var cookie = GetScreenSaverBase();
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseAsync<GetScreenSaverReply>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result!.Value;
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<GetScreenSaverReply, GetScreenSaverReply>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetScreenSaverReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async Task<ListHostsReply> ListHostsAsync(CancellationToken token = default)
+    public async ValueTask<ReplyLease<ListHostsReply>> ListHostsAsync(CancellationToken token = default)
     {
         var cookie = ListHostsBase();
-        var (result, error) =
-            await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<ListHostsResponse>(cookie.Id, token).ConfigureAwait(false);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListHostsReply(result.Span);
+        var (result, mapping) = await this._socketAccessor.SocketIn
+            .ReceivedResponseSpanAsync<ListHostsReply, ListHostsResponse>(cookie.Id, token)
+            .ConfigureAwait(false);
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ListHostsReply>(result, this._socketAccessor.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this._socketAccessor.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public XEvent GetEvent() => this._socketAccessor.ReceivedEvent();
+    public ReplyLease GetEvent() => this._socketAccessor.ReceivedEvent();
 
-    public async Task<XEvent> GetEventAsync(CancellationToken token = default) => 
-        await this._socketAccessor.ReceivedEventAsync(token)
+    public async ValueTask<ReplyLease> GetEventAsync(CancellationToken token = default) =>
+        await this._socketAccessor
+            .ReceivedEventAsync(token)
             .ConfigureAwait(false);
 
     public GenericError? CheckResponseProtoResult(ResponseProto response) =>

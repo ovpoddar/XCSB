@@ -54,9 +54,9 @@ var isRunning = true;
 
 while (isRunning)
 {
-    var evnt = xcsb.GetEvent();
-    if (evnt.ReplyType == EventType.LastEvent) return;
-    if (evnt.ReplyType == EventType.Expose)
+    using var evnt = xcsb.GetEvent();
+    if (evnt.Reply.ReplyType == EventType.LastEvent) return;
+    if (evnt.Reply.ReplyType == EventType.Expose)
     {
         lazyXcsb.PutImage(ImageFormatBitmap.ZPixmap,
             window,

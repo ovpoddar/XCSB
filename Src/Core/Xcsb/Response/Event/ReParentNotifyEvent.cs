@@ -19,9 +19,13 @@ public struct ReParentNotifyEvent : IXEvent<ReParentNotifyEvent>
     public ref readonly ReParentNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<ReParentNotifyEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.ReParentNotify && result.ResponseHeader.GetValue() == 0||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.ReParentNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public ReParentNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ReParentNotifyEvent>();
     }
 }

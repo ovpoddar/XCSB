@@ -1,6 +1,6 @@
 ﻿namespace Xcsb.Connection.Response.Contract;
 
-internal interface IXReply<T> : IXBaseResponse<T> where T : struct
+internal interface IXReply<T, InternalType> : IXBaseResponse<T> where T : struct where InternalType : IVerify
 {
-    bool Verify(in int sequence);
+    
 }

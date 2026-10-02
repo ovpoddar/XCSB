@@ -5,7 +5,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-internal readonly struct ListPropertiesResponse : IXReply<ListPropertiesResponse>
+internal readonly struct ListPropertiesResponse : IVerify
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

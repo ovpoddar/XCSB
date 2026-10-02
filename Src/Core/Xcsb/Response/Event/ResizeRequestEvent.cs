@@ -16,9 +16,13 @@ public struct ResizeRequestEvent : IXEvent<ResizeRequestEvent>
     public ref readonly ResizeRequestEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<ResizeRequestEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.ResizeRequest && result.ResponseHeader.GetValue() == 0||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.ResizeRequest || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public ResizeRequestEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ResizeRequestEvent>();
     }
 }

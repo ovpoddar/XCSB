@@ -31,4 +31,9 @@ public struct DeviceFocusOutEvent : IXEvent<DeviceFocusOutEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DeviceFocusOutEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -9,23 +9,22 @@ namespace Xcsb.Extension.XInput
     {
         internal const string ExtensionName = "XInputExtension";
         internal static uint ExtensionMajorVersion = 2;
-        internal static uint ExtensionMinorVersion = 3;             
+        internal static uint ExtensionMinorVersion = 3;
 
         public static IXinputRequest? XInput(this IXExtension extension)
         {
             if (extension is not IXExtensionInternal extensionInternal)
                 return null;
-            var response = extensionInternal.QueryExtension("XInputExtension"u8);
-            if (!response.Present) return null;
-            
-            
+            using var response = extensionInternal.QueryExtension("XInputExtension"u8);
+            if (!response.Reply.Present) return null;
+            var reply = response.Reply;
             return extensionInternal.GetOrCreate(() =>
             {
-                extensionInternal.ActivateExtension(ExtensionName, response);
-                var result = new XInputProto(response, extensionInternal);
-                var versionNegosiation = result.GetExtensionVersion("XInputExtension"u8);
-                ExtensionMajorVersion = versionNegosiation.ServerMajor;
-                ExtensionMinorVersion = versionNegosiation.ServerMinor;
+                extensionInternal.ActivateExtension(ExtensionName, reply);
+                var result = new XInputProto(reply, extensionInternal);
+                using var versionNegotiation = result.GetExtensionVersion("XInputExtension"u8);
+                ExtensionMajorVersion = versionNegotiation.Reply.ServerMajor;
+                ExtensionMinorVersion = versionNegotiation.Reply.ServerMinor;
                 return result;
             });
         }

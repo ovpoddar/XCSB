@@ -1,12 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public struct ListInstalledColormapsReply
+public struct ListInstalledColormapsReply:IXReply<ListInstalledColormapsReply,ListInstalledColormapsResponse>
 {
     public ResponseType Reply;
     public ushort Sequence;
@@ -26,5 +27,10 @@ public struct ListInstalledColormapsReply
             var length = context.NumberOfColormaps * 4;
             Colormap = MemoryMarshal.Cast<byte, uint>(response.Slice(cursor, length)).ToArray();
         }
+    }
+
+    public ListInstalledColormapsReply FromBytes(Span<byte> response)
+    {
+        return new ListInstalledColormapsReply(response);
     }
 }

@@ -49,14 +49,14 @@ internal static class ProtoInExtended
         var count = 0;
         while (true)
         {
-            var (reply, error) =
-                await socketAccessor.SocketIn.ReceivedResponseSpanAsync<ListFontsWithInfoResponse>(sequence, token);
-            if (error.HasValue)
-                return (Array.Empty<ListFontsWithInfoReply>(), error);
-
-            ref readonly var response = ref reply.AsStruct<ListFontsWithInfoResponse>();
-            if (!response.HasMore) break;
-            result[count++] = new ListFontsWithInfoReply(in response, reply[60..].Span);
+            // var (reply, error) =
+            //     await socketAccessor.SocketIn.ReceivedResponseSpanAsync<ListFontsWithInfoResponse, ListFontsWithInfoResponse>(sequence, token);
+            // if (error.HasValue)
+            //     return (Array.Empty<ListFontsWithInfoReply>(), error);
+            //
+            // ref readonly var response = ref reply.AsStruct<ListFontsWithInfoResponse>();
+            // if (!response.HasMore) break;
+            // result[count++] = new ListFontsWithInfoReply(in response, reply[60..].Span);
         }
 
         return (result[0..count].ToArray(), null);
@@ -89,67 +89,70 @@ internal static class ProtoInExtended
         }
 
         Span<byte> headerBuffer = stackalloc byte[(Unsafe.SizeOf<XResponse>())];
-
-        while (true)
-        {
-            _ = socketIn.Received(headerBuffer);
-            var packet = socketIn.ComputeResponse(headerBuffer).AsSpan();
-
-            ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
-            Debug.Assert(response.ResponseHeader.Sequence == sequence);
-            if (!response.HasMore) return result[0..count].ToArray();
-
-            result[count++] = new ListFontsWithInfoReply(in response, packet[60..]);
-
-            if (count != result.Length) continue;
-
-            var larger = new ArrayPoolUsing<ListFontsWithInfoReply>(result.Length << 1);
-            result[0..result.Length].CopyTo(larger);
-            result.Dispose();
-            result = larger;
-        }
+        return Array.Empty<ListFontsWithInfoReply>();
+        // while (true)
+        // {
+        //     _ = socketIn.Received(headerBuffer);
+        //     var packet = socketIn.ComputeResponse(headerBuffer).AsSpan();
+        //
+        //     ref readonly var response = ref packet.AsStruct<ListFontsWithInfoResponse>();
+        //     Debug.Assert(response.ResponseHeader.Sequence == sequence);
+        //     if (!response.HasMore) return result[0..count].ToArray();
+        //
+        //     result[count++] = new ListFontsWithInfoReply(in response, packet[60..]);
+        //
+        //     if (count != result.Length) continue;
+        //
+        //     var larger = new ArrayPoolUsing<ListFontsWithInfoReply>(result.Length << 1);
+        //     result[0..result.Length].CopyTo(larger);
+        //     result.Dispose();
+        //     result = larger;
+        // }
     }
 
-    internal static (T?, GenericError?) ReceivedResponse<T>(this ISocketIn socketIn, int sequence, int timeout = 1000)
-        where T : unmanaged, IXReply<T>
-    {
-        var (result, error) = socketIn.ReceivedResponseSpan<T>(sequence, timeout);
-        return (result?.AsSpan().ToStruct<T>(), error);
-    }
+    // internal static (T?, GenericError?) ReceivedResponse<T>(this ISocketIn socketIn, int sequence, int timeout = 1000)
+    //     where T : unmanaged, IXReply<T>
+    // {
+    //     var (result, error) = socketIn.ReceivedResponseSpan<T>(sequence, timeout);
+    //     return (result?.AsSpan().ToStruct<T>(), error);
+    // }
+    //
+    //
+    // internal static async Task<(T?, GenericError?)> ReceivedResponseAsync<T>(this ISocketIn socketIn, int sequence,
+    //     CancellationToken token = default) where T : unmanaged, IXReply<T>
+    // {
+    //     var (result, error) = await socketIn.ReceivedResponseSpanAsync<T>(sequence, token).ConfigureAwait(false);
+    //     return (result.Span.ToStruct<T>(), error);
+    // }
 
-
-    internal static async Task<(T?, GenericError?)> ReceivedResponseAsync<T>(this ISocketIn socketIn, int sequence,
-        CancellationToken token = default) where T : unmanaged, IXReply<T>
-    {
-        var (result, error) = await socketIn.ReceivedResponseSpanAsync<T>(sequence, token).ConfigureAwait(false);
-        return (result.Span.ToStruct<T>(), error);
-    }
-
-    internal static XEvent ReceivedEvent(this ISocketAccessor socketAccessor)
+    internal static ReplyLease ReceivedEvent(this ISocketAccessor socketAccessor)
     {
         while (true)
         {
             if (socketAccessor.SocketIn.BufferEvents.TryDequeue(out var result))
-                return new XEvent(result.Item1, result.Item2);
+                return new ReplyLease(result.Item1, result.Item2, socketAccessor.SocketIn.BufferPool);
 
             if (socketAccessor.PollRead())
                 if (socketAccessor.AvailableData == 0)
-                    return new XEvent(_lastEventBuffer, new MappingDetails(XResponseType.Event, EventType.LastEvent));
+                    return new ReplyLease(_lastEventBuffer,
+                        new MappingDetails(XResponseType.Event, EventType.LastEvent),
+                        socketAccessor.SocketIn.BufferPool);
 
             socketAccessor.SocketIn.FlushSocket();
         }
     }
 
-    internal static async ValueTask<XEvent> ReceivedEventAsync(this ISocketAccessor socketAccessor,
+    internal static async ValueTask<ReplyLease> ReceivedEventAsync(this ISocketAccessor socketAccessor,
         CancellationToken token)
     {
         if (socketAccessor.SocketIn.BufferEvents.TryDequeue(out var result))
-            return new XEvent(result.Item1, result.Item2);
+            return new ReplyLease(result.Item1, result.Item2, socketAccessor.SocketIn.BufferPool);
 
         var type = await socketAccessor.SocketIn.FlushAsync(token).ConfigureAwait(false);
 
         return type.Item1.HasValue
-            ? new XEvent(type.Item2, type.Item1.Value)
-            : new XEvent(_lastEventBuffer, new MappingDetails(XResponseType.Event, EventType.LastEvent));
+            ? new ReplyLease(type.Item2, type.Item1.Value, socketAccessor.SocketIn.BufferPool)
+            : new ReplyLease(_lastEventBuffer, new MappingDetails(XResponseType.Event, EventType.LastEvent),
+                socketAccessor.SocketIn.BufferPool);
     }
 }

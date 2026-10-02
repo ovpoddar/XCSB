@@ -34,4 +34,9 @@ public struct FocusOut : IXEvent<FocusOut>
     {
         throw new NotImplementedException();
     }
+
+    public FocusOut FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

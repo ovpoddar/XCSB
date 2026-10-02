@@ -24,4 +24,9 @@ public struct DeviceMappingNotifyEvent : IXEvent<DeviceMappingNotifyEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DeviceMappingNotifyEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

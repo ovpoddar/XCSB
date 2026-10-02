@@ -28,8 +28,13 @@ public struct KeyPressEvent : IXEvent<KeyPressEvent>
     public ref readonly KeyPressEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<KeyPressEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.KeyPress || response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.KeyPress || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public KeyPressEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<KeyPressEvent>();
     }
 }

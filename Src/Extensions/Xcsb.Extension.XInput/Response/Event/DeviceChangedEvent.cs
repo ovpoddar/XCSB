@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
@@ -21,8 +22,8 @@ public unsafe struct DeviceChangedEvent : IXEvent<DeviceChangedEvent>
     public readonly uint[] Classes;
 
 
-    public ref readonly DeviceChangedEvent Cast(Span<byte> response)
+    public DeviceChangedEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DeviceChangedEvent>();
     }
 }

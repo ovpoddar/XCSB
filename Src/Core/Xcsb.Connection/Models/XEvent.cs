@@ -1,4 +1,5 @@
-﻿using Xcsb.Connection.Helpers;
+﻿using System.Runtime.CompilerServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 
 namespace Xcsb.Connection.Models;
@@ -19,8 +20,17 @@ public readonly struct XEvent
 
     public readonly XEventType ReplyType => _mappingDetails.ResponseTypeDetails!;
 
-    public readonly unsafe ref readonly T As<T>() where T : struct, IXBaseResponse<T> =>
-        ref default(T).Cast(_response);
+    public ref readonly T As<T>() where T : struct
+    {
+        if (!RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            throw new NotSupportedException();
+        return ref _response.AsStruct<T>();
+    }
+
+    public readonly T AsView<T>() where T : struct, IXBaseResponse<T> =>
+        RuntimeHelpers.IsReferenceOrContainsReferences<T>()
+            ? _response.ToStruct<T>()
+            : default(T).FromBytes(_response);
 
     public readonly GenericError? Error =>
         _mappingDetails.ResponseType != XResponseType.Error || _mappingDetails.ErrorMessageAction is null
@@ -31,7 +41,4 @@ public readonly struct XEvent
         _mappingDetails.ResponseType is XResponseType.Event or XResponseType.Notify
             ? new GenericEvent(_response.AsStruct<XResponse>(), _mappingDetails.ResponseTypeDetails!)
             : null;
-
-    public Span<byte> GetRawResponse() =>
-        _response;
 }

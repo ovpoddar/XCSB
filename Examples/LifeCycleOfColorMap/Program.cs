@@ -99,7 +99,7 @@ Console.WriteLine("Copied colormap and freed old one.");
 Thread.Sleep(100);
 
 
-var resultGrabKeyboard = x.GrabKeyboard(
+using var resultGrabKeyboard = x.GrabKeyboard(
     false,
     win,
     0,
@@ -107,12 +107,12 @@ var resultGrabKeyboard = x.GrabKeyboard(
     GrabMode.Asynchronous
 );
 
-Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Status}");
+Console.WriteLine($"grabbing all keys for this window {resultGrabKeyboard.Reply.Status}");
 x.UngrabKeyboardUnchecked(0);
 
-var xevnt = x.GetEvent();
-Debug.Assert(xevnt.ReplyType == EventType.Expose || xevnt.ReplyType == EventType.MappingNotify);
-Console.WriteLine("all success {0}", !xevnt.Error.HasValue);
+using var xevnt = x.GetEvent();
+Debug.Assert(xevnt.Reply.ReplyType == EventType.Expose || xevnt.Reply.ReplyType == EventType.MappingNotify);
+Console.WriteLine("all success {0}", !xevnt.Reply.Error.HasValue);
 
 x.UnmapSubwindowsChecked(sub);
 x.DestroyWindowChecked(sub1);

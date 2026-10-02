@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Buffers;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
@@ -31,13 +32,18 @@ internal sealed class XcsbExtension : IXExtensionInternal
         this._responseMap = responseMap;
     }
 
-    public ListExtensionsReply ListExtensions()
+    public ReplyLease<ListExtensionsReply> ListExtensions()
     {
         var cookie = ListExtensionsBase();
-        var (result, error) = this.Transport.SocketIn.ReceivedResponseSpan<ListExtensionsResponse>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : new ListExtensionsReply(result);
+        var (result, mapping) =
+            this.Transport.SocketIn.ReceivedResponseSpan<ListExtensionsReply, ListExtensionsResponse>(cookie.Id);
+
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ListExtensionsReply>(result, this.Transport.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this.Transport.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
     private ResponseProto ListExtensionsBase()
@@ -48,15 +54,20 @@ internal sealed class XcsbExtension : IXExtensionInternal
         return new ResponseProto(Transport.SocketOut.Sequence, true);
     }
 
-    public QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name)
+    public ReplyLease<QueryExtensionReply> QueryExtension(ReadOnlySpan<byte> name)
     {
         if (name.Length > ushort.MaxValue)
             throw new ArgumentException($"{nameof(name)} is invalid, {nameof(name)} is too long.");
         var cookie = QueryExtensionBase(name);
-        var (result, error) = this.Transport.SocketIn.ReceivedResponseSpan<QueryExtensionReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result.AsSpan().ToStruct<QueryExtensionReply>();
+        var (result, mapping) =
+            this.Transport.SocketIn.ReceivedResponseSpan<QueryExtensionReply, QueryExtensionReply>(cookie.Id);
+
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<QueryExtensionReply>(result, this.Transport.SocketIn.BufferPool);
+
+        var error = result.ToStruct<XResponse>();
+        this.Transport.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
 

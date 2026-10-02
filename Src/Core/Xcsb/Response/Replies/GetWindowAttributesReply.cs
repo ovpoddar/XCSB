@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Models.Handshake;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
@@ -7,7 +8,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
-public readonly struct GetWindowAttributesReply : IXReply<GetWindowAttributesReply>
+public readonly struct GetWindowAttributesReply : IXReply<GetWindowAttributesReply,GetWindowAttributesReply>, IVerify
 {
     public readonly ResponseHeader<ResponseType, BackingStores> ResponseHeader;
     public readonly uint Length;
@@ -34,4 +35,8 @@ public readonly struct GetWindowAttributesReply : IXReply<GetWindowAttributesRep
     }
 
     public BackingStores Stores => ResponseHeader.GetValue();
+    public GetWindowAttributesReply FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<GetWindowAttributesReply>();
+    }
 }

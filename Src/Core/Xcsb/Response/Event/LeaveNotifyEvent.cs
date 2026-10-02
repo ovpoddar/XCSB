@@ -25,8 +25,13 @@ public struct LeaveNotifyEvent : IXEvent<LeaveNotifyEvent>
     public ref readonly LeaveNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<LeaveNotifyEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.LeaveNotify || response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.LeaveNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public LeaveNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<LeaveNotifyEvent>();
     }
 }

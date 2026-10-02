@@ -22,4 +22,9 @@ public struct DevicePresenceNotifyEvent : IXEvent<DevicePresenceNotifyEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DevicePresenceNotifyEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

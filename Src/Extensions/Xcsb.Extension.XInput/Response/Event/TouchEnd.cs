@@ -36,4 +36,9 @@ public struct TouchEnd : IXEvent<TouchEnd>
     {
         throw new NotImplementedException();
     }
+
+    public TouchEnd FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

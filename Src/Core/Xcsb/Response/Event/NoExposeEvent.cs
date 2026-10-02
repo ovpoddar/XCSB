@@ -17,9 +17,13 @@ public struct NoExposeEvent : IXEvent<NoExposeEvent>
     public ref readonly NoExposeEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<NoExposeEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.NoExpose && result.ResponseHeader.GetValue() == 0||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.NoExpose || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public NoExposeEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<NoExposeEvent>();
     }
 }

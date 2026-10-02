@@ -2,10 +2,7 @@
 
 namespace Xcsb.Connection.Response.Contract;
 
-public interface IXBaseResponse<T> where T : struct
+public interface IXBaseResponse<out T> where T : struct
 {
-    ref readonly T Cast(Span<byte> response)
-    {
-        return ref response.AsStruct<T>();
-    }
+    T FromBytes(Span<byte> response);
 }

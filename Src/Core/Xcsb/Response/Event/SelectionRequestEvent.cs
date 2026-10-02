@@ -20,9 +20,13 @@ public struct SelectionRequestEvent : IXEvent<SelectionRequestEvent>
     public ref readonly SelectionRequestEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<SelectionRequestEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.SelectionRequest && result.ResponseHeader.GetValue() == 0||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.SelectionRequest || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public SelectionRequestEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<SelectionRequestEvent>();
     }
 }

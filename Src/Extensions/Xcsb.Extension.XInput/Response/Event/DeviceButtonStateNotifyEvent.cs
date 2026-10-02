@@ -14,11 +14,16 @@ public unsafe struct DeviceButtonStateNotifyEvent : IXEvent<DeviceButtonStateNot
     public fixed byte Buttons[28];
 
     
-    public ref readonly DeviceButtonStateNotifyEvent Cast(Span<byte> response)
+    // public ref readonly DeviceButtonStateNotifyEvent Cast(Span<byte> response)
+    // {
+    //     ref readonly var result = ref response.AsStruct<DeviceButtonStateNotifyEvent>();
+    //     if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceButtonStateNotify || response.Length != 32)
+    //         throw new Exception("Invalid response");
+    //     return ref result;
+    // }
+
+    public DeviceButtonStateNotifyEvent FromBytes(Span<byte> response)
     {
-        ref readonly var result = ref response.AsStruct<DeviceButtonStateNotifyEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceButtonStateNotify || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
+        return response.ToStruct<DeviceButtonStateNotifyEvent>();
     }
 }

@@ -2,17 +2,18 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-public struct GetDeviceDontPropagateListReply
+public readonly struct GetDeviceDontPropagateListReply : IXReply<GetDeviceDontPropagateListReply, GetDeviceDontPropagateListResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
-    public uint[] Classes;
+    public readonly uint[] Classes;
 
-    public GetDeviceDontPropagateListReply(Span<byte> result)
+    internal GetDeviceDontPropagateListReply(Span<byte> result)
     {
         ref readonly var response = ref result.AsStruct<GetDeviceDontPropagateListResponse>();
         Reply = response.ResponseHeader.Reply;
@@ -24,5 +25,15 @@ public struct GetDeviceDontPropagateListReply
             var responseLength = Unsafe.SizeOf<GetDeviceDontPropagateListResponse>();
             Classes = MemoryMarshal.Cast<byte, uint>(result[responseLength..]).ToArray();
         }
+    }
+
+    public bool Verify(in int sequence)
+    {
+        throw new NotImplementedException();
+    }
+
+    public GetDeviceDontPropagateListReply FromBytes(Span<byte> response)
+    {
+        return new GetDeviceDontPropagateListReply(response);
     }
 }

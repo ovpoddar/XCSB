@@ -2,11 +2,12 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-public struct GetSelectedExtensionEventsReply
+public struct GetSelectedExtensionEventsReply: IXReply<GetSelectedExtensionEventsReply, GetSelectedExtensionEventsResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -14,7 +15,7 @@ public struct GetSelectedExtensionEventsReply
     public readonly uint[] ThisClasses;
     public readonly uint[] AllClasses;
 
-    public GetSelectedExtensionEventsReply(Span<byte> result)
+    internal GetSelectedExtensionEventsReply(Span<byte> result)
     {
         ref readonly var response = ref result.AsStruct<GetSelectedExtensionEventsResponse>();
         Reply = response.ResponseHeader.Reply;
@@ -38,5 +39,15 @@ public struct GetSelectedExtensionEventsReply
             var classSize = response.NumAllClasses * Unsafe.SizeOf<uint>();
             AllClasses = MemoryMarshal.Cast<byte, uint>(result[responseLength..classSize]).ToArray();
         }
+    }
+
+    public bool Verify(in int sequence)
+    {
+        throw new NotImplementedException();
+    }
+
+    public GetSelectedExtensionEventsReply FromBytes(Span<byte> response)
+    {
+        return new GetSelectedExtensionEventsReply(response);
     }
 }

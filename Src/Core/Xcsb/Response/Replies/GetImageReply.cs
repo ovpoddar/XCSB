@@ -1,11 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct GetImageReply
+public readonly struct GetImageReply: IXReply<GetImageReply,GetImageResponse>
 {
     public readonly ResponseType Reply;
     public readonly byte Depth;
@@ -27,5 +28,10 @@ public readonly struct GetImageReply
             var cursor = Unsafe.SizeOf<GetImageResponse>();
             Data = response.Slice(cursor, (int)(context.Length * 4)).ToArray();
         }
+    }
+
+    public GetImageReply FromBytes(Span<byte> response)
+    {
+        return new GetImageReply(response);
     }
 }

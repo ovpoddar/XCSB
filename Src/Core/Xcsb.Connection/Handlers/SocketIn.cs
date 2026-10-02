@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Sockets;
@@ -34,6 +35,8 @@ internal class SocketIn : ISocketIn
 
     public int Sequence { get; set; }
 
+    public ArrayPool<byte> BufferPool => _configuration.BufferPool;
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Received(scoped in Span<byte> buffer, bool readAll = true)
     {
@@ -53,9 +56,9 @@ internal class SocketIn : ISocketIn
     public void FlushSocket()
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
-        var buffer = new byte[bufferSize];
         while (_socket.Available != 0)
         {
+            var buffer = _configuration.BufferPool.Rent(bufferSize);
             var scratchBuffer = buffer.AsSpan();
             _ = Received(scratchBuffer);
             ref readonly var content = ref scratchBuffer.AsStruct<XResponse>();
@@ -64,17 +67,17 @@ internal class SocketIn : ISocketIn
             {
                 case XResponseType.Error:
                     Sequence++;
-                    ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
+                    ReplyBuffer[content.Sequence] = (buffer, responseType);
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
+                    BufferEvents.Enqueue((buffer, responseType));
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = (ComputeResponse(scratchBuffer), responseType);
+                    ReplyBuffer[content.Sequence] = (ComputeResponse(buffer), responseType);
                     break;
                 case XResponseType.Event:
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue((ComposeEvent(scratchBuffer), responseType));
+                    BufferEvents.Enqueue((ComposeEvent(buffer), responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer));
@@ -86,9 +89,9 @@ internal class SocketIn : ISocketIn
     public void FlushSocket(int outProtoSequence, bool shouldThrowOnError)
     {
         var bufferSize = Unsafe.SizeOf<XResponse>();
-        var buffer = new byte[bufferSize];
         while (_socket.Available != 0)
         {
+            var buffer = _configuration.BufferPool.Rent(bufferSize);
             var scratchBuffer = buffer.AsSpan();
             _ = Received(scratchBuffer);
             ref readonly var content = ref scratchBuffer.AsStruct<XResponse>();
@@ -98,7 +101,7 @@ internal class SocketIn : ISocketIn
                 case XResponseType.Error:
                     Sequence++;
                     if (Sequence > outProtoSequence)
-                        ReplyBuffer[content.Sequence] = (buffer.ToArray(), responseType);
+                        ReplyBuffer[content.Sequence] = (buffer, responseType);
                     else
                     {
                         if (shouldThrowOnError)
@@ -108,14 +111,14 @@ internal class SocketIn : ISocketIn
 
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue((buffer.ToArray(), responseType));
+                    BufferEvents.Enqueue((buffer, responseType));
                     break;
                 case XResponseType.Reply:
-                    ReplyBuffer[content.Sequence] = (ComputeResponse(scratchBuffer), responseType);
+                    ReplyBuffer[content.Sequence] = (ComputeResponse(buffer), responseType);
                     break;
                 case XResponseType.Event:
                 case XResponseType.Unknown:
-                    BufferEvents.Enqueue((ComposeEvent(scratchBuffer), responseType));
+                    BufferEvents.Enqueue((ComposeEvent(buffer), responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer));
@@ -146,22 +149,24 @@ internal class SocketIn : ISocketIn
     }
 
     // logic 3
-    public async Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence,
-        CancellationToken token = default) where T : unmanaged, IXReply<T>
+    public async Task<(byte[], MappingDetails)> ReceivedResponseSpanAsync<T, InternalType>(int sequence,
+        CancellationToken token = default) where T : struct, IXReply<T, InternalType> where InternalType : unmanaged,
+        IVerify
     {
         if (sequence < Sequence && ReplyBuffer.TryGetValue(sequence, out var result1))
         {
-            var response = result1.Item1.AsStruct<T>();
-            return response.Verify(in sequence)
-                ? (result1.Item1, null)
-                : (Array.Empty<byte>(),
-                    new GenericError(result1.Item1.ToStruct<XResponse>(), result1.Item2.ErrorMessageAction!));
+                            
+            ref readonly var temp = ref result1.Item1.AsStruct<InternalType>();
+            if (!temp.Verify(in sequence))
+                return (result1.Item1, new MappingDetails(XResponseType.Error, UnknownResponse.Unknown(result1.Item1[0])));
+
+            return result1;
         }
 
         var bufferSize = Unsafe.SizeOf<XResponse>();
-        Memory<byte> buffer = new byte[bufferSize];
         while (true)
         {
+            var buffer = _configuration.BufferPool.Rent(bufferSize);
             var totalRead = await ReceivedAsync(buffer, token).ConfigureAwait(false);
             Debug.Assert(totalRead == bufferSize);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
@@ -173,19 +178,12 @@ internal class SocketIn : ISocketIn
                     case XResponseType.Error:
                     {
                         Sequence++;
-                        var response = buffer.AsStruct<T>();
-                        return response.Verify(in sequence)
-                            ? (Array.Empty<byte>(),
-                                new GenericError(buffer.Span.ToStruct<XResponse>(), responseType.ErrorMessageAction!))
-                            : throw new Exception("Should not called");
+                        return (buffer, responseType);
                     }
                     case XResponseType.Reply:
                     {
                         var result = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
-                        var response = result.AsStruct<T>();
-                        return response.Verify(in sequence)
-                            ? (result, null)
-                            : throw new Exception("Should not called");
+                        return (result, responseType);
                     }
                     default:
                         break;
@@ -196,20 +194,20 @@ internal class SocketIn : ISocketIn
             {
                 case XResponseType.Error:
                     Sequence++;
-                    ReplyBuffer[content.Sequence] = (buffer.Span.ToArray(), responseType);
+                    ReplyBuffer[content.Sequence] = (buffer, responseType);
                     break;
                 case XResponseType.Notify:
-                    BufferEvents.Enqueue((buffer.Span.ToArray(), responseType));
+                    BufferEvents.Enqueue((buffer, responseType));
                     break;
                 case XResponseType.Reply:
                     var key = content.Sequence;
                     var response = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
-                    ReplyBuffer[key] = (response.ToArray(), responseType);
+                    ReplyBuffer[key] = (response, responseType);
                     break;
                 case XResponseType.Event:
                 case XResponseType.Unknown:
                     var result = await ComposeEventAsync(buffer, token).ConfigureAwait(false);
-                    BufferEvents.Enqueue((result.ToArray(), responseType));
+                    BufferEvents.Enqueue((result, responseType));
                     break;
                 default:
                     throw new Exception(string.Join(", ", buffer.ToArray()));
@@ -225,10 +223,11 @@ internal class SocketIn : ISocketIn
             return (item.Item2, item.Item1);
         }
 
-        Memory<byte> tempBuffer = new byte[32];
         while (true)
         {
-            var totalRead = await ReceivedAsync(tempBuffer, token).ConfigureAwait(false);
+            var tempBuffer = _configuration.BufferPool.Rent(Unsafe.SizeOf<XResponse>());
+            var totalRead = await ReceivedAsync(tempBuffer, token)
+                .ConfigureAwait(false);
             if (totalRead == 0)
                 return (null, Array.Empty<byte>());
             ref readonly var content = ref tempBuffer.AsStruct<XResponse>();
@@ -237,10 +236,10 @@ internal class SocketIn : ISocketIn
             {
                 case XResponseType.Error:
                     Sequence++;
-                    ReplyBuffer[content.Sequence] = (tempBuffer.ToArray(), responseType);
+                    ReplyBuffer[content.Sequence] = (tempBuffer, responseType);
                     break;
                 case XResponseType.Notify:
-                    return (responseType, tempBuffer.ToArray());
+                    return (responseType, tempBuffer);
                 case XResponseType.Reply:
                     var key = content.Sequence;
                     var response = await ComputeResponseAsync(tempBuffer, token: token).ConfigureAwait(false);
@@ -249,30 +248,33 @@ internal class SocketIn : ISocketIn
                 case XResponseType.Event:
                 case XResponseType.Unknown:
                     tempBuffer = await ComposeEventAsync(tempBuffer, token).ConfigureAwait(false);
-                    return (responseType, tempBuffer.ToArray());
+                    return (responseType, tempBuffer);
                 default:
                     throw new Exception(string.Join(", ", tempBuffer.ToArray()));
             }
         }
     }
 
-    public byte[] ComposeEvent(Span<byte> buffer)
+    public byte[] ComposeEvent(byte[] buffer)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
         if (!content.ExtensionEventType.HasValue)
-            return buffer.ToArray();
+            return buffer;
 
         var replySize = content.Length * 4;
         if (replySize == 0)
-            return buffer.ToArray();
+            return buffer;
 
-        using var result = new ArrayPoolUsing<byte>((int)replySize + 32);
-        buffer.CopyTo(result[..32]);
-        _ = Received(result[32..], true);
-        return result.Slice(0, (int)replySize + 32).ToArray();
+        var result = _configuration.BufferPool.Rent((int)replySize + 32);
+        var span = result.AsSpan();
+        buffer.CopyTo(span[..32]);
+        _configuration.BufferPool.Return(buffer);
+
+        _ = Received(span[32..], true);
+        return result;
     }
 
-    public async ValueTask<Memory<byte>> ComposeEventAsync(Memory<byte> buffer, CancellationToken token = default)
+    public async ValueTask<byte[]> ComposeEventAsync(byte[] buffer, CancellationToken token = default)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
         if (!content.ExtensionEventType.HasValue)
@@ -280,15 +282,19 @@ internal class SocketIn : ISocketIn
         var replySize = content.Length * 4;
         if (replySize == 0)
             return buffer;
-        Memory<byte> result = new byte[replySize + 32];
-        buffer.CopyTo(result[..32]);
-        var totalRead = await ReceivedAsync(result[32..], token).ConfigureAwait(false);
+
+        var result = _configuration.BufferPool.Rent((int)replySize + 32);
+        var span = result.AsMemory();
+        buffer.CopyTo(span[..32]);
+        _configuration.BufferPool.Return(buffer);
+
+        var totalRead = await ReceivedAsync(span[32..], token).ConfigureAwait(false);
         Debug.Assert(totalRead == result.Length - 32);
         return result;
     }
 
 
-    public byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true)
+    public byte[] ComputeResponse(byte[] buffer, bool updateSequence = true)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
         if (updateSequence && content.Sequence > Sequence)
@@ -296,21 +302,23 @@ internal class SocketIn : ISocketIn
 
         var replySize = (int)(content.Length * 4);
         if (replySize == 0)
-            return buffer.ToArray();
+            return buffer;
 
         ReplyBuffer.TryRemove(content.Sequence, out var prior);
         var priorLen = prior.Item1?.Length ?? 0;
         var totalSize = 32 + replySize + priorLen;
 
-        using var combined = new ArrayPoolUsing<byte>(totalSize);
+        var combined = _configuration.BufferPool.Rent(totalSize);
+        
         if (prior.Item1 is { } priorData)
-            priorData.AsSpan().CopyTo(combined[..priorLen]);
-        buffer.CopyTo(combined[priorLen..]);
-        _ = Received(combined[(priorLen + 32)..(priorLen + 32 + replySize)]);
-        return combined.Slice(0, totalSize).ToArray();
+            priorData.AsSpan().CopyTo(combined.AsSpan(0, priorLen));
+        buffer.AsSpan().CopyTo(combined.AsSpan(priorLen, buffer.Length));
+        _configuration.BufferPool.Return(buffer);
+        _ = Received(combined.AsSpan((priorLen + 32)..(priorLen + 32 + replySize)));
+        return combined;
     }
 
-    public async ValueTask<Memory<byte>> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true,
+    public async ValueTask<byte[]> ComputeResponseAsync(byte[] buffer, bool updateSequence = true,
         CancellationToken token = default)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
@@ -319,18 +327,20 @@ internal class SocketIn : ISocketIn
 
         var replySize = (int)(content.Length * 4);
         if (replySize == 0)
-            return buffer.ToArray();
+            return buffer;
 
         var totalSize = 32 + replySize;
-        Memory<byte> combined = new byte[totalSize];
+        var combined = _configuration.BufferPool.Rent(totalSize);
         buffer.CopyTo(combined);
+        _configuration.BufferPool.Return(buffer);
         var totalRead = await ReceivedAsync(combined[32..], token).ConfigureAwait(false);
         Debug.Assert(totalRead == combined.Length - 32);
         return combined;
     }
 
-    public (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000)
-        where T : unmanaged, IXReply<T>
+    //AllocColorReply, 
+    public (byte[], MappingDetails) ReceivedResponseSpan<T, InternalType>(int sequence, int timeOut = 1000)
+        where T : struct, IXReply<T, InternalType> where InternalType : unmanaged, IVerify
     {
         while (true)
         {
@@ -342,17 +352,17 @@ internal class SocketIn : ISocketIn
                 continue;
             }
 
+
             if (!ReplyBuffer.TryRemove(sequence, out var reply))
                 throw new Exception("Should not happen.");
-
-            var response = reply.Item1.AsSpan().AsStruct<T>();
-            return response.Verify(in sequence) && reply.Item2.ResponseType == XResponseType.Reply
-                ? (reply.Item1, null)
-                : (Array.Empty<byte>(),
-                    new GenericError(reply.Item1.AsSpan().ToStruct<XResponse>(), reply.Item2.ErrorMessageAction!));
+                
+            ref readonly var temp = ref reply.Item1.AsStruct<InternalType>();
+            if (!temp.Verify(in sequence))
+                return (reply.Item1, new MappingDetails(XResponseType.Error, UnknownResponse.Unknown(reply.Item1[0])));
+            return reply;
         }
     }
-
+    
     public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct
     {
         if (Sequence < response.Id && !ReplyBuffer.ContainsKey(response.Id))

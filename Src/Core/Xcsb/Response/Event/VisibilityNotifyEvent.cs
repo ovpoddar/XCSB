@@ -15,9 +15,13 @@ public struct VisibilityNotifyEvent : IXEvent<VisibilityNotifyEvent>
     public ref readonly VisibilityNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<VisibilityNotifyEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.VisibilityNotify && result.ResponseHeader.GetValue() == 0||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.VisibilityNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public VisibilityNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<VisibilityNotifyEvent>();
     }
 }

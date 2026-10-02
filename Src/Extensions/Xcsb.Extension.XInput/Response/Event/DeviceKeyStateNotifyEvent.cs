@@ -21,4 +21,9 @@ public unsafe struct DeviceKeyStateNotifyEvent : IXEvent<DeviceKeyStateNotifyEve
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DeviceKeyStateNotifyEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

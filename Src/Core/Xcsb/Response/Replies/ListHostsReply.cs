@@ -1,13 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct ListHostsReply
+public readonly struct ListHostsReply : IXReply<ListHostsReply, ListHostsResponse> 
 {
     public readonly ResponseType Reply;
     public readonly AccessControlMode Mode;
@@ -31,5 +32,10 @@ public readonly struct ListHostsReply
             var length = (int)context.Length * 4;
             Hosts = MemoryMarshal.Cast<byte, uint>(response.Slice(cursor, length)).ToArray();
         }
+    }
+
+    public ListHostsReply FromBytes(Span<byte> response)
+    {
+        return new ListHostsReply(response);
     }
 }

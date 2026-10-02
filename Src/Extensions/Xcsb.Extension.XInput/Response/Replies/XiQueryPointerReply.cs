@@ -2,11 +2,12 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-public struct XiQueryPointerReply
+public struct XiQueryPointerReply  : IXReply<XiQueryPointerReply, XiQueryPointerResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -19,7 +20,7 @@ public struct XiQueryPointerReply
     public readonly bool SameScreen;
     public readonly int[] Buttons;
 
-    public XiQueryPointerReply(Span<byte> result)
+    internal XiQueryPointerReply(Span<byte> result)
     {
         ref readonly var response = ref result.AsStruct<XiQueryPointerResponse>();
         Reply = response.ResponseHeader.Reply;
@@ -38,5 +39,15 @@ public struct XiQueryPointerReply
             var responseLength = Unsafe.SizeOf<XiQueryPointerResponse>();
             Buttons = MemoryMarshal.Cast<byte, int>(result[responseLength..]).ToArray();
         }
+    }
+
+    public bool Verify(in int sequence)
+    {
+        throw new NotImplementedException();
+    }
+
+    public XiQueryPointerReply FromBytes(Span<byte> response)
+    {
+        return new XiQueryPointerReply(response);
     }
 }

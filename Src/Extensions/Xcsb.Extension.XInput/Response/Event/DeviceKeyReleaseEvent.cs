@@ -32,4 +32,9 @@ public readonly struct DeviceKeyReleaseEvent : IXEvent<DeviceKeyReleaseEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DeviceKeyReleaseEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

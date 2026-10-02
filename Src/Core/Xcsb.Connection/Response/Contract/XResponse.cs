@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 
 namespace Xcsb.Connection.Response.Contract;
 
@@ -22,4 +23,9 @@ internal unsafe struct XResponse : IXBaseResponse<XResponse>
 
     public ushort? ExtensionEventType =>
         ReplyType != 35 ? null : EventType;
+
+    public XResponse FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<XResponse>();
+    }
 }

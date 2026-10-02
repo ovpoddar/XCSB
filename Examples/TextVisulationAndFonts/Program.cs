@@ -32,16 +32,16 @@ var isExecuted = false;
 
 while (isRunning)
 {
-    var Event = c.GetEvent();
+    using var Event = c.GetEvent();
 
-    if (Event.ReplyType == EventType.LastEvent) return;
-    if (Event.Error.HasValue)
+    if (Event.Reply.ReplyType == EventType.LastEvent) return;
+    if (Event.Reply.Error.HasValue)
     {
-        Console.WriteLine(Event.Error.Value.Message);
+        Console.WriteLine(Event.Reply.Error.Value.Message);
         isRunning = false;
         break;
     }
-    else if (Event.ReplyType == EventType.KeyPress)
+    else if (Event.Reply.ReplyType == EventType.KeyPress)
     {
         if (!isExecuted)
         {
@@ -51,7 +51,7 @@ while (isRunning)
             isExecuted = true;
         }
 
-        var keyPressEvent = Event.As<KeyPressEvent>();
+        ref readonly KeyPressEvent keyPressEvent = ref Event.Reply.As<KeyPressEvent>();
         if (keyPressEvent.Detail == 24)//d
         {
             c.DestroyWindowChecked(window);
@@ -104,9 +104,9 @@ while (isRunning)
         }
 
         c.BellChecked(100);
-        Console.WriteLine($"event {Event.ReplyType} {keyPressEvent.Detail}");
+        Console.WriteLine($"event {Event.Reply.ReplyType} {keyPressEvent.Detail}");
     }
-    else if (Event.ReplyType == EventType.Expose)
+    else if (Event.Reply.ReplyType == EventType.Expose)
     {
         var gc = connection.NewId();
         c.CreateGcChecked(gc, window, GcMask.Foreground, [0x00ff0000]);
@@ -117,20 +117,20 @@ while (isRunning)
 
         c.FreeGcChecked(gc);
     }
-    else if (Event.ReplyType == EventType.ButtonPress)
+    else if (Event.Reply.ReplyType == EventType.ButtonPress)
     {
-        if (Event.As<ButtonPressEvent>().Detail == Button.LeftButton)
+        if (Event.Reply.As<ButtonPressEvent>().Detail == Button.LeftButton)
         {
-            var currentPos = c.QueryPointer(connection.HandshakeSuccessResponseBody.Screens[0].Root);
-            Console.WriteLine($"before warp the pointer {currentPos.RootX}   {currentPos.RootY}");
+            using var currentPos = c.QueryPointer(connection.HandshakeSuccessResponseBody.Screens[0].Root);
+            Console.WriteLine($"before warp the pointer {currentPos.Reply.RootX}   {currentPos.Reply.RootY}");
             c.WarpPointerChecked(0, window, 0, 0, 0, 0, 200, 150);
-            currentPos = c.QueryPointer(connection.HandshakeSuccessResponseBody.Screens[0].Root);
-            Console.WriteLine($"before warp the pointer {currentPos.RootX}   {currentPos.RootY}");
+            using var currentPos1 = c.QueryPointer(connection.HandshakeSuccessResponseBody.Screens[0].Root);
+            Console.WriteLine($"before warp the pointer {currentPos1.Reply.RootX}   {currentPos1.Reply.RootY}");
         }
 
     }
     else
     {
-        Console.WriteLine(Event.ReplyType);
+        Console.WriteLine(Event.Reply.ReplyType);
     }
 }

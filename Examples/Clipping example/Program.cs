@@ -106,32 +106,32 @@ xcsb.FreeGcUnchecked(cursor_gc);
 
 var isRunning = true;
 
-var windowDetails = xcsb.GetWindowAttributes(window);
-if (windowDetails.Class != ClassResponseType.InputOutput)
+using var windowDetails = xcsb.GetWindowAttributes(window);
+if (windowDetails.Reply.Class != ClassResponseType.InputOutput)
     return;
-var windowGeometry = xcsb.GetGeometry(window);
-if (windowGeometry is { X: 38, Y: 59 })
+using var windowGeometry = xcsb.GetGeometry(window);
+if (windowGeometry.Reply is { X: 38, Y: 59 })
     xcsb.ConfigureWindowChecked(window,
         ConfigureValueMask.X | ConfigureValueMask.Y,
         [500, 500]);
 
-var query = xcsb.QueryTree(window);
-if (query.Root != connection.HandshakeSuccessResponseBody.Screens[0].Root)
+using var query = xcsb.QueryTree(window);
+if (query.Reply.Root != connection.HandshakeSuccessResponseBody.Screens[0].Root)
     return;
 
 
 while (isRunning)
 {
-    var evnt = xcsb.GetEvent();
-    if (evnt.ReplyType == EventType.LastEvent) return;
-    else if (evnt.ReplyType == EventType.Expose)
+    using var evnt = xcsb.GetEvent();
+    if (evnt.Reply.ReplyType == EventType.LastEvent) return;
+    else if (evnt.Reply.ReplyType == EventType.Expose)
         xcsb.CopyAreaUnchecked(pixmap,
             window,
             gc,
             0, 0,
             0, 0,
             width, height);
-    else if (evnt.ReplyType == EventType.KeyPress)
+    else if (evnt.Reply.ReplyType == EventType.KeyPress)
         isRunning = false;
 }
 

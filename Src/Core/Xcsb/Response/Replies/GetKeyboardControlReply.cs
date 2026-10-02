@@ -1,10 +1,11 @@
-﻿using Xcsb.Models;
+﻿using Xcsb.Connection.Response.Contract;
+using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public struct GetKeyboardControlReply
+public struct GetKeyboardControlReply: IXReply<GetKeyboardControlReply, GetKeyboardControlResponse>
 {
     public readonly ResponseType Reply;
     public readonly AutoRepeatMode AutoRepeatMode;
@@ -33,5 +34,10 @@ public struct GetKeyboardControlReply
             new Span<byte>(result.Repeats, 32)
                 .CopyTo(Repeats);
         }
+    }
+
+    public GetKeyboardControlReply FromBytes(Span<byte> response)
+    {
+        throw new Exception("simplify this");
     }
 }

@@ -31,4 +31,9 @@ public struct EnterNotifyEvent : IXEvent<EnterNotifyEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public EnterNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<EnterNotifyEvent>();
+    }
 }

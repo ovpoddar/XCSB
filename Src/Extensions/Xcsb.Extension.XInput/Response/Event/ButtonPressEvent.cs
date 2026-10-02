@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
@@ -33,8 +35,9 @@ public struct ButtonPressEvent : IXEvent<ButtonPressEvent>
     public readonly Fp3232[] AxisValues;
 
 
-    public ref readonly ButtonPressEvent Cast(Span<byte> response)
+    public ButtonPressEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        Debugger.Break();
+        return response.ToStruct<ButtonPressEvent>();
     }
 }

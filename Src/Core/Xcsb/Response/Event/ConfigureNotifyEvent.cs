@@ -23,9 +23,13 @@ public struct ConfigureNotifyEvent : IXEvent<ConfigureNotifyEvent>
     public ref readonly ConfigureNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<ConfigureNotifyEvent>();
-        if (result.ResponseHeader.Reply != ResponseType.ConfigureNotify && result.ResponseHeader.GetValue() == 0 
-            || response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.ConfigureNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public ConfigureNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ConfigureNotifyEvent>();
     }
 }

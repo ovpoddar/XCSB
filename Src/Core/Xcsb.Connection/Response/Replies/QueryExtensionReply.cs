@@ -1,10 +1,11 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 
 namespace Xcsb.Connection.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct QueryExtensionReply : IXReply<QueryExtensionReply>
+public readonly struct QueryExtensionReply : IXReply<QueryExtensionReply, QueryExtensionReply>, IVerify
 {
     public readonly ResponseHeader<byte, byte> ResponseHeader;
     public readonly uint Length;
@@ -18,5 +19,10 @@ public readonly struct QueryExtensionReply : IXReply<QueryExtensionReply>
     {
         return ResponseHeader.Reply == 1 &&
                Length == 0;
+    }
+
+    public QueryExtensionReply FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<QueryExtensionReply>();
     }
 }

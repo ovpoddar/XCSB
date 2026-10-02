@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections.Concurrent;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Models;
@@ -9,20 +10,23 @@ namespace Xcsb.Connection.Handlers;
 internal interface ISocketIn
 {
     int Sequence { get; set; }
+    ArrayPool<byte> BufferPool { get; }
 
     ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; }
     ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; }
-    byte[] ComputeResponse(Span<byte> buffer, bool updateSequence = true);
-    ValueTask<Memory<byte>> ComputeResponseAsync(Memory<byte> buffer, bool updateSequence = true,
+    byte[] ComputeResponse(byte[] buffer, bool updateSequence = true);
+    ValueTask<byte[]> ComputeResponseAsync(byte[] buffer, bool updateSequence = true,
         CancellationToken token = default);
-    byte[] ComposeEvent(Span<byte> buffer);
-    ValueTask<Memory<byte>> ComposeEventAsync(Memory<byte> buffer, CancellationToken token = default);
+    byte[] ComposeEvent(byte[] buffer);
+    ValueTask<byte[]> ComposeEventAsync(byte[] buffer, CancellationToken token = default);
     void FlushSocket();
     void FlushSocket(int outProtoSequence, bool shouldThrowOnError);
     T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct;
     int Received(scoped in Span<byte> buffer, bool readAll = true);
     Task<int> ReceivedAsync(Memory<byte> buffer, CancellationToken token = default);
-    (byte[], GenericError?) ReceivedResponseSpan<T>(int sequence, int timeOut = 1000) where T : unmanaged, IXReply<T>;
-    Task<(Memory<byte>, GenericError?)> ReceivedResponseSpanAsync<T>(int sequence, CancellationToken token = default) where T : unmanaged, IXReply<T>;
+    (byte[], MappingDetails) ReceivedResponseSpan<T, InternalType>(int sequence, int timeOut = 1000) 
+        where T : struct, IXReply<T, InternalType> where InternalType : unmanaged, IVerify;
+    Task<(byte[], MappingDetails)> ReceivedResponseSpanAsync<T, InternalType>(int sequence, CancellationToken token = default)
+        where T : struct, IXReply<T, InternalType> where InternalType : unmanaged, IVerify;
     Task<(MappingDetails?, byte[])> FlushAsync(CancellationToken token = default);
 }

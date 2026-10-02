@@ -29,21 +29,21 @@ show_help();
 bool isRunning = true;
 while (isRunning)
 {
-    var evnt = con.GetEvent();
-    if (evnt.ReplyType == EventType.LastEvent) return 0;
-    if (evnt.Error.HasValue)
+    using var evnt = con.GetEvent();
+    if (evnt.Reply.ReplyType == EventType.LastEvent) return 0;
+    if (evnt.Reply.Error.HasValue)
     {
         isRunning = false;
-        Console.WriteLine(evnt.Error.Value.Message);
+        Console.WriteLine(evnt.Reply.Error.Value.Message);
     }
 
-    if (evnt.ReplyType == EventType.Expose)
+    if (evnt.Reply.ReplyType == EventType.Expose)
         draw_interface();
 
 
-    if (evnt.ReplyType == EventType.KeyPress)
+    if (evnt.Reply.ReplyType == EventType.KeyPress)
     {
-        var keyPressEvent = evnt.As<KeyPressEvent>();
+        var keyPressEvent = evnt.Reply.As<KeyPressEvent>();
         if (keyPressEvent is { Detail: 45, State: KeyButMask.Control })
         {
             Console.WriteLine("*** GRABBED KEY: Ctrl+K detected! ***");
@@ -69,9 +69,9 @@ while (isRunning)
         }
     }
 
-    if (evnt.ReplyType == EventType.ButtonPress)
+    if (evnt.Reply.ReplyType == EventType.ButtonPress)
     {
-        var bp = evnt.As<ButtonPressEvent>();
+        var bp = evnt.Reply.As<ButtonPressEvent>();
         if (bp is { Detail: Button.RightButton, State: KeyButMask.Control })
         {
             Console.WriteLine("*** GRABBED BUTTON: Ctrl+Right Click detected! ***");
@@ -85,8 +85,8 @@ return 0;
 void demo_change_hosts()
 {
     Console.WriteLine("=== ChangeHosts Demo ===\n");
-    var hosts = con.ListHosts();
-    foreach (var s in hosts.Hosts)
+    using var hosts = con.ListHosts();
+    foreach (var s in hosts.Reply.Hosts)
     {
         Console.WriteLine("ablaible hosts: " + s);
     }
@@ -129,9 +129,9 @@ void demo_grab_key()
 void demo_store_color()
 {
     Console.WriteLine("=== StoreNamedColor Demo ===\n");
-    var cookie = con.AllocColor(colormap, 65535, 0, 0);
-    Console.WriteLine("StoreNamedColor: Red color allocated, Pixel value: %u\n", cookie.Pixel);
-    con.ChangeGcUnchecked(gc, GcMask.Foreground, [cookie.Pixel]);
+    using var cookie = con.AllocColor(colormap, 65535, 0, 0);
+    Console.WriteLine("StoreNamedColor: Red color allocated, Pixel value: %u\n", cookie.Reply.Pixel);
+    con.ChangeGcUnchecked(gc, GcMask.Foreground, [cookie.Reply.Pixel]);
     con.PolyFillRectangleUnchecked(window, gc, [new Rectangle() { X = 300, Y = 50, Width = 80, Height = 30 }]);
 }
 

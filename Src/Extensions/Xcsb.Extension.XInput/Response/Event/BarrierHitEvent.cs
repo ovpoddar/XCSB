@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
@@ -26,8 +27,9 @@ public struct BarrierHitEvent : IXEvent<BarrierHitEvent>
     public readonly Fp3232 DX;
     public readonly Fp3232 DY;
 
-    public ref readonly BarrierHitEvent Cast(Span<byte> response)
+
+    public BarrierHitEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<BarrierHitEvent>();
     }
 }

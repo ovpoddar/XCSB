@@ -1,11 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-public struct GetDeviceMotionEventsReply
+public struct GetDeviceMotionEventsReply : IXReply<GetDeviceMotionEventsReply, GetDeviceMotionEventsResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -33,5 +34,15 @@ public struct GetDeviceMotionEventsReply
                 index += eventAxisLength;
             }
         }
+    }
+
+    public bool Verify(in int sequence)
+    {
+        throw new NotImplementedException();
+    }
+
+    public GetDeviceMotionEventsReply FromBytes(Span<byte> response)
+    {
+        return new GetDeviceMotionEventsReply(response);
     }
 }

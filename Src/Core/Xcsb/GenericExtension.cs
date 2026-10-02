@@ -8,8 +8,9 @@ public static class GenericExtension
 {
     public static IXProto Initialized(this IXConnection xConnection)
     {
-        return xConnection.Extension is not IXExtensionInternal extensionInternal
+        return xConnection is not IXConnectionInternal connectionInternal
+               || xConnection.Extension is not IXExtensionInternal extensionInternal
             ? throw new Exception()
-            : extensionInternal.GetOrCreate(() => new XProto((IXConnectionInternal)xConnection));
+            : extensionInternal.GetOrCreate(() => new XProto(connectionInternal));
     }
 }

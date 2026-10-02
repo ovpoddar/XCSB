@@ -26,4 +26,9 @@ public struct RawMotion : IXEvent<RawMotion>
     {
         throw new NotImplementedException();
     }
+
+    public RawMotion FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

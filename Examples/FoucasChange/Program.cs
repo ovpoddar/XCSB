@@ -71,27 +71,27 @@ x.CreateGcUnchecked(gc, window1, GcMask.Foreground | GcMask.Background, [screen.
 
 // Track current focused window
 
-var resultGetInputFocus = x.GetInputFocus();
-var currentFocus = resultGetInputFocus.Focus;
+using var resultGetInputFocus = x.GetInputFocus();
+var currentFocus = resultGetInputFocus.Reply.Focus;
 
 
-var resultTranslateCoordinates = x.TranslateCoordinates(
+using var resultTranslateCoordinates = x.TranslateCoordinates(
     window1,
      window2,
     100, 100);
-Console.WriteLine($"10, 10 trnsalate to  {resultTranslateCoordinates.DestinationX}, {resultTranslateCoordinates.DestinationY}"); ;
+Console.WriteLine($"10, 10 trnsalate to  {resultTranslateCoordinates.Reply.DestinationX}, {resultTranslateCoordinates.Reply.DestinationY}"); ;
 // Event loop to demonstrate focus changes
 var isRunning = true;
 while (isRunning)
 {
-    var evnt = x.GetEvent();
+    using var evnt = x.GetEvent();
 
-    Console.WriteLine((byte)evnt.ReplyType + " "+ evnt.IsSyntheticReply);
-    if (evnt.ReplyType == EventType.LastEvent) return;
-    else if (evnt.ReplyType == EventType.KeyPress)
+    Console.WriteLine((byte)evnt.Reply.ReplyType + " "+ evnt.Reply.IsSyntheticReply);
+    if (evnt.Reply.ReplyType == EventType.LastEvent) return;
+    else if (evnt.Reply.ReplyType == EventType.KeyPress)
     {
         // Tab key (keycode 23) - switch focus between windows
-        var keyPressEvent = evnt.As<KeyPressEvent>();
+        var keyPressEvent = evnt.Reply.As<KeyPressEvent>();
         if (keyPressEvent.Detail == 23)
         {
             if (currentFocus == window1)
@@ -117,9 +117,9 @@ while (isRunning)
         }
 
     }
-    else if (evnt.ReplyType == EventType.FocusIn)
+    else if (evnt.Reply.ReplyType == EventType.FocusIn)
     {
-        var focusInEvent = evnt.As<FocusInEvent>();
+        var focusInEvent = evnt.Reply.As<FocusInEvent>();
         if (focusInEvent.Event == window1 || focusInEvent.Event == window2)
         {
             ChangeWindowColor(x, (uint)focusInEvent.Event, colorFocused);
@@ -131,20 +131,20 @@ while (isRunning)
         }
 
     }
-    else if (evnt.ReplyType == EventType.FocusOut)
+    else if (evnt.Reply.ReplyType == EventType.FocusOut)
     {
         // Change to unfocused color when losing focus
-        var focusOutEvent = evnt.As<FocusOutEvent>();
+        var focusOutEvent = evnt.Reply.As<FocusOutEvent>();
         if (focusOutEvent.Event == window1 || focusOutEvent.Event == window2)
         {
             ChangeWindowColor(x, (uint)focusOutEvent.Event, colorUnfocused);
         }
 
     }
-    else if (evnt.ReplyType == EventType.ButtonPress)
+    else if (evnt.Reply.ReplyType == EventType.ButtonPress)
     {
         // Set focus to the clicked window and update colors
-        var buttonPressEvent = evnt.As<ButtonPressEvent>();
+        var buttonPressEvent = evnt.Reply.As<ButtonPressEvent>();
         x.SetInputFocusUnchecked(InputFocusMode.PointerRoot, buttonPressEvent.EventWindow, 0);
 
         // Update colors immediately
@@ -162,10 +162,10 @@ while (isRunning)
         }
 
     }
-    else if (evnt.ReplyType == EventType.Expose)
+    else if (evnt.Reply.ReplyType == EventType.Expose)
     {
         // Redraw window contents when exposed
-        var exposeEvent = evnt.As<ExposeEvent>();
+        var exposeEvent = evnt.Reply.As<ExposeEvent>();
         if (exposeEvent.Window == currentFocus)
         {
             ChangeWindowColor(x, exposeEvent.Window, colorFocused);
@@ -176,9 +176,9 @@ while (isRunning)
         }
 
     }
-    else if (evnt.ReplyType == EventType.MotionNotify)
+    else if (evnt.Reply.ReplyType == EventType.MotionNotify)
     {
-        var motionEvent = evnt.As<MotionNotifyEvent>();
+        var motionEvent = evnt.Reply.As<MotionNotifyEvent>();
         var poient = new Xcsb.Models.Point(
             (ushort)motionEvent.EventX,
             (ushort)motionEvent.EventY);
@@ -186,7 +186,7 @@ while (isRunning)
         if (motionEvent.Window == window1)
         {
             motionEvent.Window = window2;
-            x.SendEventUnchecked(true, window2, (uint)EventMask.PointerMotionMask, evnt.Event!.Value);
+            x.SendEventUnchecked(true, window2, (uint)EventMask.PointerMotionMask, evnt.Reply.Event!.Value);
         }
     }
 }

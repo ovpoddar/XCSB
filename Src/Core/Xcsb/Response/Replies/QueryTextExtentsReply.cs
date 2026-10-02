@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
@@ -6,7 +7,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct QueryTextExtentsReply : IXReply<QueryTextExtentsReply>
+public readonly struct QueryTextExtentsReply : IXReply<QueryTextExtentsReply,QueryTextExtentsReply>,IVerify
 {
     public readonly ResponseHeader<ResponseType, FontDraw> ResponseHeader;
     public readonly uint Length;
@@ -25,4 +26,8 @@ public readonly struct QueryTextExtentsReply : IXReply<QueryTextExtentsReply>
     }
 
     public readonly FontDraw FontDraw => ResponseHeader.GetValue();
+    public QueryTextExtentsReply FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<QueryTextExtentsReply>();
+    }
 }

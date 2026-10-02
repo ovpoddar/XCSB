@@ -1,11 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct GetPropertyReply
+public readonly struct GetPropertyReply:IXReply<GetPropertyReply,GetPropertyResponse>
 {
     public readonly ResponseType Reply;
     public readonly byte Format;
@@ -30,5 +31,10 @@ public readonly struct GetPropertyReply
             Data = response.Slice(cursor, length).ToArray();
         }
 
+    }
+
+    public GetPropertyReply FromBytes(Span<byte> response)
+    {
+        return new GetPropertyReply(response);
     }
 }

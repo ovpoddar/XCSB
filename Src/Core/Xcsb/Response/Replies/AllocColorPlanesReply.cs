@@ -2,12 +2,13 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public struct AllocColorPlanesReply
+public struct AllocColorPlanesReply: IXReply<AllocColorPlanesReply, AllocColorPlanesResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -33,5 +34,10 @@ public struct AllocColorPlanesReply
             Debug.Assert(cursor + length == response.Length);
             Pixels = MemoryMarshal.Cast<byte, uint>(response.Slice(cursor, length)).ToArray();
         }
+    }
+
+    public AllocColorPlanesReply FromBytes(Span<byte> response)
+    {
+        return new AllocColorPlanesReply(response);
     }
 }

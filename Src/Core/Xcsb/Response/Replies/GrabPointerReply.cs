@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
@@ -6,7 +7,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public readonly struct GrabPointerReply : IXReply<GrabPointerReply>
+public readonly struct GrabPointerReply : IXReply<GrabPointerReply, GrabPointerReply>, IVerify
 {
     public readonly ResponseHeader<ResponseType, GrabStatus> ResponseHeader;
     public readonly uint Length;
@@ -18,4 +19,8 @@ public readonly struct GrabPointerReply : IXReply<GrabPointerReply>
     }
 
     public GrabStatus Status => ResponseHeader.GetValue();
+    public GrabPointerReply FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<GrabPointerReply>();
+    }
 }

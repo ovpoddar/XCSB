@@ -22,4 +22,9 @@ public unsafe struct PropertyEvent : IXEvent<PropertyEvent>
     {
         throw new NotImplementedException();
     }
+
+    public PropertyEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

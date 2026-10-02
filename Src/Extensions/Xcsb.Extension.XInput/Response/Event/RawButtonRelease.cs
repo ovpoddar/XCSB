@@ -25,4 +25,9 @@ public struct RawButtonRelease: IXEvent<RawButtonRelease>
     {
         throw new NotImplementedException();
     }
+
+    public RawButtonRelease FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

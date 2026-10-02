@@ -29,4 +29,9 @@ public struct ButtonReleaseEvent : IXEvent<ButtonReleaseEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public ButtonReleaseEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ButtonReleaseEvent>();
+    }
 }

@@ -1,12 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public struct AllocColorCellsReply
+public struct AllocColorCellsReply : IXReply<AllocColorCellsReply, AllocColorCellsResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -29,5 +30,10 @@ public struct AllocColorCellsReply
         Masks = context.NumberOfMasks == 0
             ? []
             : MemoryMarshal.Cast<byte, ushort>(response[cursor..]).ToArray();
+    }
+
+    public AllocColorCellsReply FromBytes(Span<byte> response)
+    {
+        return new AllocColorCellsReply(response);
     }
 }

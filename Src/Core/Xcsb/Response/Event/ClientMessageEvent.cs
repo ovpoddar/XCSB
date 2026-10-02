@@ -22,4 +22,9 @@ public struct ClientMessageEvent : IXEvent<ClientMessageEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public ClientMessageEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ClientMessageEvent>();
+    }
 }

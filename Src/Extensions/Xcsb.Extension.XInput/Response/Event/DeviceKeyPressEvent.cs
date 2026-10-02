@@ -32,4 +32,9 @@ public readonly struct DeviceKeyPressEvent : IXEvent<DeviceKeyPressEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DeviceKeyPressEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

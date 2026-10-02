@@ -19,9 +19,13 @@ public struct SelectionNotifyEvent : IXEvent<SelectionNotifyEvent>
     public ref readonly SelectionNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<SelectionNotifyEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.SelectionNotify && result.ResponseHeader.GetValue() == 0||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.SelectionNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public SelectionNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<SelectionNotifyEvent>();
     }
 }

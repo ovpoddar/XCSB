@@ -34,4 +34,9 @@ public struct FocusIn : IXEvent<FocusIn>
     {
         throw new NotImplementedException();
     }
+
+    public FocusIn FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

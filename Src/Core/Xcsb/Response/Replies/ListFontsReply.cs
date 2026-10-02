@@ -2,12 +2,13 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct ListFontsReply
+public readonly struct ListFontsReply: IXReply<ListFontsReply, ListFontsResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -38,5 +39,10 @@ public readonly struct ListFontsReply
 
             Debug.Assert(i == context.NumberOfFonts);
         }
+    }
+
+    public ListFontsReply FromBytes(Span<byte> response)
+    {
+        return new ListFontsReply(response);
     }
 }

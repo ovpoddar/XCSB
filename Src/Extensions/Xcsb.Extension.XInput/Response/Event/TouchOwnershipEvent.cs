@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
@@ -24,5 +25,10 @@ public struct TouchOwnershipEvent : IXEvent<TouchOwnershipEvent>
     public ref readonly TouchOwnershipEvent Cast(Span<byte> response)
     {
         throw new NotImplementedException();
+    }
+
+    public TouchOwnershipEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<TouchOwnershipEvent>();
     }
 }

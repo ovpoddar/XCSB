@@ -1,13 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct ListPropertiesReply
+public readonly struct ListPropertiesReply:IXReply<ListPropertiesReply,ListPropertiesResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -27,5 +28,10 @@ public readonly struct ListPropertiesReply
             var length = context.NumberOfProperties * 4;
             Atoms = MemoryMarshal.Cast<byte, ATOM>(response.Slice(cursor, length)).ToArray();
         }
+    }
+
+    public ListPropertiesReply FromBytes(Span<byte> response)
+    {
+        return new ListPropertiesReply(response);
     }
 }

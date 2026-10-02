@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Contract;
@@ -12,6 +13,11 @@ public readonly struct NameError : IXError<NameError>
     public readonly uint BadValue;
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
+
+    public NameError FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<NameError>();
+    }
 
     public readonly string GetErrorMessage() =>
         "A font or color of the specified name does not exist.";

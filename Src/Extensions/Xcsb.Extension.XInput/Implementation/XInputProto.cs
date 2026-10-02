@@ -7,7 +7,9 @@ using Xcsb.Connection;
 using Xcsb.Connection.Handlers;
 using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Infrastructure.Exceptions;
+using Xcsb.Connection.Models;
 using Xcsb.Connection.Response;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Replies;
 using Xcsb.Extension.XInput.Infrastructure;
 using Xcsb.Extension.XInput.Infrastructure.VoidProto;
@@ -91,26 +93,41 @@ internal sealed partial class XInputProto : IXinputRequest
         extension.RegisterX2Event<BarrierLeave>(XiInputEventType.BarrierLeave, XInputExtension.ExtensionName);
     }
 
-    public GetExtensionVersionReply GetExtensionVersion(ReadOnlySpan<byte> name)
+    public ReplyLease<GetExtensionVersionReply> GetExtensionVersion(ReadOnlySpan<byte> name)
     {
         var cookie = GetExtensionVersionBase(name);
-        var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetExtensionVersionReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result.AsSpan().ToStruct<GetExtensionVersionReply>();
-    }
+        var (result, mapping) =
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetExtensionVersionReply,GetExtensionVersionReply>(cookie.Id);
+        // return error.HasValue
+        //     ? throw new XEventException(error.Value)
+        //     : result.AsSpan().ToStruct<GetExtensionVersionReply>();
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<GetExtensionVersionReply>(result, this._extensionInternal.Transport.SocketIn.BufferPool);
+        
+        var error = result.ToStruct<XResponse>();
+        this._extensionInternal.Transport.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
 
-    public ChangeDeviceControlReply ChangeDeviceControl(DeviceControl controlId, byte deviceId)
+    }
+    public ReplyLease<ChangeDeviceControlReply> ChangeDeviceControl(DeviceControl controlId, byte deviceId)
     {
         var cookie = ChangeDeviceControlBase(controlId, deviceId);
-        var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangeDeviceControlReply>(cookie.Id);
-        return error.HasValue
-            ? throw new XEventException(error.Value)
-            : result.AsSpan().AsStruct<ChangeDeviceControlReply>();
+        var (result, mapping) =
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangeDeviceControlReply,ChangeDeviceControlReply>(cookie.Id);
+        // return error.HasValue
+        //     ? throw new XEventException(error.Value)
+        //     : result.AsSpan().AsStruct<ChangeDeviceControlReply>();
+
+        if (mapping.ResponseType == XResponseType.Reply)
+            return new ReplyLease<ChangeDeviceControlReply>(result, this._extensionInternal.Transport.SocketIn.BufferPool);
+        
+        var error = result.ToStruct<XResponse>();
+        this._extensionInternal.Transport.SocketIn.BufferPool.Return(result);
+        throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
+
     }
 
+/*
     public ListInputDevicesReply ListInputDevices()
     {
         var cookie = ListInputDevicesBase();
@@ -125,7 +142,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = OpenDeviceBase(deviceId);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<OpenDeviceReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<OpenDeviceReply,OpenDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<OpenDeviceReply>();
@@ -135,7 +152,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = SetDeviceModeBase(deviceId, mode);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceModeReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceModeReply,SetDeviceModeReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<SetDeviceModeReply>();
@@ -177,7 +194,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = ChangeKeyboardDeviceBase(deviceId);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangeKeyboardDeviceReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangeKeyboardDeviceReply,ChangeKeyboardDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<ChangeKeyboardDeviceReply>();
@@ -187,7 +204,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = ChangePointerDeviceBase(xAxis, yAxis, deviceId);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangePointerDeviceReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangePointerDeviceReply,ChangePointerDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<ChangePointerDeviceReply>();
@@ -199,7 +216,7 @@ internal sealed partial class XInputProto : IXinputRequest
         var cookie = GrabDeviceBase(grabWindow, time, thisDeviceMode, otherDeviceMode, ownerEvents, deviceId,
             classes);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GrabDeviceReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GrabDeviceReply,GrabDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<GrabDeviceReply>();
@@ -209,7 +226,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = GetDeviceFocusBase(deviceId);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceFocusReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceFocusReply,GetDeviceFocusReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<GetDeviceFocusReply>();
@@ -250,7 +267,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = SetDeviceModifierMappingBase(deviceId, keycodesPerModifier);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceModifierMappingReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceModifierMappingReply,SetDeviceModifierMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<SetDeviceModifierMappingReply>();
@@ -260,7 +277,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = GetDeviceButtonMappingBase(deviceId);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceButtonMappingReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceButtonMappingReply,GetDeviceButtonMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<GetDeviceButtonMappingReply>();
@@ -270,7 +287,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = SetDeviceButtonMappingBase(deviceId, map);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceButtonMappingReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceButtonMappingReply,SetDeviceButtonMappingReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<SetDeviceButtonMappingReply>();
@@ -290,7 +307,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = SetDeviceValuatorsBase(deviceId, firstValuator, valuators);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceValuatorsReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<SetDeviceValuatorsReply,SetDeviceValuatorsReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<SetDeviceValuatorsReply>();
@@ -300,7 +317,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = GetDeviceControlBase(controlId, deviceId);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceControlReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDeviceControlReply,GetDeviceControlReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<GetDeviceControlReply>();
@@ -321,7 +338,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = GetDevicePropertyBase(property, type, offset, len, deviceId, delete);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDevicePropertyReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetDevicePropertyReply,GetDevicePropertyReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<GetDevicePropertyReply>();
@@ -341,7 +358,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = XiGetClientPointerBase(window);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetClientPointerReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetClientPointerReply,XiGetClientPointerReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<XiGetClientPointerReply>();
@@ -351,7 +368,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = XiQueryVersionBase(majorVersion, minorVersion);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiQueryVersionReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiQueryVersionReply,XiQueryVersionReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<XiQueryVersionReply>();
@@ -371,7 +388,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = XiGetFocusBase(deviceId);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetFocusReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetFocusReply,XiGetFocusReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<XiGetFocusReply>();
@@ -382,7 +399,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = XiGrabDeviceBase(window, time, cursor, deviceId, mode, pairedDeviceMode, ownerEvents, classes);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGrabDeviceReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGrabDeviceReply,XiGrabDeviceReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<XiGrabDeviceReply>();
@@ -416,7 +433,7 @@ internal sealed partial class XInputProto : IXinputRequest
     {
         var cookie = XiGetPropertyBase(deviceId, delete, property, type, offset, len);
         var (result, error) =
-            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetPropertyReply>(cookie.Id);
+            this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<XiGetPropertyReply,XiGetPropertyReply>(cookie.Id);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : result.AsSpan().AsStruct<XiGetPropertyReply>();
@@ -431,7 +448,7 @@ internal sealed partial class XInputProto : IXinputRequest
             ? throw new XEventException(error.Value)
             : new XiGetSelectedEventsReply(result);
     }
-
+*/
     private ResponseProto CloseDeviceBase(byte deviceId)
     {
         var request = new CloseDeviceType(this._response.MajorOpcode, deviceId);

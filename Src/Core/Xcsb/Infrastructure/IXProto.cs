@@ -23,8 +23,8 @@ public interface IXProto : IResponseProto, IResponseProtoAsync, IVoidProto, IVoi
     /// specific type of event received. A <c>LastEvent</c> instance indicates the end of the event  
     /// stream, which typically means the X server connection has been closed.
     /// </remarks>
-    XEvent GetEvent();
-    Task<XEvent> GetEventAsync(CancellationToken token = default);
+    ReplyLease GetEvent();
+    ValueTask<ReplyLease> GetEventAsync(CancellationToken token = default);
     bool IsEventAvailable();
     void WaitForEvent();
     GenericError? CheckResponseProtoResult(ResponseProto response);

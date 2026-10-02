@@ -17,9 +17,13 @@ public struct CirculateRequestEvent : IXEvent<CirculateRequestEvent>
     public ref readonly CirculateRequestEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<CirculateRequestEvent>();
-        if (result.ResponseHeader.Reply != ResponseType.CirculateRequest && result.ResponseHeader.GetValue() == 0 &&
-            result._pad1 == 0 || response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.CirculateRequest || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public CirculateRequestEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<CirculateRequestEvent>();
     }
 }

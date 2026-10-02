@@ -1,11 +1,12 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-public struct CreateNotifyEvent
+public struct CreateNotifyEvent : IXEvent<CreateNotifyEvent>
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public uint Parent;
@@ -23,5 +24,10 @@ public struct CreateNotifyEvent
     {
         return ResponseHeader.Reply == ResponseType.CreateNotify && //this.ResponseHeader.Sequence == sequence &&
                ResponseHeader.GetValue() == 0;
+    }
+
+    public CreateNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<CreateNotifyEvent>();
     }
 }

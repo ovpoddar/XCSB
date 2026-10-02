@@ -1,13 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct GetMotionEventsReply
+public readonly struct GetMotionEventsReply:IXReply<GetMotionEventsReply, GetMotionEventsResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -27,5 +28,10 @@ public readonly struct GetMotionEventsReply
             var length = (int)context.NumberOfEvents * 8;
             Events = MemoryMarshal.Cast<byte, TimeCoord>(response[cursor..length]).ToArray();
         }
+    }
+
+    public GetMotionEventsReply FromBytes(Span<byte> response)
+    {
+        return new GetMotionEventsReply(response);
     }
 }

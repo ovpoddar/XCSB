@@ -21,4 +21,9 @@ public struct ChangeDeviceNotifyEvent : IXEvent<ChangeDeviceNotifyEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public ChangeDeviceNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ChangeDeviceNotifyEvent>();
+    }
 }

@@ -6,7 +6,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 60)]
-internal readonly struct QueryFontResponse : IXReply<QueryFontResponse>
+internal readonly struct QueryFontResponse : IVerify
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

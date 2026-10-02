@@ -55,4 +55,9 @@ public unsafe struct DeviceStateNotifyEvent : IXEvent<DeviceStateNotifyEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DeviceStateNotifyEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

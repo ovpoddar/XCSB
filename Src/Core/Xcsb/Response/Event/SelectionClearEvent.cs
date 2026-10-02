@@ -17,9 +17,13 @@ public struct SelectionClearEvent : IXEvent<SelectionClearEvent>
     public ref readonly SelectionClearEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<SelectionClearEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.SelectionClear && result.ResponseHeader.GetValue() == 0||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.SelectionClear || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public SelectionClearEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<SelectionClearEvent>();
     }
 }

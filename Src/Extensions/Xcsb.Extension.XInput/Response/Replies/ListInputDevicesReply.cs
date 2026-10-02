@@ -3,13 +3,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 using Xcsb.Extension.XInput.Response.Replies.Internals;
 using Xcsb.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-public struct ListInputDevicesReply
+public struct ListInputDevicesReply : IXReply<ListInputDevicesReply, ListInputDevicesResponse>
 {
     public readonly byte DevicesLength;
     public readonly DeviceInfo[] DeviceInfos;
@@ -51,6 +52,16 @@ public struct ListInputDevicesReply
                 : Encoding.ASCII.GetString(data.Slice(readIndex, nullbyte));
             readIndex += nullbyte;
         }
+    }
+
+    public bool Verify(in int sequence)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ListInputDevicesReply FromBytes(Span<byte> response)
+    {
+        return new ListInputDevicesReply(response);
     }
 }
 

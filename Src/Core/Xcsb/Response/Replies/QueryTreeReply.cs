@@ -1,12 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct QueryTreeReply
+public readonly struct QueryTreeReply : IXReply<QueryTreeReply, QueryTreeResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -30,5 +31,10 @@ public readonly struct QueryTreeReply
             var responseSize = Unsafe.SizeOf<QueryTreeResponse>();
             WindowChildren = MemoryMarshal.Cast<byte, uint>(response[responseSize..]).ToArray();
         }
+    }
+
+    public QueryTreeReply FromBytes(Span<byte> response)
+    {
+        return new QueryTreeReply(response);
     }
 }

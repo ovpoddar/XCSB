@@ -21,9 +21,13 @@ public struct GraphicsExposeEvent : IXEvent<GraphicsExposeEvent>
     public ref readonly GraphicsExposeEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<GraphicsExposeEvent>();
-        if (result.ResponseHeader.Reply != ResponseType.GraphicsExpose && result.ResponseHeader.GetValue() == 0 ||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.GraphicsExpose || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public GraphicsExposeEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<GraphicsExposeEvent>();
     }
 }

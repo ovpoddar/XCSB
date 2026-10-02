@@ -15,9 +15,13 @@ public struct DestroyNotifyEvent : IXEvent<DestroyNotifyEvent>
     public ref readonly DestroyNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<DestroyNotifyEvent>();
-        if (result.ResponseHeader.Reply != ResponseType.DestroyNotify && result.ResponseHeader.GetValue() == 0
-            || response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.DestroyNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public DestroyNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<DestroyNotifyEvent>();
     }
 }

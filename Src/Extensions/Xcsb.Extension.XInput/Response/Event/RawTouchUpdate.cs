@@ -26,4 +26,9 @@ public struct RawTouchUpdate : IXEvent<RawTouchUpdate>
     {
         throw new NotImplementedException();
     }
+
+    public RawTouchUpdate FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

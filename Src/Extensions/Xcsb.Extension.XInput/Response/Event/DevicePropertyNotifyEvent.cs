@@ -25,4 +25,9 @@ public unsafe struct DevicePropertyNotifyEvent : IXEvent<DevicePropertyNotifyEve
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DevicePropertyNotifyEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

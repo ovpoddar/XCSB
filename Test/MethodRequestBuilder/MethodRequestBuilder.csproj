@@ -10,7 +10,7 @@
     <IsTestProject>true</IsTestProject>
     <Extra Condition="$(DOCKER) != ''"> -p:DefineConstants=DOCKERENV</Extra>
     <GenerateBaseCmd>dotnet run ToolsXProtoMethodBuilder.cs$(Extra)</GenerateBaseCmd>
-    <GenerateInputCmd>dotnet run ToolsXInputMethodBuilder.cs$(Extra)</GenerateInputCmd>
+<!--    <GenerateInputCmd>dotnet run ToolsXInputMethodBuilder.cs$(Extra)</GenerateInputCmd>-->
   </PropertyGroup>
 
   <ItemGroup>

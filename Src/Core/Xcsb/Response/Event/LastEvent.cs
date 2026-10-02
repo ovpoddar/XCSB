@@ -15,8 +15,13 @@ public readonly struct LastEvent() : IXEvent<LastEvent>
     public ref readonly LastEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<LastEvent>();
-        if (result.Reply == EventType.LastEvent || response.Length != 32)
+            if (result.Reply != EventType.LastEvent || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public LastEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<LastEvent>();
     }
 }

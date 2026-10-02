@@ -2,12 +2,13 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 using Xcsb.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-public struct XiPassiveGrabDeviceReply
+public struct XiPassiveGrabDeviceReply: IXReply<XiPassiveGrabDeviceReply, XiPassiveGrabDeviceResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -25,5 +26,15 @@ public struct XiPassiveGrabDeviceReply
             var responseSize = Unsafe.SizeOf<XiPassiveGrabDeviceResponse>();
             Modifier = MemoryMarshal.Cast<byte, GrabModifierInfo>(result[responseSize..]).ToArray();
         }
+    }
+
+    public bool Verify(in int sequence)
+    {
+        throw new NotImplementedException();
+    }
+
+    public XiPassiveGrabDeviceReply FromBytes(Span<byte> response)
+    {
+        return new XiPassiveGrabDeviceReply(response);
     }
 }

@@ -27,4 +27,9 @@ public struct DeviceFocusInEvent : IXEvent<DeviceFocusInEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DeviceFocusInEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

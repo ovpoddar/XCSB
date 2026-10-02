@@ -25,8 +25,13 @@ public struct MotionNotifyEvent : IXEvent<MotionNotifyEvent>
     public ref readonly MotionNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<MotionNotifyEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.MotionNotify || response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.MotionNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public MotionNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<MotionNotifyEvent>();
     }
 }

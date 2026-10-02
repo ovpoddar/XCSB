@@ -21,23 +21,23 @@ x.CreateWindowUnchecked(screen.RootDepth!.DepthValue,
     0, []);
 x.MapWindowUnchecked(win);
 
-var alloc_cookie = x.AllocColor(screen.DefaultColormap, 65535, 0, 0); // Red
-Console.WriteLine("Allocated red color, Pixel value: {0}", alloc_cookie.Pixel);
+using var alloc_cookie = x.AllocColor(screen.DefaultColormap, 65535, 0, 0); // Red
+Console.WriteLine("Allocated red color, Pixel value: {0}", alloc_cookie.Reply.Pixel);
 
-var color2 = await x.AllocColorAsync(screen.DefaultColormap, 65535, 0, 0);
-Console.WriteLine("Allocated red color, Pixel value: {0}", color2.Pixel);
+using var color2 = await x.AllocColorAsync(screen.DefaultColormap, 65535, 0, 0);
+Console.WriteLine("Allocated red color, Pixel value: {0}", color2.Reply.Pixel);
 
 // Free the color
-x.FreeColorsUnchecked(screen.DefaultColormap, 0, [alloc_cookie.Pixel]);
+x.FreeColorsUnchecked(screen.DefaultColormap, 0, [alloc_cookie.Reply.Pixel]);
 Console.WriteLine("Color freed successfully");
 
-var grabResult = x.GrabPointer(false,
+using var grabResult = x.GrabPointer(false,
     screen.Root,
     64,
     GrabMode.Asynchronous, GrabMode.Asynchronous,
     0, 0, 0);
 
-Console.WriteLine($"Grab status {grabResult.Status}");
+Console.WriteLine($"Grab status {grabResult.Reply.Status}");
 
 x.UngrabPointerUnchecked(0);
 Console.WriteLine("Ungrab pointer completed.");
@@ -57,24 +57,26 @@ var atoms = new ATOM[3];
 for (var i = 0; i < colors.Length; i++)
 {
     var reply = x.InternAtom(false, propNames[i]);
-    atoms[i] = reply.Atom;
+    atoms[i] = reply.Reply.Atom;
     x.ChangePropertyUnchecked<byte>(PropertyMode.Replace, win, atoms[i], ATOM.String, Encoding.UTF8.GetBytes(colors[i]));
+    reply.Dispose();
 }
 
 foreach (var atom in atoms)
 {
-    var details = x.GetAtomName(atom);
-    Console.WriteLine($"{atom}: {details.Name}");
+    using var details = x.GetAtomName(atom);
+    Console.WriteLine($"{atom}: {details.Reply.Name}");
 }
 
 
 for (var i = 0; i < 6; i++)
 {
     var reply = x.GetProperty(false, win, atoms[0], ATOM.String, 0, 32);
-    if (reply.Data.Length > 0)
+    if (reply.Reply.Data.Length > 0)
     {
-        x.ChangeWindowAttributesUnchecked(win, ValueMask.BackgroundPixel, [(GetNameColor(reply.Data, screen))]);
+        x.ChangeWindowAttributesUnchecked(win, ValueMask.BackgroundPixel, [(GetNameColor(reply.Reply.Data, screen))]);
         x.ClearAreaUnchecked(false, win, 0, 0, 0, 0);
+        reply.Dispose();
     }
 
     x.RotatePropertiesUnchecked(win, 1, atoms);

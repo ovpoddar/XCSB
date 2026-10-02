@@ -22,4 +22,9 @@ public unsafe struct HierarchyEvent : IXEvent<HierarchyEvent>
     {
         throw new NotImplementedException();
     }
+
+    public HierarchyEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

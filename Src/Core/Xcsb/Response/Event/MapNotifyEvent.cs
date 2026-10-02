@@ -16,9 +16,13 @@ public struct MapNotifyEvent : IXEvent<MapNotifyEvent>
     public ref readonly MapNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<MapNotifyEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.MapNotify && result.ResponseHeader.GetValue() == 0 ||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.MapNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public MapNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<MapNotifyEvent>();
     }
 }

@@ -17,9 +17,13 @@ public struct PropertyNotifyEvent : IXEvent<PropertyNotifyEvent>
     public ref readonly PropertyNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<PropertyNotifyEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.PropertyNotify && result.ResponseHeader.GetValue() == 0||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.PropertyNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public PropertyNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<PropertyNotifyEvent>();
     }
 }

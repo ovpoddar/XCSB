@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Response.Contract;
@@ -7,7 +8,7 @@ namespace Xcsb.Extension.XInput.Response.Replies;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public readonly struct GetDeviceFocusReply : IXReply<GetDeviceFocusReply>
+public readonly struct GetDeviceFocusReply : IXReply<GetDeviceFocusReply, GetDeviceFocusReply>, IVerify
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
@@ -18,5 +19,10 @@ public readonly struct GetDeviceFocusReply : IXReply<GetDeviceFocusReply>
     public bool Verify(in int sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
+    }
+
+    public GetDeviceFocusReply FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
     }
 }

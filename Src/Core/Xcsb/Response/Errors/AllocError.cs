@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Contract;
@@ -12,6 +13,11 @@ public readonly struct AllocError : IXError<AllocError>
     public readonly uint BadValue;
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
+
+    public AllocError FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<AllocError>();
+    }
 
     public readonly string GetErrorMessage() =>
         """

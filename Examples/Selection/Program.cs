@@ -6,8 +6,8 @@ using var connection = XcsbClient.Connect();
 var x = connection.Initialized();
 var root = connection.HandshakeSuccessResponseBody.Screens[0].Root;
  x.SetSelectionOwnerChecked(root, ATOM.Primary, 0);
-var owner = x.GetSelectionOwner(ATOM.Primary);
-Console.WriteLine($"{owner.Owner} == {root} ");
+using var owner = x.GetSelectionOwner(ATOM.Primary);
+Console.WriteLine($"{owner.Reply.Owner} == {root} ");
 
-var resultListInstalledColormaps = x.ListInstalledColormaps(connection.NewId());
-Console.WriteLine(string.Join(", ", resultListInstalledColormaps.Colormap));
+using var resultListInstalledColormaps = x.ListInstalledColormaps(connection.NewId());
+Console.WriteLine(string.Join(", ", resultListInstalledColormaps.Reply.Colormap));

@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
@@ -25,8 +26,10 @@ public struct BarrierLeave : IXEvent<BarrierLeave>
     public readonly uint RootY;
     public readonly Fp3232 DX;
     public readonly Fp3232 DY;
-    public ref readonly BarrierLeave Cast(Span<byte> response)
+    
+
+    public BarrierLeave FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<BarrierLeave>();
     }
 }

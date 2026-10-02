@@ -1,12 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public struct GetModifierMappingReply
+public struct GetModifierMappingReply:IXReply<GetModifierMappingReply, GetModifierMappingResponse>
 {
     public readonly ResponseType Reply;
     public byte KeycodesPerModifier;
@@ -27,5 +28,10 @@ public struct GetModifierMappingReply
             var length = KeycodesPerModifier * 8;
             Keycodes = MemoryMarshal.Cast<byte, ulong>(response[cursor..length]).ToArray();
         }
+    }
+
+    public GetModifierMappingReply FromBytes(Span<byte> response)
+    {
+        return new GetModifierMappingReply(response);
     }
 }

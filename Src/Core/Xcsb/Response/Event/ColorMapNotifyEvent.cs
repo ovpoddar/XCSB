@@ -22,4 +22,9 @@ public struct ColorMapNotifyEvent : IXEvent<ColorMapNotifyEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public ColorMapNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ColorMapNotifyEvent>();
+    }
 }

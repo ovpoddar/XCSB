@@ -1,12 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct GetKeyboardMappingReply
+public readonly struct GetKeyboardMappingReply:IXReply<GetKeyboardMappingReply,GetKeyboardMappingResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -37,5 +38,10 @@ public readonly struct GetKeyboardMappingReply
             // for (var i = 0; i < count; i++)
             //     Keysyms[i] = MemoryMarshal.Cast<byte, uint>(buffer.Slice(i * (KeyPerKeyCode * 4), KeyPerKeyCode * 4)).ToArray();
         }
+    }
+
+    public GetKeyboardMappingReply FromBytes(Span<byte> response)
+    {
+        return new GetKeyboardMappingReply();
     }
 }

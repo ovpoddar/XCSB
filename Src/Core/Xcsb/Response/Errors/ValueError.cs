@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Contract;
@@ -12,6 +13,11 @@ public readonly struct ValueError : IXError<ValueError>
     public readonly uint BadValue;
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
+
+    public ValueError FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ValueError>();
+    }
 
     public readonly string GetErrorMessage() =>
         """

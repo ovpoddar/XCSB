@@ -15,9 +15,13 @@ public struct MapRequestEvent : IXEvent<MapRequestEvent>
     public ref readonly MapRequestEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<MapRequestEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.MapRequest && result.ResponseHeader.GetValue() == 0 ||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.MapRequest || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public MapRequestEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<MapRequestEvent>();
     }
 }

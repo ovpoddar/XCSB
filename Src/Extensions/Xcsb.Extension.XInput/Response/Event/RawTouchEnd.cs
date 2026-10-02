@@ -25,4 +25,9 @@ public struct RawTouchEnd : IXEvent<RawTouchEnd>
     {
         throw new NotImplementedException();
     }
+
+    public RawTouchEnd FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

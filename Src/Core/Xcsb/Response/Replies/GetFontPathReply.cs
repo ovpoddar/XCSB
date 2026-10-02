@@ -2,12 +2,13 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public struct GetFontPathReply
+public struct GetFontPathReply: IXReply<GetFontPathReply, GetFontPathResponse>
 {
     public ResponseType Reply;
     public ushort Sequence;
@@ -39,5 +40,10 @@ public struct GetFontPathReply
 
             Debug.Assert(i == context.StringLength);
         }
+    }
+
+    public GetFontPathReply FromBytes(Span<byte> response)
+    {
+        return new GetFontPathReply(response);
     }
 }

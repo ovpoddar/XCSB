@@ -25,11 +25,16 @@ public readonly struct DeviceButtonReleaseEvent : IXEvent<DeviceButtonReleaseEve
     public readonly byte DeviceId;
 
     public bool SameScreen => this._sameScreen == 1;
-    public ref readonly DeviceButtonReleaseEvent Cast(Span<byte> response)
+    // public ref readonly DeviceButtonReleaseEvent Cast(Span<byte> response)
+    // {
+    //     ref readonly var result = ref response.AsStruct<DeviceButtonReleaseEvent>();
+    //     if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceButtonRelease || response.Length != 32)
+    //         throw new Exception("Invalid response");
+    //     return ref result;
+    // }
+
+    public DeviceButtonReleaseEvent FromBytes(Span<byte> response)
     {
-        ref readonly var result = ref response.AsStruct<DeviceButtonReleaseEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceButtonRelease || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
+        return response.ToStruct<DeviceButtonReleaseEvent>();
     }
 }

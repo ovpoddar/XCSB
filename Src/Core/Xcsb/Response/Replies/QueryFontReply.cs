@@ -1,13 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public struct QueryFontReply
+public struct QueryFontReply : IXReply<QueryFontReply, QueryFontResponse>
 {
     public ResponseType Reply;
     public ushort Sequence;
@@ -56,5 +57,10 @@ public struct QueryFontReply
             var length = (int)context.InfoLenght * 12;
             CharInfo = MemoryMarshal.Cast<byte, CharInfo>(response.Slice(cursor, length)).ToArray();
         }
+    }
+
+    public QueryFontReply FromBytes(Span<byte> response)
+    {
+        return new QueryFontReply(response);
     }
 }

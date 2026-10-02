@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Contract;
@@ -12,6 +13,11 @@ public readonly struct AccessError : IXError<AccessError>
     public readonly uint BadValue;
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
+
+    public AccessError FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<AccessError>();
+    }
 
     public readonly string GetErrorMessage() =>
         """

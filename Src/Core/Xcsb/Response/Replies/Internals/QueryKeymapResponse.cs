@@ -5,7 +5,7 @@ using Xcsb.Response.Contract;
 namespace Xcsb.Response.Replies.Internals;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 40)]
-internal unsafe struct QueryKeymapResponse : IXReply<QueryKeymapResponse>
+internal unsafe struct QueryKeymapResponse : IVerify
 {
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;

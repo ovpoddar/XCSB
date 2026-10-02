@@ -32,4 +32,9 @@ public readonly struct ProximityInEvent : IXEvent<ProximityInEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public ProximityInEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

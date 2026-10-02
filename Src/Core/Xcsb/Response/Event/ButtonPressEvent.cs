@@ -32,4 +32,9 @@ public struct ButtonPressEvent : IXEvent<ButtonPressEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public ButtonPressEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ButtonPressEvent>();
+    }
 }

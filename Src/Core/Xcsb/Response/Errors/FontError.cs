@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Models.TypeInfo;
 using Xcsb.Response.Contract;
@@ -12,6 +13,11 @@ public readonly struct FontError : IXError<FontError>
     public readonly uint BadResourceId;
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
+
+    public FontError FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<FontError>();
+    }
 
     public readonly string GetErrorMessage() =>
         """

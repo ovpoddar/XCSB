@@ -32,4 +32,9 @@ public unsafe struct DeviceValuatorEvent : IXEvent<DeviceValuatorEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DeviceValuatorEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

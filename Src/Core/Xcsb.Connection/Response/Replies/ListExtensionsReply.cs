@@ -2,11 +2,12 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Connection.Response.Replies.Internals;
 
 namespace Xcsb.Connection.Response.Replies;
 
-public readonly struct ListExtensionsReply
+public readonly struct ListExtensionsReply : IXReply<ListExtensionsReply, ListExtensionsResponse>
 {
     public readonly byte Reply;
     public readonly ushort Sequence;
@@ -38,5 +39,10 @@ public readonly struct ListExtensionsReply
 
             Debug.Assert(i == context.ResponseHeader.GetValue());
         }
+    }
+    
+    public ListExtensionsReply FromBytes(Span<byte> response)
+    {
+        return new ListExtensionsReply(response);
     }
 }

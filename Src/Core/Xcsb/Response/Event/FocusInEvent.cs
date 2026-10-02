@@ -20,4 +20,9 @@ public struct FocusInEvent : IXEvent<FocusInEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public FocusInEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<FocusInEvent>();
+    }
 }

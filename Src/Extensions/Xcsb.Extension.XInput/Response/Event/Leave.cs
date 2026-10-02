@@ -34,4 +34,9 @@ public struct Leave : IXEvent<Leave>
     {
         throw new NotImplementedException();
     }
+
+    public Leave FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

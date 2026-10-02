@@ -14,8 +14,13 @@ public unsafe struct KeymapNotifyEvent : IXEvent<KeymapNotifyEvent>
     public ref readonly KeymapNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<KeymapNotifyEvent>();
-        if (result.Reply == ResponseType.KeymapNotify || response.Length != 32)
+            if (result.Reply != ResponseType.KeymapNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public KeymapNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<KeymapNotifyEvent>();
     }
 }

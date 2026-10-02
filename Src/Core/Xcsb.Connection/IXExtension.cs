@@ -1,9 +1,10 @@
-﻿using Xcsb.Connection.Response.Replies;
+﻿using Xcsb.Connection.Models;
+using Xcsb.Connection.Response.Replies;
 
 namespace Xcsb.Connection;
 
 public interface IXExtension
 {
-    QueryExtensionReply QueryExtension(ReadOnlySpan<byte> name);
-    ListExtensionsReply ListExtensions();
+    ReplyLease<QueryExtensionReply> QueryExtension(ReadOnlySpan<byte> name);
+    ReplyLease<ListExtensionsReply> ListExtensions();
 }

@@ -1,13 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct QueryColorsReply
+public readonly struct QueryColorsReply: IXReply<QueryColorsReply, QueryColorsResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -26,5 +27,10 @@ public readonly struct QueryColorsReply
             var length = context.NumberOfColors * Unsafe.SizeOf<Pixel>();
             Colors = MemoryMarshal.Cast<byte, Pixel>(response.Slice(cursor, length)).ToArray();
         }
+    }
+
+    public QueryColorsReply FromBytes(Span<byte> response)
+    {
+        return new QueryColorsReply(response);
     }
 }

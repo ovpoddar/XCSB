@@ -1,12 +1,13 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct ListFontsWithInfoReply
+public readonly struct ListFontsWithInfoReply : IXReply<ListFontsWithInfoReply, ListFontsWithInfoResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -27,7 +28,6 @@ public readonly struct ListFontsWithInfoReply
 
     internal ListFontsWithInfoReply(ref readonly ListFontsWithInfoResponse response, Span<byte> buffer)
     {
-
         Reply = (ResponseType)response.ResponseHeader.Reply;
         Sequence = response.ResponseHeader.Sequence;
         MinBounds = response.MinBounds;
@@ -58,5 +58,10 @@ public readonly struct ListFontsWithInfoReply
         {
             Name = Encoding.UTF8.GetString(buffer.Slice(cursor, response.NameLength));
         }
+    }
+
+    public ListFontsWithInfoReply FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -35,17 +35,17 @@ var gc = con.NewId();
 client.CreateGcUnchecked(gc, window, Xcsb.Masks.GcMask.Foreground | Xcsb.Masks.GcMask.Background, [screen.WhitePixel, screen.BlackPixel]);
 while (isRunning)
 {
-    var evnt = client.GetEvent();
-    if (evnt.ReplyType == EventType.LastEvent)
+    using var evnt = client.GetEvent();
+    if (evnt.Reply.ReplyType == EventType.LastEvent)
     {
         isRunning = false;
         return;
     }
 
-    if (evnt.Error.HasValue)
+    if (evnt.Reply.Error.HasValue)
         isRunning = false;
 
-    Console.WriteLine(evnt.ReplyType);
+    Console.WriteLine(evnt.Reply.ReplyType);
     client.PolyLineUnchecked(0, window, gc, [
         new(10, 10),
         new(1430, 10),

@@ -18,9 +18,13 @@ public struct UnMapNotifyEvent : IXEvent<UnMapNotifyEvent>
     public ref readonly UnMapNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<UnMapNotifyEvent>();
-        if (result.ResponseHeader.Reply == ResponseType.UnMapNotify && result.ResponseHeader.GetValue() == 0||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.UnMapNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public UnMapNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<UnMapNotifyEvent>();
     }
 }

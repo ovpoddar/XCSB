@@ -35,4 +35,9 @@ public struct EnterEvent : IXEvent<EnterEvent>
     {
         throw new NotImplementedException();
     }
+
+    public EnterEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -1,12 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct GetAtomNameReply
+public readonly struct GetAtomNameReply: IXReply<GetAtomNameReply, GetAtomNameResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
@@ -25,5 +26,10 @@ public readonly struct GetAtomNameReply
             var cursor = Unsafe.SizeOf<GetAtomNameResponse>();
             Name = Encoding.ASCII.GetString(response.Slice(cursor, context.LengthOfName).ToArray());
         }
+    }
+
+    public GetAtomNameReply FromBytes(Span<byte> response)
+    {
+        return new GetAtomNameReply(response);
     }
 }

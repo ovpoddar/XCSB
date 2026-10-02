@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
@@ -32,8 +34,9 @@ public struct ButtonRelease: IXEvent<ButtonRelease>
     public readonly uint[] Valuators;
     public readonly Fp3232[] AxisValues;
 
-    public ref readonly ButtonRelease Cast(Span<byte> response)
+    public ButtonRelease FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        Debugger.Break();
+        return response.ToStruct<ButtonRelease>();
     }
 }

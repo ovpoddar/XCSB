@@ -4,9 +4,9 @@ using Xcsb.Models;
 using Xcsb.Response.Contract;
 
 namespace Xcsb.Response.Replies.Internals;
-
+//dont want it
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 52)]
-internal unsafe struct GetKeyboardControlResponse : IXReply<GetKeyboardControlResponse>
+internal unsafe struct GetKeyboardControlResponse :IVerify
 {
     public readonly ResponseHeader<ResponseType, AutoRepeatMode> ResponseHeader;
     public readonly uint Length;

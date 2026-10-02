@@ -12,20 +12,20 @@ using var connection = XcsbClient.Connect();
 var xcsb = connection.Initialized();
 var window = connection.NewId();
 var screen = connection.HandshakeSuccessResponseBody.Screens[0];
-var extensations = connection.Extension.ListExtensions();
+using var extensations = connection.Extension.ListExtensions();
 Console.Write("available extensions: ");
-foreach (var extensation in extensations.Names)
+foreach (var extensation in extensations.Reply.Names)
     Console.WriteLine($"    {extensation}");
 
-var extension = connection.Extension.QueryExtension(Encoding.UTF8.GetBytes(extensations.Names[5]));
-Console.WriteLine(extension.FirstEvent);
+using var extension = connection.Extension.QueryExtension(Encoding.UTF8.GetBytes(extensations.Reply.Names[5]));
+Console.WriteLine(extension.Reply.FirstEvent);
 
-var rootProprityes = xcsb.ListProperties(screen.Root);
+using var rootProprityes = xcsb.ListProperties(screen.Root);
 Console.Write("root properties: ");
-foreach (var atom in rootProprityes.Atoms)
+foreach (var atom in rootProprityes.Reply.Atoms)
 {
     var atomName = xcsb.GetAtomName(atom);
-    Console.WriteLine(atomName.Name);
+    Console.WriteLine(atomName.Reply.Name);
 }
 
 xcsb.CreateWindowUnchecked(screen.RootDepth.DepthValue,
@@ -67,16 +67,16 @@ var isRunning = true;
 
 while (isRunning)
 {
-    var evnt = xcsb.GetEvent();
-    if (evnt.ReplyType == EventType.LastEvent) return;
+    using var evnt = xcsb.GetEvent();
+    if (evnt.Reply.ReplyType == EventType.LastEvent) return;
 
-    if (evnt.Error.HasValue)
+    if (evnt.Reply.Error.HasValue)
     {
-        Console.WriteLine(evnt.Error.Value.Message);
+        Console.WriteLine(evnt.Reply.Error.Value.Message);
         isRunning = false;
     }
 
-    if (evnt.ReplyType == EventType.Expose)
+    if (evnt.Reply.ReplyType == EventType.Expose)
     {
         xcsb.PutImageUnchecked(ImageFormatBitmap.ZPixmap,
             window,
@@ -128,7 +128,7 @@ while (isRunning)
             300, 0, 300, (HEIGHT * 2) + 10, WIDTH, HEIGHT, 4);
 
 
-        var image = xcsb.GetImage(ImageFormat.ZPixmap, window, 300, 0, WIDTH, HEIGHT, uint.MaxValue);
-        Console.WriteLine($"First pixels {image.Data[100]} {image.Data[101]} {image.Data[102]} {image.Data[103]}");
+        using var image = xcsb.GetImage(ImageFormat.ZPixmap, window, 300, 0, WIDTH, HEIGHT, uint.MaxValue);
+        Console.WriteLine($"First pixels {image.Reply.Data[100]} {image.Reply.Data[101]} {image.Reply.Data[102]} {image.Reply.Data[103]}");
     }
 }

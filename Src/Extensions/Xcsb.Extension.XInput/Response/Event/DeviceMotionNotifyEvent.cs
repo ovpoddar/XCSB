@@ -33,4 +33,9 @@ public readonly struct DeviceMotionNotifyEvent : IXEvent<DeviceMotionNotifyEvent
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public DeviceMotionNotifyEvent FromBytes(Span<byte> response)
+    {
+        throw new NotImplementedException();
+    }
 }

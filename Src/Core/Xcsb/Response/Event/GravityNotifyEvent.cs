@@ -17,9 +17,13 @@ public struct GravityNotifyEvent : IXEvent<GravityNotifyEvent>
     public ref readonly GravityNotifyEvent Cast(Span<byte> response)
     {
         ref readonly var result = ref response.AsStruct<GravityNotifyEvent>();
-        if (result.ResponseHeader.Reply != ResponseType.GravityNotify && result.ResponseHeader.GetValue() == 0 ||
-            response.Length != 32)
+            if (result.ResponseHeader.Reply != ResponseType.GravityNotify || response.Length != 32)
             throw new Exception("Invalid response");
         return ref result;
+    }
+
+    public GravityNotifyEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<GravityNotifyEvent>();
     }
 }

@@ -2,18 +2,19 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
 namespace Xcsb.Extension.XInput.Response.Replies;
 
-public struct GetDeviceKeyMappingReply
+public struct GetDeviceKeyMappingReply : IXReply<GetDeviceKeyMappingReply, GetDeviceKeyMappingResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;
     public readonly byte ReplyType;
     public readonly uint[] Keysyms;
 
-    public GetDeviceKeyMappingReply(Span<byte> result)
+    internal GetDeviceKeyMappingReply(Span<byte> result)
     {
         ref readonly var response = ref result.AsStruct<GetDeviceKeyMappingResponse>();
         Reply = response.ResponseHeader.Reply;
@@ -27,5 +28,15 @@ public struct GetDeviceKeyMappingReply
             var requestLength = Unsafe.SizeOf<GetDeviceKeyMappingResponse>();
             Keysyms = MemoryMarshal.Cast<byte, uint>(result[requestLength..]).ToArray();
         }
+    }
+
+    public bool Verify(in int sequence)
+    {
+        throw new NotImplementedException();
+    }
+
+    public GetDeviceKeyMappingReply FromBytes(Span<byte> response)
+    {
+        return new GetDeviceKeyMappingReply(response);
     }
 }

@@ -26,4 +26,9 @@ public struct ConfigureRequestEvent : IXEvent<ConfigureRequestEvent>
             throw new Exception("Invalid response");
         return ref result;
     }
+
+    public ConfigureRequestEvent FromBytes(Span<byte> response)
+    {
+        return response.ToStruct<ConfigureRequestEvent>();
+    }
 }
