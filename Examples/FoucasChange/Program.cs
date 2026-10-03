@@ -165,7 +165,7 @@ while (isRunning)
     else if (evnt.Reply.ReplyType == EventType.Expose)
     {
         // Redraw window contents when exposed
-        var exposeEvent = evnt.Reply.As<ExposeEvent>();
+        ref readonly var exposeEvent = ref evnt.Reply.As<ExposeEvent>();
         if (exposeEvent.Window == currentFocus)
         {
             ChangeWindowColor(x, exposeEvent.Window, colorFocused);

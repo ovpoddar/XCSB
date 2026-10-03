@@ -22,15 +22,15 @@ public readonly struct XEvent
 
     public ref readonly T As<T>() where T : struct
     {
-        if (!RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>()) 
             throw new NotSupportedException();
         return ref _response.AsStruct<T>();
     }
 
     public readonly T AsView<T>() where T : struct, IXBaseResponse<T> =>
         RuntimeHelpers.IsReferenceOrContainsReferences<T>()
-            ? _response.ToStruct<T>()
-            : default(T).FromBytes(_response);
+            ? default(T).FromBytes(_response)
+            : _response.ToStruct<T>();
 
     public readonly GenericError? Error =>
         _mappingDetails.ResponseType != XResponseType.Error || _mappingDetails.ErrorMessageAction is null

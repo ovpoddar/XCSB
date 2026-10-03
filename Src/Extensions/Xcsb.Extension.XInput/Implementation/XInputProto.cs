@@ -98,9 +98,6 @@ internal sealed partial class XInputProto : IXinputRequest
         var cookie = GetExtensionVersionBase(name);
         var (result, mapping) =
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<GetExtensionVersionReply,GetExtensionVersionReply>(cookie.Id);
-        // return error.HasValue
-        //     ? throw new XEventException(error.Value)
-        //     : result.AsSpan().ToStruct<GetExtensionVersionReply>();
         if (mapping.ResponseType == XResponseType.Reply)
             return new ReplyLease<GetExtensionVersionReply>(result, this._extensionInternal.Transport.SocketIn.BufferPool);
         
@@ -114,10 +111,6 @@ internal sealed partial class XInputProto : IXinputRequest
         var cookie = ChangeDeviceControlBase(controlId, deviceId);
         var (result, mapping) =
             this._extensionInternal.Transport.SocketIn.ReceivedResponseSpan<ChangeDeviceControlReply,ChangeDeviceControlReply>(cookie.Id);
-        // return error.HasValue
-        //     ? throw new XEventException(error.Value)
-        //     : result.AsSpan().AsStruct<ChangeDeviceControlReply>();
-
         if (mapping.ResponseType == XResponseType.Reply)
             return new ReplyLease<ChangeDeviceControlReply>(result, this._extensionInternal.Transport.SocketIn.BufferPool);
         

@@ -16,14 +16,6 @@ public struct ExposeEvent : IXEvent<ExposeEvent>
     public ushort Height;
     public ushort Count;
 
-    public ref readonly ExposeEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<ExposeEvent>();
-            if (result.ResponseHeader.Reply != ResponseType.Expose || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
-
     public ExposeEvent FromBytes(Span<byte> response)
     {
         return response.ToStruct<ExposeEvent>();
