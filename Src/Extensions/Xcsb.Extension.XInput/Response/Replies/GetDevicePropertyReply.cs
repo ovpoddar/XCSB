@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 using Xcsb.Models;
@@ -26,6 +27,6 @@ public readonly struct GetDevicePropertyReply : IXReply<GetDevicePropertyReply, 
 
     public GetDevicePropertyReply FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<GetDevicePropertyReply>();
     }
 }

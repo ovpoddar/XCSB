@@ -14,16 +14,8 @@ public unsafe struct DeviceKeyStateNotifyEvent : IXEvent<DeviceKeyStateNotifyEve
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public fixed byte Keys[28];
 
-    public ref readonly DeviceKeyStateNotifyEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<DeviceKeyStateNotifyEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceKeyStateNotify || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
-
     public DeviceKeyStateNotifyEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DeviceKeyStateNotifyEvent>();
     }
 }

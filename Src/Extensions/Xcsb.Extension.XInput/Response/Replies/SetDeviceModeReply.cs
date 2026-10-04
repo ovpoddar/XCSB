@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
@@ -21,6 +22,6 @@ public readonly struct SetDeviceModeReply : IXReply<SetDeviceModeReply, SetDevic
 
     public SetDeviceModeReply FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<SetDeviceModeReply>();
     }
 }

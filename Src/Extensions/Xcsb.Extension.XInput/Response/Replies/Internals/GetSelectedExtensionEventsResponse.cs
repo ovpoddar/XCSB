@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
@@ -22,6 +23,6 @@ internal readonly struct GetSelectedExtensionEventsResponse: IVerify
 
     public GetSelectedExtensionEventsResponse FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<GetSelectedExtensionEventsResponse>();
     }
 }

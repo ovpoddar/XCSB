@@ -21,11 +21,7 @@ public struct RawMotion : IXEvent<RawMotion>
     public readonly uint[] ValuatorsMask;
     public readonly Fp3232[] AxisValues;
     public readonly Fp3232[] AxisValuesRaw;
-    
-    public ref readonly RawMotion Cast(Span<byte> response)
-    {
-        throw new NotImplementedException();
-    }
+
 
     public RawMotion FromBytes(Span<byte> response)
     {
