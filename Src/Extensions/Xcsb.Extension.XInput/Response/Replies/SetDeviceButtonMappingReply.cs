@@ -21,8 +21,8 @@ public readonly struct SetDeviceButtonMappingReply : IXReply<SetDeviceButtonMapp
         return ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public SetDeviceButtonMappingReply FromBytes(Span<byte> response)
+    public SetDeviceButtonMappingReply FromBytes(byte[] response)
     {
-        return response.ToStruct<SetDeviceButtonMappingReply>();
+        return response.AsSpan().ToStruct<SetDeviceButtonMappingReply>();
     }
 }

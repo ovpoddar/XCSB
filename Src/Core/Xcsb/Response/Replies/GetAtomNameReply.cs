@@ -28,7 +28,7 @@ public readonly struct GetAtomNameReply: IXReply<GetAtomNameReply, GetAtomNameRe
         }
     }
 
-    public GetAtomNameReply FromBytes(Span<byte> response)
+    public GetAtomNameReply FromBytes(byte[] response)
     {
         return new GetAtomNameReply(response);
     }

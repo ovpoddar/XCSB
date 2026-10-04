@@ -36,7 +36,7 @@ public struct KeyRelease: IXEvent<KeyRelease>
         throw new NotImplementedException();
     }
 
-    public KeyRelease FromBytes(Span<byte> response)
+    public KeyRelease FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

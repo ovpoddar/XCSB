@@ -26,8 +26,8 @@ public struct GraphicsExposeEvent : IXEvent<GraphicsExposeEvent>
         return ref result;
     }
 
-    public GraphicsExposeEvent FromBytes(Span<byte> response)
+    public GraphicsExposeEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<GraphicsExposeEvent>();
+        return response.AsSpan().ToStruct<GraphicsExposeEvent>();
     }
 }

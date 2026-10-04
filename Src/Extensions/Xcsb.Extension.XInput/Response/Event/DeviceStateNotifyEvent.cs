@@ -56,8 +56,8 @@ public unsafe struct DeviceStateNotifyEvent : IXEvent<DeviceStateNotifyEvent>
         return ref result;
     }
 
-    public DeviceStateNotifyEvent FromBytes(Span<byte> response)
+    public DeviceStateNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceStateNotifyEvent>();
+        return response.AsSpan().ToStruct<DeviceStateNotifyEvent>();
     }
 }

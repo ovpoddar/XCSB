@@ -36,7 +36,7 @@ public struct TouchUpdate : IXEvent<TouchUpdate>
         throw new NotImplementedException();
     }
 
-    public TouchUpdate FromBytes(Span<byte> response)
+    public TouchUpdate FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

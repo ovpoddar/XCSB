@@ -22,8 +22,8 @@ public readonly struct XiGetClientPointerReply : IXReply<XiGetClientPointerReply
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public XiGetClientPointerReply FromBytes(Span<byte> response)
+    public XiGetClientPointerReply FromBytes(byte[] response)
     {
-        return response.ToStruct<XiGetClientPointerReply>();
+        return response.AsSpan().ToStruct<XiGetClientPointerReply>();
     }
 }

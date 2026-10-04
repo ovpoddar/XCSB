@@ -14,9 +14,9 @@ public readonly struct FontError : IXError<FontError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public FontError FromBytes(Span<byte> response)
+    public FontError FromBytes(byte[] response)
     {
-        return response.ToStruct<FontError>();
+        return response.AsSpan().ToStruct<FontError>();
     }
 
     public readonly string GetErrorMessage() =>

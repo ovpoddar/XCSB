@@ -14,9 +14,9 @@ public readonly struct AllocError : IXError<AllocError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public AllocError FromBytes(Span<byte> response)
+    public AllocError FromBytes(byte[] response)
     {
-        return response.ToStruct<AllocError>();
+        return response.AsSpan().ToStruct<AllocError>();
     }
 
     public readonly string GetErrorMessage() =>

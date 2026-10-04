@@ -19,8 +19,8 @@ public readonly struct SetModifierMappingReply : IXReply<SetModifierMappingReply
     }
 
     public MappingStatus Status => ResponseHeader.GetValue();
-    public SetModifierMappingReply FromBytes(Span<byte> response)
+    public SetModifierMappingReply FromBytes(byte[] response)
     {
-        return response.ToStruct<SetModifierMappingReply>();
+        return response.AsSpan().ToStruct<SetModifierMappingReply>();
     }
 }

@@ -18,7 +18,7 @@ public struct QueryKeymapReply : IXReply<QueryKeymapReply, QueryKeymapResponse>
             .CopyTo(keys);
     }
 
-    public QueryKeymapReply FromBytes(Span<byte> response)
+    public QueryKeymapReply FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

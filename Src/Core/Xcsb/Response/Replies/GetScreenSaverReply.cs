@@ -23,8 +23,8 @@ public readonly struct GetScreenSaverReply : IXReply<GetScreenSaverReply, GetScr
 
     public readonly bool AllowExposures => _allowExposures == 1;
     public readonly bool PreferBlanking => _preferBlanking == 1;
-    public GetScreenSaverReply FromBytes(Span<byte> response)
+    public GetScreenSaverReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetScreenSaverReply>();
+        return response.AsSpan().ToStruct<GetScreenSaverReply>();
     }
 }

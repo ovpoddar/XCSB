@@ -22,8 +22,8 @@ public struct NoExposeEvent : IXEvent<NoExposeEvent>
         return ref result;
     }
 
-    public NoExposeEvent FromBytes(Span<byte> response)
+    public NoExposeEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<NoExposeEvent>();
+        return response.AsSpan().ToStruct<NoExposeEvent>();
     }
 }

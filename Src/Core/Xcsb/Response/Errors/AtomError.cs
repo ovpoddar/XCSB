@@ -14,9 +14,9 @@ public readonly struct AtomError : IXError<AtomError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public AtomError FromBytes(Span<byte> response)
+    public AtomError FromBytes(byte[] response)
     {
-        return response.ToStruct<AtomError>();
+        return response.AsSpan().ToStruct<AtomError>();
     }
 
     public readonly string GetErrorMessage() =>

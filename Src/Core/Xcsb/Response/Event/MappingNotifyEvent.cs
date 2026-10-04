@@ -21,8 +21,8 @@ public struct MappingNotifyEvent : IXEvent<MappingNotifyEvent>
         return ref result;
     }
 
-    public MappingNotifyEvent FromBytes(Span<byte> response)
+    public MappingNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<MappingNotifyEvent>();
+        return response.AsSpan().ToStruct<MappingNotifyEvent>();
     }
 }

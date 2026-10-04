@@ -22,8 +22,8 @@ public readonly struct GetExtensionVersionReply : IXReply<GetExtensionVersionRep
         return ResponseHeader.Verify(sequence) && Length == 0 && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetExtensionVersionReply FromBytes(Span<byte> response)
+    public GetExtensionVersionReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetExtensionVersionReply>();
+        return response.AsSpan().ToStruct<GetExtensionVersionReply>();
     }
 }

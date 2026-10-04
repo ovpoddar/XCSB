@@ -20,8 +20,8 @@ public readonly struct ChangePointerDeviceReply : IXReply<ChangePointerDeviceRep
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public ChangePointerDeviceReply FromBytes(Span<byte> response)
+    public ChangePointerDeviceReply FromBytes(byte[] response)
     {
-        return response.ToStruct<ChangePointerDeviceReply>();
+        return response.AsSpan().ToStruct<ChangePointerDeviceReply>();
     }
 }

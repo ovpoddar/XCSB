@@ -24,8 +24,8 @@ public struct ReParentNotifyEvent : IXEvent<ReParentNotifyEvent>
         return ref result;
     }
 
-    public ReParentNotifyEvent FromBytes(Span<byte> response)
+    public ReParentNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ReParentNotifyEvent>();
+        return response.AsSpan().ToStruct<ReParentNotifyEvent>();
     }
 }

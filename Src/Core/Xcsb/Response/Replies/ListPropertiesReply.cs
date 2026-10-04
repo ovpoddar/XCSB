@@ -30,7 +30,7 @@ public readonly struct ListPropertiesReply:IXReply<ListPropertiesReply,ListPrope
         }
     }
 
-    public ListPropertiesReply FromBytes(Span<byte> response)
+    public ListPropertiesReply FromBytes(byte[] response)
     {
         return new ListPropertiesReply(response);
     }

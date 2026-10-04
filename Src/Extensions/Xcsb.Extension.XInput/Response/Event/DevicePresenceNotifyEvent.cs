@@ -15,8 +15,8 @@ public struct DevicePresenceNotifyEvent : IXEvent<DevicePresenceNotifyEvent>
     public readonly byte DeviceId;
     public readonly ushort Control;
 
-    public DevicePresenceNotifyEvent FromBytes(Span<byte> response)
+    public DevicePresenceNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DevicePresenceNotifyEvent>();
+        return response.AsSpan().ToStruct<DevicePresenceNotifyEvent>();
     }
 }

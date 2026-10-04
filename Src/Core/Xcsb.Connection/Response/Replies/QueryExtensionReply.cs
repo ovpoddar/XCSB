@@ -21,8 +21,8 @@ public readonly struct QueryExtensionReply : IXReply<QueryExtensionReply, QueryE
                Length == 0;
     }
 
-    public QueryExtensionReply FromBytes(Span<byte> response)
+    public QueryExtensionReply FromBytes(byte[] response)
     {
-        return response.ToStruct<QueryExtensionReply>();
+        return response.AsSpan().ToStruct<QueryExtensionReply>();
     }
 }

@@ -27,7 +27,7 @@ public interface IResponseProtoAsync
     ValueTask<ReplyLease<QueryFontReply>> QueryFontAsync(uint fontId, CancellationToken token = default);
     ValueTask<ReplyLease<QueryTextExtentsReply>> QueryTextExtentsAsync(uint font, string stringForQuery, CancellationToken token = default);
     ValueTask<ReplyLease<ListFontsReply>> ListFontsAsync(ReadOnlyMemory<byte> pattern, int maxNames, CancellationToken token = default);
-    // ValueTask<ReplyLease<ListFontsWithInfoReply>[]> ListFontsWithInfoAsync(ReadOnlyMemory<byte> pattan, int maxNames, CancellationToken token = default);
+    ValueTask<ReplyLease<ListFontsWithInfoReply>[]> ListFontsWithInfoAsync(ReadOnlyMemory<byte> pattan, int maxNames, CancellationToken token = default);
     ValueTask<ReplyLease<GetFontPathReply>> GetFontPathAsync(CancellationToken token = default);
     ValueTask<ReplyLease<GetImageReply>> GetImageAsync(ImageFormat format, uint drawable, ushort x, ushort y, ushort width, ushort height,
         uint planeMask, CancellationToken token = default);

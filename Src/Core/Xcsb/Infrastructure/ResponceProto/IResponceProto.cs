@@ -34,7 +34,7 @@ public interface IResponseProto
     ReplyLease<QueryFontReply> QueryFont(uint fontId);
     ReplyLease<QueryTextExtentsReply> QueryTextExtents(uint font, ReadOnlySpan<char> stringForQuery);
     ReplyLease<ListFontsReply> ListFonts(ReadOnlySpan<byte> pattern, int maxNames);
-    // ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames);
+    ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattan, int maxNames);
     ReplyLease<GetFontPathReply> GetFontPath();
     ReplyLease<GetImageReply> GetImage(ImageFormat format, uint drawable, ushort x, ushort y, ushort width,
         ushort height, uint planeMask);

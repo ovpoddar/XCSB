@@ -46,7 +46,7 @@ public struct GetSelectedExtensionEventsReply: IXReply<GetSelectedExtensionEvent
         throw new NotImplementedException();
     }
 
-    public GetSelectedExtensionEventsReply FromBytes(Span<byte> response)
+    public GetSelectedExtensionEventsReply FromBytes(byte[] response)
     {
         return new GetSelectedExtensionEventsReply(response);
     }

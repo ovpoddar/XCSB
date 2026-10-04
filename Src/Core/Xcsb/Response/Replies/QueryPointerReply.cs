@@ -28,8 +28,8 @@ public readonly struct QueryPointerReply : IXReply<QueryPointerReply,QueryPointe
                Length == 0;
     }
 
-    public QueryPointerReply FromBytes(Span<byte> response)
+    public QueryPointerReply FromBytes(byte[] response)
     {
-        return response.ToStruct<QueryPointerReply>();
+        return response.AsSpan().ToStruct<QueryPointerReply>();
     }
 }

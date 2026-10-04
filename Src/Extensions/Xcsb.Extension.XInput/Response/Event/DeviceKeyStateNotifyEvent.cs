@@ -14,8 +14,8 @@ public unsafe struct DeviceKeyStateNotifyEvent : IXEvent<DeviceKeyStateNotifyEve
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public fixed byte Keys[28];
 
-    public DeviceKeyStateNotifyEvent FromBytes(Span<byte> response)
+    public DeviceKeyStateNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceKeyStateNotifyEvent>();
+        return response.AsSpan().ToStruct<DeviceKeyStateNotifyEvent>();
     }
 }

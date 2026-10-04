@@ -26,8 +26,8 @@ public readonly struct DeviceMotionNotifyEvent : IXEvent<DeviceMotionNotifyEvent
 
     public bool SameScreen => this._sameScreen == 1;
 
-    public DeviceMotionNotifyEvent FromBytes(Span<byte> response)
+    public DeviceMotionNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceMotionNotifyEvent>();
+        return response.AsSpan().ToStruct<DeviceMotionNotifyEvent>();
     }
 }

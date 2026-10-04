@@ -35,9 +35,9 @@ public struct ButtonPressEvent : IXEvent<ButtonPressEvent>
     public readonly Fp3232[] AxisValues;
 
 
-    public ButtonPressEvent FromBytes(Span<byte> response)
+    public ButtonPressEvent FromBytes(byte[] response)
     {
         Debugger.Break();
-        return response.ToStruct<ButtonPressEvent>();
+        return response.AsSpan().ToStruct<ButtonPressEvent>();
     }
 }

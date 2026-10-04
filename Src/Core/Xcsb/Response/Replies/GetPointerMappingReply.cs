@@ -26,7 +26,7 @@ public readonly struct GetPointerMappingReply : IXReply<GetPointerMappingReply, 
         }
     }
     
-    public GetPointerMappingReply FromBytes(Span<byte> response)
+    public GetPointerMappingReply FromBytes(byte[] response)
     {
         return new GetPointerMappingReply(response);
     }

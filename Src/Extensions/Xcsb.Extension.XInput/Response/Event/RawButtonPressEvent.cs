@@ -26,7 +26,7 @@ public struct RawButtonPressEvent : IXEvent<RawButtonPressEvent>
         throw new NotImplementedException();
     }
 
-    public RawButtonPressEvent FromBytes(Span<byte> response)
+    public RawButtonPressEvent FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

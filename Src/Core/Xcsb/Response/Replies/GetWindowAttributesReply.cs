@@ -35,8 +35,8 @@ public readonly struct GetWindowAttributesReply : IXReply<GetWindowAttributesRep
     }
 
     public BackingStores Stores => ResponseHeader.GetValue();
-    public GetWindowAttributesReply FromBytes(Span<byte> response)
+    public GetWindowAttributesReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetWindowAttributesReply>();
+        return response.AsSpan().ToStruct<GetWindowAttributesReply>();
     }
 }

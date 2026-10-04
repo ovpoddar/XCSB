@@ -41,7 +41,7 @@ public readonly struct ListFontsReply: IXReply<ListFontsReply, ListFontsResponse
         }
     }
 
-    public ListFontsReply FromBytes(Span<byte> response)
+    public ListFontsReply FromBytes(byte[] response)
     {
         return new ListFontsReply(response);
     }

@@ -418,11 +418,15 @@ internal sealed partial class XProto : IXProto
         throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    // public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattern, int maxNames)
-    // {
-    //     var cookie = ListFontsWithInfoBase(pattern, maxNames);
-    //     var (result, mapping) = this._socketAccessor.ReceivedResponseArray(cookie.Id, maxNames);
-    // }
+    public ListFontsWithInfoReply[] ListFontsWithInfo(ReadOnlySpan<byte> pattern, int maxNames)
+    {
+        var cookie = ListFontsWithInfoBase(pattern, maxNames);
+        var (result, error) = this._socketAccessor.ReceivedResponseArray(cookie.Id, maxNames);
+        if (error.HasValue)
+            throw new Exception();
+
+        return result;
+    }
 
     public ReplyLease<ListInstalledColormapsReply> ListInstalledColormaps(uint window)
     {

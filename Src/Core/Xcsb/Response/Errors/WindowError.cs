@@ -14,9 +14,9 @@ public readonly struct WindowError : IXError<WindowError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public WindowError FromBytes(Span<byte> response)
+    public WindowError FromBytes(byte[] response)
     {
-        return response.ToStruct<WindowError>();
+        return response.AsSpan().ToStruct<WindowError>();
     }
 
     public readonly string GetErrorMessage() =>

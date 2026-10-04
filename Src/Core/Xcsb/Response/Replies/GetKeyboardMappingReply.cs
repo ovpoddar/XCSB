@@ -40,7 +40,7 @@ public readonly struct GetKeyboardMappingReply:IXReply<GetKeyboardMappingReply,G
         }
     }
 
-    public GetKeyboardMappingReply FromBytes(Span<byte> response)
+    public GetKeyboardMappingReply FromBytes(byte[] response)
     {
         return new GetKeyboardMappingReply();
     }

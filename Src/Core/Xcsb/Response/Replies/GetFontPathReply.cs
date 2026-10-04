@@ -42,7 +42,7 @@ public struct GetFontPathReply: IXReply<GetFontPathReply, GetFontPathResponse>
         }
     }
 
-    public GetFontPathReply FromBytes(Span<byte> response)
+    public GetFontPathReply FromBytes(byte[] response)
     {
         return new GetFontPathReply(response);
     }

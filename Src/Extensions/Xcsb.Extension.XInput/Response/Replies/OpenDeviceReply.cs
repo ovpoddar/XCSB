@@ -20,8 +20,8 @@ public readonly struct OpenDeviceReply : IXReply<OpenDeviceReply, OpenDeviceRepl
         return ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public OpenDeviceReply FromBytes(Span<byte> response)
+    public OpenDeviceReply FromBytes(byte[] response)
     {
-        return response.ToStruct<OpenDeviceReply>();
+        return response.AsSpan().ToStruct<OpenDeviceReply>();
     }
 }

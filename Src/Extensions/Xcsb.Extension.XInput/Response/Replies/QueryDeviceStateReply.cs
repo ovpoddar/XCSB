@@ -32,7 +32,7 @@ public struct QueryDeviceStateReply : IXReply<QueryDeviceStateReply, QueryDevice
         throw new NotImplementedException();
     }
 
-    public QueryDeviceStateReply FromBytes(Span<byte> response)
+    public QueryDeviceStateReply FromBytes(byte[] response)
     {
         return new QueryDeviceStateReply(response);
     }

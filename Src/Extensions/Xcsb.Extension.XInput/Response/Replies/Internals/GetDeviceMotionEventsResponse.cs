@@ -22,8 +22,8 @@ internal readonly struct GetDeviceMotionEventsResponse : IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetDeviceMotionEventsResponse FromBytes(Span<byte> response)
+    public GetDeviceMotionEventsResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<GetDeviceMotionEventsResponse>();
+        return response.AsSpan().ToStruct<GetDeviceMotionEventsResponse>();
     }
 }

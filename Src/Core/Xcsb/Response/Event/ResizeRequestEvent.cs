@@ -21,8 +21,8 @@ public struct ResizeRequestEvent : IXEvent<ResizeRequestEvent>
         return ref result;
     }
 
-    public ResizeRequestEvent FromBytes(Span<byte> response)
+    public ResizeRequestEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ResizeRequestEvent>();
+        return response.AsSpan().ToStruct<ResizeRequestEvent>();
     }
 }

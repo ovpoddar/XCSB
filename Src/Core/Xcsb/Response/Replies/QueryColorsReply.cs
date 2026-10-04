@@ -29,7 +29,7 @@ public readonly struct QueryColorsReply: IXReply<QueryColorsReply, QueryColorsRe
         }
     }
 
-    public QueryColorsReply FromBytes(Span<byte> response)
+    public QueryColorsReply FromBytes(byte[] response)
     {
         return new QueryColorsReply(response);
     }

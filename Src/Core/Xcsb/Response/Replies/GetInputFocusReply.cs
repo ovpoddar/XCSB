@@ -20,8 +20,8 @@ public readonly struct GetInputFocusReply : IXReply<GetInputFocusReply, GetInput
     }
 
     public InputFocusMode Mode => ResponseHeader.GetValue();
-    public GetInputFocusReply FromBytes(Span<byte> response)
+    public GetInputFocusReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetInputFocusReply>();
+        return response.AsSpan().ToStruct<GetInputFocusReply>();
     }
 }

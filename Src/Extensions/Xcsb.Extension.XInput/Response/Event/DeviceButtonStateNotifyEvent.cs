@@ -22,8 +22,8 @@ public unsafe struct DeviceButtonStateNotifyEvent : IXEvent<DeviceButtonStateNot
     //     return ref result;
     // }
 
-    public DeviceButtonStateNotifyEvent FromBytes(Span<byte> response)
+    public DeviceButtonStateNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceButtonStateNotifyEvent>();
+        return response.AsSpan().ToStruct<DeviceButtonStateNotifyEvent>();
     }
 }

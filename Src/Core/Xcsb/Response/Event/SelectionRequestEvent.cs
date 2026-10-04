@@ -25,8 +25,8 @@ public struct SelectionRequestEvent : IXEvent<SelectionRequestEvent>
         return ref result;
     }
 
-    public SelectionRequestEvent FromBytes(Span<byte> response)
+    public SelectionRequestEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<SelectionRequestEvent>();
+        return response.AsSpan().ToStruct<SelectionRequestEvent>();
     }
 }

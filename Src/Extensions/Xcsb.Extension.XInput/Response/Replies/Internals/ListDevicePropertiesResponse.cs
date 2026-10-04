@@ -20,8 +20,8 @@ internal readonly struct ListDevicePropertiesResponse: IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public ListDevicePropertiesResponse FromBytes(Span<byte> response)
+    public ListDevicePropertiesResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<ListDevicePropertiesResponse>();
+        return response.AsSpan().ToStruct<ListDevicePropertiesResponse>();
     }
 }

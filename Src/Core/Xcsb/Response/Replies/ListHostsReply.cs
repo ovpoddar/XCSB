@@ -34,7 +34,7 @@ public readonly struct ListHostsReply : IXReply<ListHostsReply, ListHostsRespons
         }
     }
 
-    public ListHostsReply FromBytes(Span<byte> response)
+    public ListHostsReply FromBytes(byte[] response)
     {
         return new ListHostsReply(response);
     }

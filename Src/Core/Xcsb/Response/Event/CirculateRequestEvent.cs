@@ -22,8 +22,8 @@ public struct CirculateRequestEvent : IXEvent<CirculateRequestEvent>
         return ref result;
     }
 
-    public CirculateRequestEvent FromBytes(Span<byte> response)
+    public CirculateRequestEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<CirculateRequestEvent>();
+        return response.AsSpan().ToStruct<CirculateRequestEvent>();
     }
 }

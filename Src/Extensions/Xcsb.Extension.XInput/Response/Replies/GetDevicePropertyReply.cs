@@ -25,8 +25,8 @@ public readonly struct GetDevicePropertyReply : IXReply<GetDevicePropertyReply, 
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetDevicePropertyReply FromBytes(Span<byte> response)
+    public GetDevicePropertyReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetDevicePropertyReply>();
+        return response.AsSpan().ToStruct<GetDevicePropertyReply>();
     }
 }

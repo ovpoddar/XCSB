@@ -27,8 +27,8 @@ public struct TouchOwnershipEvent : IXEvent<TouchOwnershipEvent>
         throw new NotImplementedException();
     }
 
-    public TouchOwnershipEvent FromBytes(Span<byte> response)
+    public TouchOwnershipEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<TouchOwnershipEvent>();
+        return response.AsSpan().ToStruct<TouchOwnershipEvent>();
     }
 }

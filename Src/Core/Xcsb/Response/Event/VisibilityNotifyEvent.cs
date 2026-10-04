@@ -20,8 +20,8 @@ public struct VisibilityNotifyEvent : IXEvent<VisibilityNotifyEvent>
         return ref result;
     }
 
-    public VisibilityNotifyEvent FromBytes(Span<byte> response)
+    public VisibilityNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<VisibilityNotifyEvent>();
+        return response.AsSpan().ToStruct<VisibilityNotifyEvent>();
     }
 }

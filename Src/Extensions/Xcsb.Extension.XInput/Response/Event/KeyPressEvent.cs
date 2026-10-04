@@ -37,7 +37,7 @@ public struct KeyPressEvent : IXEvent<KeyPressEvent>
         throw new NotImplementedException();
     }
 
-    public KeyPressEvent FromBytes(Span<byte> response)
+    public KeyPressEvent FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

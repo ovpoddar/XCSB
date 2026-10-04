@@ -33,7 +33,7 @@ public readonly struct GetPropertyReply:IXReply<GetPropertyReply,GetPropertyResp
 
     }
 
-    public GetPropertyReply FromBytes(Span<byte> response)
+    public GetPropertyReply FromBytes(byte[] response)
     {
         return new GetPropertyReply(response);
     }

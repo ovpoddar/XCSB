@@ -20,8 +20,8 @@ public readonly struct GrabDeviceReply : IXReply<GrabDeviceReply,GrabDeviceReply
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GrabDeviceReply FromBytes(Span<byte> response)
+    public GrabDeviceReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GrabDeviceReply>();
+        return response.AsSpan().ToStruct<GrabDeviceReply>();
     }
 }

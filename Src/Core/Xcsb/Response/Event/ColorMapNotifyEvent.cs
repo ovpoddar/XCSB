@@ -23,8 +23,8 @@ public struct ColorMapNotifyEvent : IXEvent<ColorMapNotifyEvent>
         return ref result;
     }
 
-    public ColorMapNotifyEvent FromBytes(Span<byte> response)
+    public ColorMapNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ColorMapNotifyEvent>();
+        return response.AsSpan().ToStruct<ColorMapNotifyEvent>();
     }
 }

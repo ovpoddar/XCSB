@@ -4,5 +4,5 @@ namespace Xcsb.Connection.Response.Contract;
 
 public interface IXBaseResponse<out T> where T : struct
 {
-    T FromBytes(Span<byte> response);
+    T FromBytes(byte[] response);
 }

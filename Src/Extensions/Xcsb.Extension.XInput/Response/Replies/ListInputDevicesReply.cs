@@ -59,7 +59,7 @@ public struct ListInputDevicesReply : IXReply<ListInputDevicesReply, ListInputDe
         throw new NotImplementedException();
     }
 
-    public ListInputDevicesReply FromBytes(Span<byte> response)
+    public ListInputDevicesReply FromBytes(byte[] response)
     {
         return new ListInputDevicesReply(response);
     }

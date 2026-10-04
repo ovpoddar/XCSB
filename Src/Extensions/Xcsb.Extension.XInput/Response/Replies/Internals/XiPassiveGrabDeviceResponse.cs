@@ -20,8 +20,8 @@ internal readonly struct XiPassiveGrabDeviceResponse: IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public XiPassiveGrabDeviceResponse FromBytes(Span<byte> response)
+    public XiPassiveGrabDeviceResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<XiPassiveGrabDeviceResponse>();
+        return response.AsSpan().ToStruct<XiPassiveGrabDeviceResponse>();
     }
 }

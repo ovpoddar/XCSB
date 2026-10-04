@@ -22,8 +22,8 @@ public struct SelectionClearEvent : IXEvent<SelectionClearEvent>
         return ref result;
     }
 
-    public SelectionClearEvent FromBytes(Span<byte> response)
+    public SelectionClearEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<SelectionClearEvent>();
+        return response.AsSpan().ToStruct<SelectionClearEvent>();
     }
 }

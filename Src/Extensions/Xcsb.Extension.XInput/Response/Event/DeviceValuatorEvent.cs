@@ -25,8 +25,8 @@ public unsafe struct DeviceValuatorEvent : IXEvent<DeviceValuatorEvent>
         }
     }
 
-    public DeviceValuatorEvent FromBytes(Span<byte> response)
+    public DeviceValuatorEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceValuatorEvent>();
+        return response.AsSpan().ToStruct<DeviceValuatorEvent>();
     }
 }

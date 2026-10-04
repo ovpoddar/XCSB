@@ -21,8 +21,8 @@ public struct FocusInEvent : IXEvent<FocusInEvent>
         return ref result;
     }
 
-    public FocusInEvent FromBytes(Span<byte> response)
+    public FocusInEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<FocusInEvent>();
+        return response.AsSpan().ToStruct<FocusInEvent>();
     }
 }

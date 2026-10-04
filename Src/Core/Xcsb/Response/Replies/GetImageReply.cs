@@ -30,7 +30,7 @@ public readonly struct GetImageReply: IXReply<GetImageReply,GetImageResponse>
         }
     }
 
-    public GetImageReply FromBytes(Span<byte> response)
+    public GetImageReply FromBytes(byte[] response)
     {
         return new GetImageReply(response);
     }

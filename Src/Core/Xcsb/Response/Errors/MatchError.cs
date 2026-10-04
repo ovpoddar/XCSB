@@ -14,9 +14,9 @@ public readonly struct MatchError : IXError<MatchError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public MatchError FromBytes(Span<byte> response)
+    public MatchError FromBytes(byte[] response)
     {
-        return response.ToStruct<MatchError>();
+        return response.AsSpan().ToStruct<MatchError>();
     }
 
     public readonly string GetErrorMessage() =>

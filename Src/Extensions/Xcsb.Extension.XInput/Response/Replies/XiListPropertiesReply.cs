@@ -33,7 +33,7 @@ public struct XiListPropertiesReply: IXReply<XiListPropertiesReply, XiListProper
         throw new NotImplementedException();
     }
 
-    public XiListPropertiesReply FromBytes(Span<byte> response)
+    public XiListPropertiesReply FromBytes(byte[] response)
     {
         return new XiListPropertiesReply(response);
     }

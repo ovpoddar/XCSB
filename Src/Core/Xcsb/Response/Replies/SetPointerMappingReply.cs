@@ -19,8 +19,8 @@ public readonly struct SetPointerMappingReply : IXReply<SetPointerMappingReply,S
     }
 
     public Status Status => ResponseHeader.GetValue();
-    public SetPointerMappingReply FromBytes(Span<byte> response)
+    public SetPointerMappingReply FromBytes(byte[] response)
     {
-        return response.ToStruct<SetPointerMappingReply>();
+        return response.AsSpan().ToStruct<SetPointerMappingReply>();
     }
 }

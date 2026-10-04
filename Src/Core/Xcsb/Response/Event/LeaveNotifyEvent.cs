@@ -30,8 +30,8 @@ public struct LeaveNotifyEvent : IXEvent<LeaveNotifyEvent>
         return ref result;
     }
 
-    public LeaveNotifyEvent FromBytes(Span<byte> response)
+    public LeaveNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<LeaveNotifyEvent>();
+        return response.AsSpan().ToStruct<LeaveNotifyEvent>();
     }
 }

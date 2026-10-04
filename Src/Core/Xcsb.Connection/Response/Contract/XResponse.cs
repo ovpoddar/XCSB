@@ -24,8 +24,8 @@ internal unsafe struct XResponse : IXBaseResponse<XResponse>
     public ushort? ExtensionEventType =>
         ReplyType != 35 ? null : EventType;
 
-    public XResponse FromBytes(Span<byte> response)
+    public XResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<XResponse>();
+        return response.AsSpan().ToStruct<XResponse>();
     }
 }

@@ -33,7 +33,7 @@ public struct XiPassiveGrabDeviceReply: IXReply<XiPassiveGrabDeviceReply, XiPass
         throw new NotImplementedException();
     }
 
-    public XiPassiveGrabDeviceReply FromBytes(Span<byte> response)
+    public XiPassiveGrabDeviceReply FromBytes(byte[] response)
     {
         return new XiPassiveGrabDeviceReply(response);
     }

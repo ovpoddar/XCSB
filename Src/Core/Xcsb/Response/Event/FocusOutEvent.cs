@@ -21,8 +21,8 @@ public struct FocusOutEvent : IXEvent<FocusOutEvent>
         return ref result;
     }
 
-    public FocusOutEvent FromBytes(Span<byte> response)
+    public FocusOutEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<FocusOutEvent>();
+        return response.AsSpan().ToStruct<FocusOutEvent>();
     }
 }

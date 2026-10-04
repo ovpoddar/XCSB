@@ -21,8 +21,8 @@ public readonly struct
         return ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public SetDeviceModifierMappingReply FromBytes(Span<byte> response)
+    public SetDeviceModifierMappingReply FromBytes(byte[] response)
     {
-        return response.ToStruct<SetDeviceModifierMappingReply>();
+        return response.AsSpan().ToStruct<SetDeviceModifierMappingReply>();
     }
 }

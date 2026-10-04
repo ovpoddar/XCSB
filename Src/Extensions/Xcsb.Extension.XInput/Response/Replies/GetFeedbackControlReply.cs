@@ -29,7 +29,7 @@ public struct GetFeedbackControlReply  : IXReply<GetFeedbackControlReply, GetFee
         throw new NotImplementedException();
     }
 
-    public GetFeedbackControlReply FromBytes(Span<byte> response)
+    public GetFeedbackControlReply FromBytes(byte[] response)
     {
         return new GetFeedbackControlReply(response);
     }

@@ -14,9 +14,9 @@ public readonly struct IDChoiceError : IXError<IDChoiceError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public IDChoiceError FromBytes(Span<byte> response)
+    public IDChoiceError FromBytes(byte[] response)
     {
-        return response.ToStruct<IDChoiceError>();
+        return response.AsSpan().ToStruct<IDChoiceError>();
     }
 
     public readonly string GetErrorMessage() =>

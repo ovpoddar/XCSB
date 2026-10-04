@@ -35,7 +35,7 @@ public struct GetDeviceKeyMappingReply : IXReply<GetDeviceKeyMappingReply, GetDe
         throw new NotImplementedException();
     }
 
-    public GetDeviceKeyMappingReply FromBytes(Span<byte> response)
+    public GetDeviceKeyMappingReply FromBytes(byte[] response)
     {
         return new GetDeviceKeyMappingReply(response);
     }

@@ -20,8 +20,8 @@ public struct MapRequestEvent : IXEvent<MapRequestEvent>
         return ref result;
     }
 
-    public MapRequestEvent FromBytes(Span<byte> response)
+    public MapRequestEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<MapRequestEvent>();
+        return response.AsSpan().ToStruct<MapRequestEvent>();
     }
 }

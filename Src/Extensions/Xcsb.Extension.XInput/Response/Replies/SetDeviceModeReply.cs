@@ -20,8 +20,8 @@ public readonly struct SetDeviceModeReply : IXReply<SetDeviceModeReply, SetDevic
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public SetDeviceModeReply FromBytes(Span<byte> response)
+    public SetDeviceModeReply FromBytes(byte[] response)
     {
-        return response.ToStruct<SetDeviceModeReply>();
+        return response.AsSpan().ToStruct<SetDeviceModeReply>();
     }
 }

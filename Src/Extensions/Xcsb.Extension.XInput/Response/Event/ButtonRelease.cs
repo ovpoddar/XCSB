@@ -34,9 +34,9 @@ public struct ButtonRelease: IXEvent<ButtonRelease>
     public readonly uint[] Valuators;
     public readonly Fp3232[] AxisValues;
 
-    public ButtonRelease FromBytes(Span<byte> response)
+    public ButtonRelease FromBytes(byte[] response)
     {
         Debugger.Break();
-        return response.ToStruct<ButtonRelease>();
+        return response.AsSpan().ToStruct<ButtonRelease>();
     }
 }

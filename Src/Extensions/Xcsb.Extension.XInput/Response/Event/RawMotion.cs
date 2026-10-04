@@ -23,7 +23,7 @@ public struct RawMotion : IXEvent<RawMotion>
     public readonly Fp3232[] AxisValuesRaw;
 
 
-    public RawMotion FromBytes(Span<byte> response)
+    public RawMotion FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

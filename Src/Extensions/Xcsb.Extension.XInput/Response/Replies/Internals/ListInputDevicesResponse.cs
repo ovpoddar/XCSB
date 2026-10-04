@@ -20,8 +20,8 @@ public readonly struct ListInputDevicesResponse: IVerify
         return ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public ListInputDevicesResponse FromBytes(Span<byte> response)
+    public ListInputDevicesResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<ListInputDevicesResponse>();
+        return response.AsSpan().ToStruct<ListInputDevicesResponse>();
     }
 }

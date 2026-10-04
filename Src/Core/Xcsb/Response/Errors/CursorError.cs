@@ -14,9 +14,9 @@ public readonly struct CursorError : IXError<CursorError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public CursorError FromBytes(Span<byte> response)
+    public CursorError FromBytes(byte[] response)
     {
-        return response.ToStruct<CursorError>();
+        return response.AsSpan().ToStruct<CursorError>();
     }
 
     public readonly string GetErrorMessage() =>

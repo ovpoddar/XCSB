@@ -20,8 +20,8 @@ internal readonly struct XiListPropertiesResponse: IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public XiListPropertiesResponse FromBytes(Span<byte> response)
+    public XiListPropertiesResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<XiListPropertiesResponse>();
+        return response.AsSpan().ToStruct<XiListPropertiesResponse>();
     }
 }

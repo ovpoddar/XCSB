@@ -24,8 +24,8 @@ public struct SelectionNotifyEvent : IXEvent<SelectionNotifyEvent>
         return ref result;
     }
 
-    public SelectionNotifyEvent FromBytes(Span<byte> response)
+    public SelectionNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<SelectionNotifyEvent>();
+        return response.AsSpan().ToStruct<SelectionNotifyEvent>();
     }
 }

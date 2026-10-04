@@ -32,7 +32,7 @@ public readonly struct GetDeviceDontPropagateListReply : IXReply<GetDeviceDontPr
         throw new NotImplementedException();
     }
 
-    public GetDeviceDontPropagateListReply FromBytes(Span<byte> response)
+    public GetDeviceDontPropagateListReply FromBytes(byte[] response)
     {
         return new GetDeviceDontPropagateListReply(response);
     }

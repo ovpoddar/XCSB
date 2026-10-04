@@ -27,7 +27,7 @@ public struct RawKeyPressEvent : IXEvent<RawKeyPressEvent>
         throw new NotImplementedException();
     }
 
-    public RawKeyPressEvent FromBytes(Span<byte> response)
+    public RawKeyPressEvent FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

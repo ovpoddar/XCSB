@@ -14,9 +14,9 @@ public readonly struct PixmapError : IXError<PixmapError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public PixmapError FromBytes(Span<byte> response)
+    public PixmapError FromBytes(byte[] response)
     {
-        return response.ToStruct<PixmapError>();
+        return response.AsSpan().ToStruct<PixmapError>();
     }
 
     public readonly string GetErrorMessage() =>

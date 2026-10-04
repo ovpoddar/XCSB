@@ -36,7 +36,7 @@ public struct AllocColorPlanesReply: IXReply<AllocColorPlanesReply, AllocColorPl
         }
     }
 
-    public AllocColorPlanesReply FromBytes(Span<byte> response)
+    public AllocColorPlanesReply FromBytes(byte[] response)
     {
         return new AllocColorPlanesReply(response);
     }

@@ -59,7 +59,7 @@ public struct QueryFontReply : IXReply<QueryFontReply, QueryFontResponse>
         }
     }
 
-    public QueryFontReply FromBytes(Span<byte> response)
+    public QueryFontReply FromBytes(byte[] response)
     {
         return new QueryFontReply(response);
     }

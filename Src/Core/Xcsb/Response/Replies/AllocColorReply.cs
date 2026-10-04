@@ -22,7 +22,7 @@ public readonly struct AllocColorReply : IXReply<AllocColorReply, AllocColorRepl
                _pad1 == 0 && Length == 0;
     }
     
-    public AllocColorReply FromBytes(Span<byte> response)
+    public AllocColorReply FromBytes(byte[] response)
     {
         return  response.ToStruct<AllocColorReply>();
     }

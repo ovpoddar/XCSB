@@ -30,8 +30,8 @@ public struct ButtonReleaseEvent : IXEvent<ButtonReleaseEvent>
         return ref result;
     }
 
-    public ButtonReleaseEvent FromBytes(Span<byte> response)
+    public ButtonReleaseEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ButtonReleaseEvent>();
+        return response.AsSpan().ToStruct<ButtonReleaseEvent>();
     }
 }

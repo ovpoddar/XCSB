@@ -19,8 +19,8 @@ public unsafe struct KeymapNotifyEvent : IXEvent<KeymapNotifyEvent>
         return ref result;
     }
 
-    public KeymapNotifyEvent FromBytes(Span<byte> response)
+    public KeymapNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<KeymapNotifyEvent>();
+        return response.AsSpan().ToStruct<KeymapNotifyEvent>();
     }
 }

@@ -19,8 +19,8 @@ public readonly struct QueryBestSizeReply : IXReply<QueryBestSizeReply,QueryBest
                Length == 0;
     }
 
-    public QueryBestSizeReply FromBytes(Span<byte> response)
+    public QueryBestSizeReply FromBytes(byte[] response)
     {
-        return response.ToStruct<QueryBestSizeReply>();
+        return response.AsSpan().ToStruct<QueryBestSizeReply>();
     }
 }

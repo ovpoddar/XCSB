@@ -30,7 +30,7 @@ public readonly struct GetMotionEventsReply:IXReply<GetMotionEventsReply, GetMot
         }
     }
 
-    public GetMotionEventsReply FromBytes(Span<byte> response)
+    public GetMotionEventsReply FromBytes(byte[] response)
     {
         return new GetMotionEventsReply(response);
     }

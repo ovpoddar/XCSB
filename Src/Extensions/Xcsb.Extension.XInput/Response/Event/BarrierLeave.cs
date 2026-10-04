@@ -28,8 +28,8 @@ public struct BarrierLeave : IXEvent<BarrierLeave>
     public readonly Fp3232 DY;
     
 
-    public BarrierLeave FromBytes(Span<byte> response)
+    public BarrierLeave FromBytes(byte[] response)
     {
-        return response.ToStruct<BarrierLeave>();
+        return response.AsSpan().ToStruct<BarrierLeave>();
     }
 }

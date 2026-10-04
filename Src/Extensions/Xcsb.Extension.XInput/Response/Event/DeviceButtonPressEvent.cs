@@ -34,8 +34,8 @@ public readonly struct DeviceButtonPressEvent : IXEvent<DeviceButtonPressEvent>
     //     
     // }
 
-    public DeviceButtonPressEvent FromBytes(Span<byte> response)
+    public DeviceButtonPressEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceButtonPressEvent>();
+        return response.AsSpan().ToStruct<DeviceButtonPressEvent>();
     }
 }

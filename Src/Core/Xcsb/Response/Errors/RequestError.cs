@@ -14,9 +14,9 @@ public readonly struct RequestError : IXError<RequestError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public RequestError FromBytes(Span<byte> response)
+    public RequestError FromBytes(byte[] response)
     {
-        return response.ToStruct<RequestError>();
+        return response.AsSpan().ToStruct<RequestError>();
     }
 
     public readonly string GetErrorMessage() =>

@@ -22,8 +22,8 @@ public struct ChangeDeviceNotifyEvent : IXEvent<ChangeDeviceNotifyEvent>
         return ref result;
     }
 
-    public ChangeDeviceNotifyEvent FromBytes(Span<byte> response)
+    public ChangeDeviceNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ChangeDeviceNotifyEvent>();
+        return response.AsSpan().ToStruct<ChangeDeviceNotifyEvent>();
     }
 }

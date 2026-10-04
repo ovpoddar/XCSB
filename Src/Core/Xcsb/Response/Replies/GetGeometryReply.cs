@@ -24,8 +24,8 @@ public readonly struct GetGeometryReply : IXReply<GetGeometryReply, GetGeometryR
     }
 
     public byte Depth => ResponseHeader.GetValue();
-    public GetGeometryReply FromBytes(Span<byte> response)
+    public GetGeometryReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetGeometryReply>();
+        return response.AsSpan().ToStruct<GetGeometryReply>();
     }
 }

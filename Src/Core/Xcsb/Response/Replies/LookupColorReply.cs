@@ -23,8 +23,8 @@ public readonly struct LookupColorReply : IXReply<LookupColorReply,LookupColorRe
                Length == 0;
     }
 
-    public LookupColorReply FromBytes(Span<byte> response)
+    public LookupColorReply FromBytes(byte[] response)
     {
-        return response.ToStruct<LookupColorReply>();
+        return response.AsSpan().ToStruct<LookupColorReply>();
     }
 }

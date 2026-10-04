@@ -41,7 +41,7 @@ public struct GetDeviceMotionEventsReply : IXReply<GetDeviceMotionEventsReply, G
         throw new NotImplementedException();
     }
 
-    public GetDeviceMotionEventsReply FromBytes(Span<byte> response)
+    public GetDeviceMotionEventsReply FromBytes(byte[] response)
     {
         return new GetDeviceMotionEventsReply(response);
     }

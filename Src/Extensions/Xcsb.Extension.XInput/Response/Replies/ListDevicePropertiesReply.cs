@@ -33,7 +33,7 @@ public struct ListDevicePropertiesReply : IXReply<ListDevicePropertiesReply, Lis
         throw new NotImplementedException();
     }
 
-    public ListDevicePropertiesReply FromBytes(Span<byte> response)
+    public ListDevicePropertiesReply FromBytes(byte[] response)
     {
         return new ListDevicePropertiesReply(response);
     }

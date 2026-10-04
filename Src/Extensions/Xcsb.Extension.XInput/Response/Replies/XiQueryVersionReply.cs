@@ -21,8 +21,8 @@ public readonly struct XiQueryVersionReply : IXReply<XiQueryVersionReply, XiQuer
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public XiQueryVersionReply FromBytes(Span<byte> response)
+    public XiQueryVersionReply FromBytes(byte[] response)
     {
-        return response.ToStruct<XiQueryVersionReply>();
+        return response.AsSpan().ToStruct<XiQueryVersionReply>();
     }
 }

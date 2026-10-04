@@ -20,8 +20,8 @@ internal readonly struct GetDeviceKeyMappingResponse : IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetDeviceKeyMappingResponse FromBytes(Span<byte> response)
+    public GetDeviceKeyMappingResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<GetDeviceKeyMappingResponse>();
+        return response.AsSpan().ToStruct<GetDeviceKeyMappingResponse>();
     }
 }

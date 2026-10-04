@@ -20,8 +20,8 @@ public readonly struct ChangeDeviceControlReply(byte majorOpCode) : IXReply<Chan
         return ResponseHeader.Verify(sequence) && Length == 2 && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public ChangeDeviceControlReply FromBytes(Span<byte> response)
+    public ChangeDeviceControlReply FromBytes(byte[] response)
     {
-        return response.ToStruct<ChangeDeviceControlReply>();
+        return response.AsSpan().ToStruct<ChangeDeviceControlReply>();
     }
 }

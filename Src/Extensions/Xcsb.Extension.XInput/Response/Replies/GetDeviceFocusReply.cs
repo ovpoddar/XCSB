@@ -22,8 +22,8 @@ public readonly struct GetDeviceFocusReply : IXReply<GetDeviceFocusReply, GetDev
         return ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetDeviceFocusReply FromBytes(Span<byte> response)
+    public GetDeviceFocusReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetDeviceFocusReply>();
+        return response.AsSpan().ToStruct<GetDeviceFocusReply>();
     }
 }

@@ -26,8 +26,8 @@ public readonly struct ButtonPressEvent : IXEvent<ButtonPressEvent>
     public bool IsSameScreen => _isSameScreen == 1;
     public Button Detail => ResponseHeader.GetValue();
 
-    public ButtonPressEvent FromBytes(Span<byte> response)
+    public ButtonPressEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ButtonPressEvent>();
+        return response.AsSpan().ToStruct<ButtonPressEvent>();
     }
 }

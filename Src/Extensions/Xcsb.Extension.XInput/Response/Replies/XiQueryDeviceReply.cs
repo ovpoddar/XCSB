@@ -32,7 +32,7 @@ public struct XiQueryDeviceReply : IXReply<XiQueryDeviceReply, XiQueryDeviceResp
         throw new NotImplementedException();
     }
 
-    public XiQueryDeviceReply FromBytes(Span<byte> response)
+    public XiQueryDeviceReply FromBytes(byte[] response)
     {
         return new XiQueryDeviceReply(response);
     }

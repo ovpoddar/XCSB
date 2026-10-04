@@ -30,8 +30,8 @@ public struct MotionNotifyEvent : IXEvent<MotionNotifyEvent>
         return ref result;
     }
 
-    public MotionNotifyEvent FromBytes(Span<byte> response)
+    public MotionNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<MotionNotifyEvent>();
+        return response.AsSpan().ToStruct<MotionNotifyEvent>();
     }
 }

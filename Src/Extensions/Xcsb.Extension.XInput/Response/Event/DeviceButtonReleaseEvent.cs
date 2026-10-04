@@ -33,8 +33,8 @@ public readonly struct DeviceButtonReleaseEvent : IXEvent<DeviceButtonReleaseEve
     //     return ref result;
     // }
 
-    public DeviceButtonReleaseEvent FromBytes(Span<byte> response)
+    public DeviceButtonReleaseEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceButtonReleaseEvent>();
+        return response.AsSpan().ToStruct<DeviceButtonReleaseEvent>();
     }
 }

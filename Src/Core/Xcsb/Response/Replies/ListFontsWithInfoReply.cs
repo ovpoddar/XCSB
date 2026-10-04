@@ -60,7 +60,7 @@ public readonly struct ListFontsWithInfoReply : IXReply<ListFontsWithInfoReply, 
         }
     }
 
-    public ListFontsWithInfoReply FromBytes(Span<byte> response)
+    public ListFontsWithInfoReply FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

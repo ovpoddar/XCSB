@@ -14,9 +14,9 @@ public readonly struct DrawableError : IXError<DrawableError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public DrawableError FromBytes(Span<byte> response)
+    public DrawableError FromBytes(byte[] response)
     {
-        return response.ToStruct<DrawableError>();
+        return response.AsSpan().ToStruct<DrawableError>();
     }
 
     public readonly string GetErrorMessage() =>

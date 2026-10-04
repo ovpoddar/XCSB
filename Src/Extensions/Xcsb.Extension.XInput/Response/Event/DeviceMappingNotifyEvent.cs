@@ -17,8 +17,8 @@ public struct DeviceMappingNotifyEvent : IXEvent<DeviceMappingNotifyEvent>
     private readonly byte _pad;
     public readonly uint Time;
 
-    public DeviceMappingNotifyEvent FromBytes(Span<byte> response)
+    public DeviceMappingNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceMappingNotifyEvent>();
+        return response.AsSpan().ToStruct<DeviceMappingNotifyEvent>();
     }
 }

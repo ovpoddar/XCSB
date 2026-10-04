@@ -12,8 +12,8 @@ public readonly struct LastEvent() : IXEvent<LastEvent>
     public readonly EventType Reply = EventType.LastEvent;
     private readonly byte _pad = 0;
     
-    public LastEvent FromBytes(Span<byte> response)
+    public LastEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<LastEvent>();
+        return response.AsSpan().ToStruct<LastEvent>();
     }
 }

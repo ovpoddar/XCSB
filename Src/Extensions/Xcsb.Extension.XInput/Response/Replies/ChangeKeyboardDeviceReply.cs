@@ -20,8 +20,8 @@ public readonly struct ChangeKeyboardDeviceReply : IXReply<ChangeKeyboardDeviceR
         return ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public ChangeKeyboardDeviceReply FromBytes(Span<byte> response)
+    public ChangeKeyboardDeviceReply FromBytes(byte[] response)
     {
-        return response.ToStruct<ChangeKeyboardDeviceReply>();
+        return response.AsSpan().ToStruct<ChangeKeyboardDeviceReply>();
     }
 }

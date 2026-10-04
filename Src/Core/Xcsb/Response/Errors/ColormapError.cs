@@ -14,9 +14,9 @@ public readonly struct ColormapError : IXError<ColormapError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public ColormapError FromBytes(Span<byte> response)
+    public ColormapError FromBytes(byte[] response)
     {
-        return response.ToStruct<ColormapError>();
+        return response.AsSpan().ToStruct<ColormapError>();
     }
 
     public readonly string GetErrorMessage() =>

@@ -19,8 +19,8 @@ public readonly struct GrabPointerReply : IXReply<GrabPointerReply, GrabPointerR
     }
 
     public GrabStatus Status => ResponseHeader.GetValue();
-    public GrabPointerReply FromBytes(Span<byte> response)
+    public GrabPointerReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GrabPointerReply>();
+        return response.AsSpan().ToStruct<GrabPointerReply>();
     }
 }

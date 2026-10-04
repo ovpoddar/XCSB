@@ -26,8 +26,8 @@ public readonly struct DeviceKeyReleaseEvent : IXEvent<DeviceKeyReleaseEvent>
 
     public bool SameScreen => this._sameScreen == 1;
 
-    public DeviceKeyReleaseEvent FromBytes(Span<byte> response)
+    public DeviceKeyReleaseEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceKeyReleaseEvent>();
+        return response.AsSpan().ToStruct<DeviceKeyReleaseEvent>();
     }
 }

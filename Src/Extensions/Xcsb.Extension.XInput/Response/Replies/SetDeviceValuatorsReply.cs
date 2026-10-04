@@ -20,8 +20,8 @@ public readonly struct SetDeviceValuatorsReply : IXReply<SetDeviceValuatorsReply
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public SetDeviceValuatorsReply FromBytes(Span<byte> response)
+    public SetDeviceValuatorsReply FromBytes(byte[] response)
     {
-        return response.ToStruct<SetDeviceValuatorsReply>();
+        return response.AsSpan().ToStruct<SetDeviceValuatorsReply>();
     }
 }

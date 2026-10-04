@@ -20,8 +20,8 @@ public readonly struct GetPointerControlReply : IXReply<GetPointerControlReply, 
                Length == 0;
     }
 
-    public GetPointerControlReply FromBytes(Span<byte> response)
+    public GetPointerControlReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetPointerControlReply>();
+        return response.AsSpan().ToStruct<GetPointerControlReply>();
     }
 }

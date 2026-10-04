@@ -23,8 +23,8 @@ public struct UnMapNotifyEvent : IXEvent<UnMapNotifyEvent>
         return ref result;
     }
 
-    public UnMapNotifyEvent FromBytes(Span<byte> response)
+    public UnMapNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<UnMapNotifyEvent>();
+        return response.AsSpan().ToStruct<UnMapNotifyEvent>();
     }
 }

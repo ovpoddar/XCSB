@@ -14,9 +14,9 @@ public readonly struct ValueError : IXError<ValueError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public ValueError FromBytes(Span<byte> response)
+    public ValueError FromBytes(byte[] response)
     {
-        return response.ToStruct<ValueError>();
+        return response.AsSpan().ToStruct<ValueError>();
     }
 
     public readonly string GetErrorMessage() =>

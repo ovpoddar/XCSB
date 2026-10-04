@@ -33,8 +33,8 @@ public struct KeyPressEvent : IXEvent<KeyPressEvent>
         return ref result;
     }
 
-    public KeyPressEvent FromBytes(Span<byte> response)
+    public KeyPressEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<KeyPressEvent>();
+        return response.AsSpan().ToStruct<KeyPressEvent>();
     }
 }

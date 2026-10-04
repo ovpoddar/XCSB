@@ -19,8 +19,8 @@ public readonly struct GrabKeyboardReply : IXReply<GrabKeyboardReply,GrabKeyboar
     }
 
     public GrabStatus Status => ResponseHeader.GetValue();
-    public GrabKeyboardReply FromBytes(Span<byte> response)
+    public GrabKeyboardReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GrabKeyboardReply>();
+        return response.AsSpan().ToStruct<GrabKeyboardReply>();
     }
 }

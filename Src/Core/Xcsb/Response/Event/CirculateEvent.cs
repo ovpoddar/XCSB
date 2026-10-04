@@ -22,8 +22,8 @@ public struct CirculateNotifyEvent : IXEvent<CirculateNotifyEvent>
         return ref result;
     }
 
-    public CirculateNotifyEvent FromBytes(Span<byte> response)
+    public CirculateNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<CirculateNotifyEvent>();
+        return response.AsSpan().ToStruct<CirculateNotifyEvent>();
     }
 }

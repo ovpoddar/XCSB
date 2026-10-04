@@ -33,7 +33,7 @@ public readonly struct QueryTreeReply : IXReply<QueryTreeReply, QueryTreeRespons
         }
     }
 
-    public QueryTreeReply FromBytes(Span<byte> response)
+    public QueryTreeReply FromBytes(byte[] response)
     {
         return new QueryTreeReply(response);
     }

@@ -23,8 +23,8 @@ public struct ClientMessageEvent : IXEvent<ClientMessageEvent>
         return ref result;
     }
 
-    public ClientMessageEvent FromBytes(Span<byte> response)
+    public ClientMessageEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ClientMessageEvent>();
+        return response.AsSpan().ToStruct<ClientMessageEvent>();
     }
 }

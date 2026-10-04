@@ -14,9 +14,9 @@ public readonly struct ImplementationError : IXError<ImplementationError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public ImplementationError FromBytes(Span<byte> response)
+    public ImplementationError FromBytes(byte[] response)
     {
-        return response.ToStruct<ImplementationError>();
+        return response.AsSpan().ToStruct<ImplementationError>();
     }
 
     public readonly string GetErrorMessage() =>

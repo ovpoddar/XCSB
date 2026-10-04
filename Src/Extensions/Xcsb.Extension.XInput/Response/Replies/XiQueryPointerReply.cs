@@ -46,7 +46,7 @@ public struct XiQueryPointerReply  : IXReply<XiQueryPointerReply, XiQueryPointer
         throw new NotImplementedException();
     }
 
-    public XiQueryPointerReply FromBytes(Span<byte> response)
+    public XiQueryPointerReply FromBytes(byte[] response)
     {
         return new XiQueryPointerReply(response);
     }

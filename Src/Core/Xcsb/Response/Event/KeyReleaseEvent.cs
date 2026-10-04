@@ -30,8 +30,8 @@ public struct KeyReleaseEvent : IXEvent<KeyReleaseEvent>
         return ref result;
     }
 
-    public KeyReleaseEvent FromBytes(Span<byte> response)
+    public KeyReleaseEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<KeyReleaseEvent>();
+        return response.AsSpan().ToStruct<KeyReleaseEvent>();
     }
 }

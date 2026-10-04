@@ -24,8 +24,8 @@ public readonly struct AllocNamedColorReply : IXReply<AllocNamedColorReply, Allo
                Length == 0;
     }
 
-    public AllocNamedColorReply FromBytes(Span<byte> response)
+    public AllocNamedColorReply FromBytes(byte[] response)
     {
-        return response.ToStruct<AllocNamedColorReply>();
+        return response.AsSpan().ToStruct<AllocNamedColorReply>();
     }
 }

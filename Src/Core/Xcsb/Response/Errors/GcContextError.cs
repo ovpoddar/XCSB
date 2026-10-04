@@ -14,9 +14,9 @@ public readonly struct GcContextError : IXError<GcContextError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public GcContextError FromBytes(Span<byte> response)
+    public GcContextError FromBytes(byte[] response)
     {
-        return response.ToStruct<GcContextError>();
+        return response.AsSpan().ToStruct<GcContextError>();
     }
 
     public readonly string GetErrorMessage() =>

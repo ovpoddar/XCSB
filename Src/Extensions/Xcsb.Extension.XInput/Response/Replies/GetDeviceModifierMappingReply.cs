@@ -33,7 +33,7 @@ public struct GetDeviceModifierMappingReply : IXReply<GetDeviceModifierMappingRe
         throw new NotImplementedException();
     }
 
-    public GetDeviceModifierMappingReply FromBytes(Span<byte> response)
+    public GetDeviceModifierMappingReply FromBytes(byte[] response)
     {
         return new GetDeviceModifierMappingReply(response);
     }

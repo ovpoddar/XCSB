@@ -26,8 +26,8 @@ public readonly struct QueryTextExtentsReply : IXReply<QueryTextExtentsReply,Que
     }
 
     public readonly FontDraw FontDraw => ResponseHeader.GetValue();
-    public QueryTextExtentsReply FromBytes(Span<byte> response)
+    public QueryTextExtentsReply FromBytes(byte[] response)
     {
-        return response.ToStruct<QueryTextExtentsReply>();
+        return response.AsSpan().ToStruct<QueryTextExtentsReply>();
     }
 }

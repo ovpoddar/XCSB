@@ -20,8 +20,8 @@ internal readonly struct GetDeviceDontPropagateListResponse : IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetDeviceDontPropagateListResponse FromBytes(Span<byte> response)
+    public GetDeviceDontPropagateListResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<GetDeviceDontPropagateListResponse>();
+        return response.AsSpan().ToStruct<GetDeviceDontPropagateListResponse>();
     }
 }

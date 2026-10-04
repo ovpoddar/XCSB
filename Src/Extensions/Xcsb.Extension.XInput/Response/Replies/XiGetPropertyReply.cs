@@ -24,8 +24,8 @@ public readonly struct XiGetPropertyReply : IXReply<XiGetPropertyReply, XiGetPro
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public XiGetPropertyReply FromBytes(Span<byte> response)
+    public XiGetPropertyReply FromBytes(byte[] response)
     {
-        return response.ToStruct<XiGetPropertyReply>();
+        return response.AsSpan().ToStruct<XiGetPropertyReply>();
     }
 }

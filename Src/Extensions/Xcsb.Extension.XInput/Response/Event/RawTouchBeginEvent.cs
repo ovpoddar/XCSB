@@ -27,7 +27,7 @@ public struct RawTouchBeginEvent : IXEvent<RawTouchBeginEvent>
         throw new NotImplementedException();
     }
 
-    public RawTouchBeginEvent FromBytes(Span<byte> response)
+    public RawTouchBeginEvent FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

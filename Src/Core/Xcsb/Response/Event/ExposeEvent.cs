@@ -16,8 +16,8 @@ public struct ExposeEvent : IXEvent<ExposeEvent>
     public ushort Height;
     public ushort Count;
 
-    public ExposeEvent FromBytes(Span<byte> response)
+    public ExposeEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ExposeEvent>();
+        return response.AsSpan().ToStruct<ExposeEvent>();
     }
 }

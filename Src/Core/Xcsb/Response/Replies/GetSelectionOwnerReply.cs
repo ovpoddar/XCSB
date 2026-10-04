@@ -18,8 +18,8 @@ public readonly struct GetSelectionOwnerReply : IXReply<GetSelectionOwnerReply,G
                Length == 0;
     }
 
-    public GetSelectionOwnerReply FromBytes(Span<byte> response)
+    public GetSelectionOwnerReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetSelectionOwnerReply>();
+        return response.AsSpan().ToStruct<GetSelectionOwnerReply>();
     }
 }

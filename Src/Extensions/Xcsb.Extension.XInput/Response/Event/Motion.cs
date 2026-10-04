@@ -37,7 +37,7 @@ public struct Motion: IXEvent<Motion>
         throw new NotImplementedException();
     }
 
-    public Motion FromBytes(Span<byte> response)
+    public Motion FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

@@ -27,8 +27,8 @@ public struct ConfigureRequestEvent : IXEvent<ConfigureRequestEvent>
         return ref result;
     }
 
-    public ConfigureRequestEvent FromBytes(Span<byte> response)
+    public ConfigureRequestEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ConfigureRequestEvent>();
+        return response.AsSpan().ToStruct<ConfigureRequestEvent>();
     }
 }

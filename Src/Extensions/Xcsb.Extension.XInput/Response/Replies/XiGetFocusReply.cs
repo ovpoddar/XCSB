@@ -20,8 +20,8 @@ public readonly struct XiGetFocusReply : IXReply<XiGetFocusReply, XiGetFocusRepl
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public XiGetFocusReply FromBytes(Span<byte> response)
+    public XiGetFocusReply FromBytes(byte[] response)
     {
-        return response.ToStruct<XiGetFocusReply>();
+        return response.AsSpan().ToStruct<XiGetFocusReply>();
     }
 }

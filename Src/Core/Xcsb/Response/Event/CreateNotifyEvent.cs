@@ -26,8 +26,8 @@ public struct CreateNotifyEvent : IXEvent<CreateNotifyEvent>
                ResponseHeader.GetValue() == 0;
     }
 
-    public CreateNotifyEvent FromBytes(Span<byte> response)
+    public CreateNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<CreateNotifyEvent>();
+        return response.AsSpan().ToStruct<CreateNotifyEvent>();
     }
 }

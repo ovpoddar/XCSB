@@ -29,7 +29,7 @@ public struct ListInstalledColormapsReply:IXReply<ListInstalledColormapsReply,Li
         }
     }
 
-    public ListInstalledColormapsReply FromBytes(Span<byte> response)
+    public ListInstalledColormapsReply FromBytes(byte[] response)
     {
         return new ListInstalledColormapsReply(response);
     }

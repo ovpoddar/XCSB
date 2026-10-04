@@ -32,8 +32,8 @@ public struct EnterNotifyEvent : IXEvent<EnterNotifyEvent>
         return ref result;
     }
 
-    public EnterNotifyEvent FromBytes(Span<byte> response)
+    public EnterNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<EnterNotifyEvent>();
+        return response.AsSpan().ToStruct<EnterNotifyEvent>();
     }
 }

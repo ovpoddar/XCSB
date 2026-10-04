@@ -32,7 +32,7 @@ public struct XiGetSelectedEventsReply: IXReply<XiGetSelectedEventsReply, XiGetS
         throw new NotImplementedException();
     }
 
-    public XiGetSelectedEventsReply FromBytes(Span<byte> response)
+    public XiGetSelectedEventsReply FromBytes(byte[] response)
     {
         return new XiGetSelectedEventsReply(response);
     }

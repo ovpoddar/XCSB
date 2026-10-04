@@ -14,9 +14,9 @@ public readonly struct AccessError : IXError<AccessError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public AccessError FromBytes(Span<byte> response)
+    public AccessError FromBytes(byte[] response)
     {
-        return response.ToStruct<AccessError>();
+        return response.AsSpan().ToStruct<AccessError>();
     }
 
     public readonly string GetErrorMessage() =>

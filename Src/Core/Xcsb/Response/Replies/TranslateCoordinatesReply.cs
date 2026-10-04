@@ -21,8 +21,8 @@ public readonly struct TranslateCoordinatesReply : IXReply<TranslateCoordinatesR
     }
 
     public bool SameScreen => ResponseHeader.GetValue() == 1;
-    public TranslateCoordinatesReply FromBytes(Span<byte> response)
+    public TranslateCoordinatesReply FromBytes(byte[] response)
     {
-        return response.ToStruct<TranslateCoordinatesReply>();
+        return response.AsSpan().ToStruct<TranslateCoordinatesReply>();
     }
 }

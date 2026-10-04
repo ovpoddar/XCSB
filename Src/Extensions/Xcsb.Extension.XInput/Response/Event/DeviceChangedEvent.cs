@@ -22,8 +22,8 @@ public unsafe struct DeviceChangedEvent : IXEvent<DeviceChangedEvent>
     public readonly uint[] Classes;
 
 
-    public DeviceChangedEvent FromBytes(Span<byte> response)
+    public DeviceChangedEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceChangedEvent>();
+        return response.AsSpan().ToStruct<DeviceChangedEvent>();
     }
 }

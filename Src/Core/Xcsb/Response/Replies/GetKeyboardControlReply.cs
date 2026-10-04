@@ -36,7 +36,7 @@ public struct GetKeyboardControlReply: IXReply<GetKeyboardControlReply, GetKeybo
         }
     }
 
-    public GetKeyboardControlReply FromBytes(Span<byte> response)
+    public GetKeyboardControlReply FromBytes(byte[] response)
     {
         throw new Exception("simplify this");
     }

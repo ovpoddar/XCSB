@@ -14,9 +14,9 @@ public readonly struct LengthError : IXError<LengthError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public LengthError FromBytes(Span<byte> response)
+    public LengthError FromBytes(byte[] response)
     {
-        return response.ToStruct<LengthError>();
+        return response.AsSpan().ToStruct<LengthError>();
     }
 
     public readonly string GetErrorMessage() =>

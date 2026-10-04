@@ -22,8 +22,8 @@ public struct GravityNotifyEvent : IXEvent<GravityNotifyEvent>
         return ref result;
     }
 
-    public GravityNotifyEvent FromBytes(Span<byte> response)
+    public GravityNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<GravityNotifyEvent>();
+        return response.AsSpan().ToStruct<GravityNotifyEvent>();
     }
 }

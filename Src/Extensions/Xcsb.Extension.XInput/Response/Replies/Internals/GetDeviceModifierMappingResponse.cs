@@ -20,8 +20,8 @@ internal readonly struct GetDeviceModifierMappingResponse : IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetDeviceModifierMappingResponse FromBytes(Span<byte> response)
+    public GetDeviceModifierMappingResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<GetDeviceModifierMappingResponse>();
+        return response.AsSpan().ToStruct<GetDeviceModifierMappingResponse>();
     }
 }

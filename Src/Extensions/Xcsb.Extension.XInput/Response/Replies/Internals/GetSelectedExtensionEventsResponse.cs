@@ -21,8 +21,8 @@ internal readonly struct GetSelectedExtensionEventsResponse: IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetSelectedExtensionEventsResponse FromBytes(Span<byte> response)
+    public GetSelectedExtensionEventsResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<GetSelectedExtensionEventsResponse>();
+        return response.AsSpan().ToStruct<GetSelectedExtensionEventsResponse>();
     }
 }

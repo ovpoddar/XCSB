@@ -22,8 +22,8 @@ public struct PropertyNotifyEvent : IXEvent<PropertyNotifyEvent>
         return ref result;
     }
 
-    public PropertyNotifyEvent FromBytes(Span<byte> response)
+    public PropertyNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<PropertyNotifyEvent>();
+        return response.AsSpan().ToStruct<PropertyNotifyEvent>();
     }
 }

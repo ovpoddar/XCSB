@@ -20,8 +20,8 @@ public readonly struct GetDeviceControlReply : IXReply<GetDeviceControlReply, Ge
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetDeviceControlReply FromBytes(Span<byte> response)
+    public GetDeviceControlReply FromBytes(byte[] response)
     {
-        return response.ToStruct<GetDeviceControlReply>();
+        return response.AsSpan().ToStruct<GetDeviceControlReply>();
     }
 }

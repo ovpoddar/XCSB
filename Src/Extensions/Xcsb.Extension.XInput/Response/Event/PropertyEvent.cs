@@ -24,8 +24,8 @@ public unsafe struct PropertyEvent : IXEvent<PropertyEvent>
         throw new NotImplementedException();
     }
 
-    public PropertyEvent FromBytes(Span<byte> response)
+    public PropertyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<PropertyEvent>();
+        return response.AsSpan().ToStruct<PropertyEvent>();
     }
 }

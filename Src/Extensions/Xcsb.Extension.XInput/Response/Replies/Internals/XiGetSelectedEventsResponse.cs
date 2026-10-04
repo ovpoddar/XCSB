@@ -20,8 +20,8 @@ internal readonly struct XiGetSelectedEventsResponse: IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public XiGetSelectedEventsResponse FromBytes(Span<byte> response)
+    public XiGetSelectedEventsResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<XiGetSelectedEventsResponse>();
+        return response.AsSpan().ToStruct<XiGetSelectedEventsResponse>();
     }
 }

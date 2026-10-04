@@ -18,8 +18,8 @@ public unsafe struct DevicePropertyNotifyEvent : IXEvent<DevicePropertyNotifyEve
     public readonly byte DeviceId;
 
 
-    public DevicePropertyNotifyEvent FromBytes(Span<byte> response)
+    public DevicePropertyNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DevicePropertyNotifyEvent>();
+        return response.AsSpan().ToStruct<DevicePropertyNotifyEvent>();
     }
 }

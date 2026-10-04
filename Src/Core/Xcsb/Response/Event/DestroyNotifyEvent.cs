@@ -20,8 +20,8 @@ public struct DestroyNotifyEvent : IXEvent<DestroyNotifyEvent>
         return ref result;
     }
 
-    public DestroyNotifyEvent FromBytes(Span<byte> response)
+    public DestroyNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DestroyNotifyEvent>();
+        return response.AsSpan().ToStruct<DestroyNotifyEvent>();
     }
 }

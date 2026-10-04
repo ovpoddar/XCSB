@@ -19,8 +19,8 @@ public readonly struct InternAtomReply : IXReply<InternAtomReply,InternAtomReply
                Length == 0;
     }
 
-    public InternAtomReply FromBytes(Span<byte> response)
+    public InternAtomReply FromBytes(byte[] response)
     {
-        return response.ToStruct<InternAtomReply>();
+        return response.AsSpan().ToStruct<InternAtomReply>();
     }
 }

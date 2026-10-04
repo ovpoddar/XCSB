@@ -26,8 +26,8 @@ public readonly struct ProximityOutEvent : IXEvent<ProximityOutEvent>
 
     public bool SameScreen => this._sameScreen == 1;
 
-    public ProximityOutEvent FromBytes(Span<byte> response)
+    public ProximityOutEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ProximityOutEvent>();
+        return response.AsSpan().ToStruct<ProximityOutEvent>();
     }
 }

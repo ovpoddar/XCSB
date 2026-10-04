@@ -28,8 +28,8 @@ public struct ConfigureNotifyEvent : IXEvent<ConfigureNotifyEvent>
         return ref result;
     }
 
-    public ConfigureNotifyEvent FromBytes(Span<byte> response)
+    public ConfigureNotifyEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<ConfigureNotifyEvent>();
+        return response.AsSpan().ToStruct<ConfigureNotifyEvent>();
     }
 }

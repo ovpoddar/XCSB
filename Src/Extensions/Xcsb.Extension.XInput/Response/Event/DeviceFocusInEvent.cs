@@ -20,8 +20,8 @@ public struct DeviceFocusInEvent : IXEvent<DeviceFocusInEvent>
     public readonly byte DeviceId;
 
 
-    public DeviceFocusInEvent FromBytes(Span<byte> response)
+    public DeviceFocusInEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceFocusInEvent>();
+        return response.AsSpan().ToStruct<DeviceFocusInEvent>();
     }
 }

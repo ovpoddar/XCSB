@@ -41,7 +41,7 @@ public readonly struct ListExtensionsReply : IXReply<ListExtensionsReply, ListEx
         }
     }
     
-    public ListExtensionsReply FromBytes(Span<byte> response)
+    public ListExtensionsReply FromBytes(byte[] response)
     {
         return new ListExtensionsReply(response);
     }

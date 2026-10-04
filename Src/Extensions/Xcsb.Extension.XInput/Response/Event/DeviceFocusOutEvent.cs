@@ -19,8 +19,8 @@ public struct DeviceFocusOutEvent : IXEvent<DeviceFocusOutEvent>
     public readonly NotifyMode Mode;
     public readonly byte DeviceId;
 
-    public DeviceFocusOutEvent FromBytes(Span<byte> response)
+    public DeviceFocusOutEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<DeviceFocusOutEvent>();
+        return response.AsSpan().ToStruct<DeviceFocusOutEvent>();
     }
 }

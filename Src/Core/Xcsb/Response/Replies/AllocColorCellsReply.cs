@@ -32,7 +32,7 @@ public struct AllocColorCellsReply : IXReply<AllocColorCellsReply, AllocColorCel
             : MemoryMarshal.Cast<byte, ushort>(response[cursor..]).ToArray();
     }
 
-    public AllocColorCellsReply FromBytes(Span<byte> response)
+    public AllocColorCellsReply FromBytes(byte[] response)
     {
         return new AllocColorCellsReply(response);
     }

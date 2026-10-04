@@ -38,7 +38,7 @@ public struct TouchBeginEvent: IXEvent<TouchBeginEvent>
         throw new NotImplementedException();
     }
 
-    public TouchBeginEvent FromBytes(Span<byte> response)
+    public TouchBeginEvent FromBytes(byte[] response)
     {
         throw new NotImplementedException();
     }

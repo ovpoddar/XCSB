@@ -20,8 +20,8 @@ internal readonly struct QueryDeviceStateResponse: IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public QueryDeviceStateResponse FromBytes(Span<byte> response)
+    public QueryDeviceStateResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<QueryDeviceStateResponse>();
+        return response.AsSpan().ToStruct<QueryDeviceStateResponse>();
     }
 }

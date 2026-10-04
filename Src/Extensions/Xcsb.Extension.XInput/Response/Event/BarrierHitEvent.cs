@@ -28,8 +28,8 @@ public struct BarrierHitEvent : IXEvent<BarrierHitEvent>
     public readonly Fp3232 DY;
 
 
-    public BarrierHitEvent FromBytes(Span<byte> response)
+    public BarrierHitEvent FromBytes(byte[] response)
     {
-        return response.ToStruct<BarrierHitEvent>();
+        return response.AsSpan().ToStruct<BarrierHitEvent>();
     }
 }

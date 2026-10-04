@@ -14,9 +14,9 @@ public readonly struct NameError : IXError<NameError>
     public readonly ushort MinorOpcode;
     public readonly byte MajorOpcode;
 
-    public NameError FromBytes(Span<byte> response)
+    public NameError FromBytes(byte[] response)
     {
-        return response.ToStruct<NameError>();
+        return response.AsSpan().ToStruct<NameError>();
     }
 
     public readonly string GetErrorMessage() =>

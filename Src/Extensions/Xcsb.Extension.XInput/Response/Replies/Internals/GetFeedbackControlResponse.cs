@@ -20,8 +20,8 @@ internal readonly struct GetFeedbackControlResponse: IVerify
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
-    public GetFeedbackControlResponse FromBytes(Span<byte> response)
+    public GetFeedbackControlResponse FromBytes(byte[] response)
     {
-        return response.ToStruct<GetFeedbackControlResponse>();
+        return response.AsSpan().ToStruct<GetFeedbackControlResponse>();
     }
 }

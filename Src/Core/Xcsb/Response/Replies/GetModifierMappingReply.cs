@@ -30,7 +30,7 @@ public struct GetModifierMappingReply:IXReply<GetModifierMappingReply, GetModifi
         }
     }
 
-    public GetModifierMappingReply FromBytes(Span<byte> response)
+    public GetModifierMappingReply FromBytes(byte[] response)
     {
         return new GetModifierMappingReply(response);
     }
