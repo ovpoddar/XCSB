@@ -20,16 +20,8 @@ public struct DeviceFocusInEvent : IXEvent<DeviceFocusInEvent>
     public readonly byte DeviceId;
 
 
-    public ref readonly DeviceFocusInEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<DeviceFocusInEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceFocusIn || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
-
     public DeviceFocusInEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DeviceFocusInEvent>();
     }
 }

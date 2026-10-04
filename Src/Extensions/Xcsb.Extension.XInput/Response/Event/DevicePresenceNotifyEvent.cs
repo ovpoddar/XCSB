@@ -15,16 +15,8 @@ public struct DevicePresenceNotifyEvent : IXEvent<DevicePresenceNotifyEvent>
     public readonly byte DeviceId;
     public readonly ushort Control;
 
-    public ref readonly DevicePresenceNotifyEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<DevicePresenceNotifyEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DevicePresenceNotify || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
-
     public DevicePresenceNotifyEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DevicePresenceNotifyEvent>();
     }
 }

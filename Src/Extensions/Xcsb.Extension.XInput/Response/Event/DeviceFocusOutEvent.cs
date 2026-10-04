@@ -19,21 +19,8 @@ public struct DeviceFocusOutEvent : IXEvent<DeviceFocusOutEvent>
     public readonly NotifyMode Mode;
     public readonly byte DeviceId;
 
-    public bool Verify()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public ref readonly DeviceFocusOutEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<DeviceFocusOutEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceFocusOut || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
-
     public DeviceFocusOutEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DeviceFocusOutEvent>();
     }
 }

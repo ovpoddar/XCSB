@@ -26,16 +26,8 @@ public readonly struct DeviceMotionNotifyEvent : IXEvent<DeviceMotionNotifyEvent
 
     public bool SameScreen => this._sameScreen == 1;
 
-    public ref readonly DeviceMotionNotifyEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<DeviceMotionNotifyEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceMotionNotify || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
-
     public DeviceMotionNotifyEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DeviceMotionNotifyEvent>();
     }
 }

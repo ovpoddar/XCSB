@@ -3,6 +3,6 @@ using Xcsb.Connection.Helpers;
 
 namespace Xcsb.Connection.Response.Contract;
 
-internal interface IXEvent<T> : IXBaseResponse<T> where T : struct
+internal interface IXEvent<out T> : IXBaseResponse<T> where T : struct
 {
 }

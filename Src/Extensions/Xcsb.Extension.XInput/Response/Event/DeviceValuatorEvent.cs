@@ -25,16 +25,8 @@ public unsafe struct DeviceValuatorEvent : IXEvent<DeviceValuatorEvent>
         }
     }
 
-    public ref readonly DeviceValuatorEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<DeviceValuatorEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceValuator || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
-
     public DeviceValuatorEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DeviceValuatorEvent>();
     }
 }

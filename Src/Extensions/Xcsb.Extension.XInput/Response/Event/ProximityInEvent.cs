@@ -25,16 +25,9 @@ public readonly struct ProximityInEvent : IXEvent<ProximityInEvent>
     public readonly byte DeviceId;
 
     public bool SameScreen => this._sameScreen == 1;
-    public ref readonly ProximityInEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<ProximityInEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.ProximityIn || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
 
     public ProximityInEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<ProximityInEvent>();
     }
 }

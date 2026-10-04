@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Xcsb.Connection.Helpers;
 using Xcsb.Connection.Response.Contract;
 using Xcsb.Extension.XInput.Models;
 
@@ -18,11 +19,11 @@ public readonly struct GetDeviceFocusReply : IXReply<GetDeviceFocusReply, GetDev
 
     public bool Verify(in int sequence)
     {
-        return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
+        return ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }
 
     public GetDeviceFocusReply FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<GetDeviceFocusReply>();
     }
 }

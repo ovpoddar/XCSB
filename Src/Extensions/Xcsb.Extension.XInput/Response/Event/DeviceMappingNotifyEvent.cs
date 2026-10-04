@@ -17,16 +17,8 @@ public struct DeviceMappingNotifyEvent : IXEvent<DeviceMappingNotifyEvent>
     private readonly byte _pad;
     public readonly uint Time;
 
-    public ref readonly DeviceMappingNotifyEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<DeviceMappingNotifyEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceMappingNotify || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
-
     public DeviceMappingNotifyEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DeviceMappingNotifyEvent>();
     }
 }

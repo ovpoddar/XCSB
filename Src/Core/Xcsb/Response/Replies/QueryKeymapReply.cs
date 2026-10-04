@@ -4,7 +4,7 @@ using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public struct QueryKeymapReply:IXReply<QueryKeymapReply, QueryKeymapResponse>
+public struct QueryKeymapReply : IXReply<QueryKeymapReply, QueryKeymapResponse>
 {
     public readonly ResponseType Reply;
     public readonly ushort Sequence;

@@ -25,16 +25,9 @@ public readonly struct DeviceKeyPressEvent : IXEvent<DeviceKeyPressEvent>
     public readonly byte DeviceId;
 
     public bool SameScreen => this._sameScreen == 1;
-    public ref readonly DeviceKeyPressEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<DeviceKeyPressEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DeviceKeyPress || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
 
     public DeviceKeyPressEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DeviceKeyPressEvent>();
     }
 }

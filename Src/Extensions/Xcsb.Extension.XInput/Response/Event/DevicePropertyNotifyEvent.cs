@@ -18,16 +18,8 @@ public unsafe struct DevicePropertyNotifyEvent : IXEvent<DevicePropertyNotifyEve
     public readonly byte DeviceId;
 
 
-    public ref readonly DevicePropertyNotifyEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<DevicePropertyNotifyEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.DevicePropertyNotify || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
-
     public DevicePropertyNotifyEvent FromBytes(Span<byte> response)
     {
-        throw new NotImplementedException();
+        return response.ToStruct<DevicePropertyNotifyEvent>();
     }
 }
