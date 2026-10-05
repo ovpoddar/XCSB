@@ -22,7 +22,9 @@ internal static class ConstrainPragmaWriter
         }
 
         var methodText = node.SyntaxTree.GetText().ToString(node.FullSpan);
+        var newline = methodText.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
         var fullText = methodText.AsSpan();
+        var wrotePragma = false;
         while (true)
         {
             var startIndex = fullText.IndexOf(startSequence.AsSpan());
@@ -32,15 +34,23 @@ internal static class ConstrainPragmaWriter
             var endIndex = fullText.IndexOf(endSequence.AsSpan());
 
             if (endIndex == -1) break;
-            builder.AppendLine();
-            builder.AppendLine(fullText.Slice(0, endIndex + endSequence.Length).ToString());
+
+            var pragmaBlock = NormalizeBlock(fullText.Slice(0, endIndex + endSequence.Length).ToString(), newline);
+            builder.Append(newline);
+            builder.Append(pragmaBlock);
+            wrotePragma = true;
             fullText = fullText.Slice(endIndex + endSequence.Length);
-            
+
             startIndex = fullText.IndexOf(startSequence.AsSpan());
             if (startIndex == -1) break;
         }
-        
-        if (appendTrailingSemicolon) builder.AppendLine(";");
+
+        if (appendTrailingSemicolon)
+        {
+            if (wrotePragma)
+                builder.Append(newline);
+            builder.Append(';').Append(newline);
+        }
     }
 
     internal static bool Contain(IMethodSymbol method, string type)
@@ -52,6 +62,7 @@ internal static class ConstrainPragmaWriter
         }
 
         var methodText = node.SyntaxTree.GetText().ToString(node.FullSpan);
+        var newline = methodText.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
         var fullText = methodText.AsSpan();
         while (true)
         {
@@ -65,14 +76,32 @@ internal static class ConstrainPragmaWriter
             var endIndex = fullText.IndexOf(endSequence.AsSpan());
 
             if (endIndex == -1) break;
-            if (fullText.Slice(startSequence.Length, endIndex).Contains(type.AsSpan(), StringComparison.InvariantCultureIgnoreCase))
+            var pragmaBody = NormalizeBlock(fullText.Slice(startSequence.Length, endIndex - startSequence.Length).ToString(), newline);
+            if (pragmaBody.Contains(type, StringComparison.InvariantCultureIgnoreCase))
                 return true;
             fullText = fullText.Slice(endIndex + endSequence.Length);
-            
+
             startIndex = fullText.IndexOf(startSequence.AsSpan());
             if (startIndex == -1) break;
         }
-        
+
         return false;
+    }
+
+    private static string NormalizeBlock(string pragmaBlock, string newline)
+    {
+        var lines = pragmaBlock.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        var significantLines = lines.Where(static line => !string.IsNullOrWhiteSpace(line)).ToArray();
+        if (significantLines.Length == 0) return string.Empty;
+
+        var commonIndent = significantLines
+            .Select(static line => line.TakeWhile(static ch => ch == ' ' || ch == '\t').Count())
+            .Min();
+
+        return string.Join(newline, lines.Select(line =>
+        {
+            if (string.IsNullOrWhiteSpace(line)) return string.Empty;
+            return line.Substring(Math.Min(commonIndent, line.Length));
+        }));
     }
 }
