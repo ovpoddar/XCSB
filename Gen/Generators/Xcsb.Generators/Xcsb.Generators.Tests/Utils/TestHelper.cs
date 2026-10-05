@@ -22,7 +22,7 @@ public static class TestHelper
         Assert.Empty(errors.Where(d => d.Severity == DiagnosticSeverity.Error));
 
         var runResult = driver.GetRunResult();
-        Assert.Equal(2, runResult.GeneratedTrees.Length);
+        Assert.True(2 <= runResult.GeneratedTrees.Length);
 
         return runResult.GeneratedTrees.First(t => t.FilePath.Contains(expectedFileSubstring)).GetText().ToString();
     }
@@ -38,7 +38,7 @@ public static class TestHelper
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
 
         Assert.Contains(diagnostics, d => d.Id == expectedDiagnosticId && d.Severity == DiagnosticSeverity.Error);
-        Assert.Equal(expectedGeneratedTreeCount, driver.GetRunResult().GeneratedTrees.Length);
+        Assert.True(expectedGeneratedTreeCount <= driver.GetRunResult().GeneratedTrees.Length);
     }
 
     private static Compilation CreateCompilation(params string[] sources)

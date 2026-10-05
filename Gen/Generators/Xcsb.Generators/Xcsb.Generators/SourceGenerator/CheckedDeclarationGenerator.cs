@@ -4,20 +4,19 @@ using Xcsb.Generators.CodeGen.InterfaceGeneration;
 
 namespace Xcsb.Generators.SourceGenerator;
 
-[Generator]
+// [Generator]
 public sealed class CheckedDeclarationGenerator : DeclarationGeneratorBase
 {
-    protected override string AttributeFullName => DeclarationAttributeCode.Checked.FullName;
-    protected override string AttributeSourceCode => DeclarationAttributeCode.Checked.Source;
-    protected override string GeneratedSuffix => DeclarationAttributeCode.Checked.SuffixName;
-
-    protected override string GenerateInterfaceImplementation(INamedTypeSymbol interfaceSymbol)
-    {
-        return InterfaceCodeGenerator.Generate(
-            interfaceSymbol,
-            interfaceSuffix: GeneratedSuffix,
-            methodSuffix: GeneratedSuffix,
-            returnTypeProvider: _ => "void"
-        );
-    }
+    // protected override string AttributeFullName => DeclarationAttributeCode.Checked.FullName;
+    // protected override string GeneratedSuffix => DeclarationAttributeCode.Checked.SuffixName;
+    //
+    // protected override string GenerateInterfaceImplementation(INamedTypeSymbol interfaceSymbol)
+    // {
+    //     return InterfaceCodeGenerator.Generate(
+    //         interfaceSymbol,
+    //         interfaceSuffix: GeneratedSuffix,
+    //         methodSuffix: GeneratedSuffix,
+    //         returnTypeProvider: _ => "void"
+    //     );
+    // }
 }

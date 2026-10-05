@@ -28,7 +28,7 @@ namespace TestNamespace
 }";
 
         var generatedSource =
-            TestHelper.GenerateSource<CheckedDeclarationGenerator>(source, AttributeSource, "ITestServiceChecked.g.cs");
+            TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceChecked.g.cs");
 
         Assert.Contains("public interface ITestServiceChecked", generatedSource);
         Assert.Contains("namespace TestNamespace", generatedSource);
@@ -51,7 +51,7 @@ namespace TestNamespace
 }";
 
         var generatedSource =
-            TestHelper.GenerateSource<CheckedDeclarationGenerator>(source, AttributeSource, "ITestServiceChecked.g.cs");
+            TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceChecked.g.cs");
 
         Assert.Contains("void DoStaffChecked();", generatedSource);
     }
@@ -78,7 +78,7 @@ namespace TestNamespace
 }";
 
         var generatedSource =
-            TestHelper.GenerateSource<CheckedDeclarationGenerator>(source, AttributeSource, "ITestServiceChecked.g.cs");
+            TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceChecked.g.cs");
 
         Assert.Contains("void DoSomethingChecked<T>(int a, int b, T c);", generatedSource);
         Assert.Contains("void DoSomething1Checked<T>(int a, int b, global::System.ReadOnlySpan<T> c);", generatedSource);
@@ -114,6 +114,6 @@ namespace TestNamespace
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<CheckedDeclarationGenerator>(source, AttributeSource, "XCSBGEN001");
+        TestHelper.AssertDiagnostic<DeclarationGeneratorBase>(source, AttributeSource, "XCSBGEN001");
     }
 }

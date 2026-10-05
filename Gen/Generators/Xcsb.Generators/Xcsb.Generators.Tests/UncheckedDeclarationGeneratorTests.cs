@@ -28,7 +28,7 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<UncheckedDeclarationGenerator>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
+        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
         
         Assert.Contains("public interface ITestServiceUnchecked", generatedSource);
         Assert.Contains("namespace TestNamespace", generatedSource);
@@ -50,7 +50,7 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<UncheckedDeclarationGenerator>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
+        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
         
         Assert.Contains("void DoStaffUnchecked();", generatedSource);
     }
@@ -77,7 +77,7 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<UncheckedDeclarationGenerator>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
+        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
         
         Assert.Contains("void DoSomethingUnchecked<T>(int a, int b, T c);", generatedSource);
         Assert.Contains("void DoSomething1Unchecked<T>(int a, int b, global::System.ReadOnlySpan<T> c);", generatedSource);
@@ -112,6 +112,6 @@ namespace TestNamespace
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<UncheckedDeclarationGenerator>(source, AttributeSource, "XCSBGEN001");
+        TestHelper.AssertDiagnostic<DeclarationGeneratorBase>(source, AttributeSource, "XCSBGEN001");
     }
 }

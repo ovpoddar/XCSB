@@ -27,7 +27,7 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<BufferDeclarationGenerator>(source, AttributeSource, "ITestServiceBuffer.g.cs");
+        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceBuffer.g.cs");
 
         Assert.Contains("public interface ITestServiceBuffer", generatedSource);
         Assert.Contains("namespace TestNamespace", generatedSource);
@@ -49,7 +49,7 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<BufferDeclarationGenerator>(source, AttributeSource, "ITestServiceBuffer.g.cs");
+        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceBuffer.g.cs");
 
         Assert.Contains("void DoStaff();", generatedSource);
         Assert.DoesNotContain("DoStaffBuffer", generatedSource);
@@ -79,7 +79,7 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<BufferDeclarationGenerator>(source, AttributeSource, "ITestServiceBuffer.g.cs");
+        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceBuffer.g.cs");
 
         Assert.Contains("void DoSomething<T>(int a, int b, T c);", generatedSource);
         Assert.Contains("void DoSomething1<T>(int a, int b, global::System.ReadOnlySpan<T> c);", generatedSource);
@@ -116,6 +116,6 @@ namespace TestNamespace
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<BufferDeclarationGenerator>(source, AttributeSource, "XCSBGEN001");
+        TestHelper.AssertDiagnostic<DeclarationGeneratorBase>(source, AttributeSource, "XCSBGEN001");
     }
 }

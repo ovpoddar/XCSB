@@ -5,18 +5,53 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Xcsb.Generators.CodeGen;
+using Xcsb.Generators.CodeGen.InterfaceGeneration;
 
 namespace Xcsb.Generators;
 
-public abstract class DeclarationGeneratorBase : IIncrementalGenerator
+[Generator]
+public class DeclarationGeneratorBase : IIncrementalGenerator
 {
-    protected abstract string AttributeFullName { get; }
-    protected abstract string AttributeSourceCode { get; }
-    protected abstract string GeneratedSuffix { get; }
+    private const string DeclarationName = "DeclarationAttribute";
 
-    private string AttributeDisplayName => $"{GeneratedSuffix}Declaration";
+    private const string DeclarationSource =
+        $$"""
+          using System;
 
-    protected abstract string GenerateInterfaceImplementation(INamedTypeSymbol interfaceSymbol);
+          namespace Xcsb.Generators
+          {
+              [AttributeUsage(validOn: AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
+              public sealed class {{DeclarationName}} : Attribute
+              {
+                  public DeclarationKind Kind { get; }
+                  public {{DeclarationName}} (DeclarationKind kind)
+                  {
+                      Kind = kind;
+                  }
+                  
+                  private {{DeclarationName}} () {}
+              }
+          }
+
+          """;
+
+    private const string DeclarationKindSource =
+        """
+        using System;
+
+        namespace Xcsb.Generators
+        {
+            [Flags]
+            public enum DeclarationKind
+            {
+                Checked = 0,
+                Unchecked = 1,
+                Buffer = 2
+            }
+
+        }
+
+        """;
 
     private readonly record struct DeclarationResult
     {
@@ -45,23 +80,75 @@ public abstract class DeclarationGeneratorBase : IIncrementalGenerator
         context.RegisterPostInitializationOutput(ctx =>
         {
             ctx.AddSource(
-                $"{AttributeFullName}.g.cs",
-                SourceText.From(AttributeSourceCode, Encoding.UTF8));
+                $"Xcsb.Generators.BufferDeclarationAttribute.g.cs",
+                SourceText.From(
+                    $$"""
+                      using System;
+
+                      namespace Xcsb.Generators;
+
+                      [AttributeUsage(AttributeTargets.Interface)]
+                      public class BufferDeclarationAttribute : Attribute
+                      {
+
+                      }
+                      """, Encoding.UTF8));
+
+            ctx.AddSource(
+                $"Xcsb.Generators.CheckedDeclarationAttribute.g.cs",
+                SourceText.From(
+                    $$"""
+                      using System;
+
+                      namespace Xcsb.Generators;
+
+                      [AttributeUsage(AttributeTargets.Interface)]
+                      public class CheckedDeclarationAttribute : Attribute
+                      {
+
+                      }
+                      """, Encoding.UTF8));
+
+            ctx.AddSource(
+                $"Xcsb.Generators.UncheckedDeclarationAttribute.g.cs",
+                SourceText.From(
+                    $$"""
+                      using System;
+
+                      namespace Xcsb.Generators;
+
+                      [AttributeUsage(AttributeTargets.Interface)]
+                      public class UncheckedDeclarationAttribute : Attribute
+                      {
+
+                      }
+                      """, Encoding.UTF8));
+            
+            ctx.AddSource("Xcsb.Generators.DeclarationAttribute.g.cs", 
+                SourceText.From(DeclarationSource, Encoding.UTF8));
+            ctx.AddSource("Xcsb.Generators.DeclarationKind.g.cs",
+                SourceText.From(DeclarationKindSource, Encoding.UTF8));
         });
 
-        var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-                AttributeFullName,
+        var buffer = context.SyntaxProvider.ForAttributeWithMetadataName(
+                "Xcsb.Generators.BufferDeclarationAttribute",
                 predicate: static (node, _) => node is InterfaceDeclarationSyntax,
                 transform: static (ctx, _) => (INamedTypeSymbol)ctx.TargetSymbol)
             .WithComparer(SymbolEqualityComparer.Default)
             .Select((interfaceSymbol, _) =>
             {
-                var hintName = $"{interfaceSymbol.Name}{GeneratedSuffix}.g.cs";
+                var hintName = $"{interfaceSymbol.Name}Buffer.g.cs";
                 var offender = GeneratorDiagnostics.FindFirstOffendingMethod(interfaceSymbol);
                 if (offender is null)
                 {
                     return new DeclarationResult(
-                        hintName, interfaceSymbol.Name, GenerateInterfaceImplementation(interfaceSymbol),
+                        hintName, interfaceSymbol.Name,
+                        InterfaceCodeGenerator.Generate(
+                            interfaceSymbol,
+                            interfaceSuffix: "Buffer",
+                            methodSuffix: string.Empty,
+                            returnTypeProvider: _ => "void"
+                        ),
                         null, null, null);
                 }
 
@@ -72,7 +159,7 @@ public abstract class DeclarationGeneratorBase : IIncrementalGenerator
                     offender.Locations.FirstOrDefault() ?? interfaceSymbol.Locations.FirstOrDefault());
             });
 
-        context.RegisterSourceOutput(provider, (ctx, result) =>
+        context.RegisterSourceOutput(buffer, (ctx, result) =>
         {
             if (result.OffendingMethodName is not null)
             {
@@ -80,11 +167,123 @@ public abstract class DeclarationGeneratorBase : IIncrementalGenerator
                     GeneratorDiagnostics.DeclarationInvalidReturnType,
                     result.OffendingLocation ?? Location.None,
                     result.OffendingMethodName, result.InterfaceName, result.OffendingReturnType,
-                    AttributeDisplayName));
+                    "BufferDeclaration"));
                 return;
             }
 
             ctx.AddSource(result.HintName, SourceText.From(result.Source!, Encoding.UTF8));
+        });
+
+
+        var Checked = context.SyntaxProvider.ForAttributeWithMetadataName(
+                "Xcsb.Generators.CheckedDeclarationAttribute",
+                predicate: static (node, _) => node is InterfaceDeclarationSyntax,
+                transform: static (ctx, _) => (INamedTypeSymbol)ctx.TargetSymbol)
+            .WithComparer(SymbolEqualityComparer.Default)
+            .Select((interfaceSymbol, _) =>
+            {
+                var hintName = $"{interfaceSymbol.Name}Checked.g.cs";
+                var offender = GeneratorDiagnostics.FindFirstOffendingMethod(interfaceSymbol);
+                if (offender is null)
+                {
+                    return new DeclarationResult(
+                        hintName, interfaceSymbol.Name,
+                        InterfaceCodeGenerator.Generate(
+                            interfaceSymbol,
+                            interfaceSuffix: "Checked",
+                            methodSuffix: "Checked",
+                            returnTypeProvider: _ => "void"
+                        ),
+                        null, null, null);
+                }
+
+                return new DeclarationResult(
+                    hintName, interfaceSymbol.Name, null,
+                    offender.Name,
+                    offender.ReturnType.ToDisplayString(),
+                    offender.Locations.FirstOrDefault() ?? interfaceSymbol.Locations.FirstOrDefault());
+            });
+
+        context.RegisterSourceOutput(Checked, (ctx, result) =>
+        {
+            if (result.OffendingMethodName is not null)
+            {
+                ctx.ReportDiagnostic(Diagnostic.Create(
+                    GeneratorDiagnostics.DeclarationInvalidReturnType,
+                    result.OffendingLocation ?? Location.None,
+                    result.OffendingMethodName, result.InterfaceName, result.OffendingReturnType,
+                    "CheckedDeclaration"));
+                return;
+            }
+
+            ctx.AddSource(result.HintName, SourceText.From(result.Source!, Encoding.UTF8));
+        });
+
+        var Unchecked = context.SyntaxProvider.ForAttributeWithMetadataName(
+                "Xcsb.Generators.UncheckedDeclarationAttribute",
+                predicate: static (node, _) => node is InterfaceDeclarationSyntax,
+                transform: static (ctx, _) => (INamedTypeSymbol)ctx.TargetSymbol)
+            .WithComparer(SymbolEqualityComparer.Default)
+            .Select((interfaceSymbol, _) =>
+            {
+                var hintName = $"{interfaceSymbol.Name}Unchecked.g.cs";
+                var offender = GeneratorDiagnostics.FindFirstOffendingMethod(interfaceSymbol);
+                if (offender is null)
+                {
+                    return new DeclarationResult(
+                        hintName, interfaceSymbol.Name,
+                        InterfaceCodeGenerator.Generate(
+                            interfaceSymbol,
+                            interfaceSuffix: "Unchecked",
+                            methodSuffix: "Unchecked",
+                            returnTypeProvider: _ => "void"
+                        ),
+                        null, null, null);
+                }
+
+                return new DeclarationResult(
+                    hintName, interfaceSymbol.Name, null,
+                    offender.Name,
+                    offender.ReturnType.ToDisplayString(),
+                    offender.Locations.FirstOrDefault() ?? interfaceSymbol.Locations.FirstOrDefault());
+            });
+
+        context.RegisterSourceOutput(Unchecked, (ctx, result) =>
+        {
+            if (result.OffendingMethodName is not null)
+            {
+                ctx.ReportDiagnostic(Diagnostic.Create(
+                    GeneratorDiagnostics.DeclarationInvalidReturnType,
+                    result.OffendingLocation ?? Location.None,
+                    result.OffendingMethodName, result.InterfaceName, result.OffendingReturnType,
+                    "UncheckedDeclaration"));
+                return;
+            }
+
+            ctx.AddSource(result.HintName, SourceText.From(result.Source!, Encoding.UTF8));
+        });
+        
+        var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
+            $"Xcsb.Generators.DeclarationAttribute",
+            predicate: static (node, _) => node is InterfaceDeclarationSyntax,
+            transform: (ctx, _) => (attributeData: (AttributeData?)ctx.Attributes.FirstOrDefault(), targetSymbol: ctx.TargetSymbol.Locations.FirstOrDefault()))
+            .Where(a => a.attributeData is not null);
+        
+        
+        context.RegisterSourceOutput(provider, (ctx, result) =>
+        {
+            var val = string.Join(", ",
+                result.attributeData!.NamedArguments.Select(a => $"{a.Key} = {a.Value}"));
+            
+            ctx.AddSource(
+                "Declaration.OfWar.g.cs",
+                SourceText.From($@"
+public class Foo 
+{{
+    /* {val} */
+    
+}}
+", Encoding.UTF8));
         });
     }
 }

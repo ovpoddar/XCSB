@@ -918,15 +918,15 @@ internal sealed partial class XProto : IXProto
         throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    // public async ValueTask<ReplyLease<ListFontsWithInfoReply>[]> ListFontsWithInfoAsync(ReadOnlyMemory<byte> pattan, int maxNames,
-    //     CancellationToken token = default)
-    // {
-    //     var cookie = ListFontsWithInfoBase(pattan.Span, maxNames);
-    //     var (result, mapping) = await this._socketAccessor.ReceivedResponseArrayAsync(cookie.Id, maxNames, token).ConfigureAwait(false);
-    //     return error.HasValue
-    //         ? throw new XEventException(error.Value)
-    //         : result;
-    // }
+    public async ValueTask<ReplyLease<ListFontsWithInfoReply>[]> ListFontsWithInfoAsync(ReadOnlyMemory<byte> pattan, int maxNames,
+        CancellationToken token = default)
+    {
+        var cookie = ListFontsWithInfoBase(pattan.Span, maxNames);
+        var (result, error) = await this._socketAccessor.ReceivedResponseArrayAsync(cookie.Id, maxNames, token).ConfigureAwait(false);
+        return error.HasValue
+            ? throw new XEventException(error.Value)
+            : throw new Exception(result.ToString());
+    }
 
     public async ValueTask<ReplyLease<GetFontPathReply>> GetFontPathAsync(CancellationToken token = default)
     {
