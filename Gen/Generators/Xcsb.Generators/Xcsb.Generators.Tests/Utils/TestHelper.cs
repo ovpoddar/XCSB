@@ -8,16 +8,17 @@ namespace Xcsb.Generators.Tests.Utils;
 
 public static class TestHelper
 {
-    public static string GenerateSource<TGenerator>(string source, string attributeSource, string expectedFileSubstring)
+    public static string GenerateSource<TGenerator>(
+        string source, string attributeSource, string expectedFileSubstring, bool validateOutputCompilation = false)
         where TGenerator : IIncrementalGenerator, new()
     {
         var compilation = CreateCompilation(source, attributeSource);
         var generator = new TGenerator();
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
 
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
-        var errors = compilation.GetDiagnostics().ToList();
+        var errors = (validateOutputCompilation ? outputCompilation : compilation).GetDiagnostics().ToList();
         errors.AddRange(diagnostics);
         Assert.Empty(errors.Where(d => d.Severity == DiagnosticSeverity.Error));
 

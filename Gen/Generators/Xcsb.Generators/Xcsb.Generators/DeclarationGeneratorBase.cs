@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -23,12 +24,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
               [AttributeUsage(validOn: AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
               public sealed class {{DeclarationName}} : Attribute
               {
-                  public DeclarationKind Kind { get; }
-                  public {{DeclarationName}} (DeclarationKind kind)
-                  {
-                      Kind = kind;
-                  }
-                  
+                  public {{DeclarationName}} (DeclarationKind kind) { }
                   private {{DeclarationName}} () {}
               }
           }
@@ -74,7 +70,43 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
             OffendingLocation = offendingLocation;
         }
     }
+    public static List<AttributeValue> GetAllAttributeValues(AttributeData attr)
+    {
+        var result = new List<AttributeValue>();
+        var parameters = attr.AttributeConstructor?.Parameters ?? default;
 
+        for (int i = 0; i < attr.ConstructorArguments.Length; i++)
+        {
+            string name = i < parameters.Length ? parameters[i].Name : $"arg{i}";
+            TypedConstant arg = attr.ConstructorArguments[i];
+
+            result.Add(new AttributeValue(
+                name,
+                Unwrap(arg),
+                AttributeValueSource.Constructor,
+                arg.Type?.ToDisplayString()));
+        }
+
+        foreach (var named in attr.NamedArguments)
+        {
+            result.Add(new AttributeValue(
+                named.Key,
+                Unwrap(named.Value),
+                AttributeValueSource.Named,
+                named.Value.Type?.ToDisplayString()));
+        }
+
+        return result;
+    }
+
+    static object? Unwrap(TypedConstant c) => c.Kind switch
+    {
+        TypedConstantKind.Error => null,
+        TypedConstantKind.Array => c.Values.Select(Unwrap).ToArray(),
+        TypedConstantKind.Type  => (c.Value as ITypeSymbol)?.ToDisplayString(),
+        _                       => c.Value
+    };
+    
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(ctx =>
@@ -267,22 +299,43 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 $"Xcsb.Generators.DeclarationAttribute",
                 predicate: static (node, _) => node is InterfaceDeclarationSyntax,
                 transform: static (ctx, _) =>
-                    (ctx.Attributes.FirstOrDefault(), ctx.TargetSymbol.Locations.FirstOrDefault()))
-            .Where(a => a.Item1 is not null);
+                    (attribute: ctx.Attributes.FirstOrDefault(), Location: ctx.TargetSymbol.Locations.FirstOrDefault()))
+            .Where(a => a.attribute is not null);
 
 
         context.RegisterSourceOutput(provider, (ctx, result) =>
         {
-            var item = result.Item1!.ConstructorArguments.Select(a => a.Type?.Name + a.Value);
+            var item = result.attribute!.ConstructorArguments.Select(a => a.Type?.Name + a.Value);
+            var c = GetAllAttributeValues(result.attribute);
+            
             ctx.AddSource(
                 "Declaration.OfWar.g.cs",
                 SourceText.From($@"
 public class Foo 
 {{
     /* {item} */
+    /* {string.Join(", \n", c.Select(a => a.Name + a.Value + a.TypeName + a.Source))} */
     
 }}
 ", Encoding.UTF8));
         });
+    }
+    
+}
+
+public enum AttributeValueSource { Constructor, Named }
+public readonly record struct AttributeValue
+{
+    public readonly string Name;
+    public readonly  object? Value;
+    public readonly  AttributeValueSource Source;
+    public readonly string? TypeName;
+
+    public AttributeValue(string name, object? value, AttributeValueSource source, string? typeName)
+    {
+        Name = name;
+        Value = value;
+        Source = source;
+        TypeName = typeName;
     }
 }
