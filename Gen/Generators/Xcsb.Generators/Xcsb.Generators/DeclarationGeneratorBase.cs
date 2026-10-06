@@ -15,40 +15,6 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
 {
     private const string DeclarationName = "DeclarationAttribute";
 
-    private const string DeclarationSource =
-        $$"""
-          using System;
-
-          namespace Xcsb.Generators
-          {
-              [AttributeUsage(validOn: AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
-              public sealed class {{DeclarationName}} : Attribute
-              {
-                  public {{DeclarationName}} (DeclarationKind kind) { }
-                  private {{DeclarationName}} () {}
-              }
-          }
-
-          """;
-
-    private const string DeclarationKindSource =
-        """
-        using System;
-
-        namespace Xcsb.Generators
-        {
-            [Flags]
-            public enum DeclarationKind
-            {
-                Checked = 1,
-                Unchecked = 2,
-                Buffer = 4
-            }
-
-        }
-
-        """;
-
     private readonly record struct DeclarationResult
     {
         public readonly string HintName;
@@ -70,6 +36,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
             OffendingLocation = offendingLocation;
         }
     }
+
     public static List<AttributeValue> GetAllAttributeValues(AttributeData attr)
     {
         var result = new List<AttributeValue>();
@@ -103,10 +70,10 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
     {
         TypedConstantKind.Error => null,
         TypedConstantKind.Array => c.Values.Select(Unwrap).ToArray(),
-        TypedConstantKind.Type  => (c.Value as ITypeSymbol)?.ToDisplayString(),
-        _                       => c.Value
+        TypedConstantKind.Type => (c.Value as ITypeSymbol)?.ToDisplayString(),
+        _ => c.Value
     };
-    
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(ctx =>
@@ -157,9 +124,37 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                       """, Encoding.UTF8));
 
             ctx.AddSource("Xcsb.Generators.DeclarationAttribute.g.cs",
-                SourceText.From(DeclarationSource, Encoding.UTF8));
+                SourceText.From(
+                    $$"""
+                      using System;
+
+                      namespace Xcsb.Generators
+                      {
+                          [AttributeUsage(validOn: AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
+                          public sealed class {{DeclarationName}} : Attribute
+                          {
+                              public {{DeclarationName}} (DeclarationKind kind) { }
+                              private {{DeclarationName}} () {}
+                          }
+                      }
+                      """, Encoding.UTF8));
             ctx.AddSource("Xcsb.Generators.DeclarationKind.g.cs",
-                SourceText.From(DeclarationKindSource, Encoding.UTF8));
+                SourceText.From(
+                    """
+                    using System;
+
+                    namespace Xcsb.Generators
+                    {
+                        [Flags]
+                        public enum DeclarationKind
+                        {
+                            Checked = 1,
+                            Unchecked = 2,
+                            Buffer = 4
+                        }
+
+                    }
+                    """, Encoding.UTF8));
         });
 
         var buffer = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -307,7 +302,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
         {
             var item = result.attribute!.ConstructorArguments.Select(a => a.Type?.Name + a.Value);
             var c = GetAllAttributeValues(result.attribute);
-            
+
             ctx.AddSource(
                 "Declaration.OfWar.g.cs",
                 SourceText.From($@"
@@ -320,15 +315,19 @@ public class Foo
 ", Encoding.UTF8));
         });
     }
-    
 }
 
-public enum AttributeValueSource { Constructor, Named }
+public enum AttributeValueSource
+{
+    Constructor,
+    Named
+}
+
 public readonly record struct AttributeValue
 {
     public readonly string Name;
-    public readonly  object? Value;
-    public readonly  AttributeValueSource Source;
+    public readonly object? Value;
+    public readonly AttributeValueSource Source;
     public readonly string? TypeName;
 
     public AttributeValue(string name, object? value, AttributeValueSource source, string? typeName)
