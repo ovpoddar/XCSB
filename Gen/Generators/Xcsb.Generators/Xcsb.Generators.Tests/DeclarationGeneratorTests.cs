@@ -5,35 +5,35 @@ namespace Xcsb.Generators.Tests;
 
 public class DeclarationGeneratorTests
 {
-    private const string AttributeSource = $@"
+    private const string AttributeSource = @"
 using System;
 
 namespace Xcsb.Generators
-{{
+{
     [AttributeUsage(validOn: AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
     public sealed class DeclarationAttribute : Attribute
-    {{
-        public DeclarationKind Kind {{ get; }}
+    {
+        public DeclarationKind Kind { get; }
         public DeclarationAttribute (DeclarationKind kind)
-        {{
+        {
             Kind = kind;
-        }}
+        }
         
-        private DeclarationAttribute () {{}}
-    }}
-}}
+        private DeclarationAttribute () {}
+    }
+}
 
 namespace Xcsb.Generators
-{{
+{
     [Flags]
     public enum DeclarationKind
-    {{
-        Checked = 0,
-        Unchecked = 1,
-        Buffer = 2
-    }}
+    {
+        Checked = 1,
+        Unchecked = 2,
+        Buffer = 4
+    }
 
-}}
+}
 
 ";
 

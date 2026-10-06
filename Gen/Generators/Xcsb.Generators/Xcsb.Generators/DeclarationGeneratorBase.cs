@@ -44,9 +44,9 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
             [Flags]
             public enum DeclarationKind
             {
-                Checked = 0,
-                Unchecked = 1,
-                Buffer = 2
+                Checked = 1,
+                Unchecked = 2,
+                Buffer = 4
             }
 
         }
@@ -123,8 +123,8 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
 
                       }
                       """, Encoding.UTF8));
-            
-            ctx.AddSource("Xcsb.Generators.DeclarationAttribute.g.cs", 
+
+            ctx.AddSource("Xcsb.Generators.DeclarationAttribute.g.cs",
                 SourceText.From(DeclarationSource, Encoding.UTF8));
             ctx.AddSource("Xcsb.Generators.DeclarationKind.g.cs",
                 SourceText.From(DeclarationKindSource, Encoding.UTF8));
@@ -262,25 +262,24 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
 
             ctx.AddSource(result.HintName, SourceText.From(result.Source!, Encoding.UTF8));
         });
-        
+
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-            $"Xcsb.Generators.DeclarationAttribute",
-            predicate: static (node, _) => node is InterfaceDeclarationSyntax,
-            transform: (ctx, _) => (attributeData: (AttributeData?)ctx.Attributes.FirstOrDefault(), targetSymbol: ctx.TargetSymbol.Locations.FirstOrDefault()))
-            .Where(a => a.attributeData is not null);
-        
-        
+                $"Xcsb.Generators.DeclarationAttribute",
+                predicate: static (node, _) => node is InterfaceDeclarationSyntax,
+                transform: static (ctx, _) =>
+                    (ctx.Attributes.FirstOrDefault(), ctx.TargetSymbol.Locations.FirstOrDefault()))
+            .Where(a => a.Item1 is not null);
+
+
         context.RegisterSourceOutput(provider, (ctx, result) =>
         {
-            var val = string.Join(", ",
-                result.attributeData!.NamedArguments.Select(a => $"{a.Key} = {a.Value}"));
-            
+            var item = result.Item1!.ConstructorArguments.Select(a => a.Type?.Name + a.Value);
             ctx.AddSource(
                 "Declaration.OfWar.g.cs",
                 SourceText.From($@"
 public class Foo 
 {{
-    /* {val} */
+    /* {item} */
     
 }}
 ", Encoding.UTF8));
