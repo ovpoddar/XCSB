@@ -294,8 +294,9 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 $"Xcsb.Generators.DeclarationAttribute",
                 predicate: static (node, _) => node is InterfaceDeclarationSyntax,
                 transform: static (ctx, _) =>
-                    (attribute: ctx.Attributes.FirstOrDefault(), Location: ctx.TargetSymbol.Locations.FirstOrDefault()))
-            .Where(a => a.attribute is not null);
+                    (attribute: ctx.Attributes.FirstOrDefault(), symbol: ctx.TargetSymbol as INamedTypeSymbol))
+            .Where(a => a.attribute is not null && a.symbol is not null)
+            .Select((a, _) => (a.attribute, GeneratorDiagnostics.FindFirstOffendingMethod(a.symbol!)));
 
 
         context.RegisterSourceOutput(provider, (ctx, result) =>
