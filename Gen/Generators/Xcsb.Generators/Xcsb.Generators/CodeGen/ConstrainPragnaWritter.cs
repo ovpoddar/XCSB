@@ -49,8 +49,9 @@ internal static class ConstrainPragmaWriter
         {
             if (wrotePragma)
                 builder.Append(newline);
-            builder.Append(';').Append(newline);
+            builder.Append(';');
         }
+        builder.Append(newline);
     }
 
     internal static bool Contain(IMethodSymbol method, string type)

@@ -37,9 +37,8 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
         }
     }
 
-    public static List<AttributeValue> GetAllAttributeValues(AttributeData attr)
+    public static IEnumerable<AttributeValue> GetAllAttributeValues(AttributeData attr)
     {
-        var result = new List<AttributeValue>();
         var parameters = attr.AttributeConstructor?.Parameters ?? default;
 
         for (int i = 0; i < attr.ConstructorArguments.Length; i++)
@@ -47,23 +46,21 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
             string name = i < parameters.Length ? parameters[i].Name : $"arg{i}";
             TypedConstant arg = attr.ConstructorArguments[i];
 
-            result.Add(new AttributeValue(
+            yield return new AttributeValue(
                 name,
                 Unwrap(arg),
                 AttributeValueSource.Constructor,
-                arg.Type?.ToDisplayString()));
+                arg.Type?.ToDisplayString());
         }
 
         foreach (var named in attr.NamedArguments)
         {
-            result.Add(new AttributeValue(
+            yield return new AttributeValue(
                 named.Key,
                 Unwrap(named.Value),
                 AttributeValueSource.Named,
-                named.Value.Type?.ToDisplayString()));
+                named.Value.Type?.ToDisplayString());
         }
-
-        return result;
     }
 
     static object? Unwrap(TypedConstant c) => c.Kind switch
@@ -296,24 +293,57 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 transform: static (ctx, _) =>
                     (attribute: ctx.Attributes.FirstOrDefault(), symbol: ctx.TargetSymbol as INamedTypeSymbol))
             .Where(a => a.attribute is not null && a.symbol is not null)
-            .Select((a, _) => (a.attribute, GeneratorDiagnostics.FindFirstOffendingMethod(a.symbol!)));
+            .Select((a, _) => (attribute: a.attribute!,
+                dignostics: GeneratorDiagnostics.FindFirstOffendingMethod(a.symbol!),
+                symbol: a.symbol!));
 
 
         context.RegisterSourceOutput(provider, (ctx, result) =>
         {
-            var item = result.attribute!.ConstructorArguments.Select(a => a.Type?.Name + a.Value);
-            var c = GetAllAttributeValues(result.attribute);
+            var type = GetAllAttributeValues(result.attribute).FirstOrDefault(a => a.Name == "kind");
+            if (type == default) return;
 
-            ctx.AddSource(
-                "Declaration.OfWar.g.cs",
-                SourceText.From($@"
-public class Foo 
-{{
-    /* {item} */
-    /* {string.Join(", \n", c.Select(a => a.Name + a.Value + a.TypeName + a.Source))} */
-    
-}}
-", Encoding.UTF8));
+            if (type.Value is not int i)
+                return;
+            var declaration = i switch
+            {
+                1 => result.dignostics is null
+                    ? new DeclarationResult("Declaration.g.cs", result.symbol!.Name,
+                        InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Checked",
+                            methodSuffix: "Checked", returnTypeProvider: _ => "void"), null, null, null)
+                    : new DeclarationResult("Declaration.g.cs", result.dignostics.Name, null,
+                        result.dignostics.Name,
+                        result.dignostics.ReturnType.ToDisplayString(),
+                        result.dignostics.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault()),
+                2 => result.dignostics is null
+                    ? new DeclarationResult("Declaration.g.cs", result.symbol!.Name,
+                        InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Unchecked",
+                            methodSuffix: "Unchecked", returnTypeProvider: _ => "void"), null, null, null)
+                    : new DeclarationResult("Declaration.g.cs", result.dignostics.Name, null,
+                        result.dignostics.Name,
+                        result.dignostics.ReturnType.ToDisplayString(),
+                        result.dignostics.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault()),
+                4 => result.dignostics is null
+                    ? new DeclarationResult("Declaration.g.cs", result.symbol!.Name,
+                        InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Unchecked",
+                            methodSuffix: "Unchecked", returnTypeProvider: _ => "void"), null, null, null)
+                    : new DeclarationResult("Declaration.g.cs", result.dignostics.Name, null,
+                        result.dignostics.Name,
+                        result.dignostics.ReturnType.ToDisplayString(),
+                        result.dignostics.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault()),
+                _ => throw new Exception()
+            };
+            
+            if (declaration.OffendingMethodName is not null)
+            {
+                ctx.ReportDiagnostic(Diagnostic.Create(
+                    GeneratorDiagnostics.DeclarationInvalidReturnType,
+                    declaration.OffendingLocation ?? Location.None,
+                    declaration.OffendingMethodName, declaration.InterfaceName, declaration.OffendingReturnType,
+                    "UncheckedDeclaration"));
+                return;
+            }
+            ctx.AddSource(declaration.HintName, SourceText.From(declaration.Source!, Encoding.UTF8));
         });
     }
 }
