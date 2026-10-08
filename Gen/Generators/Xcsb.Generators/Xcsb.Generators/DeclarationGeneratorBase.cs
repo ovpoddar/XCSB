@@ -17,18 +17,15 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
 
     private readonly record struct DeclarationResult
     {
-        public readonly string HintName;
         public readonly string InterfaceName;
         public readonly string? Source;
         public readonly string? OffendingMethodName;
         public readonly string? OffendingReturnType;
         public readonly Location? OffendingLocation;
 
-        public DeclarationResult(
-            string hintName, string interfaceName, string? source,
+        public DeclarationResult(string interfaceName, string? source,
             string? offendingMethodName, string? offendingReturnType, Location? offendingLocation)
         {
-            HintName = hintName;
             InterfaceName = interfaceName;
             Source = source;
             OffendingMethodName = offendingMethodName;
@@ -161,12 +158,11 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
             .WithComparer(SymbolEqualityComparer.Default)
             .Select((interfaceSymbol, _) =>
             {
-                var hintName = $"{interfaceSymbol.Name}Buffer.g.cs";
                 var offender = GeneratorDiagnostics.FindFirstOffendingMethod(interfaceSymbol);
                 if (offender is null)
                 {
                     return new DeclarationResult(
-                        hintName, interfaceSymbol.Name,
+                        interfaceSymbol.Name,
                         InterfaceCodeGenerator.Generate(
                             interfaceSymbol,
                             interfaceSuffix: "Buffer",
@@ -177,7 +173,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 }
 
                 return new DeclarationResult(
-                    hintName, interfaceSymbol.Name, null,
+                    interfaceSymbol.Name, null,
                     offender.Name,
                     offender.ReturnType.ToDisplayString(),
                     offender.Locations.FirstOrDefault() ?? interfaceSymbol.Locations.FirstOrDefault());
@@ -195,7 +191,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 return;
             }
 
-            ctx.AddSource(result.HintName, SourceText.From(result.Source!, Encoding.UTF8));
+            ctx.AddSource($"{result.InterfaceName}Buffer.g.cs", SourceText.From(result.Source!, Encoding.UTF8));
         });
 
 
@@ -206,12 +202,11 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
             .WithComparer(SymbolEqualityComparer.Default)
             .Select((interfaceSymbol, _) =>
             {
-                var hintName = $"{interfaceSymbol.Name}Checked.g.cs";
                 var offender = GeneratorDiagnostics.FindFirstOffendingMethod(interfaceSymbol);
                 if (offender is null)
                 {
                     return new DeclarationResult(
-                        hintName, interfaceSymbol.Name,
+                        interfaceSymbol.Name,
                         InterfaceCodeGenerator.Generate(
                             interfaceSymbol,
                             interfaceSuffix: "Checked",
@@ -222,7 +217,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 }
 
                 return new DeclarationResult(
-                    hintName, interfaceSymbol.Name, null,
+                    interfaceSymbol.Name, null,
                     offender.Name,
                     offender.ReturnType.ToDisplayString(),
                     offender.Locations.FirstOrDefault() ?? interfaceSymbol.Locations.FirstOrDefault());
@@ -240,7 +235,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 return;
             }
 
-            ctx.AddSource(result.HintName, SourceText.From(result.Source!, Encoding.UTF8));
+            ctx.AddSource($"{result.InterfaceName}Checked.g.cs", SourceText.From(result.Source!, Encoding.UTF8));
         });
 
         var Unchecked = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -250,12 +245,11 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
             .WithComparer(SymbolEqualityComparer.Default)
             .Select((interfaceSymbol, _) =>
             {
-                var hintName = $"{interfaceSymbol.Name}Unchecked.g.cs";
                 var offender = GeneratorDiagnostics.FindFirstOffendingMethod(interfaceSymbol);
                 if (offender is null)
                 {
                     return new DeclarationResult(
-                        hintName, interfaceSymbol.Name,
+                        interfaceSymbol.Name,
                         InterfaceCodeGenerator.Generate(
                             interfaceSymbol,
                             interfaceSuffix: "Unchecked",
@@ -266,7 +260,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 }
 
                 return new DeclarationResult(
-                    hintName, interfaceSymbol.Name, null,
+                    interfaceSymbol.Name, null,
                     offender.Name,
                     offender.ReturnType.ToDisplayString(),
                     offender.Locations.FirstOrDefault() ?? interfaceSymbol.Locations.FirstOrDefault());
@@ -284,7 +278,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 return;
             }
 
-            ctx.AddSource(result.HintName, SourceText.From(result.Source!, Encoding.UTF8));
+            ctx.AddSource($"{result.InterfaceName}Unchecked.g.cs", SourceText.From(result.Source!, Encoding.UTF8));
         });
 
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -308,26 +302,26 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
             var declaration = i switch
             {
                 1 => result.dignostics is null
-                    ? new DeclarationResult("Declaration.g.cs", result.symbol!.Name,
+                    ? new DeclarationResult(result.symbol!.Name,
                         InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Checked",
                             methodSuffix: "Checked", returnTypeProvider: _ => "void"), null, null, null)
-                    : new DeclarationResult("Declaration.g.cs", result.dignostics.Name, null,
+                    : new DeclarationResult(result.dignostics.Name, null,
                         result.dignostics.Name,
                         result.dignostics.ReturnType.ToDisplayString(),
                         result.dignostics.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault()),
                 2 => result.dignostics is null
-                    ? new DeclarationResult("Declaration.g.cs", result.symbol!.Name,
+                    ? new DeclarationResult(result.symbol!.Name,
                         InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Unchecked",
                             methodSuffix: "Unchecked", returnTypeProvider: _ => "void"), null, null, null)
-                    : new DeclarationResult("Declaration.g.cs", result.dignostics.Name, null,
+                    : new DeclarationResult(result.dignostics.Name, null,
                         result.dignostics.Name,
                         result.dignostics.ReturnType.ToDisplayString(),
                         result.dignostics.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault()),
                 4 => result.dignostics is null
-                    ? new DeclarationResult("Declaration.g.cs", result.symbol!.Name,
+                    ? new DeclarationResult(result.symbol!.Name,
                         InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Unchecked",
                             methodSuffix: "Unchecked", returnTypeProvider: _ => "void"), null, null, null)
-                    : new DeclarationResult("Declaration.g.cs", result.dignostics.Name, null,
+                    : new DeclarationResult(result.dignostics.Name, null,
                         result.dignostics.Name,
                         result.dignostics.ReturnType.ToDisplayString(),
                         result.dignostics.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault()),
@@ -343,7 +337,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                     "UncheckedDeclaration"));
                 return;
             }
-            ctx.AddSource(declaration.HintName, SourceText.From(declaration.Source!, Encoding.UTF8));
+            ctx.AddSource("Declaration.g.cs", SourceText.From(declaration.Source!, Encoding.UTF8));
         });
     }
 }
