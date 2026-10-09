@@ -117,38 +117,40 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                       }
                       """, Encoding.UTF8));
 
-            ctx.AddSource("Xcsb.Generators.DeclarationAttribute.g.cs",
-                SourceText.From(
-                    $$"""
-                      using System;
+//             ctx.AddSource("Xcsb.Generators.DeclarationAttribute.g.cs",
+//                 SourceText.From(
+//                     $$"""
+//                       using System;
+//
+//                       namespace Xcsb.Generators
+//                       {
+//                           [AttributeUsage(validOn: AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
+//                           public sealed class {{DeclarationName}} : Attribute
+//                           {
+//                               public {{DeclarationName}} (DeclarationKind kind) { }
+//                               private {{DeclarationName}} () {}
+//                           }
+//                       }
+//                       """, Encoding.UTF8));
+//             ctx.AddSource("Xcsb.Generators.DeclarationKind.g.cs",
+//                 SourceText.From(
+//                     """
+//                     using System;
+//
+//                     namespace Xcsb.Generators
+//                     {
+//                         [Flags]
+//                         public enum DeclarationKind
+//                         {
+//                             Checked = 1,
+//                             Unchecked = 2,
+//                             Buffer = 4
+//                         }
+//
+//                     }
+//                     """, Encoding.UTF8));
 
-                      namespace Xcsb.Generators
-                      {
-                          [AttributeUsage(validOn: AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
-                          public sealed class {{DeclarationName}} : Attribute
-                          {
-                              public {{DeclarationName}} (DeclarationKind kind) { }
-                              private {{DeclarationName}} () {}
-                          }
-                      }
-                      """, Encoding.UTF8));
-            ctx.AddSource("Xcsb.Generators.DeclarationKind.g.cs",
-                SourceText.From(
-                    """
-                    using System;
-
-                    namespace Xcsb.Generators
-                    {
-                        [Flags]
-                        public enum DeclarationKind
-                        {
-                            Checked = 1,
-                            Unchecked = 2,
-                            Buffer = 4
-                        }
-
-                    }
-                    """, Encoding.UTF8));
+                ctx.AddSource(DeclarationAttributeCodeNew.FileName, DeclarationAttributeCodeNew.Context);
         });
 
         var buffer = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -282,22 +284,19 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
         });
 
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-                $"Xcsb.Generators.DeclarationAttribute",
+                DeclarationAttributeCodeNew.AttributeName,
                 predicate: static (node, _) => node is InterfaceDeclarationSyntax,
                 transform: static (ctx, _) =>
                     (attribute: ctx.Attributes.FirstOrDefault(), symbol: ctx.TargetSymbol as INamedTypeSymbol))
             .Where(a => a.attribute is not null && a.symbol is not null)
-            .Select((a, _) => (attribute: a.attribute!,
+            .Select((a, _) => (
+                attribute: GetAllAttributeValues(a.attribute!).FirstOrDefault(b => b is { Name: "kind", TypeName: "Xcsb.Generators.DeclarationKind" }),
                 dignostics: GeneratorDiagnostics.FindFirstOffendingMethod(a.symbol!),
                 symbol: a.symbol!));
 
-
         context.RegisterSourceOutput(provider, (ctx, result) =>
         {
-            var type = GetAllAttributeValues(result.attribute).FirstOrDefault(a => a.Name == "kind");
-            if (type == default) return;
-
-            if (type.Value is not int i)
+            if (result.attribute.Value is not int i)
                 return;
             var declaration = i switch
             {
