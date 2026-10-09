@@ -2,10 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xcsb.Generators;
+
 namespace Xcsb.Generators.Sample;
-[CheckedDeclaration]
-[UncheckedDeclaration]
-[BufferDeclaration]
+
+// [CheckedDeclaration]
+// [UncheckedDeclaration]
+// [BufferDeclaration]
+[Declaration(DeclarationKind.Checked | DeclarationKind.Unchecked | DeclarationKind.Buffer)]
 public interface IMyService
 {
     int Do();
@@ -42,6 +45,7 @@ public partial class Service : IService
     {
         return new Cookie();
     }
+
     private Cookie DoingBase(int a)
     {
         return new Cookie();
@@ -56,7 +60,6 @@ public partial class Service : IService
     {
         public void SkipErrorForSequence(int sequence, bool isError)
         {
-
         }
     }
 }

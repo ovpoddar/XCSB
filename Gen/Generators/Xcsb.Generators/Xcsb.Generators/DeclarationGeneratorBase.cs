@@ -23,8 +23,11 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
         public readonly string? OffendingReturnType;
         public readonly Location? OffendingLocation;
 
-        public DeclarationResult(string interfaceName, string? source,
-            string? offendingMethodName, string? offendingReturnType, Location? offendingLocation)
+        public DeclarationResult(string interfaceName,
+            string? source,
+            string? offendingMethodName,
+            string? offendingReturnType,
+            Location? offendingLocation)
         {
             InterfaceName = interfaceName;
             Source = source;
@@ -34,8 +37,11 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
         }
     }
 
-    public static IEnumerable<AttributeValue> GetAllAttributeValues(AttributeData attr)
+    public static IEnumerable<AttributeValue>? GetAllAttributeValues(AttributeData? attr)
     {
+        if (attr is null)
+            yield break;
+
         var parameters = attr.AttributeConstructor?.Parameters ?? default;
 
         for (int i = 0; i < attr.ConstructorArguments.Length; i++)
@@ -117,40 +123,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                       }
                       """, Encoding.UTF8));
 
-//             ctx.AddSource("Xcsb.Generators.DeclarationAttribute.g.cs",
-//                 SourceText.From(
-//                     $$"""
-//                       using System;
-//
-//                       namespace Xcsb.Generators
-//                       {
-//                           [AttributeUsage(validOn: AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
-//                           public sealed class {{DeclarationName}} : Attribute
-//                           {
-//                               public {{DeclarationName}} (DeclarationKind kind) { }
-//                               private {{DeclarationName}} () {}
-//                           }
-//                       }
-//                       """, Encoding.UTF8));
-//             ctx.AddSource("Xcsb.Generators.DeclarationKind.g.cs",
-//                 SourceText.From(
-//                     """
-//                     using System;
-//
-//                     namespace Xcsb.Generators
-//                     {
-//                         [Flags]
-//                         public enum DeclarationKind
-//                         {
-//                             Checked = 1,
-//                             Unchecked = 2,
-//                             Buffer = 4
-//                         }
-//
-//                     }
-//                     """, Encoding.UTF8));
-
-                ctx.AddSource(DeclarationAttributeCodeNew.FileName, DeclarationAttributeCodeNew.Context);
+            ctx.AddSource(DeclarationAttributeCodeNew.FileName, DeclarationAttributeCodeNew.Context);
         });
 
         var buffer = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -287,56 +260,44 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 DeclarationAttributeCodeNew.AttributeName,
                 predicate: static (node, _) => node is InterfaceDeclarationSyntax,
                 transform: static (ctx, _) =>
-                    (attribute: ctx.Attributes.FirstOrDefault(), symbol: ctx.TargetSymbol as INamedTypeSymbol))
+                    (attribute: GetAllAttributeValues(ctx.Attributes.FirstOrDefault()),
+                        symbol: ctx.TargetSymbol as INamedTypeSymbol))
             .Where(a => a.attribute is not null && a.symbol is not null)
-            .Select((a, _) => (
-                attribute: GetAllAttributeValues(a.attribute!).FirstOrDefault(b => b is { Name: "kind", TypeName: "Xcsb.Generators.DeclarationKind" }),
-                dignostics: GeneratorDiagnostics.FindFirstOffendingMethod(a.symbol!),
-                symbol: a.symbol!));
+            .Select((a, _) =>
+                (symbol: a.symbol!,
+                    info: a.attribute!.FirstOrDefault(b => b is
+                        { Name: "kind", TypeName: "Xcsb.Generators.DeclarationKind" })));
 
         context.RegisterSourceOutput(provider, (ctx, result) =>
         {
-            if (result.attribute.Value is not int i)
+            if (result.info.Value is not int i)
                 return;
-            var declaration = i switch
-            {
-                1 => result.dignostics is null
-                    ? new DeclarationResult(result.symbol!.Name,
-                        InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Checked",
-                            methodSuffix: "Checked", returnTypeProvider: _ => "void"), null, null, null)
-                    : new DeclarationResult(result.dignostics.Name, null,
-                        result.dignostics.Name,
-                        result.dignostics.ReturnType.ToDisplayString(),
-                        result.dignostics.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault()),
-                2 => result.dignostics is null
-                    ? new DeclarationResult(result.symbol!.Name,
-                        InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Unchecked",
-                            methodSuffix: "Unchecked", returnTypeProvider: _ => "void"), null, null, null)
-                    : new DeclarationResult(result.dignostics.Name, null,
-                        result.dignostics.Name,
-                        result.dignostics.ReturnType.ToDisplayString(),
-                        result.dignostics.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault()),
-                4 => result.dignostics is null
-                    ? new DeclarationResult(result.symbol!.Name,
-                        InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Unchecked",
-                            methodSuffix: "Unchecked", returnTypeProvider: _ => "void"), null, null, null)
-                    : new DeclarationResult(result.dignostics.Name, null,
-                        result.dignostics.Name,
-                        result.dignostics.ReturnType.ToDisplayString(),
-                        result.dignostics.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault()),
-                _ => throw new Exception()
-            };
-            
-            if (declaration.OffendingMethodName is not null)
+            var diagnosis = GeneratorDiagnostics.FindFirstOffendingMethod(result.symbol!);
+            if (diagnosis is not null)
             {
                 ctx.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.DeclarationInvalidReturnType,
-                    declaration.OffendingLocation ?? Location.None,
-                    declaration.OffendingMethodName, declaration.InterfaceName, declaration.OffendingReturnType,
-                    "UncheckedDeclaration"));
+                    diagnosis.Locations.FirstOrDefault() ?? result.symbol.Locations.FirstOrDefault() ?? Location.None,
+                    diagnosis.Name,
+                    diagnosis.Name,
+                    diagnosis.ReturnType.ToDisplayString(),
+                    DeclarationAttributeCodeNew.Type));
                 return;
             }
-            ctx.AddSource("Declaration.g.cs", SourceText.From(declaration.Source!, Encoding.UTF8));
+
+            // var declaration = i switch
+            // {
+            //     1 => InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Checked",
+            //         methodSuffix: "Checked", returnTypeProvider: _ => "void"),
+            //     2 => InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Unchecked",
+            //         methodSuffix: "Unchecked", returnTypeProvider: _ => "void"),
+            //     4 => InterfaceCodeGenerator.Generate(result.symbol, interfaceSuffix: "Unchecked",
+            //         methodSuffix: "Unchecked", returnTypeProvider: _ => "void"),
+            //     _ => throw new Exception()
+            // };
+
+            ctx.AddSource("Declaration.g.cs", SourceText.From(InterfaceCodeGeneratorNew.Generate(result.symbol,
+                (DeclarationKind)i).ToString(), Encoding.UTF8));
         });
     }
 }

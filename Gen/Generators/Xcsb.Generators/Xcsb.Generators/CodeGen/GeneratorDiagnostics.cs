@@ -37,9 +37,7 @@ internal static class GeneratorDiagnostics
     private static bool IsUnsupportedReturnType(ITypeSymbol returnType)
     {
         if (returnType.SpecialType == SpecialType.System_Void) return true;
-
-        // Matches Task/Task<T> and ValueTask/ValueTask<T> — arity doesn't affect ITypeSymbol.Name,
-        // so this deliberately does not distinguish the open vs. constructed generic form.
+        
         var ns = returnType.ContainingNamespace?.ToDisplayString();
         if (ns != "System.Threading.Tasks") return false;
 
