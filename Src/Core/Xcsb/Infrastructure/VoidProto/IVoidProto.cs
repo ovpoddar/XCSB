@@ -8,8 +8,7 @@ using Xcsb.Models.String;
 
 namespace Xcsb.Infrastructure.VoidProto;
 
-[CheckedDeclaration]
-[UncheckedDeclaration]
+[Declaration(DeclarationKind.Unchecked | DeclarationKind.Checked)]
 public interface IVoidProto
 {
     ResponseProto CreateWindow(byte depth, uint window, uint parent, short x, short y, ushort width, ushort height,

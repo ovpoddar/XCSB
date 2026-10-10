@@ -8,8 +8,7 @@ using Xcsb.Models;
 
 namespace Xcsb.Extension.XInput.Infrastructure.VoidProto;
 
-[CheckedDeclaration]
-[UncheckedDeclaration]
+[Declaration(DeclarationKind.Unchecked | DeclarationKind.Checked)]
 public interface IVoidProto
 {
     ResponseProto CloseDevice(byte deviceId);
