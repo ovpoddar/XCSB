@@ -6,14 +6,6 @@ namespace Xcsb.Generators.Tests;
 
 public class CheckedDeclarationGeneratorTests
 {
-    private const string AttributeSource = @"
-using System;
-namespace Xcsb.Generators
-{
-    [AttributeUsage(AttributeTargets.Interface)]
-    public class CheckedDeclarationAttribute : Attribute {}
-}";
-
     [Fact]
     public void Generator_ShouldGenerateClass_WhenInterfaceHasAttribute()
     {
@@ -21,14 +13,15 @@ namespace Xcsb.Generators
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [CheckedDeclaration]
+    [Declaration(DeclarationKind.Checked)]
     public partial interface ITestService
     {
     }
 }";
 
         var generatedSource =
-            TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceChecked.g.cs");
+            TestHelper.GenerateSource<DeclarationGeneratorBase>(source, string.Empty, "Declaration.g.cs",
+                validateOutputCompilation: true);
 
         Assert.Contains("public interface ITestServiceChecked", generatedSource);
         Assert.Contains("namespace TestNamespace", generatedSource);
@@ -41,7 +34,7 @@ namespace TestNamespace
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [CheckedDeclaration]
+    [Declaration(DeclarationKind.Checked)]
     public partial interface ITestService
     {
         int DoStaff();
@@ -51,7 +44,8 @@ namespace TestNamespace
 }";
 
         var generatedSource =
-            TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceChecked.g.cs");
+            TestHelper.GenerateSource<DeclarationGeneratorBase>(source, string.Empty, "Declaration.g.cs",
+                validateOutputCompilation: true);
 
         Assert.Contains("void DoStaffChecked();", generatedSource);
     }
@@ -63,7 +57,7 @@ namespace TestNamespace
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [CheckedDeclaration]
+    [Declaration(DeclarationKind.Checked)]
     public partial interface ITestService
     {
         int DoSomething<T>(int a, int b, T c);
@@ -78,10 +72,12 @@ namespace TestNamespace
 }";
 
         var generatedSource =
-            TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceChecked.g.cs");
+            TestHelper.GenerateSource<DeclarationGeneratorBase>(source, string.Empty, "Declaration.g.cs",
+                validateOutputCompilation: true);
 
         Assert.Contains("void DoSomethingChecked<T>(int a, int b, T c);", generatedSource);
-        Assert.Contains("void DoSomething1Checked<T>(int a, int b, global::System.ReadOnlySpan<T> c);", generatedSource);
+        Assert.Contains("void DoSomething1Checked<T>(int a, int b, global::System.ReadOnlySpan<T> c);",
+            generatedSource);
         Assert.Contains("void DoSomething2Checked<T>(int a, int b, global::System.ReadOnlySpan<T> c) where T : struct;",
             generatedSource);
         Assert.Contains(
@@ -107,13 +103,13 @@ namespace TestNamespace
 using Xcsb.Generators;
 namespace TestNamespace
 {{
-    [CheckedDeclaration]
+    [Declaration(DeclarationKind.Checked)]
     public partial interface ITestService
     {{
         {returnType} DoBad();
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<DeclarationGeneratorBase>(source, AttributeSource, "XCSBGEN001");
+        TestHelper.AssertDiagnostic<DeclarationGeneratorBase>(source, string.Empty, "XCSBGEN001");
     }
 }

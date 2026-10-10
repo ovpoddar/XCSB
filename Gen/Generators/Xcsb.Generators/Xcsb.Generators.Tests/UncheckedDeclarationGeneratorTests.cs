@@ -7,13 +7,6 @@ namespace Xcsb.Generators.Tests;
 
 public class UncheckedDeclarationGeneratorTests
 {
-    private const string AttributeSource = @"
-using System;
-namespace Xcsb.Generators
-{
-    [AttributeUsage(AttributeTargets.Interface)]
-    public class UncheckedDeclarationAttribute : Attribute {}
-}";
 
     [Fact]
     public void Generator_ShouldGenerateClass_WhenInterfaceHasAttribute()
@@ -22,14 +15,16 @@ namespace Xcsb.Generators
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [UncheckedDeclaration]
+    [Declaration(DeclarationKind.Unchecked)]
     public partial interface ITestService
     {
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
-        
+        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, string.Empty,
+            "Declaration.g.cs",
+            validateOutputCompilation: true);
+
         Assert.Contains("public interface ITestServiceUnchecked", generatedSource);
         Assert.Contains("namespace TestNamespace", generatedSource);
     }
@@ -41,7 +36,7 @@ namespace TestNamespace
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [UncheckedDeclaration]
+    [Declaration(DeclarationKind.Unchecked)]
     public partial interface ITestService
     {
         int DoStaff();
@@ -50,11 +45,40 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
-        
+        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, string.Empty,
+            "Declaration.g.cs",
+            validateOutputCompilation: true);
+
         Assert.Contains("void DoStaffUnchecked();", generatedSource);
     }
 
+    private const string attribute =
+        """
+        namespace Xcsb.Generators
+        {
+            [global::System.Flags]
+            public enum DeclarationKind
+            {
+                Checked = 1,
+                Unchecked = 2,
+                Buffer = 4,
+            }
+            
+            [global::System.AttributeUsage(global::System.AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
+            public class DeclarationAttribute : global::System.Attribute
+            {
+                public DeclarationAttribute(global::Xcsb.Generators.DeclarationKind kind)
+                {
+                }
+            
+                private DeclarationAttribute()
+                {
+                }
+            }
+        }
+        
+        """;
+    
     [Fact]
     public void Generator_ShouldGenerateClass_ContainsConstrainMethods_WhenInterfaceHasAttribute()
     {
@@ -63,7 +87,7 @@ namespace TestNamespace
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [UncheckedDeclaration]
+    [Declaration(DeclarationKind.Unchecked)]
     public partial interface ITestService
     {
         int DoSomething<T>(int a, int b, T c);
@@ -77,11 +101,15 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, AttributeSource, "ITestServiceUnchecked.g.cs");
-        
+        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, attribute,
+            "Declaration.g.cs");
+
         Assert.Contains("void DoSomethingUnchecked<T>(int a, int b, T c);", generatedSource);
-        Assert.Contains("void DoSomething1Unchecked<T>(int a, int b, global::System.ReadOnlySpan<T> c);", generatedSource);
-        Assert.Contains("void DoSomething2Unchecked<T>(int a, int b, global::System.ReadOnlySpan<T> c) where T : struct;", generatedSource);
+        Assert.Contains("void DoSomething1Unchecked<T>(int a, int b, global::System.ReadOnlySpan<T> c);",
+            generatedSource);
+        Assert.Contains(
+            "void DoSomething2Unchecked<T>(int a, int b, global::System.ReadOnlySpan<T> c) where T : struct;",
+            generatedSource);
         Assert.Contains(
             """
             void DoSomething3Unchecked<T>(int a, int b, global::System.ReadOnlySpan<T> c) where T : struct
@@ -105,13 +133,13 @@ namespace TestNamespace
 using Xcsb.Generators;
 namespace TestNamespace
 {{
-    [UncheckedDeclaration]
+    [Declaration(DeclarationKind.Unchecked)]
     public partial interface ITestService
     {{
         {returnType} DoBad();
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<DeclarationGeneratorBase>(source, AttributeSource, "XCSBGEN001");
+        TestHelper.AssertDiagnostic<DeclarationGeneratorBase>(source, string.Empty, "XCSBGEN001");
     }
 }
