@@ -34,7 +34,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                       }
                       """, Encoding.UTF8));
 */
-            ctx.AddSource(DeclarationAttributeCodeNew.FileName, DeclarationAttributeCodeNew.Context);
+            ctx.AddSource(DeclarationAttributeCode.FileName, DeclarationAttributeCode.Context);
         });
 /*
         var buffer = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -81,23 +81,20 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
         });
 
 */
+
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-                DeclarationAttributeCodeNew.AttributeName,
+                DeclarationAttributeCode.AttributeName,
                 predicate: static (node, _) => node is InterfaceDeclarationSyntax,
                 transform: static (ctx, _) =>
-                    (attribute: AttributeTransformer.GetAllAttributeValues(ctx.Attributes.FirstOrDefault()),
+                    (kindInfo: AttributeTransformer.GetAllAttributeValues(ctx.Attributes.FirstOrDefault())?
+                            .FirstOrDefault(),
                         symbol: ctx.TargetSymbol as INamedTypeSymbol))
-            .Where(a => a.attribute is not null && a.symbol is not null)
-            .Select((a, _) =>
-                (symbol: a.symbol!,
-                    info: a.attribute!.FirstOrDefault(b => b is
-                        { Name: "kind", TypeName: "Xcsb.Generators.DeclarationKind" })));
+            .Where(a => a.symbol is not null && a.kindInfo is not null)
+            .Select((a, _) => (symbol: a.symbol!, info: a.kindInfo!));
 
         context.RegisterSourceOutput(provider, (ctx, result) =>
         {
-            if (result.info.Value is not int i)
-                return;
-            var diagnosis = GeneratorDiagnostics.FindFirstOffendingMethod(result.symbol!);
+            var diagnosis = GeneratorDiagnostics.FindFirstOffendingMethod(result.symbol);
             if (diagnosis is not null)
             {
                 ctx.ReportDiagnostic(Diagnostic.Create(
@@ -106,12 +103,12 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                     diagnosis.Name,
                     diagnosis.Name,
                     diagnosis.ReturnType.ToDisplayString(),
-                    DeclarationAttributeCodeNew.Type));
+                    DeclarationAttributeCode.Type));
                 return;
             }
-            
-            ctx.AddSource("Declaration.g.cs", SourceText.From(InterfaceCodeGeneratorNew.Generate(result.symbol,
-                (DeclarationKind)i).ToString(), Encoding.UTF8));
+
+            ctx.AddSource("Declaration.g.cs", SourceText.From(InterfaceCodeGenerator.Generate(result.symbol,
+                (DeclarationKind)result.info).ToString(), Encoding.UTF8));
         });
     }
 }
