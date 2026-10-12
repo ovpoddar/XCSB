@@ -31,12 +31,13 @@ internal static class SourceToString
 
         private static void WriteEnum(StringBuilder sb, Type type)
         {
-            WriteAttributes(sb, type, "");
+            WriteAttributes(sb, type, "    ");
+            sb.Append("    ");
             sb.Append(Visibility(type)).Append(" enum ").Append(type.Name);
 
             var underlying = Enum.GetUnderlyingType(type);
             if (underlying != typeof(int)) sb.Append(" : ").Append(TypeName(underlying));
-            sb.AppendLine().AppendLine("{");
+            sb.AppendLine().AppendLine("    {");
 
             var members = type.GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Select(f => "    " + f.Name + " = " +
@@ -45,12 +46,12 @@ internal static class SourceToString
             foreach (var member in members)
                 sb.AppendLine(member + ",");
             
-            sb.AppendLine("}");
+            sb.AppendLine("    }");
         }
         private static void WriteClass(StringBuilder sb, Type type)
         {
-            WriteAttributes(sb, type, "");
-
+            WriteAttributes(sb, type, "    ");
+            sb.Append("    ");
             sb.Append(Visibility(type));
             if (type.IsAbstract && type.IsSealed) sb.Append(" static");
             else if (type.IsSealed) sb.Append(" sealed");
@@ -61,7 +62,7 @@ internal static class SourceToString
                 sb.Append(" : ").Append(TypeName(type.BaseType));
 
             sb.AppendLine();
-            sb.AppendLine("{");
+            sb.AppendLine("    {");
 
             var first = true;
 
@@ -71,9 +72,7 @@ internal static class SourceToString
                 first = false;
 
                 var p = string.Join(", ", c.GetParameters().Select(x => TypeName(x.ParameterType) + " " + x.Name));
-                sb.AppendLine("    " + MemberVisibility(c) + " " + type.Name + "(" + p + ")");
-                sb.AppendLine("    {");
-                sb.AppendLine("    }");
+                sb.AppendLine("        " + MemberVisibility(c) + " " + type.Name + "(" + p + ") {}");
             }
 
             foreach (var f in type.GetFields(AllDeclared))
@@ -93,11 +92,10 @@ internal static class SourceToString
                 var p = string.Join(", ", m.GetParameters().Select(x => TypeName(x.ParameterType) + " " + x.Name));
                 sb.AppendLine("    " + MemberVisibility(m) + (m.IsStatic ? " static" : "") + " " +
                               TypeName(m.ReturnType) + " " + m.Name + "(" + p + ")");
-                sb.AppendLine("    {");
-                sb.AppendLine("    }");
+                sb.AppendLine("            { }");
             }
 
-            sb.AppendLine("}");
+            sb.AppendLine("    }");
         }
         private static void WriteAttributes(StringBuilder sb, MemberInfo member, string indent)
         {

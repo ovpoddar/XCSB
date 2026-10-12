@@ -8,77 +8,52 @@ namespace Xcsb.Generators.Helper;
 
 internal static class AttributeTransformer
 {
-    public static IEnumerable<object?> GetAllAttributeValues(AttributeData? attr)
+    public static IEnumerable<IAttributeValue> GetAllAttributeValues(AttributeData? attr)
     {
         if (attr is null)
             yield break;
 
-        var parameters = attr.AttributeConstructor?.Parameters ?? default;
-
-        for (var i = 0; i < attr.ConstructorArguments.Length; i++)
+        var hasValues = false;
+        foreach (var typedConstant in attr.ConstructorArguments)
         {
-            var name = i < parameters.Length ? parameters[i].Name : $"arg{i}";
-            var arg = attr.ConstructorArguments[i];
-
-            yield return Unwrap(arg);
+            hasValues = true;
+            yield return new SemanticValue(typedConstant);
         }
 
         foreach (var named in attr.NamedArguments)
         {
-            yield return Unwrap(named.Value);
+            hasValues = true;
+            yield return new SemanticValue(named.Value);
         }
-
-        var syntax = attr.ApplicationSyntaxReference?.GetSyntax() as AttributeSyntax;
-        var args = syntax?.ArgumentList?.Arguments;
-        if (args is null)
+        
+        if (hasValues || attr.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax { ArgumentList: { } list })
             yield break;
 
-        var position = 0;
-        foreach (var arg in args.Value)
-        {
-            var name =
-                arg.NameEquals?.Name.Identifier.Text ??
-                arg.NameColon?.Name.Identifier.Text ??
-                $"arg{position++}";
+        foreach (var arg in list.Arguments)
+            yield return new SyntaxValue(arg.Expression);
+    }
+    
+    internal sealed record SemanticValue(TypedConstant Constant) : IAttributeValue
+    {
+        public TypedConstant Constant { get; } = Constant;
 
-            yield return ParseExpression(arg.Expression);
-        }
+        public AttributeValueSource Source { get; } = AttributeValueSource.Semantic;
     }
 
-
-    private static object? ParseExpression(ExpressionSyntax expr)
+    internal sealed record SyntaxValue(ExpressionSyntax Expression) : IAttributeValue
     {
-        return expr switch
-        {
-            LiteralExpressionSyntax lit => lit.Token.Value,
-            ParenthesizedExpressionSyntax p => ParseExpression(p.Expression),
-            PrefixUnaryExpressionSyntax u when u.IsKind(SyntaxKind.UnaryMinusExpression) =>
-                ParseExpression(u.Operand) is int n ? -n : null,
-            BinaryExpressionSyntax b when b.IsKind(SyntaxKind.BitwiseOrExpression) =>
-                ParseExpression(b.Left) is int l && ParseExpression(b.Right) is int r ? l | r : null,
-            CastExpressionSyntax c => ParseExpression(c.Expression),
-            TypeOfExpressionSyntax t => t.Type.ToString(),
-            MemberAccessExpressionSyntax m => ParseEnumName(m.Name.Identifier.Text),
-            IdentifierNameSyntax id => ParseEnumName(id.Identifier.Text),
-            _ => expr.ToString()
-        };
+        public ExpressionSyntax Expression { get; } = Expression;
+        public AttributeValueSource Source => AttributeValueSource.Syntax;
     }
+}
 
-    private static object ParseEnumName(string name) => name switch
-    {
-        "Checked"   => (int)DeclarationKind.Checked,
-        "Unchecked" => (int)DeclarationKind.Unchecked,
-        "Buffer"    => (int)DeclarationKind.Buffer,
-        _ when int.TryParse(name, out var v) => v,
-        _ => name
-    };
+internal interface IAttributeValue
+{
+    AttributeValueSource Source { get; }
+}
 
-
-    private static object? Unwrap(TypedConstant c) => c.Kind switch
-    {
-        TypedConstantKind.Error => null,
-        TypedConstantKind.Array => c.Values.Select(Unwrap).ToArray(),
-        TypedConstantKind.Type => (c.Value as ITypeSymbol)?.ToDisplayString(),
-        _ => c.Value
-    };
+internal enum AttributeValueSource
+{
+    Semantic,
+    Syntax
 }
