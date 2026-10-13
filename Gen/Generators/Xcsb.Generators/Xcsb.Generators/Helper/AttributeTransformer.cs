@@ -34,19 +34,12 @@ internal static class AttributeTransformer
             yield return new SyntaxValue(arg.Expression);
     }
 
-    public static DeclarationKind? GetDeclarationKind(IAttributeValue? symbol) =>
+    public static TEnum? GetKind<TEnum>(IAttributeValue? symbol) where TEnum : struct, Enum =>
         symbol switch
         {
-            SemanticValue semanticValue => (DeclarationKind?)(semanticValue.Constant.Value),
-            SyntaxValue syntaxValue => ParseEnum<DeclarationKind>(syntaxValue.Expression),
-            _ => null
-        };
-
-    public static ImplementationKind? GetImplementationKind(IAttributeValue? symbol) =>
-        symbol switch
-        {
-            SemanticValue semanticValue => (ImplementationKind?)(semanticValue.Constant.Value),
-            SyntaxValue syntaxValue => ParseEnum<ImplementationKind>(syntaxValue.Expression),
+            SemanticValue semanticValue when semanticValue.Constant.Value is { } value =>
+                (TEnum)Enum.ToObject(typeof(TEnum), value),
+            SyntaxValue syntaxValue => ParseEnum<TEnum>(syntaxValue.Expression),
             _ => null
         };
 

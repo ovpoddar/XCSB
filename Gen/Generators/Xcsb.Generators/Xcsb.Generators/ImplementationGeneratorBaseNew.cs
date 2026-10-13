@@ -29,7 +29,7 @@ public class ImplementationGeneratorBaseNew : IIncrementalGenerator
                     if (attributeValues.Length != 2)
                         return (null, null, null);
 
-                    return (kindInfo: AttributeTransformer.GetImplementationKind(attributeValues[0]),
+                    return (kindInfo: AttributeTransformer.GetKind<ImplementationKind>(attributeValues[0]),
                         interfaceSymbol: AttributeTransformer.GetInterfaceSymbol(attributeValues[1], ctx),
                         classSymbol: ctx.TargetSymbol as INamedTypeSymbol);
                 })

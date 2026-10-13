@@ -87,7 +87,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 DeclarationAttributeCode.AttributeName,
                 predicate: static (node, _) => node is InterfaceDeclarationSyntax,
                 transform: static (ctx, _) =>
-                    (kindInfo: AttributeTransformer.GetDeclarationKind(
+                    (kindInfo: AttributeTransformer.GetKind<DeclarationKind>(
                             AttributeTransformer.GetAllAttributeValues(ctx.Attributes.FirstOrDefault())?
                                 .FirstOrDefault()),
                         symbol: ctx.TargetSymbol as INamedTypeSymbol))
