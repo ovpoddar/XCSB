@@ -1,9 +1,11 @@
 ﻿using Xcsb.Connection.Models;
+using Xcsb.Generators;
 using Xcsb.Models;
 using Xcsb.Response.Replies;
 
 namespace Xcsb.Infrastructure.ResponceProto;
 
+[Declaration(DeclarationKind.Async)] 
 public interface IResponseProto
 {
     ReplyLease<AllocColorReply> AllocColor(uint colorMap, ushort red, ushort green, ushort blue);

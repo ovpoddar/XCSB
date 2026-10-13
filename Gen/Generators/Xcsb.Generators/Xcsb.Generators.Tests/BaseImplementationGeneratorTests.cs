@@ -51,7 +51,7 @@ namespace Xcsb.Generators
             """;
         var generatedSource = TestHelper.GenerateSource<ImplementationGenerator>(source,
             AttributeSource,
-            "Implementation.g.cs");
+            "Service.Implementation.g.cs");
         Assert.NotEmpty(generatedSource);
     }
 

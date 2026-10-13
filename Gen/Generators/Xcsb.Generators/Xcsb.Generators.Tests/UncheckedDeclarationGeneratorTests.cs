@@ -21,7 +21,7 @@ namespace TestNamespace
 }";
 
         var generatedSource = TestHelper.GenerateSource<DeclarationGenerator>(source, string.Empty,
-            "Declaration.g.cs",
+            "ITestService.Declaration.g.cs",
             validateOutputCompilation: true);
 
         Assert.Contains("public interface ITestServiceUnchecked", generatedSource);
@@ -45,7 +45,7 @@ namespace TestNamespace
 }";
 
         var generatedSource = TestHelper.GenerateSource<DeclarationGenerator>(source, string.Empty,
-            "Declaration.g.cs",
+            "ITestService.Declaration.g.cs",
             validateOutputCompilation: true);
 
         Assert.Contains("void DoStaffUnchecked();", generatedSource);
@@ -101,7 +101,7 @@ namespace TestNamespace
 }";
 
         var generatedSource = TestHelper.GenerateSource<DeclarationGenerator>(source, attribute,
-            "Declaration.g.cs");
+            "ITestService.Declaration.g.cs");
 
         Assert.Contains("void DoSomethingUnchecked<T>(int a, int b, T c);", generatedSource);
         Assert.Contains("void DoSomething1Unchecked<T>(int a, int b, global::System.ReadOnlySpan<T> c);",

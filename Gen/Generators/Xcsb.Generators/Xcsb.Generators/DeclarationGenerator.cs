@@ -48,7 +48,7 @@ public class DeclarationGenerator : IIncrementalGenerator
                 return;
             }
 
-            ctx.AddSource("Declaration.g.cs", SourceText.From(
+            ctx.AddSource($"{result.symbol.Name}.Declaration.g.cs", SourceText.From(
                 InterfaceCodeGenerator.Generate(result.symbol, result.info).ToString(),
                 Encoding.UTF8));
         });

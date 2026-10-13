@@ -56,7 +56,7 @@ public class ImplementationGenerator : IIncrementalGenerator
                 return;
             }
 
-            ctx.AddSource("Implementation.g.cs", SourceText.From(
+            ctx.AddSource($"{result.classSymbol.Name}.Implementation.g.cs", SourceText.From(
                 ClassCodeGenerator.Generate1(result.classSymbol, result.interfaceSymbol, result.kindInfo).ToString(),
                 Encoding.UTF8));
         });

@@ -5,19 +5,14 @@ using Xcsb.Generators;
 
 namespace Xcsb.Generators.Sample;
 
-[Declaration(DeclarationKind.Checked | DeclarationKind.Unchecked | DeclarationKind.Buffer)]
+[Declaration(DeclarationKind.Checked | DeclarationKind.Unchecked | DeclarationKind.Async)]
 public interface IMyService
 {
     int Do();
     int Doing(int a);
 }
 
-public interface IService :  IMyService, 
-    IMyServiceChecked, IMyServiceUnchecked
-{
-}
-
-public interface IServiceBuffer : IMyServiceBuffer
+public interface IService :  IMyService, IMyServiceChecked, IMyServiceUnchecked
 {
 }
 
@@ -58,28 +53,5 @@ public partial class Service : IService
         public void SkipErrorForSequence(int sequence, bool isError)
         {
         }
-    }
-}
-
-public class ServiceBuffer : IServiceBuffer
-{
-    public void Do()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void Doing(int a)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void DoBuffer()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DoingBuffer(int a)
-    {
-        throw new NotImplementedException();
     }
 }
