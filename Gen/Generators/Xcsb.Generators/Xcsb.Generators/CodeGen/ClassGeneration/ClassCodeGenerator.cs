@@ -19,7 +19,7 @@ internal static class ClassCodeGenerator
         result.AppendLine($"namespace {classSymbol.ContainingNamespace.ToDisplayString()}");
         result.AppendLine("{");
 
-        if (kindInfo == ImplementationKind.Checked)
+        if (kindInfo.HasFlag(ImplementationKind.Checked))
             Generate(result, classSymbol, interfaceSymbol, "Checked", (sb, method) =>
             {
                 sb.AppendLine();
@@ -39,7 +39,7 @@ internal static class ClassCodeGenerator
                 sb.AppendLine("            _socketAccessor.SkipErrorForSequence(cookie.Id, true);");
                 sb.AppendLine("        }");
             });
-        if (kindInfo == ImplementationKind.Unchecked)
+        if (kindInfo.HasFlag(ImplementationKind.Unchecked))
             Generate(result, classSymbol, interfaceSymbol, "Unchecked", (sb, method) =>
             {
                 sb.AppendLine();
@@ -60,7 +60,7 @@ internal static class ClassCodeGenerator
                 sb.AppendLine("        }");
             });
 
-        if (kindInfo == ImplementationKind.Base)
+        if (kindInfo.HasFlag(ImplementationKind.Base))
             Generate(result, classSymbol, interfaceSymbol, string.Empty, (sb, method) =>
                 {
                     sb.AppendLine(" =>");

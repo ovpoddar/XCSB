@@ -36,9 +36,7 @@ namespace Xcsb.Implementation;
 [SkipLocalsInit]
 #endif
 // https://xorg.freedesktop.org/archive/X11R7.7/doc/xproto/x11protocol.pdf
-[CheckedImplementation(typeof(IVoidProto))]
-[UncheckedImplementation(typeof(IVoidProto))]
-[BaseImplementation(typeof(IVoidProto))]
+[Implementation(ImplementationKind.Base | ImplementationKind.Checked| ImplementationKind.Unchecked, typeof(IVoidProto))]
 internal sealed partial class XProto : IXProto
 {
     private XBufferProto? _xBufferProto;

@@ -27,9 +27,7 @@ using Xcsb.Models;
 namespace Xcsb.Extension.XInput.Implementation;
 
 // https://xorg.freedesktop.org/archive/X11R7.7/doc/libXi/inputlib.pdf
-[CheckedImplementation(typeof(IVoidProto))]
-[UncheckedImplementation(typeof(IVoidProto))]
-[BaseImplementation(typeof(IVoidProto))]
+[Implementation(ImplementationKind.Base | ImplementationKind.Checked| ImplementationKind.Unchecked, typeof(IVoidProto))]
 internal sealed partial class XInputProto : IXinputRequest
 {
     private readonly QueryExtensionReply _response;

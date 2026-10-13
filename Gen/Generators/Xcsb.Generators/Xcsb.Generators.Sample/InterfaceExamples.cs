@@ -5,9 +5,6 @@ using Xcsb.Generators;
 
 namespace Xcsb.Generators.Sample;
 
-// [CheckedDeclaration]
-// [UncheckedDeclaration]
-// [BufferDeclaration]
 [Declaration(DeclarationKind.Checked | DeclarationKind.Unchecked | DeclarationKind.Buffer)]
 public interface IMyService
 {
@@ -15,7 +12,8 @@ public interface IMyService
     int Doing(int a);
 }
 
-public interface IService : IMyService, IMyServiceChecked, IMyServiceUnchecked
+public interface IService :  IMyService, 
+    IMyServiceChecked, IMyServiceUnchecked
 {
 }
 
@@ -23,10 +21,8 @@ public interface IServiceBuffer : IMyServiceBuffer
 {
 }
 
-[Implementation(ImplementationKind.Checked | ImplementationKind.Base | ImplementationKind.Unchecked, typeof(IMyService))]
-// [CheckedImplementation(typeof(IMyService))]
-// [UncheckedImplementation(typeof(IMyService))]
-// [BaseImplementation(typeof(IMyService))]
+[Implementation(ImplementationKind.Checked | ImplementationKind.Unchecked | ImplementationKind.Base,
+    typeof(IMyService))]
 public partial class Service : IService
 {
     private readonly TestService _socketAccessor;
