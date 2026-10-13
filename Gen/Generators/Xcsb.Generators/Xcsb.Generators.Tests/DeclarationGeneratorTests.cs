@@ -19,7 +19,7 @@ public class DeclarationGeneratorTests
                      }
                      """;
         var generatedSource =
-            TestHelper.GenerateSource<DeclarationGeneratorBase>(
+            TestHelper.GenerateSource<DeclarationGenerator>(
                 source, string.Empty, 
                 "Declaration.g.cs",
                 validateOutputCompilation: true);

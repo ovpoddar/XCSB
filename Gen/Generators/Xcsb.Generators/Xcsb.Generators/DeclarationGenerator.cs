@@ -13,7 +13,7 @@ using Xcsb.Generators.Helper;
 namespace Xcsb.Generators;
 
 [Generator]
-public class DeclarationGeneratorBase : IIncrementalGenerator
+public class DeclarationGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {

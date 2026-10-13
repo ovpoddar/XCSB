@@ -49,7 +49,7 @@ namespace Xcsb.Generators
 
             }
             """;
-        var generatedSource = TestHelper.GenerateSource<ImplementationGeneratorBaseNew>(source,
+        var generatedSource = TestHelper.GenerateSource<ImplementationGenerator>(source,
             AttributeSource,
             "Implementation.g.cs");
         Assert.NotEmpty(generatedSource);
@@ -80,6 +80,6 @@ namespace TestNamespace
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<ImplementationGeneratorBaseNew>(source, AttributeSource, "XCSBGEN002");
+        TestHelper.AssertDiagnostic<ImplementationGenerator>(source, AttributeSource, "XCSBGEN002");
     }
 }

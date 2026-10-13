@@ -20,7 +20,7 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, string.Empty,
+        var generatedSource = TestHelper.GenerateSource<DeclarationGenerator>(source, string.Empty,
             "Declaration.g.cs",
             validateOutputCompilation: true);
 
@@ -44,7 +44,7 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, string.Empty,
+        var generatedSource = TestHelper.GenerateSource<DeclarationGenerator>(source, string.Empty,
             "Declaration.g.cs",
             validateOutputCompilation: true);
 
@@ -100,7 +100,7 @@ namespace TestNamespace
     }
 }";
 
-        var generatedSource = TestHelper.GenerateSource<DeclarationGeneratorBase>(source, attribute,
+        var generatedSource = TestHelper.GenerateSource<DeclarationGenerator>(source, attribute,
             "Declaration.g.cs");
 
         Assert.Contains("void DoSomethingUnchecked<T>(int a, int b, T c);", generatedSource);
@@ -139,6 +139,6 @@ namespace TestNamespace
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<DeclarationGeneratorBase>(source, string.Empty, "XCSBGEN001");
+        TestHelper.AssertDiagnostic<DeclarationGenerator>(source, string.Empty, "XCSBGEN001");
     }
 }

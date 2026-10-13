@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.Text;
 using Xcsb.Generators;
 using Xcsb.Generators.Helper;
 
-internal static class ImplementationAttributeCodeNew
+internal static class ImplementationAttributeCode
 {
     public const string Type = "Implementation";
     public const string AttributeName = $"Xcsb.Generators.{Type}Attribute";

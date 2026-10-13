@@ -10,18 +10,20 @@ using Xcsb.Generators.CodeGen;
 using Xcsb.Generators.CodeGen.ClassGeneration;
 using Xcsb.Generators.Helper;
 
+namespace Xcsb.Generators;
+
 [Generator]
-public class ImplementationGeneratorBaseNew : IIncrementalGenerator
+public class ImplementationGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(ctx =>
         {
-            ctx.AddSource(ImplementationAttributeCodeNew.FileName, ImplementationAttributeCodeNew.Context);
+            ctx.AddSource(ImplementationAttributeCode.FileName, ImplementationAttributeCode.Context);
         });
 
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-                ImplementationAttributeCodeNew.AttributeName,
+                ImplementationAttributeCode.AttributeName,
                 predicate: static (node, _) => node is ClassDeclarationSyntax,
                 transform: static (ctx, _) =>
                 {
