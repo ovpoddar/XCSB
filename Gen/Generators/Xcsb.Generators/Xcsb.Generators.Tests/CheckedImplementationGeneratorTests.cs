@@ -6,20 +6,25 @@ namespace Xcsb.Generators.Tests;
 public class CheckedImplementationGeneratorTests
 {
     private const string AttributeSource = @"
-using System;
-
 namespace Xcsb.Generators
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class CheckedImplementationAttribute : Attribute
+    [global::System.Flags]
+    public enum ImplementationKind
     {
-        public Type Name { get; }
-        public CheckedImplementationAttribute(Type name)
-        {
-            Name = name;
-        }
+    Checked = 1,
+    Unchecked = 2,
+    Base = 4,
     }
-}";
+
+    [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public class ImplementationAttribute : global::System.Attribute
+    {
+        public ImplementationAttribute(global::Xcsb.Generators.ImplementationKind kind, global::System.Type target) {}
+
+        private ImplementationAttribute() {}
+    }
+}
+";
 
     [Fact]
     public void Generator_ShouldGenerateClass_WhenClassHasAttribute()
@@ -61,7 +66,7 @@ namespace Xcsb.Generators
             """;
         var generatedSource = TestHelper.GenerateSource<ImplementationGeneratorBaseNew>(source,
             AttributeSource,
-            "Service.Checked.g.cs");
+            "Implementation.g.cs");
         Assert.Contains("void DoChecked()", generatedSource);
     }
 

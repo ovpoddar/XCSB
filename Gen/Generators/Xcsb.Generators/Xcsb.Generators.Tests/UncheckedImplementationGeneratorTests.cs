@@ -6,20 +6,25 @@ namespace Xcsb.Generators.Tests;
 public class UncheckedImplementationGeneratorTests
 {
     private const string AttributeSource = @"
-using System;
-
 namespace Xcsb.Generators
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class UncheckedImplementationAttribute : Attribute
+    [global::System.Flags]
+    public enum ImplementationKind
     {
-        public Type Name { get; }
-        public UncheckedImplementationAttribute(Type name)
-        {
-            Name = name;
-        }
+    Checked = 1,
+    Unchecked = 2,
+    Base = 4,
     }
-}";
+
+    [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public class ImplementationAttribute : global::System.Attribute
+    {
+        public ImplementationAttribute(global::Xcsb.Generators.ImplementationKind kind, global::System.Type target) {}
+
+        private ImplementationAttribute() {}
+    }
+}
+";
 
     [Fact]
     public void Generator_ShouldGenerateClass_WhenClassHasAttribute()
@@ -35,7 +40,7 @@ namespace Xcsb.Generators
                     int Do();
                 }
 
-                [UncheckedImplementation(typeof(IMyService))]
+                [Implementation(ImplementationKind.Unchecked, typeof(IMyService))]
                 public partial class Service
                 {
                     private Cookie DoBase()
@@ -61,7 +66,7 @@ namespace Xcsb.Generators
             """;
         var generatedSource = TestHelper.GenerateSource<ImplementationGeneratorBaseNew>(source,
             AttributeSource,
-            "Service.Unchecked.g.cs");
+            "Implementation.g.cs");
         Assert.Contains("void DoUnchecked()", generatedSource);
     }
 
@@ -83,7 +88,7 @@ namespace TestNamespace
         {returnType} DoBad();
     }}
 
-    [UncheckedImplementation(typeof(IMyService))]
+    [Implementation(ImplementationKind.Unchecked, typeof(IMyService))]
     public partial class Service
     {{
     }}
