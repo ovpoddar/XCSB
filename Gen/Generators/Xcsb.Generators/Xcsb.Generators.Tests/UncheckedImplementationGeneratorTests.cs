@@ -1,4 +1,3 @@
-using Xcsb.Generators.SourceGenerator;
 using Xcsb.Generators.Tests.Utils;
 using Xunit;
 
@@ -60,7 +59,7 @@ namespace Xcsb.Generators
                 }
             }
             """;
-        var generatedSource = TestHelper.GenerateSource<UncheckedImplementationGenerator>(source,
+        var generatedSource = TestHelper.GenerateSource<ImplementationGeneratorBaseNew>(source,
             AttributeSource,
             "Service.Unchecked.g.cs");
         Assert.Contains("void DoUnchecked()", generatedSource);
@@ -90,6 +89,6 @@ namespace TestNamespace
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<UncheckedImplementationGenerator>(source, AttributeSource, "XCSBGEN002");
+        TestHelper.AssertDiagnostic<ImplementationGeneratorBaseNew>(source, AttributeSource, "XCSBGEN002");
     }
 }

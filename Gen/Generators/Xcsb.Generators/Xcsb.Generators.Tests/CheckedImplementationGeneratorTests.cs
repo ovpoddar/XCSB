@@ -1,4 +1,3 @@
-using Xcsb.Generators.SourceGenerator;
 using Xcsb.Generators.Tests.Utils;
 using Xunit;
 
@@ -36,7 +35,7 @@ namespace Xcsb.Generators
                     int Do();
                 }
 
-                [CheckedImplementation(typeof(IMyService))]
+                [Implementation(ImplementationKind.Checked, typeof(IMyService))]
                 public partial class Service
                 {
                     private Cookie DoBase()
@@ -60,7 +59,7 @@ namespace Xcsb.Generators
                 }
             }
             """;
-        var generatedSource = TestHelper.GenerateSource<CheckedImplementationGenerator>(source,
+        var generatedSource = TestHelper.GenerateSource<ImplementationGeneratorBaseNew>(source,
             AttributeSource,
             "Service.Checked.g.cs");
         Assert.Contains("void DoChecked()", generatedSource);
@@ -84,12 +83,12 @@ namespace TestNamespace
         {returnType} DoBad();
     }}
 
-    [CheckedImplementation(typeof(IMyService))]
+    [Implementation(ImplementationKind.Checked, typeof(IMyService))]
     public partial class Service
     {{
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<CheckedImplementationGenerator>(source, AttributeSource, "XCSBGEN002");
+        TestHelper.AssertDiagnostic<ImplementationGeneratorBaseNew>(source, AttributeSource, "XCSBGEN002");
     }
 }

@@ -59,7 +59,25 @@ internal static class ClassCodeGenerator
                 sb.AppendLine("            _socketAccessor.SkipErrorForSequence(cookie.Id, false);");
                 sb.AppendLine("        }");
             });
-        
+
+        if (kindInfo == ImplementationKind.Base)
+            Generate(result, classSymbol, interfaceSymbol, string.Empty, (sb, method) =>
+                {
+                    sb.AppendLine(" =>");
+                    sb.Append("            this.")
+                        .Append(method.Name)
+                        .Append("Base(");
+                    for (var i = 0; i < method.Parameters.Length; i++)
+                    {
+                        var param = method.Parameters[i];
+                        if (i > 0) sb.Append(", ");
+                        sb.Append(param.Name);
+                    }
+
+                    sb.AppendLine(");");
+                },
+                followReturnType: true);
+
         result.AppendLine("}");
         return result;
     }
@@ -140,7 +158,7 @@ internal static class ClassCodeGenerator
             ConstrainPragmaWriter.Write(sb, method, false);
             writeMethodBody(sb, method);
         }
-        
+
         sb.AppendLine("    }");
     }
 }

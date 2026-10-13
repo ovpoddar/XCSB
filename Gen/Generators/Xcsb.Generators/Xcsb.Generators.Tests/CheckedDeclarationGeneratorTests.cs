@@ -1,5 +1,4 @@
 using Xunit;
-using Xcsb.Generators.SourceGenerator;
 using Xcsb.Generators.Tests.Utils;
 
 namespace Xcsb.Generators.Tests;

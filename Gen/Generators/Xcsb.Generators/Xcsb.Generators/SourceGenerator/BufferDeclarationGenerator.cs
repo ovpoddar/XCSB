@@ -5,8 +5,8 @@ using Xcsb.Generators.CodeGen.InterfaceGeneration;
 namespace Xcsb.Generators.SourceGenerator;
 
 // [Generator]
-public sealed class BufferDeclarationGenerator : DeclarationGeneratorBase
-{
+// public sealed class BufferDeclarationGenerator : DeclarationGeneratorBase
+// {
     // protected override string AttributeFullName => DeclarationAttributeCode.Buffer.FullName;
     // protected override string GeneratedSuffix => DeclarationAttributeCode.Buffer.SuffixName;
     //
@@ -19,4 +19,4 @@ public sealed class BufferDeclarationGenerator : DeclarationGeneratorBase
     //         returnTypeProvider: _ => "void"
     //     );
     // }
-}
+// }

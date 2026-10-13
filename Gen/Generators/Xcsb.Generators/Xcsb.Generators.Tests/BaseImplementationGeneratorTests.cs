@@ -1,4 +1,3 @@
-using Xcsb.Generators.SourceGenerator;
 using Xcsb.Generators.Tests.Utils;
 using Xunit;
 
@@ -44,7 +43,7 @@ namespace Xcsb.Generators
 
             }
             """;
-        var generatedSource = TestHelper.GenerateSource<BaseImplementationGenerator>(source,
+        var generatedSource = TestHelper.GenerateSource<ImplementationGeneratorBaseNew>(source,
             AttributeSource,
             "Service.Base.g.cs");
         Assert.NotEmpty(generatedSource);
@@ -74,6 +73,6 @@ namespace TestNamespace
     }}
 }}";
 
-        TestHelper.AssertDiagnostic<BaseImplementationGenerator>(source, AttributeSource, "XCSBGEN002");
+        TestHelper.AssertDiagnostic<ImplementationGeneratorBaseNew>(source, AttributeSource, "XCSBGEN002");
     }
 }

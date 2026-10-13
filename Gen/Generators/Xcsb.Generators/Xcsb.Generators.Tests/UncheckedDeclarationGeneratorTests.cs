@@ -1,5 +1,4 @@
 using Xunit;
-using Xcsb.Generators.SourceGenerator;
 using Xcsb.Generators.Tests.Utils;
 using System;
 
@@ -87,7 +86,7 @@ namespace TestNamespace
 using Xcsb.Generators;
 namespace TestNamespace
 {
-    [Declaration(DeclarationKind.Unchecked)]
+    [Declaration(DeclarationKind.Unchecked | DeclarationKind.Checked)]
     public partial interface ITestService
     {
         int DoSomething<T>(int a, int b, T c);

@@ -10,7 +10,7 @@ using Xcsb.Generators.CodeGen.ClassGeneration;
 using Xcsb.Generators.SourceGenerator;
 
 namespace Xcsb.Generators;
-
+/*
 public abstract class ImplementationGeneratorBase : IIncrementalGenerator
 {
     protected abstract string AttributeFullName { get; }
@@ -135,4 +135,4 @@ public abstract class ImplementationGeneratorBase : IIncrementalGenerator
             ctx.AddSource(result.HintName, SourceText.From(result.Source!, Encoding.UTF8));
         });
     }
-}
+}*/

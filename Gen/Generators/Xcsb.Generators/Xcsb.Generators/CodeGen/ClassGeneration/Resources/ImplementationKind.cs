@@ -5,5 +5,6 @@ namespace Xcsb.Generators
     {
         Checked = 1,
         Unchecked = 2,
+        Base = 4
     }
 }

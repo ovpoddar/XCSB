@@ -23,9 +23,10 @@ public interface IServiceBuffer : IMyServiceBuffer
 {
 }
 
-[CheckedImplementation(typeof(IMyService))]
-[UncheckedImplementation(typeof(IMyService))]
-[BaseImplementation(typeof(IMyService))]
+[Implementation(ImplementationKind.Checked | ImplementationKind.Base | ImplementationKind.Unchecked, typeof(IMyService))]
+// [CheckedImplementation(typeof(IMyService))]
+// [UncheckedImplementation(typeof(IMyService))]
+// [BaseImplementation(typeof(IMyService))]
 public partial class Service : IService
 {
     private readonly TestService _socketAccessor;
@@ -74,5 +75,15 @@ public class ServiceBuffer : IServiceBuffer
     public void Doing(int a)
     {
         throw new System.NotImplementedException();
+    }
+
+    public void DoBuffer()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void DoingBuffer(int a)
+    {
+        throw new NotImplementedException();
     }
 }
