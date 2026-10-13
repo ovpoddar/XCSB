@@ -109,8 +109,9 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 return;
             }
 
-            ctx.AddSource("Declaration.g.cs", SourceText.From(InterfaceCodeGenerator.Generate(result.symbol,
-                result.info).ToString(), Encoding.UTF8));
+            ctx.AddSource("Declaration.g.cs", SourceText.From(
+                InterfaceCodeGenerator.Generate(result.symbol, result.info).ToString(),
+                Encoding.UTF8));
         });
     }
 }

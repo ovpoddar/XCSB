@@ -26,37 +26,59 @@ internal static class AttributeTransformer
             hasValues = true;
             yield return new SemanticValue(named.Value);
         }
-        
+
         if (hasValues || attr.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax { ArgumentList: { } list })
             yield break;
 
         foreach (var arg in list.Arguments)
             yield return new SyntaxValue(arg.Expression);
     }
-    
-    
+
     public static DeclarationKind? GetDeclarationKind(IAttributeValue? symbol) =>
         symbol switch
         {
             SemanticValue semanticValue => (DeclarationKind?)(semanticValue.Constant.Value),
-            SyntaxValue syntaxValue => ParseDeclarationKind(syntaxValue.Expression),
+            SyntaxValue syntaxValue => ParseEnum<DeclarationKind>(syntaxValue.Expression),
             _ => null
         };
 
-    private static DeclarationKind? ParseDeclarationKind(ExpressionSyntax expr) => expr switch
+    public static ImplementationKind? GetImplementationKind(IAttributeValue? symbol) =>
+        symbol switch
+        {
+            SemanticValue semanticValue => (ImplementationKind?)(semanticValue.Constant.Value),
+            SyntaxValue syntaxValue => ParseEnum<ImplementationKind>(syntaxValue.Expression),
+            _ => null
+        };
+
+    public static INamedTypeSymbol? GetInterfaceSymbol(IAttributeValue? symbol, GeneratorAttributeSyntaxContext ctx) =>
+        symbol switch
+        {
+            SemanticValue semanticValue => semanticValue.Constant.Value as INamedTypeSymbol,
+            SyntaxValue syntaxValue => GetInterfaceSymbol(syntaxValue.Expression, ctx),
+            _ => null
+        };
+
+    private static INamedTypeSymbol? GetInterfaceSymbol(ExpressionSyntax expr, GeneratorAttributeSyntaxContext ctx) =>
+        expr is TypeOfExpressionSyntax attributeType
+            ? ctx.SemanticModel.GetTypeInfo(attributeType.Type).Type as INamedTypeSymbol
+            : null;
+
+    private static TEnum? ParseEnum<TEnum>(ExpressionSyntax expr) where TEnum : struct, Enum => expr switch
     {
-        MemberAccessExpressionSyntax m => TryParseKind(m.Name.Identifier.Text),
-        IdentifierNameSyntax id => TryParseKind(id.Identifier.Text),
+        MemberAccessExpressionSyntax m => TryParseName<TEnum>(m.Name.Identifier.Text),
+        IdentifierNameSyntax id => TryParseName<TEnum>(id.Identifier.Text),
         BinaryExpressionSyntax b when b.IsKind(SyntaxKind.BitwiseOrExpression) =>
-            ParseDeclarationKind(b.Left) is { } l && ParseDeclarationKind(b.Right) is { } r
-                ? l | r
+            ParseEnum<TEnum>(b.Left) is { } l && ParseEnum<TEnum>(b.Right) is { } r
+                ? (TEnum)Enum.ToObject(typeof(TEnum), Convert.ToInt64(l) | Convert.ToInt64(r))
                 : null,
-        ParenthesizedExpressionSyntax p => ParseDeclarationKind(p.Expression),
+        ParenthesizedExpressionSyntax p => ParseEnum<TEnum>(p.Expression),
         _ => null
     };
 
-    private static DeclarationKind? TryParseKind(string name) =>
-        Enum.TryParse<DeclarationKind>(name, out var kind) ? kind : null;
+    private static TEnum? TryParseName<TEnum>(string name) where TEnum : struct, Enum =>
+        Enum.TryParse<TEnum>(name, out var value) && Enum.IsDefined(typeof(TEnum), value)
+            ? value
+            : null;
 }
 
 internal interface IAttributeValue
