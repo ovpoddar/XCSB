@@ -22,8 +22,6 @@ internal static class InterfaceCodeGenerator
             GenerateDeclaration(result, symbol, "Checked");
         if (type.HasFlag(DeclarationKind.Unchecked))
             GenerateDeclaration(result, symbol, "Unchecked");
-        if (type.HasFlag(DeclarationKind.Buffer))
-            GenerateDeclaration(result, symbol, "Buffer");
         
         result.AppendLine("}");
         return result;

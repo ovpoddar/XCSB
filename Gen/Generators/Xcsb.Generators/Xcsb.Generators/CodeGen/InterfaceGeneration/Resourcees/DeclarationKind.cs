@@ -5,6 +5,6 @@ namespace Xcsb.Generators
     {
         Checked = 1,
         Unchecked = 2,
-        Buffer = 4
+        Async = 4
     }
 }

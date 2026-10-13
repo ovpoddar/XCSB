@@ -19,69 +19,8 @@ public class DeclarationGenerator : IIncrementalGenerator
     {
         context.RegisterPostInitializationOutput(ctx =>
         {
-/*
-            ctx.AddSource(
-                $"Xcsb.Generators.BufferDeclarationAttribute.g.cs",
-                SourceText.From(
-                    $$"""
-                      using System;
-
-                      namespace Xcsb.Generators;
-
-                      [AttributeUsage(AttributeTargets.Interface)]
-                      public class BufferDeclarationAttribute : Attribute
-                      {
-
-                      }
-                      """, Encoding.UTF8));
-*/
             ctx.AddSource(DeclarationAttributeCode.FileName, DeclarationAttributeCode.Context);
         });
-/*
-        var buffer = context.SyntaxProvider.ForAttributeWithMetadataName(
-                "Xcsb.Generators.BufferDeclarationAttribute",
-                predicate: static (node, _) => node is InterfaceDeclarationSyntax,
-                transform: static (ctx, _) => (INamedTypeSymbol)ctx.TargetSymbol)
-            .WithComparer(SymbolEqualityComparer.Default)
-            .Select((interfaceSymbol, _) =>
-            {
-                var offender = GeneratorDiagnostics.FindFirstOffendingMethod(interfaceSymbol);
-                if (offender is null)
-                {
-                    return new DeclarationResult(
-                        interfaceSymbol.Name,
-                        InterfaceCodeGenerator.Generate(
-                            interfaceSymbol,
-                            interfaceSuffix: "Buffer",
-                            methodSuffix: string.Empty,
-                            returnTypeProvider: _ => "void"
-                        ),
-                        null, null, null);
-                }
-
-                return new DeclarationResult(
-                    interfaceSymbol.Name, null,
-                    offender.Name,
-                    offender.ReturnType.ToDisplayString(),
-                    offender.Locations.FirstOrDefault() ?? interfaceSymbol.Locations.FirstOrDefault());
-            });
-
-        context.RegisterSourceOutput(buffer, (ctx, result) =>
-        {
-            if (result.OffendingMethodName is not null)
-            {
-                ctx.ReportDiagnostic(Diagnostic.Create(
-                    GeneratorDiagnostics.DeclarationInvalidReturnType,
-                    result.OffendingLocation ?? Location.None,
-                    result.OffendingMethodName, result.InterfaceName, result.OffendingReturnType,
-                    "BufferDeclaration"));
-                return;
-            }
-
-            ctx.AddSource($"{result.InterfaceName}Buffer.g.cs", SourceText.From(result.Source!, Encoding.UTF8));
-        });
-
-*/
 
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
                 DeclarationAttributeCode.AttributeName,
