@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Xcsb.Generators.CodeGen;
@@ -86,11 +87,12 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
                 DeclarationAttributeCode.AttributeName,
                 predicate: static (node, _) => node is InterfaceDeclarationSyntax,
                 transform: static (ctx, _) =>
-                    (kindInfo: AttributeTransformer.GetAllAttributeValues(ctx.Attributes.FirstOrDefault())?
-                            .FirstOrDefault(),
+                    (kindInfo: AttributeTransformer.GetDeclarationKind(
+                            AttributeTransformer.GetAllAttributeValues(ctx.Attributes.FirstOrDefault())?
+                                .FirstOrDefault()),
                         symbol: ctx.TargetSymbol as INamedTypeSymbol))
-            .Where(a => a.symbol is not null && a.kindInfo is not null)
-            .Select((a, _) => (symbol: a.symbol!, info: a.kindInfo!));
+            .Where(a => a.symbol is not null && a.kindInfo.HasValue)
+            .Select((a, _) => (symbol: a.symbol!, info: a.kindInfo!.Value));
 
         context.RegisterSourceOutput(provider, (ctx, result) =>
         {
@@ -108,7 +110,7 @@ public class DeclarationGeneratorBase : IIncrementalGenerator
             }
 
             ctx.AddSource("Declaration.g.cs", SourceText.From(InterfaceCodeGenerator.Generate(result.symbol,
-                (DeclarationKind)result.info).ToString(), Encoding.UTF8));
+                result.info).ToString(), Encoding.UTF8));
         });
     }
 }

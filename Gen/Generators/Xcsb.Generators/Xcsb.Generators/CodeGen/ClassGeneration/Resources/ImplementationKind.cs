@@ -1,0 +1,9 @@
+namespace Xcsb.Generators
+{
+    [global::System.Flags]
+    public enum ImplementationKind
+    {
+        Checked = 1,
+        Unchecked = 2,
+    }
+}

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -33,27 +34,41 @@ internal static class AttributeTransformer
             yield return new SyntaxValue(arg.Expression);
     }
     
-    internal sealed record SemanticValue(TypedConstant Constant) : IAttributeValue
-    {
-        public TypedConstant Constant { get; } = Constant;
+    
+    public static DeclarationKind? GetDeclarationKind(IAttributeValue? symbol) =>
+        symbol switch
+        {
+            SemanticValue semanticValue => (DeclarationKind?)(semanticValue.Constant.Value),
+            SyntaxValue syntaxValue => ParseDeclarationKind(syntaxValue.Expression),
+            _ => null
+        };
 
-        public AttributeValueSource Source { get; } = AttributeValueSource.Semantic;
-    }
-
-    internal sealed record SyntaxValue(ExpressionSyntax Expression) : IAttributeValue
+    private static DeclarationKind? ParseDeclarationKind(ExpressionSyntax expr) => expr switch
     {
-        public ExpressionSyntax Expression { get; } = Expression;
-        public AttributeValueSource Source => AttributeValueSource.Syntax;
-    }
+        MemberAccessExpressionSyntax m => TryParseKind(m.Name.Identifier.Text),
+        IdentifierNameSyntax id => TryParseKind(id.Identifier.Text),
+        BinaryExpressionSyntax b when b.IsKind(SyntaxKind.BitwiseOrExpression) =>
+            ParseDeclarationKind(b.Left) is { } l && ParseDeclarationKind(b.Right) is { } r
+                ? l | r
+                : null,
+        ParenthesizedExpressionSyntax p => ParseDeclarationKind(p.Expression),
+        _ => null
+    };
+
+    private static DeclarationKind? TryParseKind(string name) =>
+        Enum.TryParse<DeclarationKind>(name, out var kind) ? kind : null;
 }
 
 internal interface IAttributeValue
 {
-    AttributeValueSource Source { get; }
 }
 
-internal enum AttributeValueSource
+internal sealed record SemanticValue(TypedConstant Constant) : IAttributeValue
 {
-    Semantic,
-    Syntax
+    public TypedConstant Constant { get; } = Constant;
+}
+
+internal sealed record SyntaxValue(ExpressionSyntax Expression) : IAttributeValue
+{
+    public ExpressionSyntax Expression { get; } = Expression;
 }
