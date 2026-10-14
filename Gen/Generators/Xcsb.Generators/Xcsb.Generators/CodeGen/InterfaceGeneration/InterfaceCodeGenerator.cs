@@ -23,10 +23,52 @@ internal static class InterfaceCodeGenerator
         if (type.HasFlag(DeclarationKind.Unchecked))
             GenerateDeclaration(result, symbol, "Unchecked");
         
+        if (type.HasFlag(DeclarationKind.Async))
+            GenerateDeclaration1(result, symbol, "Async");
+        
         result.AppendLine("}");
         return result;
     }
 
+    private static void GenerateDeclaration1(StringBuilder result, INamedTypeSymbol symbol, string async)
+    {
+        result.AppendLine($"    public interface {symbol.Name}{async}1");
+        result.AppendLine("    {");
+
+        foreach (var method in symbol.GetMembers().OfType<IMethodSymbol>())
+        {
+            if (method.MethodKind != MethodKind.Ordinary) continue;
+
+            result.Append($"        // ValueTask<{method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}<{GetGenericArgs(method.ReturnType).FirstOrDefault()}>> {method.Name}Async");
+            if (method.TypeParameters.Length > 0)
+            {
+                result.Append('<');
+                result.Append(string.Join(", ", method.TypeParameters.Select(tp => tp.Name)));
+                result.Append('>');
+            }
+            
+            result.Append("(");
+            foreach (var param in method.Parameters)
+            {
+                result.Append(param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                    .Append(" ").Append(param.Name);
+                if (param.HasExplicitDefaultValue) result.Append(" = ").Append(param.ExplicitDefaultValue);
+                result.Append(", ");
+            }
+
+            result.Append("CancellationToken token = default);");
+            result.AppendLine();
+        }
+
+        result.AppendLine("    }");
+        result.AppendLine();
+    }
+
+    private static IEnumerable<ITypeSymbol> GetGenericArgs(ITypeSymbol type) =>
+        type is INamedTypeSymbol { IsGenericType: true } n
+            ? n.TypeArguments
+            : Enumerable.Empty<ITypeSymbol>();
+    
     private static void AppendSourceDefines(StringBuilder builder, INamedTypeSymbol symbol)
     {
         var declaration = symbol.DeclaringSyntaxReferences.FirstOrDefault();
