@@ -22,53 +22,13 @@ internal static class InterfaceCodeGenerator
             GenerateDeclaration(result, symbol, "Checked");
         if (type.HasFlag(DeclarationKind.Unchecked))
             GenerateDeclaration(result, symbol, "Unchecked");
-        
         if (type.HasFlag(DeclarationKind.Async))
-            GenerateDeclaration1(result, symbol, "Async");
-        
+            GenerateDeclaration(result, symbol, "Async");
+
         result.AppendLine("}");
         return result;
     }
 
-    private static void GenerateDeclaration1(StringBuilder result, INamedTypeSymbol symbol, string async)
-    {
-        result.AppendLine($"    public interface {symbol.Name}{async}1");
-        result.AppendLine("    {");
-
-        foreach (var method in symbol.GetMembers().OfType<IMethodSymbol>())
-        {
-            if (method.MethodKind != MethodKind.Ordinary) continue;
-
-            result.Append($"        // ValueTask<{method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}<{GetGenericArgs(method.ReturnType).FirstOrDefault()}>> {method.Name}Async");
-            if (method.TypeParameters.Length > 0)
-            {
-                result.Append('<');
-                result.Append(string.Join(", ", method.TypeParameters.Select(tp => tp.Name)));
-                result.Append('>');
-            }
-            
-            result.Append("(");
-            foreach (var param in method.Parameters)
-            {
-                result.Append(param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
-                    .Append(" ").Append(param.Name);
-                if (param.HasExplicitDefaultValue) result.Append(" = ").Append(param.ExplicitDefaultValue);
-                result.Append(", ");
-            }
-
-            result.Append("CancellationToken token = default);");
-            result.AppendLine();
-        }
-
-        result.AppendLine("    }");
-        result.AppendLine();
-    }
-
-    private static IEnumerable<ITypeSymbol> GetGenericArgs(ITypeSymbol type) =>
-        type is INamedTypeSymbol { IsGenericType: true } n
-            ? n.TypeArguments
-            : Enumerable.Empty<ITypeSymbol>();
-    
     private static void AppendSourceDefines(StringBuilder builder, INamedTypeSymbol symbol)
     {
         var declaration = symbol.DeclaringSyntaxReferences.FirstOrDefault();
@@ -85,38 +45,50 @@ internal static class InterfaceCodeGenerator
                 builder.AppendLine(define.ToString());
         }
     }
-    
+
     private static void GenerateDeclaration(StringBuilder sb, INamedTypeSymbol symbol, string suffix)
     {
         sb.AppendLine($"    public interface {symbol.Name}{suffix}");
         sb.AppendLine("    {");
+
+        var constraintFormat = new SymbolDisplayFormat(
+            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
+
+        var isAsync = suffix == "Async";
         foreach (var method in symbol.GetMembers().OfType<IMethodSymbol>())
         {
             if (method.MethodKind != MethodKind.Ordinary) continue;
 
-            sb.Append("       ")
-                .Append("void")
-                .Append(" ")
-                .Append(method.Name)
-                .Append(suffix);
+            sb.Append("        ");
+            if (isAsync)
+                sb.Append("global::System.Threading.Tasks.ValueTask<")
+                    .Append(method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                    .Append('>');
+            else
+                sb.Append("void");
 
+            sb.Append(' ').Append(method.Name).Append(suffix);
             if (method.TypeParameters.Length > 0)
-            {
-                sb.Append('<');
-                sb.Append(string.Join(", ", method.TypeParameters.Select(tp => tp.Name)));
-                sb.Append('>');
-            }
+                sb.Append('<').Append(string.Join(", ", method.TypeParameters.Select(tp => tp.Name))).Append('>');
 
-            sb.Append("(");
+            sb.Append('(');
             for (var i = 0; i < method.Parameters.Length; i++)
             {
                 var param = method.Parameters[i];
                 if (i > 0) sb.Append(", ");
-                sb.Append(param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
-                    .Append(" ").Append(param.Name);
-                if (param.HasExplicitDefaultValue) sb.Append(" = ").Append(param.ExplicitDefaultValue);
+                sb.Append(OptimizeType(param.Type, isAsync))
+                    .Append(' ').Append(param.Name);
+                if (param.HasExplicitDefaultValue)
+                    sb.Append(" = ").Append(param.ExplicitDefaultValue);
             }
-            sb.Append(")");
+
+            if (isAsync)
+            {
+                if (method.Parameters.Length > 0) sb.Append(", ");
+                sb.Append("global::System.Threading.CancellationToken token = default");
+            }
+
+            sb.Append(')');
 
             foreach (var tp in method.TypeParameters)
             {
@@ -128,18 +100,13 @@ internal static class InterfaceCodeGenerator
                 if (tp.HasUnmanagedTypeConstraint && !ConstrainPragmaWriter.Contain(method, "unmanaged"))
                     parts.Add("unmanaged");
                 foreach (var ct in tp.ConstraintTypes)
-                    if (!ConstrainPragmaWriter.Contain(method, ct.ToDisplayString(new SymbolDisplayFormat(
-                            typeQualificationStyle: SymbolDisplayTypeQualificationStyle
-                                .NameAndContainingTypesAndNamespaces)
-                        )))
+                    if (!ConstrainPragmaWriter.Contain(method, ct.ToDisplayString(constraintFormat)))
                         parts.Add(ct.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-                if (tp.HasConstructorConstraint && !ConstrainPragmaWriter.Contain(method, "new()")) parts.Add("new()");
+                if (tp.HasConstructorConstraint && !ConstrainPragmaWriter.Contain(method, "new()"))
+                    parts.Add("new()");
 
-                if (parts.Count <= 0) continue;
-                sb.Append(" where ");
-                sb.Append(tp.Name);
-                sb.Append(" : ");
-                sb.Append(string.Join(", ", parts));
+                if (parts.Count == 0) continue;
+                sb.Append(" where ").Append(tp.Name).Append(" : ").Append(string.Join(", ", parts));
             }
 
             ConstrainPragmaWriter.Write(sb, method, true);
@@ -147,5 +114,18 @@ internal static class InterfaceCodeGenerator
 
         sb.AppendLine("    }");
         sb.AppendLine();
+    }
+
+    private static string OptimizeType(ITypeSymbol type, bool async)
+    {
+        if (type is INamedTypeSymbol { IsGenericType: true } a && a.Name.Contains("ReadOnly"))
+        {
+            return (async ? "global::System.ReadOnlyMemory<" : "global::System.ReadOnlySpan<")
+                   + string.Join(", ",
+                       a.TypeArguments.Select(b => b.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)))
+                   + ">";
+        }
+
+        return type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
 }

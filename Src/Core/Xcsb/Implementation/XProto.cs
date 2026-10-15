@@ -886,10 +886,10 @@ internal sealed partial class XProto : IXProto
         throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async ValueTask<ReplyLease<QueryTextExtentsReply>> QueryTextExtentsAsync(uint font, string stringForQuery,
+    public async ValueTask<ReplyLease<QueryTextExtentsReply>> QueryTextExtentsAsync(uint font, ReadOnlyMemory<char> stringForQuery,
         CancellationToken token = default)
     {
-        var cookie = QueryTextExtentsBase(font, stringForQuery);
+        var cookie = QueryTextExtentsBase(font, stringForQuery.Span);
         var (result, mapping) = await this._socketAccessor.SocketIn
             .ReceivedResponseSpanAsync<QueryTextExtentsReply, QueryTextExtentsReply>(cookie.Id, token)
             .ConfigureAwait(false);
@@ -916,7 +916,7 @@ internal sealed partial class XProto : IXProto
         throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async ValueTask<ReplyLease<ListFontsWithInfoReply>[]> ListFontsWithInfoAsync(ReadOnlyMemory<byte> pattan, int maxNames,
+    public async ValueTask<ListFontsWithInfoReply[]> ListFontsWithInfoAsync(ReadOnlyMemory<byte> pattan, int maxNames,
         CancellationToken token = default)
     {
         var cookie = ListFontsWithInfoBase(pattan.Span, maxNames);

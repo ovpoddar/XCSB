@@ -3,7 +3,7 @@ using Xcsb.Models;
 using Xcsb.Response.Replies;
 
 namespace Xcsb.Infrastructure.ResponceProto;
-
+/*
 public interface IResponseProtoAsync
 {
     ValueTask<ReplyLease<AllocColorReply>> AllocColorAsync(uint colorMap, ushort red, ushort green, ushort blue, CancellationToken token = default);
@@ -49,4 +49,4 @@ public interface IResponseProtoAsync
     ValueTask<ReplyLease<GetPointerControlReply>> GetPointerControlAsync(CancellationToken token = default);
     ValueTask<ReplyLease<GetScreenSaverReply>> GetScreenSaverAsync(CancellationToken token = default);
     ValueTask<ReplyLease<ListHostsReply>> ListHostsAsync(CancellationToken token = default);
-}
+}*/
