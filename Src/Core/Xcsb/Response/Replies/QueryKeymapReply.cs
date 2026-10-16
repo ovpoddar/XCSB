@@ -1,4 +1,5 @@
-﻿using Xcsb.Connection.Response.Contract;
+﻿using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
 
@@ -10,16 +11,17 @@ public struct QueryKeymapReply : IXReply<QueryKeymapReply, QueryKeymapResponse>
     public readonly ushort Sequence;
     public byte[] keys = new byte[32];
 
-    internal unsafe QueryKeymapReply(QueryKeymapResponse response)
+    internal unsafe QueryKeymapReply(Span<byte> response)
     {
-        Reply = (ResponseType)response.ResponseHeader.Reply;
-        Sequence = response.ResponseHeader.Sequence;
-        new Span<byte>(response.Keys, 32)
+        var resp = response.AsStruct<QueryKeymapResponse>();
+        Reply = resp.ResponseHeader.Reply;
+        Sequence = resp.ResponseHeader.Sequence;
+        new Span<byte>(resp.Keys, 32)
             .CopyTo(keys);
     }
 
     public QueryKeymapReply FromBytes(byte[] response)
     {
-        throw new NotImplementedException();
+        return new QueryKeymapReply(response.AsSpan());
     }
 }
