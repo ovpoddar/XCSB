@@ -27,8 +27,7 @@ public class DeclarationGenerator : IIncrementalGenerator
                 predicate: static (node, _) => node is InterfaceDeclarationSyntax,
                 transform: static (ctx, _) =>
                     (kindInfo: AttributeTransformer.GetKind<DeclarationKind>(
-                            AttributeTransformer.GetAllAttributeValues(ctx.Attributes.FirstOrDefault())?
-                                .FirstOrDefault()),
+                            AttributeTransformer.GetAllAttributeValues(ctx.Attributes).FirstOrDefault()),
                         symbol: ctx.TargetSymbol as INamedTypeSymbol))
             .Where(a => a.symbol is not null && a.kindInfo.HasValue)
             .Select((a, _) => (symbol: a.symbol!, info: a.kindInfo!.Value));

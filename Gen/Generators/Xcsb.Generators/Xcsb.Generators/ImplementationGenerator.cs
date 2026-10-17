@@ -27,7 +27,7 @@ public class ImplementationGenerator : IIncrementalGenerator
                 predicate: static (node, _) => node is ClassDeclarationSyntax,
                 transform: static (ctx, _) =>
                 {
-                    var attributeValues = AttributeTransformer.GetAllAttributeValues(ctx.Attributes.FirstOrDefault())
+                    var attributeValues = AttributeTransformer.GetAllAttributeValues(ctx.Attributes)
                         .ToArray();
                     if (attributeValues.Length != 2)
                         return (null, null, null);

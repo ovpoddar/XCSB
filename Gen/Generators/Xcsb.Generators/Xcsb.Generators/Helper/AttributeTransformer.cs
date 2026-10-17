@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -9,29 +10,32 @@ namespace Xcsb.Generators.Helper;
 
 internal static class AttributeTransformer
 {
-    public static IEnumerable<IAttributeValue> GetAllAttributeValues(AttributeData? attr)
+    public static IEnumerable<IAttributeValue> GetAllAttributeValues(ImmutableArray<AttributeData> attrs)
     {
-        if (attr is null)
+        if (attrs.IsEmpty)
             yield break;
 
-        var hasValues = false;
-        foreach (var typedConstant in attr.ConstructorArguments)
+        foreach (var attr in attrs)
         {
-            hasValues = true;
-            yield return new SemanticValue(typedConstant);
+            var hasValues = false;
+            foreach (var typedConstant in attr.ConstructorArguments)
+            {
+                hasValues = true;
+                yield return new SemanticValue(typedConstant);
+            }
+
+            foreach (var named in attr.NamedArguments)
+            {
+                hasValues = true;
+                yield return new SemanticValue(named.Value);
+            }
+
+            if (hasValues || attr.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax { ArgumentList: { } list })
+                continue;
+
+            foreach (var arg in list.Arguments)
+                yield return new SyntaxValue(arg.Expression);            
         }
-
-        foreach (var named in attr.NamedArguments)
-        {
-            hasValues = true;
-            yield return new SemanticValue(named.Value);
-        }
-
-        if (hasValues || attr.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax { ArgumentList: { } list })
-            yield break;
-
-        foreach (var arg in list.Arguments)
-            yield return new SyntaxValue(arg.Expression);
     }
 
     public static TEnum? GetKind<TEnum>(IAttributeValue? symbol) where TEnum : struct, Enum =>

@@ -1,6 +1,6 @@
 namespace Xcsb.Generators
 {
-    [global::System.AttributeUsage(validOn: global::System.AttributeTargets.Class, AllowMultiple = false,
+    [global::System.AttributeUsage(validOn: global::System.AttributeTargets.Class, AllowMultiple = true,
         Inherited = false)]
     public class ImplementationAttribute : global::System.Attribute
     {
