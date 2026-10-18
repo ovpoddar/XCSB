@@ -14,6 +14,7 @@ using Xcsb.Generators;
 using Xcsb.Handlers.Direct;
 using Xcsb.Infrastructure;
 using Xcsb.Infrastructure.Exceptions;
+using Xcsb.Infrastructure.ResponceProto;
 using Xcsb.Infrastructure.VoidProto;
 using Xcsb.Masks;
 using Xcsb.Models;
@@ -36,7 +37,8 @@ namespace Xcsb.Implementation;
 [SkipLocalsInit]
 #endif
 // https://xorg.freedesktop.org/archive/X11R7.7/doc/xproto/x11protocol.pdf
-[Implementation(ImplementationKind.Base | ImplementationKind.Checked| ImplementationKind.Unchecked, typeof(IVoidProto))]
+[Implementation(ImplementationKind.Base | ImplementationKind.Checked | ImplementationKind.Unchecked, typeof(IVoidProto))]
+[Implementation(ImplementationKind.Async, typeof(IResponseProtoAsync))]
 internal sealed partial class XProto : IXProto
 {
     private XBufferProto? _xBufferProto;
@@ -628,7 +630,7 @@ internal sealed partial class XProto : IXProto
         throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-
+/*
     public async ValueTask<ReplyLease<AllocColorReply>> AllocColorAsync(uint colorMap, ushort red, ushort green,
         ushort blue,
         CancellationToken token = default)
@@ -886,7 +888,8 @@ internal sealed partial class XProto : IXProto
         throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
 
-    public async ValueTask<ReplyLease<QueryTextExtentsReply>> QueryTextExtentsAsync(uint font, ReadOnlyMemory<char> stringForQuery,
+    public async ValueTask<ReplyLease<QueryTextExtentsReply>> QueryTextExtentsAsync(uint font,
+        ReadOnlyMemory<char> stringForQuery,
         CancellationToken token = default)
     {
         var cookie = QueryTextExtentsBase(font, stringForQuery.Span);
@@ -920,7 +923,8 @@ internal sealed partial class XProto : IXProto
         CancellationToken token = default)
     {
         var cookie = ListFontsWithInfoBase(pattan.Span, maxNames);
-        var (result, error) = await this._socketAccessor.ReceivedResponseArrayAsync(cookie.Id, maxNames, token).ConfigureAwait(false);
+        var (result, error) = await this._socketAccessor.ReceivedResponseArrayAsync(cookie.Id, maxNames, token)
+            .ConfigureAwait(false);
         return error.HasValue
             ? throw new XEventException(error.Value)
             : throw new Exception(result.ToString());
@@ -1201,7 +1205,8 @@ internal sealed partial class XProto : IXProto
         this._socketAccessor.SocketIn.BufferPool.Return(result);
         throw new XEventException(new GenericError(error, mapping.ErrorMessageAction!));
     }
-
+*/
+    
     public ReplyLease GetEvent() => this._socketAccessor.ReceivedEvent();
 
     public async ValueTask<ReplyLease> GetEventAsync(CancellationToken token = default) =>
