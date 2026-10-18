@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Xcsb.Generators;
@@ -12,12 +13,14 @@ public interface IMyService
     int Doing(int a);
 }
 
-public interface IService :  IMyService, IMyServiceChecked, IMyServiceUnchecked
+public interface IService : IMyService, IMyServiceChecked, IMyServiceUnchecked
 {
 }
 
-[Implementation(ImplementationKind.Checked | ImplementationKind.Unchecked | ImplementationKind.Base,
-    typeof(IMyService))]
+[Implementation(ImplementationKind.Checked, typeof(IMyService))]
+[Implementation(ImplementationKind.Base, typeof(IMyService))]
+[Implementation(ImplementationKind.Unchecked, typeof(IMyService))]
+[JsonSerializable(typeof(Service))]
 public partial class Service : IService
 {
     private readonly TestService _socketAccessor;
@@ -54,4 +57,10 @@ public partial class Service : IService
         {
         }
     }
+}
+
+[Implementation(ImplementationKind.Checked | ImplementationKind.Unchecked | ImplementationKind.Base,
+    typeof(IMyService))]
+public partial class MyClass
+{
 }

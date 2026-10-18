@@ -1,4 +1,5 @@
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -29,35 +30,54 @@ public class ImplementationGenerator : IIncrementalGenerator
                 {
                     var attributeValues = AttributeTransformer.GetAllAttributeValues(ctx.Attributes)
                         .ToArray();
-                    if (attributeValues.Length != 2)
-                        return (null, null, null);
+                    if (attributeValues.Length % 2 != 0)
+                        return ([], null);
 
-                    return (kindInfo: AttributeTransformer.GetKind<ImplementationKind>(attributeValues[0]),
-                        interfaceSymbol: AttributeTransformer.GetInterfaceSymbol(attributeValues[1], ctx),
-                        classSymbol: ctx.TargetSymbol as INamedTypeSymbol);
+                    var collection = new List<(ImplementationKind, INamedTypeSymbol)>();
+                    for (var i = 0; i < attributeValues.Length; i += 2)
+                    {
+                        var interfaceSymbol = AttributeTransformer.GetInterfaceSymbol(attributeValues[i + 1], ctx);
+                        var kindInfo = AttributeTransformer.GetKind<ImplementationKind>(attributeValues[i]);
+                        if (interfaceSymbol == null || !kindInfo.HasValue)
+                            continue;
+
+                        var index = collection.FindIndex(a => a.Item2.Name == interfaceSymbol.Name);
+                        if (index < 0)
+                            collection.Add((kindInfo.Value, interfaceSymbol));
+                        else
+                        {
+                            var existing = collection[index];
+                            collection[index] = (existing.Item1 | kindInfo.Value, existing.Item2);
+                        }
+                    }
+
+                    return (collection, classSymbol: ctx.TargetSymbol as INamedTypeSymbol);
                 })
             .Where(a =>
-                a is { kindInfo: not null, interfaceSymbol: not null, classSymbol: not null })
+                a is { classSymbol: not null })
             .Select((b, _) =>
-                (kindInfo: b.kindInfo!.Value, interfaceSymbol: b.interfaceSymbol!, classSymbol: b.classSymbol!));
+                (b.collection, classSymbol: b.classSymbol!));
 
         context.RegisterSourceOutput(provider, (ctx, result) =>
         {
-            var diagnosis = GeneratorDiagnostics.FindFirstOffendingMethod(result.interfaceSymbol);
-            if (diagnosis != null)
+            foreach (var interfaceMember in result.collection)
             {
+                var diagnosis = GeneratorDiagnostics.FindFirstOffendingMethod(interfaceMember.Item2);
+                if (diagnosis == null)
+                    continue;
+
                 ctx.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.ImplementationInvalidReturnType,
                     diagnosis.Locations.FirstOrDefault() ??
                     result.classSymbol.Locations.FirstOrDefault() ?? Location.None,
                     result.classSymbol.Name,
-                    result.interfaceSymbol.Name,
+                    interfaceMember.Item2.Name,
                     diagnosis.ReturnType.ToDisplayString()));
                 return;
             }
 
             ctx.AddSource($"{result.classSymbol.Name}.Implementation.g.cs", SourceText.From(
-                ClassCodeGenerator.Generate1(result.classSymbol, result.interfaceSymbol, result.kindInfo).ToString(),
+                ClassCodeGenerator.Generate(result.classSymbol, result.collection).ToString(),
                 Encoding.UTF8));
         });
     }
