@@ -6,6 +6,7 @@ namespace Xcsb.Generators
         Checked = 1,
         Unchecked = 2,
         Base = 4,
-        Async = 8,
+        Return = 8,
+        Async = 16,
     }
 }

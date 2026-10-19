@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Xcsb.Generators.CodeGen;
 
+//todo: for async make sure the return type can accept byte[] as constructor
 internal static class GeneratorDiagnostics
 {
     public static readonly DiagnosticDescriptor DeclarationInvalidReturnType = new(
