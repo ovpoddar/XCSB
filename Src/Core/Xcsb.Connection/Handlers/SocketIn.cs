@@ -261,16 +261,16 @@ internal class SocketIn : ISocketIn
         if (!content.ExtensionEventType.HasValue)
             return buffer;
 
-        var replySize = content.Length * 4;
+        var replySize = (int)(content.Length * 4);
         if (replySize == 0)
             return buffer;
 
-        var result = _configuration.BufferPool.Rent((int)replySize + 32);
+        var result = _configuration.BufferPool.Rent(replySize + 32);
         var span = result.AsSpan();
         buffer.CopyTo(span[..32]);
         _configuration.BufferPool.Return(buffer);
 
-        _ = Received(span[32..], true);
+        _ = Received(span[32..(32 + replySize)], true);
         return result;
     }
 
@@ -279,16 +279,16 @@ internal class SocketIn : ISocketIn
         ref readonly var content = ref buffer.AsStruct<XResponse>();
         if (!content.ExtensionEventType.HasValue)
             return buffer;
-        var replySize = content.Length * 4;
+        var replySize = (int)(content.Length * 4);
         if (replySize == 0)
             return buffer;
 
-        var result = _configuration.BufferPool.Rent((int)replySize + 32);
+        var result = _configuration.BufferPool.Rent(replySize + 32);
         var span = result.AsMemory();
         buffer.CopyTo(span[..32]);
         _configuration.BufferPool.Return(buffer);
 
-        var totalRead = await ReceivedAsync(span[32..], token).ConfigureAwait(false);
+        var totalRead = await ReceivedAsync(span[32..(32 + replySize)], token).ConfigureAwait(false);
         Debug.Assert(totalRead == result.Length - 32);
         return result;
     }
@@ -333,8 +333,8 @@ internal class SocketIn : ISocketIn
         var combined = _configuration.BufferPool.Rent(totalSize);
         buffer.CopyTo(combined);
         _configuration.BufferPool.Return(buffer);
-        var totalRead = await ReceivedAsync(combined[32..], token).ConfigureAwait(false);
-        Debug.Assert(totalRead == combined.Length - 32);
+        var totalRead = await ReceivedAsync(combined.AsMemory(32, replySize), token).ConfigureAwait(false);
+        Debug.Assert(totalRead == totalSize - 32);
         return combined;
     }
 
