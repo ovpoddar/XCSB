@@ -6,7 +6,7 @@ using Xcsb.Extension.XInput.Response.Replies;
 
 namespace Xcsb.Extension.XInput.Infrastructure;
 
-public interface IXinputRequest : IResponceProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked
+public interface IXinputRequest : IResponseProto, IVoidProto, IVoidProtoChecked, IVoidProtoUnchecked
 {
     ReplyLease<GetExtensionVersionReply> GetExtensionVersion(ReadOnlySpan<byte> name);
 }
