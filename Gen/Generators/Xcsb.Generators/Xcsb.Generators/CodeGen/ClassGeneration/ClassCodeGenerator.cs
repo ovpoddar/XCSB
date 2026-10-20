@@ -132,6 +132,59 @@ internal static class ClassCodeGenerator
                         sb.AppendLine("        }");
                     },
                     followReturnType: true);
+
+            if (kindInfo.HasFlag(ImplementationKind.Async))
+                Generate(result, classSymbol, interfaceSymbol, "Async", (sb, method) =>
+                {
+                    
+                      sb.AppendLine();
+                       sb.AppendLine("        {");
+
+                       var helpfulSymbol = GetWorkingSymbolOfReturnType(method);
+                       if (helpfulSymbol.Length == 0)
+                       {
+                           sb.Append("            return await ")
+                               .Append(method.Name)
+                               .Append("OverrideAsync(");
+                           for (var i = 0; i < method.Parameters.Length; i++)
+                           {
+                               var param = method.Parameters[i];
+                               if (i > 0) sb.Append(", ");
+                               sb.Append(param.Name);
+                           }
+                           sb.AppendLine(");");
+                           sb.AppendLine("        }");
+                           return;
+                       }
+                       
+                       sb.Append("            var cookie = this.")
+                           .Append(method.Name)
+                           .Append("Base(");
+                       for (var i = 0; i < method.Parameters.Length; i++)
+                       {
+                           var param = method.Parameters[i];
+                           if (i > 0) sb.Append(", ");
+                           sb.Append(param.Name)
+                               .Append(param.Type.Name.Contains("Span") ? ".Span" : "");
+                       }
+                       sb.AppendLine(");");
+                       sb.Append(
+                           "            var (result, mapping) = await this._socketAccessor.SocketIn.ReceivedResponseSpanAsync<")
+                           .Append(string.Join(", ", helpfulSymbol))
+                           .AppendLine(">(cookie.Id, token).ConfigureAwait(false);");
+                       
+                       sb.AppendLine("            if (mapping.ResponseType == Xcsb.Connection.Response.Contract.XResponseType.Reply)");
+                       sb.Append("                return new Xcsb.Connection.Models.ReplyLease<");
+                       sb.Append(helpfulSymbol[0]);
+                       sb.AppendLine(">(result, this._socketAccessor.SocketIn.BufferPool);");
+                       sb.AppendLine("            var error = result.ToStruct<Xcsb.Connection.Response.Contract.XResponse>();");
+                       sb.AppendLine("            this._socketAccessor.SocketIn.BufferPool.Return(result);");
+                       sb.AppendLine("            throw new Xcsb.Connection.Infrastructure.Exceptions.XEventException(new Xcsb.Connection.Response.Contract.GenericError(error, mapping.ErrorMessageAction!));");
+
+                       sb.AppendLine("        }");
+                    
+                    
+                }, followReturnType: true, addCancellationToken: true);
         }
 
         result.AppendLine("}");
@@ -171,9 +224,11 @@ internal static class ClassCodeGenerator
         {
             if (method.MethodKind != MethodKind.Ordinary) continue;
             sb.Append("        public ")
+                .Append(addCancellationToken ? "async global::System.Threading.Tasks.ValueTask<" : "")
                 .Append(followReturnType
                     ? method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
                     : "void")
+                .Append(addCancellationToken ? ">" : "")
                 .Append(" ");
 
             sb.Append(method.Name)
@@ -191,7 +246,7 @@ internal static class ClassCodeGenerator
             {
                 var param = method.Parameters[i];
                 if (i > 0) sb.Append(", ");
-                sb.Append(param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                sb.Append(OptimizeType(param.Type, addCancellationToken))
                     .Append(" ").Append(param.Name);
                 if (param.HasExplicitDefaultValue) sb.Append(" = ").Append(param.ExplicitDefaultValue);
             }
@@ -232,5 +287,19 @@ internal static class ClassCodeGenerator
         }
 
         sb.AppendLine("    }");
+    }
+    
+    
+    private static string OptimizeType(ITypeSymbol type, bool async)
+    {
+        if (type is INamedTypeSymbol { IsGenericType: true } a && a.Name.Contains("ReadOnly"))
+        {
+            return (async ? "global::System.ReadOnlyMemory<" : "global::System.ReadOnlySpan<")
+                   + string.Join(", ",
+                       a.TypeArguments.Select(b => b.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)))
+                   + ">";
+        }
+
+        return type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
 }
