@@ -1,66 +1,67 @@
 using System;
-using System.Text.Json.Serialization;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Xcsb.Generators;
-
 namespace Xcsb.Generators.Sample;
 
-[Declaration(DeclarationKind.Checked | DeclarationKind.Unchecked | DeclarationKind.Async)]
-public interface IMyService
+public struct Cookie
 {
-    int Do();
-    int Doing(int a);
+    public int Id { get; set; }
+    public bool IsChecked { get; set; }
 }
 
-public interface IService : IMyService, IMyServiceChecked, IMyServiceUnchecked
+
+[Declaration(DeclarationKind.Checked | DeclarationKind.Unchecked)]
+interface IItem1
 {
+    Cookie GetCookie();
 }
 
-[Implementation(ImplementationKind.Checked, typeof(IMyService))]
-[Implementation(ImplementationKind.Base, typeof(IMyService))]
-[Implementation(ImplementationKind.Unchecked, typeof(IMyService))]
-[JsonSerializable(typeof(Service))]
-public partial class Service : IService
+[Declaration(DeclarationKind.Async)]
+interface IItem2
 {
-    private readonly TestService _socketAccessor;
+    int GetInt();
+    Dispo<foo> GetFoo();
+}
 
-    public Task<int> DoAsync(CancellationToken cancellationToken = default)
+[Implementation(ImplementationKind.Checked | ImplementationKind.Unchecked | ImplementationKind.Base, typeof(IItem1))]
+[Implementation(ImplementationKind.Async | ImplementationKind.Return, typeof(IItem2))]
+partial class Item1 : IItem1
+{
+    private Requiremnt _socketAccessor;
+    
+    private Cookie GetCookieBase() => default;
+    
+    private int GetIntOverride() => default;
+    
+    private Dispo<foo> GetFooOverride() => default;
+    
+    private ValueTask<int> GetIntOverrideAsync() => default;
+
+    private ValueTask<Dispo<foo>> GetFooOverrideAsync() => default;
+}
+
+class Requiremnt
+{
+    public void SkipErrorForSequence(int i, bool b)
     {
-        throw new System.NotImplementedException();
-    }
-
-    public Task<int> DoingAsync(int a, CancellationToken cancellationToken = default)
-    {
-        throw new System.NotImplementedException();
-    }
-
-
-    private Cookie DoBase()
-    {
-        return new Cookie();
-    }
-
-    private Cookie DoingBase(int a)
-    {
-        return new Cookie();
-    }
-
-    public class Cookie
-    {
-        public int Id { get; set; }
-    }
-
-    public class TestService
-    {
-        public void SkipErrorForSequence(int sequence, bool isError)
-        {
-        }
     }
 }
 
-[Implementation(ImplementationKind.Checked | ImplementationKind.Unchecked | ImplementationKind.Base,
-    typeof(IMyService))]
-public partial class MyClass
+struct foo : ICloneable, IAsyncResult
 {
+    public object? AsyncState { get; }
+    public WaitHandle AsyncWaitHandle { get; }
+    public bool CompletedSynchronously { get; }
+    public bool IsCompleted { get; }
+    public object Clone()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+struct Dispo<T>
+{
+    
 }
