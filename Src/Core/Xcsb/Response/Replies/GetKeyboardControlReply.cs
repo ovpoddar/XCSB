@@ -1,4 +1,5 @@
-﻿using Xcsb.Connection.Response.Contract;
+﻿using Xcsb.Connection.Helpers;
+using Xcsb.Connection.Response.Contract;
 using Xcsb.Models;
 using Xcsb.Response.Contract;
 using Xcsb.Response.Replies.Internals;
@@ -18,10 +19,11 @@ public struct GetKeyboardControlReply: IXReply<GetKeyboardControlReply, GetKeybo
     public readonly ushort BellDuration;
     public readonly byte[] Repeats = new byte[32];
 
-    internal GetKeyboardControlReply(GetKeyboardControlResponse result)
+    internal GetKeyboardControlReply(Span<byte> span)
     {
         unsafe
         {
+            ref readonly GetKeyboardControlResponse result = ref span.AsStruct<GetKeyboardControlResponse>();
             Reply = (ResponseType)result.ResponseHeader.Reply;
             AutoRepeatMode = result.ResponseHeader.GetValue();
             Sequence = result.ResponseHeader.Sequence;
@@ -31,13 +33,13 @@ public struct GetKeyboardControlReply: IXReply<GetKeyboardControlReply, GetKeybo
             BellPercent = result.BellPercent;
             BellPitch = result.BellPitch;
             BellDuration = result.BellDuration;
-            new Span<byte>(result.Repeats, 32)
-                .CopyTo(Repeats);
+            fixed(byte* p  = result.Repeats)
+                Repeats = new Span<byte>(p, 32).ToArray();
         }
     }
 
     public GetKeyboardControlReply FromBytes(byte[] response)
     {
-        throw new Exception("simplify this");
+        return new GetKeyboardControlReply(response.AsSpan());
     }
 }
