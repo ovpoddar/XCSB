@@ -816,7 +816,7 @@ $"""
     _xProto.CreateWindowChecked(0, window, screen.Root, 0, 0, 100, 100, 0, Xcsb.Models.ClassType.InputOutput,
                     screen.RootVisualId, Xcsb.Masks.ValueMask.BackgroundPixel | Xcsb.Masks.ValueMask.EventMask, [0, (uint)(Xcsb.Masks.EventMask.ExposureMask)]);
     var {name} = connect.NewId();
-    _xProto.CreateGCChecked({name}, window, (Xcsb.Masks.GcMask)(4|8), [screen.BlackPixel, screen.WhitePixel]);
+    _xProto.CreateGcChecked({name}, window, (Xcsb.Masks.GcMask)(4|8), [screen.BlackPixel, screen.WhitePixel]);
 """,
             _ => throw new NullReferenceException()
         };
@@ -1342,7 +1342,7 @@ $$"""
 @"
         var root = connect.HandshakeSuccessResponseBody!.Screens[0].Root;
         var gc = connect.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GcMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
+        _xProto.CreateGcChecked(gc, root, Xcsb.Masks.GcMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
 " :
 @"
         var screen = connect.HandshakeSuccessResponseBody!.Screens[0];
@@ -1454,7 +1454,7 @@ $$"""
             ?? throw new InvalidOperationException("_bufferProtoOut was null.");
         var root = connect.HandshakeSuccessResponseBody!.Screens[0].Root;
         var gc = connect.NewId();
-        _xProto.CreateGCChecked(gc, root, Xcsb.Masks.GcMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
+        _xProto.CreateGcChecked(gc, root, Xcsb.Masks.GcMask.Foreground, [connect.HandshakeSuccessResponseBody!.Screens[0].BlackPixel]);
         {{base.GetItems()}}
 
         // act
