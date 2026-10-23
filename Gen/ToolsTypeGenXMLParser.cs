@@ -4,32 +4,64 @@
 using System.Text;
 using System.Xml;
 
-using var file = XmlReader.Create("/mnt/hardDrive/testP/xcb-proto/src/xproto.xml");
-
-file.ReadToFollowing("request");
-
-do
+var dict = new Dictionary<string, string>()
 {
-    var requestStruct = new RequestStruct();
-    requestStruct.Name = file.GetAttribute("name");
-    using var subtree = file.ReadSubtree();
-    subtree.ReadToFollowing("field");
+    {"BYTE", "byte"},
+    {"CARD8", "byte"},
+    {"INT8", "byte"},
+    {"BOOL", "byte"},
+    {"INT16", "short"},
+    {"CARD16", "ushort"},
+    {"CARD32", "uint"},
+    {"INT32", "int"},
+};
+// typedefs
+using (var file = XmlReader.Create("/mnt/hardDrive/testP/xcb-proto/src/xproto.xml"))
+{
+    file.ReadToFollowing("typedef");
 
     do
     {
-        requestStruct.Fields.Add(new Fields()
-        {
-            Name = subtree.GetAttribute("name"),
-            TypeName = subtree.GetAttribute("type"),
-            Size = 4
-        });
+        dict.Add(file.GetAttribute("newname"), file.GetAttribute("oldname"));
     }
-    while (subtree.ReadToFollowing("field"));
-
-    System.Console.WriteLine(requestStruct.ToString());
+    while (file.ReadToFollowing("typedef"));
 }
-while (file.ReadToFollowing("request"));
 
+// xidtype
+using (var file = XmlReader.Create("/mnt/hardDrive/testP/xcb-proto/src/xproto.xml"))
+{
+    file.ReadToFollowing("xidtype");
+    do
+    {
+        dict.Add(file.GetAttribute("name"), "uint");
+    }
+    while (file.ReadToFollowing("xidtype"));
+}
+
+using (var file = XmlReader.Create("/mnt/hardDrive/testP/xcb-proto/src/xproto.xml"))
+{
+    file.ReadToFollowing("request");
+
+    do
+    {
+        var requestStruct = new RequestStruct
+        {
+            Name = file.GetAttribute("name")
+        };
+        using var subtree = file.ReadSubtree();
+        subtree.ReadToFollowing("field");
+
+        do
+        {
+            var type = subtree.GetAttribute("type") ?? string.Empty;
+            requestStruct.Fields.Add(new Fields(subtree.GetAttribute("name"), type, dict.GetBaseType(type)));
+        }
+        while (subtree.ReadToFollowing("field"));
+
+        System.Console.WriteLine(requestStruct.ToString());
+    }
+    while (file.ReadToFollowing("request"));
+}
 
 
 class RequestStruct
@@ -55,8 +87,8 @@ class RequestStruct
         sb.AppendLine("    }");
 
         var writeAt = 0;
-        foreach(var field in Fields)
-            sb.Append("    public ").Append(field.TypeName).Append(' ').Append(field.Name)
+        foreach (var field in Fields)
+            sb.Append("    public ").Append(field.CsType).Append(' ').Append(field.Name.FixName())
                 .Append(" => ").AppendLine(field.ToView(ref writeAt));
 
 
@@ -70,8 +102,66 @@ class RequestStruct
 struct Fields
 {
     public string Name { get; set; }
+    public string CsType { get; }
     public string TypeName { get; set; }
     public int Size { get; set; }
 
-    public string ToView(ref int index) => "throw new NotImplementation()";
+    public Fields(string name, string cType, string csType)
+    {
+        this.Name = name;
+        this.TypeName = cType;
+        this.CsType = csType;
+    }
+
+    public string ToView(ref int index) => this.CsType switch
+    {
+        "byte" => this.TypeName == "BOOL"
+                            ? $" _data[{index}] == 1;"
+                            : $"_data[{index++}];",
+        "ushort" or "short" => $"Unsafe.As<byte, {CsType}>(ref _data.AsSpan({index += 2}, 2)[0]);",
+        "int" or "uint" => $"Unsafe.As<byte, {CsType}>(ref _data.AsSpan({index += 4}, 4)[0]);",
+        _ => $"throw new NotImplementation({index++});",
+    };
+}
+
+static class Extensation
+{
+    public static string GetBaseType(this Dictionary<string, string> keyValues, string name)
+    {
+        while (keyValues.TryGetValue(name, out var result))
+        {
+            name = result;
+        }
+        return name;
+    }
+
+    public static byte[] FixName(this ReadOnlySpan<byte> value)
+    {
+        var result = new byte[value.Length - value.Count((byte)'_')];
+        var wIndex = 0;
+        var isUpperCase = true;
+        foreach (var item in value)
+        {
+            if (item == '_')
+            {
+                isUpperCase = true;
+                continue;
+            }
+
+            if (isUpperCase)
+            {
+                var tempI = item;
+                result[wIndex] = tempI &= 0xDF;
+                wIndex++;
+                isUpperCase = false;
+            }
+            else
+            {
+                result[wIndex] = item;
+                wIndex++;
+            }
+        }
+
+        return result;
+    }
 }
