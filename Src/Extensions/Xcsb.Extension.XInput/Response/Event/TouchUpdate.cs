@@ -33,11 +33,14 @@ public struct TouchUpdate : IXEvent<TouchUpdate>
     public readonly Fp3232[] AxisValues;
     public ref readonly TouchUpdate Cast(Span<byte> response)
     {
-        throw new NotImplementedException();
+        if (bytes is null) throw new ArgumentNullException(nameof(bytes));
+        if (bytes.Length < 80)
+            throw new ArgumentException("Buffer too small for TouchUpdate.", nameof(bytes));
+        _bytes = bytes;
     }
 
     public TouchUpdate FromBytes(byte[] response)
     {
-        throw new NotImplementedException();
+        return new TouchUpdate(response);
     }
 }
