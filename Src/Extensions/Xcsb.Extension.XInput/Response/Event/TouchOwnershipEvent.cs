@@ -22,11 +22,6 @@ public struct TouchOwnershipEvent : IXEvent<TouchOwnershipEvent>
     private readonly ushort _pad0;
     public readonly TouchOwnershipFlags Flags;
 
-    public ref readonly TouchOwnershipEvent Cast(Span<byte> response)
-    {
-        throw new NotImplementedException();
-    }
-
     public TouchOwnershipEvent FromBytes(byte[] response)
     {
         return response.AsSpan().ToStruct<TouchOwnershipEvent>();

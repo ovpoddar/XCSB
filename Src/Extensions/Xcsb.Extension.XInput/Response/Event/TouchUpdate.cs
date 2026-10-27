@@ -8,7 +8,7 @@ using Xcsb.Extension.XInput.Models;
 namespace Xcsb.Extension.XInput.Response.Event;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct TouchUpdate : IXEvent<TouchUpdate>
+public readonly struct TouchUpdate : IXEvent<TouchUpdate>
 {
     private readonly byte[] _bytes;
     public readonly byte ResponseType => _bytes[0];
