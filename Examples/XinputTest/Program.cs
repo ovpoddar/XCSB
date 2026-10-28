@@ -38,13 +38,12 @@ ext.XiSelectEventsChecked(wnd,
 while (true)
 {
     using var evnt = x.GetEvent();
-    // var evnt = await x.GetEventAsync();
     if (evnt.Reply.ReplyType == EventType.LastEvent) break;
 
     if (evnt.Reply.ReplyType == XiInputEventType.KeyPress)
     {
-        var keypress = evnt.Reply.As<KeyPressEvent>();
-        Console.WriteLine(keypress.ResponseHeader.Reply);
+        var keypress = evnt.Reply.AsView<KeyPressEvent>();
+        Console.WriteLine(keypress.ButtonMask.Length);
     }
 
     if (evnt.Reply.ReplyType == EventType.Expose)

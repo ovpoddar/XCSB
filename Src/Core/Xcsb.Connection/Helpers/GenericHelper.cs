@@ -130,7 +130,7 @@ internal static class GenericHelper
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
 
-    internal static int CountFlags<T>(this T value) where T : struct, Enum  => Unsafe.SizeOf<T>() switch
+    internal static int CountFlags<T>(this T value) where T : struct  => Unsafe.SizeOf<T>() switch
     {
         1 => PopCount(Unsafe.As<T, byte>(ref value)),
         2 => PopCount(Unsafe.As<T, ushort>(ref value)),
