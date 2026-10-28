@@ -15,7 +15,7 @@ internal readonly struct AllocColorPlanesResponse : IVerify
     public readonly uint GreenMask;
     public readonly uint BlueMask;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                _pad1 == 0 && Length == NumberOfPixels;

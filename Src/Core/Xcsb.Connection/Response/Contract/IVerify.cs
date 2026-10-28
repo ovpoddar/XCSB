@@ -2,5 +2,5 @@ namespace Xcsb.Connection.Response.Contract;
 
 internal interface IVerify
 {
-    bool Verify(in int sequence);
+    bool Verify(in ushort sequence);
 }

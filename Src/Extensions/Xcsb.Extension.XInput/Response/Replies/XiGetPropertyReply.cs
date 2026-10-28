@@ -19,7 +19,7 @@ public readonly struct XiGetPropertyReply : IXReply<XiGetPropertyReply, XiGetPro
     public readonly uint NumItems;
     public readonly byte Format;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

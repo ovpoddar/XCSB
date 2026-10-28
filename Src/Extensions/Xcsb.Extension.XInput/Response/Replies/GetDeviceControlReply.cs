@@ -15,7 +15,7 @@ public readonly struct GetDeviceControlReply : IXReply<GetDeviceControlReply, Ge
     public readonly uint Length;
     public readonly byte Status;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

@@ -36,7 +36,7 @@ public struct GetDeviceMotionEventsReply : IXReply<GetDeviceMotionEventsReply, G
         }
     }
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         throw new NotImplementedException();
     }

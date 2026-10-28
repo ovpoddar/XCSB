@@ -10,7 +10,7 @@ internal readonly struct ListExtensionsResponse : IVerify
     public readonly uint Length;
 
     
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == 1 && ResponseHeader.Sequence == sequence &&
                Length * 4 >= NumberOfExtensions;

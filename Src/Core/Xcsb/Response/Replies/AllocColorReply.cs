@@ -16,7 +16,7 @@ public readonly struct AllocColorReply : IXReply<AllocColorReply, AllocColorRepl
     private readonly ushort _pad1;
     public readonly uint Pixel;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                _pad1 == 0 && Length == 0;

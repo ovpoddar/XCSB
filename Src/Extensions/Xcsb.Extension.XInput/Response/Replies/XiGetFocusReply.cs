@@ -15,7 +15,7 @@ public readonly struct XiGetFocusReply : IXReply<XiGetFocusReply, XiGetFocusRepl
     public readonly uint Length;
     public readonly uint Focus;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

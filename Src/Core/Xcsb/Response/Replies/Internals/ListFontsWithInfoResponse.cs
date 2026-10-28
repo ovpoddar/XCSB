@@ -26,7 +26,7 @@ internal readonly struct ListFontsWithInfoResponse : IVerify
     public readonly ushort FontDescent;
     public readonly uint ReplyHint;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                _pad0 == 0 && _pad1 == 0;

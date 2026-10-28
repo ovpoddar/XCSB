@@ -12,7 +12,7 @@ public readonly struct SetPointerMappingReply : IXReply<SetPointerMappingReply,S
     public readonly ResponseHeader<ResponseType, Status> ResponseHeader;
     public readonly uint Length;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 0;

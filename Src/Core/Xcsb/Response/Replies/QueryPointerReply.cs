@@ -22,7 +22,7 @@ public readonly struct QueryPointerReply : IXReply<QueryPointerReply,QueryPointe
 
     public readonly bool IsSameScreen => ResponseHeader.GetValue() == 1;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 0;

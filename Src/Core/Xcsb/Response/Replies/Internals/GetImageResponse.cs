@@ -11,7 +11,7 @@ internal readonly struct GetImageResponse :IVerify
     public readonly uint Length;
     public readonly uint VisualId;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) && ResponseHeader.Sequence == sequence;
     }

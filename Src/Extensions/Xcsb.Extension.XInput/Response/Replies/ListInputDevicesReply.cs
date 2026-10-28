@@ -54,7 +54,7 @@ public struct ListInputDevicesReply : IXReply<ListInputDevicesReply, ListInputDe
         }
     }
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         throw new NotImplementedException();
     }

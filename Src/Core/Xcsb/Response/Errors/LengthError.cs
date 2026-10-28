@@ -27,7 +27,7 @@ public readonly struct LengthError : IXError<LengthError>
         by the server.
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Length;

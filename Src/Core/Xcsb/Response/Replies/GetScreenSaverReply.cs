@@ -15,7 +15,7 @@ public readonly struct GetScreenSaverReply : IXReply<GetScreenSaverReply, GetScr
     private readonly byte _preferBlanking;
     private readonly byte _allowExposures;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                ResponseHeader.Sequence == sequence;

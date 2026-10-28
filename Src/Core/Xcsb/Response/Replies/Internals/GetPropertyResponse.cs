@@ -13,7 +13,7 @@ internal readonly struct GetPropertyResponse : IVerify
     public readonly uint BytesAfter;
     public readonly uint ValueLength;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence);
     }

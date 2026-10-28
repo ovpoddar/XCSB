@@ -10,7 +10,7 @@ internal readonly struct GetModifierMappingResponse : IVerify
     public readonly ResponseHeader<ResponseType, byte> ResponseHeader;
     public readonly uint Length;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == KeycodesPerModifier * 2 && ResponseHeader.Sequence == sequence;

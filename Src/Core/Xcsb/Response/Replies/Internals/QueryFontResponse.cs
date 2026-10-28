@@ -26,7 +26,7 @@ internal readonly struct QueryFontResponse : IVerify
     public readonly ushort FontDescent;
     public readonly uint InfoLenght;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                _pad1 == 0 && _pad2 == 0 && Length > 7;

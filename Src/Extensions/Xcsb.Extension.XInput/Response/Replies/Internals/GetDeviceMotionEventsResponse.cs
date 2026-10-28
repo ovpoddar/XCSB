@@ -17,7 +17,7 @@ internal readonly struct GetDeviceMotionEventsResponse : IVerify
     public readonly byte NumAxes;
     public readonly ValuatorMode DeviceMode;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

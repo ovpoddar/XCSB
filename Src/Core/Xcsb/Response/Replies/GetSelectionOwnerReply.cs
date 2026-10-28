@@ -12,7 +12,7 @@ public readonly struct GetSelectionOwnerReply : IXReply<GetSelectionOwnerReply,G
     public readonly uint Length;
     public readonly uint Owner;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 0;

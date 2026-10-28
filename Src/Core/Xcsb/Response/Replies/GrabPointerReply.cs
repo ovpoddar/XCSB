@@ -12,7 +12,7 @@ public readonly struct GrabPointerReply : IXReply<GrabPointerReply, GrabPointerR
     public readonly ResponseHeader<ResponseType, GrabStatus> ResponseHeader;
     public readonly uint Length;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 0;

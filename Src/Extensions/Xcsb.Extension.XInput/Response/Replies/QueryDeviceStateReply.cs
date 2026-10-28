@@ -27,7 +27,7 @@ public struct QueryDeviceStateReply : IXReply<QueryDeviceStateReply, QueryDevice
         }
     }
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         throw new NotImplementedException();
     }

@@ -17,7 +17,7 @@ public readonly struct XiGetClientPointerReply : IXReply<XiGetClientPointerReply
     public readonly byte Pad1;
     public readonly InputDevice Deviceid; //xcb_input_device_id_t
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

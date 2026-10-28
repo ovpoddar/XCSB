@@ -13,7 +13,7 @@ internal unsafe struct XResponse : IXBaseResponse<XResponse>
     [FieldOffset(4)] public readonly uint Length;
     [FieldOffset(8)] private readonly ushort EventType;
 
-    public readonly bool Verify(in int sequence)
+    public readonly bool Verify(in ushort sequence)
     {
         return this.Sequence == sequence;
     }

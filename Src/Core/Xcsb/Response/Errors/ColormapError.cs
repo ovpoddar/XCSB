@@ -25,7 +25,7 @@ public readonly struct ColormapError : IXError<ColormapError>
         defined COLORMAP.
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Colormap;

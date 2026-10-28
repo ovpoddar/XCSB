@@ -30,7 +30,7 @@ public struct GetDeviceKeyMappingReply : IXReply<GetDeviceKeyMappingReply, GetDe
         }
     }
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         throw new NotImplementedException();
     }

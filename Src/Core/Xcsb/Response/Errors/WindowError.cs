@@ -25,7 +25,7 @@ public readonly struct WindowError : IXError<WindowError>
         WINDOW.
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Window;

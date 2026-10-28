@@ -29,7 +29,7 @@ public readonly struct MatchError : IXError<MatchError>
         to match in some other way required by the request.
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Match;

@@ -26,7 +26,7 @@ public readonly struct FontError : IXError<FontError>
         not name a defined FONT or a defined GCONTEXT.
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Font;

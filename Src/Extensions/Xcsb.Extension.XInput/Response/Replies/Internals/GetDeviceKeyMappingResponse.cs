@@ -15,7 +15,7 @@ internal readonly struct GetDeviceKeyMappingResponse : IVerify
     public readonly uint Length;
     public readonly byte KeysymsPerKeycode;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

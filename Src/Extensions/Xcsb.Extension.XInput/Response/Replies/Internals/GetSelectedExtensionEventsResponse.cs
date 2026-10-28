@@ -16,7 +16,7 @@ internal readonly struct GetSelectedExtensionEventsResponse: IVerify
     public readonly ushort NumThisClasses;
     public readonly ushort NumAllClasses;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

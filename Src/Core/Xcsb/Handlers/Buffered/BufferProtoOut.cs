@@ -53,7 +53,7 @@ internal sealed class BufferProtoOut
 #if NETSTANDARD
         _buffer.ToArray();
 #else
-        CollectionsMarshal.AsSpan(_buffer);
+            CollectionsMarshal.AsSpan(_buffer);
 #endif
         this.SendExact(buffer);
     }
@@ -67,8 +67,6 @@ internal sealed class BufferProtoOut
     private void SendExact(scoped in ReadOnlySpan<byte> buffer)
     {
         _protoOut.SendExact(in buffer);
-        _protoOut.Sequence += _requestLength;
+        _protoOut.Sequence = unchecked((ushort)(_protoOut.Sequence + _requestLength));
     }
-
-
 }

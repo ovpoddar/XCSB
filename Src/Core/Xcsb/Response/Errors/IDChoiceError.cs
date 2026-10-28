@@ -26,7 +26,7 @@ public readonly struct IDChoiceError : IXError<IDChoiceError>
         already in use.
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.IdChoice;

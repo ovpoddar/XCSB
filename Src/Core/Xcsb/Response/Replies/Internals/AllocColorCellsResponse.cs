@@ -12,7 +12,7 @@ internal readonly struct AllocColorCellsResponse : IVerify
     public readonly ushort NumberOfPixels;
     public readonly ushort NumberOfMasks;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == NumberOfPixels + NumberOfMasks;

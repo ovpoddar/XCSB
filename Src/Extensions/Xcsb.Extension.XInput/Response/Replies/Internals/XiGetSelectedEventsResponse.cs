@@ -15,7 +15,7 @@ internal readonly struct XiGetSelectedEventsResponse: IVerify
     public readonly uint Length;
     public readonly ushort NumMasks;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

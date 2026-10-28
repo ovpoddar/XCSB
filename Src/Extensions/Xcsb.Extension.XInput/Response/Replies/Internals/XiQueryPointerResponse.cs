@@ -25,7 +25,7 @@ internal readonly struct XiQueryPointerResponse: IVerify
     // public readonly xcb_input_modifier_info_t Mods;
     // public readonly xcb_input_group_info_t Group;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

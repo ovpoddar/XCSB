@@ -24,7 +24,7 @@ public struct GetFeedbackControlReply  : IXReply<GetFeedbackControlReply, GetFee
         Feedbacks = new FeedbackState(result[responseLength..]);
     }
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         throw new NotImplementedException();
     }

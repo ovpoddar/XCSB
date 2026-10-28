@@ -10,7 +10,7 @@ public readonly struct ResponseHeader<R, T> where T : unmanaged where R : unmana
     private readonly T _value;
     public readonly ushort Sequence;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return Sequence == sequence && Unsafe.SizeOf<T>() == 1;
     }

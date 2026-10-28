@@ -14,7 +14,7 @@ public readonly struct TranslateCoordinatesReply : IXReply<TranslateCoordinatesR
     public readonly ushort DestinationX;
     public readonly ushort DestinationY;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 0;

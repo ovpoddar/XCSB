@@ -16,7 +16,7 @@ public readonly struct GetDeviceButtonMappingReply : IXReply<GetDeviceButtonMapp
     public readonly uint Length;
     public readonly byte MapSize;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

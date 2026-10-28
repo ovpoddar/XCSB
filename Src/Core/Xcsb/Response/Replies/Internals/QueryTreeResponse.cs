@@ -13,7 +13,7 @@ internal readonly struct QueryTreeResponse : IVerify
     public readonly uint Parent;
     public readonly ushort WindowChildrenLength;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == WindowChildrenLength;

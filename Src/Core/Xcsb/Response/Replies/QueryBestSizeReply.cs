@@ -13,7 +13,7 @@ public readonly struct QueryBestSizeReply : IXReply<QueryBestSizeReply,QueryBest
     public readonly ushort Width;
     public readonly ushort Height;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 0;

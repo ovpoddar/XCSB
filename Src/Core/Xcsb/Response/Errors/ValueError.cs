@@ -29,7 +29,7 @@ public readonly struct ValueError : IXError<ValueError>
         this error (due to the encoding).
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Value;

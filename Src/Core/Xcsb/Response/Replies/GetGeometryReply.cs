@@ -17,7 +17,7 @@ public readonly struct GetGeometryReply : IXReply<GetGeometryReply, GetGeometryR
     public readonly ushort Height;
     public readonly ushort BorderWidth;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 0;

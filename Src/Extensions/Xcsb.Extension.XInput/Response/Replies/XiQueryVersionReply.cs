@@ -16,7 +16,7 @@ public readonly struct XiQueryVersionReply : IXReply<XiQueryVersionReply, XiQuer
     public readonly ushort MajorVersion;
     public readonly ushort MinorVersion;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

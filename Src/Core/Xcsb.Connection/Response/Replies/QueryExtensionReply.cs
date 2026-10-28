@@ -15,7 +15,7 @@ public readonly struct QueryExtensionReply : IXReply<QueryExtensionReply, QueryE
     public readonly byte FirstError;
     public bool Present => _present == 1;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == 1 &&
                Length == 0;

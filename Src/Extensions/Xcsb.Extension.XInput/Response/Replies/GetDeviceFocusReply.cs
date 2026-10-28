@@ -17,7 +17,7 @@ public readonly struct GetDeviceFocusReply : IXReply<GetDeviceFocusReply, GetDev
     public readonly uint Time; //xcb_timestamp_t
     public readonly byte RevertTo;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

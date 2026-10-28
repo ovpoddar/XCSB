@@ -41,7 +41,7 @@ public struct XiQueryPointerReply  : IXReply<XiQueryPointerReply, XiQueryPointer
         }
     }
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         throw new NotImplementedException();
     }

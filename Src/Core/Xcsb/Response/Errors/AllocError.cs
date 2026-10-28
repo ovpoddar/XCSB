@@ -33,7 +33,7 @@ public readonly struct AllocError : IXError<AllocError>
         and handle or discard them.
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Alloc;

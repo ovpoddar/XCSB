@@ -28,7 +28,7 @@ public readonly struct GetWindowAttributesReply : IXReply<GetWindowAttributesRep
     public readonly ushort DoNotPropagateMask; // EventMask
     private readonly ushort _pad0;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 3 && _pad0 == 0;

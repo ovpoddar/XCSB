@@ -11,7 +11,7 @@ internal readonly struct GetMotionEventsResponse : IVerify
     public readonly uint Length;
     public readonly uint NumberOfEvents;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length / 2 == NumberOfEvents;

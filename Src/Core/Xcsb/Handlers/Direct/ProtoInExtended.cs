@@ -19,7 +19,7 @@ internal static class ProtoInExtended
     };
 
     internal static (ListFontsWithInfoReply[], GenericError?) ReceivedResponseArray(this ISocketAccessor socketAccessor,
-        int sequence, int maxNames, int timeOut = 1000)
+        ushort sequence, int maxNames, int timeOut = 1000)
     {
         while (true)
         {

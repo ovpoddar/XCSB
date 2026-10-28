@@ -15,7 +15,7 @@ public readonly struct SetDeviceValuatorsReply : IXReply<SetDeviceValuatorsReply
     public readonly uint Length;
     public readonly byte Status;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

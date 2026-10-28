@@ -20,7 +20,7 @@ public readonly struct GetDevicePropertyReply : IXReply<GetDevicePropertyReply, 
     public readonly byte Format;
     public readonly byte DeviceId;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return  ResponseHeader.Verify(sequence) && ResponseHeader.Reply == ResponseType.Reply;
     }

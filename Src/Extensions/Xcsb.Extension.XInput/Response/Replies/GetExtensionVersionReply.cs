@@ -17,7 +17,7 @@ public readonly struct GetExtensionVersionReply : IXReply<GetExtensionVersionRep
 
     public readonly bool IsPresent => Present != 0;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Verify(sequence) && Length == 0 && ResponseHeader.Reply == ResponseType.Reply;
     }

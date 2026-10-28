@@ -22,7 +22,7 @@ public readonly struct NameError : IXError<NameError>
     public readonly string GetErrorMessage() =>
         "A font or color of the specified name does not exist.";
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Name;

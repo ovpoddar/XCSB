@@ -34,7 +34,7 @@ public readonly struct AccessError : IXError<AccessError>
         client has already selected it.
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Access;

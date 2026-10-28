@@ -28,7 +28,7 @@ public readonly struct ImplementationError : IXError<ImplementationError>
         receive such errors and handle or discard them.
         """;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Implementation;

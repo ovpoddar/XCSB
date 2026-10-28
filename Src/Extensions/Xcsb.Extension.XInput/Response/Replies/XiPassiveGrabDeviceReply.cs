@@ -28,7 +28,7 @@ public struct XiPassiveGrabDeviceReply: IXReply<XiPassiveGrabDeviceReply, XiPass
         }
     }
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         throw new NotImplementedException();
     }

@@ -22,7 +22,7 @@ public readonly struct RequestError : IXError<RequestError>
     public readonly string GetErrorMessage() =>
         "The major or minor opcode does not specify a valid request.";
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Error && this.ResponseHeader.Sequence == sequence
             && ResponseHeader.GetValue() == ErrorCode.Request;

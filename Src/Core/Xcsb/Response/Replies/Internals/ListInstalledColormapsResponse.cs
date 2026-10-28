@@ -11,7 +11,7 @@ internal readonly struct ListInstalledColormapsResponse : IVerify
     public readonly uint Length;
     public readonly ushort NumberOfColormaps;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == NumberOfColormaps;

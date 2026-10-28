@@ -18,7 +18,7 @@ internal unsafe struct GetKeyboardControlResponse :IVerify
     private readonly ushort _pad0;
     public fixed byte Repeats[32];
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 5;

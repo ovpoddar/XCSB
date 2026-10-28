@@ -13,7 +13,7 @@ public readonly struct GetInputFocusReply : IXReply<GetInputFocusReply, GetInput
     public readonly uint Length;
     public readonly uint Focus;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 0;

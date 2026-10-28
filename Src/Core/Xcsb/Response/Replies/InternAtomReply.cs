@@ -13,7 +13,7 @@ public readonly struct InternAtomReply : IXReply<InternAtomReply,InternAtomReply
     public readonly uint Length;
     public readonly ATOM Atom;
 
-    public bool Verify(in int sequence)
+    public bool Verify(in ushort sequence)
     {
         return ResponseHeader.Reply == ResponseType.Reply && ResponseHeader.Verify(in sequence) &&
                Length == 0;
