@@ -14,13 +14,6 @@ public struct ChangeDeviceNotifyEvent : IXEvent<ChangeDeviceNotifyEvent>
     public readonly uint Time;
     public readonly ChangeDevice Request;
 
-    public ref readonly ChangeDeviceNotifyEvent Cast(Span<byte> response)
-    {
-        ref readonly var result = ref response.AsStruct<ChangeDeviceNotifyEvent>();
-        if ((byte)result.ResponseHeader.Reply == (byte)XiInputEventType.ChangeDeviceNotify || response.Length != 32)
-            throw new Exception("Invalid response");
-        return ref result;
-    }
 
     public ChangeDeviceNotifyEvent FromBytes(byte[] response)
     {
