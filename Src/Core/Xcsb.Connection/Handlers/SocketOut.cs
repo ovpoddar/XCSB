@@ -18,8 +18,8 @@ internal class SocketOut : ISocketOut
         _socket = socket;
         _configuration = configuration;
     }
-    
-    public int Sequence { get; set; }
+
+    public uint Sequence { get; set; }
 
     public void SendData(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
@@ -30,10 +30,13 @@ internal class SocketOut : ISocketOut
     public void SendRequest(scoped in ReadOnlySpan<byte> buffer, SocketFlags socketFlags)
     {
         SendData(in buffer, socketFlags);
-        Sequence++;
+        unchecked
+        {
+            Sequence++;
+        }
     }
-    
-    
+
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Send<T>(scoped ref T value) where T : unmanaged =>
         this.SendRequest(

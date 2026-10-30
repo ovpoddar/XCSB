@@ -11,7 +11,7 @@ internal sealed class BufferProtoOut
     private readonly ISocketOut _protoOut;
     private int _requestLength;
 
-    public int Sequence => _protoOut.Sequence;
+    public uint Sequence => _protoOut.Sequence;
 
     public BufferProtoOut(ISocketOut protoOut)
     {

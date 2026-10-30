@@ -2,10 +2,10 @@
 
 public readonly ref struct ResponseProto
 {
-    public ushort Id { get; }
+    public uint Id { get; }
     public bool HasReturn { get; }
 
-    internal ResponseProto(ushort id = 0, bool hasReturn = false)
+    internal ResponseProto(uint id = 0, bool hasReturn = false)
     {
         Id = id;
         HasReturn = hasReturn;

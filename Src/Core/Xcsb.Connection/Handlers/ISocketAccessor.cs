@@ -17,5 +17,5 @@ internal interface ISocketAccessor
     bool PollRead(int timeout = -1);
     bool HasEventToProcesses();
     void WaitForEventArrival();
-    void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "");
+    void SkipErrorForSequence(uint sequence, bool shouldThrow, [CallerMemberName] string name = "");
 }

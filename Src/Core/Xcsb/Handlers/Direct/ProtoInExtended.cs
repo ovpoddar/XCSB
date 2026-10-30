@@ -19,7 +19,7 @@ internal static class ProtoInExtended
     };
 
     internal static (ListFontsWithInfoReply[], GenericError?) ReceivedResponseArray(this ISocketAccessor socketAccessor,
-        ushort sequence, int maxNames, int timeOut = 1000)
+        uint sequence, int maxNames, int timeOut = 1000)
     {
         while (true)
         {
@@ -31,19 +31,20 @@ internal static class ProtoInExtended
                 continue;
             }
 
-            if (!socketAccessor.SocketIn.ReplyBuffer.TryRemove(sequence, out var reply))
+            var buffer = socketAccessor.SocketIn.ReplyBuffer.Get(sequence);
+            if (buffer == default)
                 throw new Exception("Should not happen.");
 
-            var response = reply.Item1.AsSpan().AsStruct<ListFontsWithInfoResponse>();
-            return response.Verify(sequence)
-                ? (GetListFontsReply(socketAccessor.SocketIn, reply.Item1, sequence, maxNames), null)
-                : ([], reply.Item1.AsSpan().ToStruct<GenericError>());
+            var response = buffer.Item1.AsSpan().AsStruct<ListFontsWithInfoResponse>();
+            return response.Verify((ushort)sequence)
+                ? (GetListFontsReply(socketAccessor.SocketIn, buffer.Item1, sequence, maxNames), null)
+                : ([], buffer.Item1.AsSpan().ToStruct<GenericError>());
         }
     }
 
     internal static async Task<(ListFontsWithInfoReply[], GenericError?)> ReceivedResponseArrayAsync(
         this ISocketAccessor socketAccessor,
-        int sequence, int maxNames, CancellationToken token = default)
+        uint sequence, int maxNames, CancellationToken token = default)
     {
         var result = new ArrayPoolUsing<ListFontsWithInfoReply>(maxNames);
         var count = 0;
@@ -62,7 +63,7 @@ internal static class ProtoInExtended
         return (result[0..count].ToArray(), null);
     }
 
-    private static ListFontsWithInfoReply[] GetListFontsReply(ISocketIn socketIn, Span<byte> reply, int sequence,
+    private static ListFontsWithInfoReply[] GetListFontsReply(ISocketIn socketIn, Span<byte> reply, uint sequence,
         int maxNames)
     {
         var result = new ArrayPoolUsing<ListFontsWithInfoReply>(maxNames);

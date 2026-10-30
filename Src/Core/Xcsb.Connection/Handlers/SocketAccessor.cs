@@ -41,18 +41,19 @@ internal sealed class SocketAccessor : ISocketAccessor
     }
 
     
-    public void SkipErrorForSequence(int sequence, bool shouldThrow, [CallerMemberName] string name = "")
+    public void SkipErrorForSequence(uint sequence, bool shouldThrow, [CallerMemberName] string name = "")
     {
         if (AvailableData == 0)
             PollRead(1000);
 
         this.SocketIn.FlushSocket();
-        if (!this.SocketIn.ReplyBuffer.TryRemove(sequence, out var response))
+        var buffer = this.SocketIn.ReplyBuffer.Get(sequence);
+        if (buffer == default)
             return;
 
-        if (response.Item2.ResponseType != XResponseType.Error)
-            throw new Exception($"Unexpected Response Found {response.Item2.ResponseType}");
-        var error = new GenericError(response.Item1.AsSpan().ToStruct<XResponse>(), response.Item2.ErrorMessageAction!);
+        if (buffer.Item2.ResponseType != XResponseType.Error)
+            throw new Exception($"Unexpected Response Found {buffer.Item2.ResponseType}");
+        var error = new GenericError(buffer.Item1.AsSpan().ToStruct<XResponse>(), buffer.Item2.ErrorMessageAction!);
         if (shouldThrow)
             throw new XEventException(error, name);
     }
