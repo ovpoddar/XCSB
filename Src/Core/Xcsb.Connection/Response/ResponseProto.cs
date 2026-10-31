@@ -1,6 +1,6 @@
 ﻿namespace Xcsb.Connection.Response;
 
-public readonly ref struct ResponseProto
+public readonly struct ResponseProto
 {
     public uint Id { get; }
     public bool HasReturn { get; }
