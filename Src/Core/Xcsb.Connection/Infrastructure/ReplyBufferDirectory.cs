@@ -6,8 +6,12 @@ public class ReplyBufferDirectory<TValue>
 {
     private ConcurrentDictionary<ushort, ConcurrentDictionary<uint, TValue>> dict =
         new ConcurrentDictionary<ushort, ConcurrentDictionary<uint, TValue>>();
-
     private ConcurrentDictionary<ushort, uint> lenCollect = new ConcurrentDictionary<ushort, uint>();
+
+    public ReplyBufferDirectory()
+    {
+        lenCollect.TryAdd(0, 0);
+    }
 
     public void Add(ushort key, TValue value)
     {
@@ -28,7 +32,7 @@ public class ReplyBufferDirectory<TValue>
     public TValue? Get(uint key)
     {
         var index = (ushort)key;
-        var lenIndex = (key - 1) >> 16;
+        var lenIndex = (key) >> 16;
 
         if (!dict.TryGetValue(index, out var dicitem))
             return default;
@@ -50,7 +54,7 @@ public class ReplyBufferDirectory<TValue>
         lenCollect.Clear();
     }
 
-    public bool HasKey(uint key)
+    public bool ContainKey(uint key)
     {
         var index = (ushort)key;
         var lenIndex = key >> 16;

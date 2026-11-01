@@ -23,7 +23,7 @@ internal static class ProtoInExtended
     {
         while (true)
         {
-            if (sequence > socketAccessor.SocketIn.Sequence)
+            if (!socketAccessor.SocketIn.ReplyBuffer.ContainKey(sequence))
             {
                 if (socketAccessor.AvailableData == 0)
                     socketAccessor.PollRead(timeOut);

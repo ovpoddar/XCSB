@@ -28,17 +28,13 @@ internal class SocketIn : ISocketIn
         _configuration = configuration;
 
         BufferEvents = new ConcurrentQueue<(byte[], MappingDetails)>();
-        // ReplyBuffer = new ConcurrentDictionary<int, (byte[], MappingDetails)>();
         ReplyBuffer = new ReplyBufferDirectory<(byte[], MappingDetails)>();
     }
 
     public ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; }
 
-    // public ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; }
     public ReplyBufferDirectory<(byte[], MappingDetails)> ReplyBuffer { get; }
-
-    public uint Sequence { get; set; }
-
+    
     public ArrayPool<byte> BufferPool => _configuration.BufferPool;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -70,7 +66,6 @@ internal class SocketIn : ISocketIn
             switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
-                    Sequence++;
                     ReplyBuffer.Add(content.Sequence, (buffer, responseType));
                     break;
                 case XResponseType.Notify:
@@ -103,8 +98,7 @@ internal class SocketIn : ISocketIn
             switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
-                    Sequence++;
-                    if (Sequence > outProtoSequence)
+                    if (!ReplyBuffer.ContainKey(outProtoSequence))
                         ReplyBuffer.Add(content.Sequence, (buffer, responseType));
                     else
                     {
@@ -154,11 +148,12 @@ internal class SocketIn : ISocketIn
 
     // logic 3
     public async Task<(byte[], MappingDetails)> ReceivedResponseSpanAsync<T, InternalType>(uint sequence,
-        CancellationToken token = default) where T : struct, IXReply<T, InternalType> where InternalType : unmanaged,
+        CancellationToken token = default) where T : struct, IXReply<T, InternalType>
+        where InternalType : unmanaged,
         IVerify
     {
         var result1 = ReplyBuffer.Get(sequence);
-        if (sequence < Sequence && result1 == default)
+        if (result1 == default)
         {
             ref readonly var temp = ref result1.Item1.AsStruct<InternalType>();
             var tempSeq = (ushort)sequence;
@@ -177,13 +172,12 @@ internal class SocketIn : ISocketIn
             Debug.Assert(totalRead == bufferSize);
             ref readonly var content = ref buffer.AsStruct<XResponse>();
             var responseType = GetResponseType(in content);
-            if (sequence == content.Sequence)
+            if ((ushort)sequence == content.Sequence)
             {
                 switch (responseType.ResponseType)
                 {
                     case XResponseType.Error:
                     {
-                        Sequence++;
                         return (buffer, responseType);
                     }
                     case XResponseType.Reply:
@@ -199,7 +193,6 @@ internal class SocketIn : ISocketIn
             switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
-                    Sequence++;
                     ReplyBuffer.Add(content.Sequence, (buffer, responseType));
                     break;
                 case XResponseType.Notify:
@@ -241,7 +234,6 @@ internal class SocketIn : ISocketIn
             switch (responseType.ResponseType)
             {
                 case XResponseType.Error:
-                    Sequence++;
                     ReplyBuffer.Add(content.Sequence, (tempBuffer, responseType));
                     break;
                 case XResponseType.Notify:
@@ -300,12 +292,9 @@ internal class SocketIn : ISocketIn
     }
 
 
-    public byte[] ComputeResponse(byte[] buffer, bool updateSequence = true)
+    public byte[] ComputeResponse(byte[] buffer)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
-        if (updateSequence)
-            Sequence++;
-
         var replySize = (int)(content.Length * 4);
         if (replySize == 0)
             return buffer;
@@ -324,13 +313,9 @@ internal class SocketIn : ISocketIn
         return combined;
     }
 
-    public async ValueTask<byte[]> ComputeResponseAsync(byte[] buffer, bool updateSequence = true,
-        CancellationToken token = default)
+    public async ValueTask<byte[]> ComputeResponseAsync(byte[] buffer, CancellationToken token = default)
     {
         ref readonly var content = ref buffer.AsStruct<XResponse>();
-        if (updateSequence && content.Sequence > Sequence)
-            Sequence++;
-
         var replySize = (int)(content.Length * 4);
         if (replySize == 0)
             return buffer;
@@ -350,7 +335,7 @@ internal class SocketIn : ISocketIn
     {
         while (true)
         {
-            if (sequence > Sequence)
+            if (!ReplyBuffer.ContainKey(sequence))
             {
                 if (_socket.Available == 0)
                     _socket.Poll(timeOut, SelectMode.SelectRead);
@@ -373,10 +358,9 @@ internal class SocketIn : ISocketIn
 
     public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct
     {
-        var buffer = ReplyBuffer.Get(response.Id);
-        if (Sequence < response.Id && buffer == default)
+        if (!ReplyBuffer.ContainKey(response.Id))
             FlushSocket();
-        buffer = ReplyBuffer.Get(response.Id);
+        var buffer = ReplyBuffer.Get(response.Id);
         return buffer != default
             ? buffer.Item1.AsSpan().AsStruct<T>()
             : response.HasReturn

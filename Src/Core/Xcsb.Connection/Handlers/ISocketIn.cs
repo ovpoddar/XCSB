@@ -10,15 +10,14 @@ namespace Xcsb.Connection.Handlers;
 
 internal interface ISocketIn
 {
-    uint Sequence { get; set; }
     ArrayPool<byte> BufferPool { get; }
 
     ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; }
+
     // ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; }
     ReplyBufferDirectory<(byte[], MappingDetails)> ReplyBuffer { get; }
-    byte[] ComputeResponse(byte[] buffer, bool updateSequence = true);
-    ValueTask<byte[]> ComputeResponseAsync(byte[] buffer, bool updateSequence = true,
-        CancellationToken token = default);
+    byte[] ComputeResponse(byte[] buffer);
+    ValueTask<byte[]> ComputeResponseAsync(byte[] buffer, CancellationToken token = default);
     byte[] ComposeEvent(byte[] buffer);
     ValueTask<byte[]> ComposeEventAsync(byte[] buffer, CancellationToken token = default);
     void FlushSocket();
@@ -26,9 +25,13 @@ internal interface ISocketIn
     T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct;
     int Received(scoped in Span<byte> buffer, bool readAll = true);
     Task<int> ReceivedAsync(Memory<byte> buffer, CancellationToken token = default);
-    (byte[], MappingDetails) ReceivedResponseSpan<T, InternalType>(uint sequence, int timeOut = 1000) 
+
+    (byte[], MappingDetails) ReceivedResponseSpan<T, InternalType>(uint sequence, int timeOut = 1000)
         where T : struct, IXReply<T, InternalType> where InternalType : unmanaged, IVerify;
-    Task<(byte[], MappingDetails)> ReceivedResponseSpanAsync<T, InternalType>(uint sequence, CancellationToken token = default)
+
+    Task<(byte[], MappingDetails)> ReceivedResponseSpanAsync<T, InternalType>(uint sequence,
+        CancellationToken token = default)
         where T : struct, IXReply<T, InternalType> where InternalType : unmanaged, IVerify;
+
     Task<(MappingDetails?, byte[])> FlushAsync(CancellationToken token = default);
 }
