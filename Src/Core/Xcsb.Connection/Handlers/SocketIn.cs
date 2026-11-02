@@ -356,16 +356,16 @@ internal class SocketIn : ISocketIn
         }
     }
 
-    public T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct
+    public GenericError? GetVoidRequestResponse(ResponseProto response)
     {
         if (!ReplyBuffer.ContainKey(response.Id))
             FlushSocket();
+        if (!ReplyBuffer.ContainKey(response.Id))
+            return null;
         var buffer = ReplyBuffer.Get(response.Id);
-        return buffer != default
-            ? buffer.Item1.AsSpan().AsStruct<T>()
-            : response.HasReturn
-                ? throw new InvalidOperationException()
-                : null;
+        return response.HasReturn
+            ? throw new InvalidOperationException()
+            : new GenericError(buffer.Item1.AsSpan().ToStruct<XResponse>(), buffer.Item2.ErrorMessageAction!);
     }
 
     private MappingDetails GetResponseType(ref readonly XResponse reply)

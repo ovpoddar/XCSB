@@ -155,11 +155,11 @@ internal sealed partial class XProto : IXProto
             .ConfigureAwait(false);
 
     public GenericError? CheckResponseProtoResult(ResponseProto response) =>
-        this._socketAccessor.SocketIn.GetVoidRequestResponse<GenericError>(response);
+        this._socketAccessor.SocketIn.GetVoidRequestResponse(response);
 
     public void VerifyResponseProtoResult(ResponseProto response)
     {
-        var error = this._socketAccessor.SocketIn.GetVoidRequestResponse<GenericError>(response);
+        var error = this._socketAccessor.SocketIn.GetVoidRequestResponse(response);
         if (error.HasValue) throw new XEventException(error.Value);
     }
 

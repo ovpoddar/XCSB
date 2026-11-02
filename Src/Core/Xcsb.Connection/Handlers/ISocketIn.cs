@@ -14,7 +14,6 @@ internal interface ISocketIn
 
     ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; }
 
-    // ConcurrentDictionary<int, (byte[], MappingDetails)> ReplyBuffer { get; }
     ReplyBufferDirectory<(byte[], MappingDetails)> ReplyBuffer { get; }
     byte[] ComputeResponse(byte[] buffer);
     ValueTask<byte[]> ComputeResponseAsync(byte[] buffer, CancellationToken token = default);
@@ -22,7 +21,7 @@ internal interface ISocketIn
     ValueTask<byte[]> ComposeEventAsync(byte[] buffer, CancellationToken token = default);
     void FlushSocket();
     void FlushSocket(uint outProtoSequence, bool shouldThrowOnError);
-    T? GetVoidRequestResponse<T>(ResponseProto response) where T : struct;
+    GenericError? GetVoidRequestResponse(ResponseProto response);
     int Received(scoped in Span<byte> buffer, bool readAll = true);
     Task<int> ReceivedAsync(Memory<byte> buffer, CancellationToken token = default);
 
