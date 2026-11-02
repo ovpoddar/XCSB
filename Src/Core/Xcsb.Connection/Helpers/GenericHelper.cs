@@ -109,14 +109,12 @@ internal static class GenericHelper
             return;
 
         var total = 0;
-        while (socket.Connected)
+        while (total < buffer.Length)
         {
-            total += socket.Receive(buffer[total..]);
-            if (total == buffer.Length)
-                break;
-
-            if (socket.Available == 0 && total < buffer.Length)
-                socket.Poll(-1, SelectMode.SelectRead);
+            var received = socket.Receive(buffer[total..]);
+            if (received == 0)
+                break; // todo handle upstack Connection closed
+            total += received;
         }
     }
 
@@ -130,7 +128,7 @@ internal static class GenericHelper
         writeBuffer.Slice(size + requestBody.Length, remainder).Clear();
     }
 
-    internal static int CountFlags<T>(this T value) where T : struct  => Unsafe.SizeOf<T>() switch
+    internal static int CountFlags<T>(this T value) where T : struct => Unsafe.SizeOf<T>() switch
     {
         1 => PopCount(Unsafe.As<T, byte>(ref value)),
         2 => PopCount(Unsafe.As<T, ushort>(ref value)),
@@ -148,6 +146,7 @@ internal static class GenericHelper
             count += (int)(value & 1);
             value >>= 1;
         }
+
         return count;
 #else
         return BitOperations.PopCount(value);

@@ -139,6 +139,8 @@ internal class SocketIn : ISocketIn
 
             if (received == 0)
                 return total == 0 ? -1 : total;
+            if (received == -1)
+                break; //todo: handle at upper Connection closed
 
             total += received;
         }
@@ -149,8 +151,7 @@ internal class SocketIn : ISocketIn
     // logic 3
     public async Task<(byte[], MappingDetails)> ReceivedResponseSpanAsync<T, InternalType>(uint sequence,
         CancellationToken token = default) where T : struct, IXReply<T, InternalType>
-        where InternalType : unmanaged,
-        IVerify
+        where InternalType : unmanaged, IVerify
     {
         if (ReplyBuffer.ContainKey(sequence))
         {
@@ -185,6 +186,9 @@ internal class SocketIn : ISocketIn
                         var result = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
                         return (result, responseType);
                     }
+                    case XResponseType.Unknown:
+                    case XResponseType.Event:
+                    case XResponseType.Notify:
                     default:
                         break;
                 }
@@ -227,7 +231,7 @@ internal class SocketIn : ISocketIn
             var tempBuffer = _configuration.BufferPool.Rent(Unsafe.SizeOf<XResponse>());
             var totalRead = await ReceivedAsync(tempBuffer, token)
                 .ConfigureAwait(false);
-            if (totalRead == 0)
+            if (totalRead is 0 or -1)
                 return (null, Array.Empty<byte>());
             ref readonly var content = ref tempBuffer.AsStruct<XResponse>();
             var responseType = GetResponseType(in content);

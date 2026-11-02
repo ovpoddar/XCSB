@@ -29,8 +29,8 @@ internal interface ISocketIn
         where T : struct, IXReply<T, InternalType> where InternalType : unmanaged, IVerify;
 
     Task<(byte[], MappingDetails)> ReceivedResponseSpanAsync<T, InternalType>(uint sequence,
-        CancellationToken token = default)
-        where T : struct, IXReply<T, InternalType> where InternalType : unmanaged, IVerify;
+        CancellationToken token = default) where T : struct, IXReply<T, InternalType>
+        where InternalType : unmanaged, IVerify;
 
     Task<(MappingDetails?, byte[])> FlushAsync(CancellationToken token = default);
 }

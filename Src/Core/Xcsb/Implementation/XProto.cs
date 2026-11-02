@@ -180,7 +180,7 @@ internal sealed partial class XProto : IXProto
             MemoryMarshal.Cast<uint, byte>(args)
         );
 
-        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto DestroyWindowBase(uint window)
@@ -230,7 +230,7 @@ internal sealed partial class XProto : IXProto
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(args));
 
-        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ChangeHostsBase(HostMode mode, Family family, ReadOnlySpan<byte> address)
@@ -246,7 +246,7 @@ internal sealed partial class XProto : IXProto
             bigRequest.Length * 4,
             address
         );
-        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ChangeKeyboardControlBase(KeyboardControlMask mask, ReadOnlySpan<uint> args)
@@ -262,7 +262,7 @@ internal sealed partial class XProto : IXProto
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(args)
         );
-        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ChangeKeyboardMappingBase(byte keycodeCount, byte firstKeycode, byte keysymsPerKeycode,
@@ -279,7 +279,7 @@ internal sealed partial class XProto : IXProto
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(keysym)
         );
-        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ChangePointerControlBase(Acceleration? acceleration, ushort? threshold)
@@ -312,7 +312,7 @@ internal sealed partial class XProto : IXProto
             MemoryMarshal.Cast<T, byte>(args)
         );
 
-        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ChangeSaveSetBase(ChangeSaveSetMode changeSaveSetMode, uint window)
@@ -359,7 +359,7 @@ internal sealed partial class XProto : IXProto
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(args)
         );
-        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto ConvertSelectionBase(uint requestor, ATOM selection, ATOM target, ATOM property,
@@ -433,7 +433,7 @@ internal sealed partial class XProto : IXProto
             20,
             bigRequest.Length * 4,
             MemoryMarshal.Cast<uint, byte>(args));
-        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto CreateGlyphCursorBase(uint cursorId, uint sourceFont, uint fontMask, char sourceChar,
@@ -918,7 +918,7 @@ internal sealed partial class XProto : IXProto
             bigRequest.Length * 4,
             data
         );
-        return new ResponseProto(_socketAccessor.SocketOut.Sequence, true);
+        return new ResponseProto(_socketAccessor.SocketOut.Sequence);
     }
 
     private ResponseProto RecolorCursorBase(uint cursorId, ushort foreRed, ushort foreGreen, ushort foreBlue,
