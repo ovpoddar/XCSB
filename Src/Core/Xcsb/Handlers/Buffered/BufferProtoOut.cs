@@ -9,7 +9,7 @@ internal sealed class BufferProtoOut
 {
     private readonly List<byte> _buffer;
     private readonly ISocketOut _protoOut;
-    private int _requestLength;
+    private uint _requestLength;
 
     public uint Sequence => _protoOut.Sequence;
 
@@ -51,7 +51,7 @@ internal sealed class BufferProtoOut
     {
         var buffer =
 #if NETSTANDARD
-        _buffer.ToArray();
+            _buffer.ToArray();
 #else
             CollectionsMarshal.AsSpan(_buffer);
 #endif
@@ -67,6 +67,7 @@ internal sealed class BufferProtoOut
     private void SendExact(scoped in ReadOnlySpan<byte> buffer)
     {
         _protoOut.SendExact(in buffer);
-        _protoOut.Sequence = unchecked((ushort)(_protoOut.Sequence + _requestLength));
+        _requestLength--;
+        _protoOut.Sequence += _requestLength;
     }
 }
