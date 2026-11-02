@@ -2,6 +2,6 @@
 
 public enum ColormapState : byte
 {
-    Installed,
-    UnInstalled
+    UnInstalled,
+    Installed
 }

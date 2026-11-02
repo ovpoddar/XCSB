@@ -93,6 +93,7 @@ internal sealed partial class XProto : IXProto
         extension.RegisterX1Event<ColorMapNotifyEvent>(EventType.ColormapNotify);
         extension.RegisterX1Event<ConfigureNotifyEvent>(EventType.ConfigureNotify);
         extension.RegisterX1Event<ConfigureRequestEvent>(EventType.ConfigureRequest);
+        extension.RegisterX1Event<CreateNotifyEvent>(EventType.CreateNotify);
         extension.RegisterX1Event<DestroyNotifyEvent>(EventType.DestroyNotify);
         extension.RegisterX1Event<EnterNotifyEvent>(EventType.EnterNotify);
         extension.RegisterX1Event<ExposeEvent>(EventType.Expose);
@@ -135,8 +136,9 @@ internal sealed partial class XProto : IXProto
         throw new NotImplementedException();
     }
 
-    
-    private async ValueTask<ListFontsWithInfoReply[]> ListFontsWithInfoOverrideAsync(ReadOnlyMemory<byte> pattan, int maxNames,
+
+    private async ValueTask<ListFontsWithInfoReply[]> ListFontsWithInfoOverrideAsync(ReadOnlyMemory<byte> pattan,
+        int maxNames,
         CancellationToken token = default)
     {
         var cookie = ListFontsWithInfoBase(pattan.Span, maxNames);
@@ -146,7 +148,7 @@ internal sealed partial class XProto : IXProto
             ? throw new XEventException(error.Value)
             : throw new Exception(result.ToString());
     }
-    
+
     public ReplyLease GetEvent() => this._socketAccessor.ReceivedEvent();
 
     public async ValueTask<ReplyLease> GetEventAsync(CancellationToken token = default) =>
