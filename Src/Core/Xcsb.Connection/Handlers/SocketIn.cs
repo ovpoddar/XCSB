@@ -34,7 +34,7 @@ internal class SocketIn : ISocketIn
     public ConcurrentQueue<(byte[], MappingDetails)> BufferEvents { get; }
 
     public ReplyBufferDirectory<(byte[], MappingDetails)> ReplyBuffer { get; }
-    
+
     public ArrayPool<byte> BufferPool => _configuration.BufferPool;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -152,16 +152,16 @@ internal class SocketIn : ISocketIn
         where InternalType : unmanaged,
         IVerify
     {
-        var result1 = ReplyBuffer.Get(sequence);
-        if (result1 == default)
+        if (ReplyBuffer.ContainKey(sequence))
         {
-            ref readonly var temp = ref result1.Item1.AsStruct<InternalType>();
+            var result = ReplyBuffer.Get(sequence);
+            ref readonly var temp = ref result.Item1.AsStruct<InternalType>();
             var tempSeq = (ushort)sequence;
             if (!temp.Verify(in tempSeq))
-                return (result1.Item1,
-                    new MappingDetails(XResponseType.Error, UnknownResponse.Unknown(result1.Item1[0])));
+                return (result.Item1,
+                    new MappingDetails(XResponseType.Error, UnknownResponse.Unknown(result.Item1[0])));
 
-            return result1;
+            return result;
         }
 
         var bufferSize = Unsafe.SizeOf<XResponse>();
