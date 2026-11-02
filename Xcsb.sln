@@ -19,6 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gen", "Gen", "{1B3FBB73-F80
 				ProjectSection(SolutionItems) = preProject
 					Gen\ToolsXProtoParse.cs = Gen\ToolsXProtoParse.cs
 					Gen\ToolsGenHeaderParser.cs = Gen\ToolsGenHeaderParser.cs
+					Gen\ToolsTypeGenXMLParser.cs = Gen\ToolsTypeGenXMLParser.cs
 				EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Images", "Examples\Images\Images.csproj", "{8ABB9E22-6DA3-DACD-A1A8-A873DD7C6379}"

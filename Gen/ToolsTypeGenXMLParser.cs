@@ -43,6 +43,7 @@ class Generator
     private readonly OutPutType _output;
     private Dictionary<string, XElement> _elements = new Dictionary<string, XElement>();
     private bool _isCoreLib;
+    private string _headerName;
     public enum OutPutType
     {
         Struct,
@@ -60,6 +61,7 @@ class Generator
         _output = output;
         var root = XDocument.Load(path).Root!;
         _isCoreLib = root.Attribute("extension-name") == null;
+        _headerName = root.Attribute("header")!.Value;
         foreach (var element in root.Elements())
         {
             var name = element.Name.LocalName;
@@ -136,7 +138,7 @@ class Generator
         var name = element.Attribute("name");
         var type = element.Attribute("enum") ?? element.Attribute("type");
 
-        fs.Write(name!.Value.EndsWith("_len") ? "    private readonly"u8 : "    public readonly "u8);
+        fs.Write(name!.Value.EndsWith("_len") ? "        private readonly"u8 : "        public readonly "u8);
         fs.Write(Encoding.UTF8.GetBytes(type!.Value).MapCsType());
         fs.Write(" "u8);
         fs.Write(Encoding.UTF8.GetBytes(name.Value).FixName());
@@ -149,16 +151,22 @@ class Generator
     int WritePad(FileStream fs, XElement element, int index, bool assign = false)
     {
         Debug.Assert(element.Name.LocalName == "pad");
-        Debug.Assert(element.Attribute("bytes") != null);
+        if (element.Attribute("bytes") == null)
+        {
+            Debug.Assert(element.Attribute("align") != null);
+            fs.Write("        // paded by x ammount"u8);
+            fs.Write(Encoding.UTF8.GetBytes(element.Attribute("align") + Environment.NewLine));
+            return 4;
+        }
 
         var size = element.Attribute("bytes")!.Value;
         var cType = (size) switch
         {
-            "1" => "    private readonly byte _pad"u8,
-            "2" => "    private readonly ushort _pad"u8,
-            "4" => "    private readonly uint _pad"u8,
-            "8" => "    private readonly ulong _pad"u8,
-            _ => "    private fixed byte _pad"u8
+            "1" => "        private readonly byte _pad"u8,
+            "2" => "        private readonly ushort _pad"u8,
+            "4" => "        private readonly uint _pad"u8,
+            "8" => "        private readonly ulong _pad"u8,
+            _ => "        private fixed byte _pad"u8
         };
         fs.Write(cType);
         fs.Write(Encoding.UTF8.GetBytes(index.ToString()));
@@ -187,6 +195,10 @@ class Generator
             case OutPutType.Typedef:
             case OutPutType.Request:
                 {
+                    fs.Write("namespace "u8);
+                    fs.Write(Encoding.UTF8.GetBytes(_headerName + Environment.NewLine));
+                    fs.Write("{"u8);
+                    fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
                     foreach (var element in _elements)
                     {
                         var fields = element.Value.Elements().ToList();
@@ -197,19 +209,19 @@ class Generator
                         var padLen = 0;
                         var writePos = 0;
 
-                        fs.Write(Encoding.UTF8.GetBytes($"[StructLayout(LayoutKind.Sequential, Pack = 1, Size = {size})]" + Environment.NewLine));
-                        fs.Write("[method: MethodImpl(MethodImplOptions.AggressiveInlining)]"u8);
+                        fs.Write(Encoding.UTF8.GetBytes($"    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = {size})]" + Environment.NewLine));
+                        fs.Write("    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]"u8);
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                        fs.Write(hasNonStanderedPad ? "internal unsafe readonly struct "u8 : "internal readonly struct "u8);
-                        fs.Write(Encoding.UTF8.GetBytes(name + Environment.NewLine + '{' + Environment.NewLine));
+                        fs.Write(hasNonStanderedPad ? "    internal unsafe readonly struct "u8 : "    internal readonly struct "u8);
+                        fs.Write(Encoding.UTF8.GetBytes(name + Environment.NewLine + "    {" + Environment.NewLine));
 
                         if (!_isCoreLib)
                         {
-                            fs.Write("    public readonly byte MajorOpcode = majorOpCode;"u8);
+                            fs.Write("        public readonly byte MajorOpcode = majorOpCode;"u8);
                             fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
                             writePos++;
                         }
-                        fs.Write("    public readonly Opcode Opcode = Opcode."u8);
+                        fs.Write("        public readonly Opcode Opcode = Opcode."u8);
                         fs.Write(Encoding.UTF8.GetBytes($"{name};"));
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
                         writePos++;
@@ -218,7 +230,7 @@ class Generator
                             var fieldI = fields.FirstOrDefault();
                             if (fieldI == null)
                             {
-                                fs.Write("    private readonly byte _pad"u8);
+                                fs.Write("        private readonly byte _pad"u8);
                                 fs.Write(Encoding.UTF8.GetBytes($"{padLen++} = 0;" + Environment.NewLine));
                             }
                             else if (fieldI.Name.LocalName == "pad")
@@ -228,7 +240,7 @@ class Generator
                             writePos++;
                         }
                         var val = "";// todo: get all the lengths fields and make farthe calculation
-                        fs.Write("    public readonly ushort Length = "u8);
+                        fs.Write("        public readonly ushort Length = "u8);
                         fs.Write(Encoding.UTF8.GetBytes($"(ushort)({size / 4}{val});" + Environment.NewLine));
                         writePos += 2;
 
@@ -256,8 +268,10 @@ class Generator
                             }
                         }
 
-                        fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine + '}' + Environment.NewLine));
+                        fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine + "    }" + Environment.NewLine));
                     }
+                    fs.Write("}"u8);
+                    fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
                 }
                 break;
             case OutPutType.Error:
