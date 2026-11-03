@@ -5,11 +5,9 @@ using System.Xml.Linq;
 using System.Collections.Frozen;
 
 var location = "/mnt/hardDrive/testP/xcb-proto/src";
-// var location = "/usr/share/xcb/";
-var generators = new List<Generator>();
 if (!Directory.Exists(location))
 {
-    Console.WriteLine("Put the xproto.xml path.");
+    Console.WriteLine("Put the Folder path.");
     location = Console.ReadLine();
     if (location == null) return;
 }
@@ -17,14 +15,12 @@ if (!Directory.Exists(location))
 var pathAttributes = File.GetAttributes(location);
 if ((pathAttributes & FileAttributes.Directory) == FileAttributes.Directory)
 {
-    foreach (var file in Directory.EnumerateFiles(location, "*.xml", SearchOption.TopDirectoryOnly))
+    foreach (var i in Directory.EnumerateFiles(location, "*.xml", SearchOption.TopDirectoryOnly))
     {
-        generators.Add(new Generator(Generator.OutPutType.Request, file));
+        var gen = new Generator(i);
+        using var fs = File.Open("out.G.cs", FileMode.OpenOrCreate);
+        gen.Write(Generator.OutPutType.Request, fs);
     }
-}
-else if (File.Exists(location))
-{
-    generators.Add(new Generator(Generator.OutPutType.Request, location));
 }
 else
 {
@@ -32,16 +28,15 @@ else
 }
 
 
-using var fs = File.Open("out.G.cs", FileMode.OpenOrCreate);
-foreach (var gen in generators)
-    gen.Write(fs);
+
 
 System.Console.WriteLine("Written");
 
 class Generator
 {
-    private readonly OutPutType _output;
-    private Dictionary<string, XElement> _elements = new Dictionary<string, XElement>();
+    private readonly List<(OutPutType, XElement)> _elements;
+    private readonly Dictionary<string, (string csName, int length, bool isFixed)> _buildTypeSystem;
+    private readonly string _workingDir;
     private bool _isCoreLib;
     private string _headerName;
     public enum OutPutType
@@ -52,82 +47,124 @@ class Generator
         Enum,
         Typedef,
         Request,
-        Error
+        Error,
+        Import,
+        Ignore
     }
 
 
-    public Generator(OutPutType output, string path)
+    public Generator(string path)
     {
-        _output = output;
+        _workingDir = Path.GetDirectoryName(path) ?? throw new Exception();
+        _elements = new List<(OutPutType, XElement)>();
+        _buildTypeSystem = new Dictionary<string, (string csName, int length, bool isFixed)>()
+        {
+            { "CARD8", ("sbyte", 1, true) },
+            { "CARD16", ("ushort", 2, true)},
+            { "CARD32", ("uint", 4, true)},
+            { "CARD64", ("ulong", 8, true)},
+            { "INT8", ("byte", 1, true)},
+            { "INT16", ("short", 2, true)},
+            { "INT32", ("int", 4, true)},
+            { "INT64", ("long", 8, true)},
+            { "BYTE", ("byte", 1, true)},
+            { "BOOL", ("bool", 1, true)},
+            { "char", ("byte", 1, true)},
+            { "float", ("float", 4, true)},
+            { "double", ("double", 8, true)},
+            { "DRAWABLE", ("uint", 4, true)},
+
+            // special entry
+            {"ClientMessageData", ("ClientMessageData", 32, true)},
+            {"NotifyData", ("NotifyData", 28, true)},
+            { "Behavior", ("Behavior", 2, true)}
+
+        };
+        BuildTypes(Path.GetFileName(path), _elements, _buildTypeSystem);
+    }
+
+    void BuildTypes(string fileName, List<(OutPutType, XElement)> elements,
+        Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
+    {
+        var path = Path.Join(_workingDir, fileName);
         var root = XDocument.Load(path).Root!;
         _isCoreLib = root.Attribute("extension-name") == null;
         _headerName = root.Attribute("header")!.Value;
         foreach (var element in root.Elements())
         {
             var name = element.Name.LocalName;
-
-            var (expectedName, keyAttribute) = output switch
+            var output = name switch
             {
-                OutPutType.Struct => ("struct", "name"),
-                OutPutType.Event => ("event", "name"),
-                OutPutType.XidType => ("xidtype", "name"),
-                OutPutType.Enum => ("enum", "name"),
-                OutPutType.Typedef => ("typedef", "newname"),
-                OutPutType.Request => ("request", "name"),
-                OutPutType.Error => ("error", "name"),
-                _ => throw new ArgumentOutOfRangeException(nameof(output), output, null)
+                "struct" => OutPutType.Struct,
+                "event" or "eventcopy" => OutPutType.Event,
+                "xidtype" => OutPutType.XidType,
+                "enum" => OutPutType.Enum,
+                "typedef" => OutPutType.Typedef,
+                "request" => OutPutType.Request,
+                "error" or "errorcopy" => OutPutType.Error,
+                "import" => OutPutType.Import,
+                "xidunion" or "union" or "eventstruct" => OutPutType.Ignore,
+                _ => throw new ArgumentOutOfRangeException(name)
             };
-
-            var isCopy = (output == OutPutType.Event && name == "eventcopy") || (output == OutPutType.Error && name == "errorcopy");
-
-            if (name != expectedName && !isCopy)
+            if (output == OutPutType.Import)
+            {
+                BuildTypes(element.Value + ".xml", elements, typeInfo);
                 continue;
+            }
 
-            var value = isCopy
-                ? _elements[element.Attribute("ref")!.Value]
-                : element;
+            var isCopy = name is "eventcopy" or "errorcopy";
+            var value = element;
+            if (isCopy)
+            {
+                var refAttribute = element.Attribute("ref");
+                value = new XElement(elements.First(e => e.Item2.Attribute("name")?.Value == refAttribute?.Value).Item2);
+                foreach (var attribute in element.Attributes().Where(a => a != refAttribute))
+                    value.SetAttributeValue(attribute.Name.LocalName, attribute.Value);
+            }
 
-            _elements.Add(element.Attribute(keyAttribute)!.Value,
-                value);
+            if (output is OutPutType.XidType)
+            {
+                var typeName = element.Attribute("name")?.Value;
+                Debug.Assert(typeName != null);
+                typeInfo.TryAdd(typeName, (typeName, 4, true));
+            }
+
+            if (output is OutPutType.Typedef)
+            {
+                Debug.Assert(element.Attribute("oldname")?.Value != null);
+                Debug.Assert(element.Attribute("newname")?.Value != null);
+
+                var info = typeInfo[element.Attribute("oldname")!.Value];
+                typeInfo.TryAdd(element.Attribute("newname")!.Value, info);
+            }
+
+            if (output is OutPutType.Enum)
+            {
+                var enumName = element.Attribute("name")?.Value;
+                var items = element.Element("item");
+                Debug.Assert(enumName != null);
+                Debug.Assert(items != null);
+                var firstItem = items.Elements().FirstOrDefault();
+                Debug.Assert(firstItem != null);
+                Debug.Assert(firstItem!.Name.LocalName != null);
+                var len = firstItem!.Name.LocalName switch
+                {
+                    "value" => 4,
+                    "bit" => 1,
+                    _ => throw new Exception(firstItem!.Name.LocalName)
+                };
+                typeInfo.TryAdd(enumName, (enumName, len, true));
+            }
+
+            elements.Add((output, value));
         }
-
+    
+        foreach (var item in elements)
+        {
+            if (item.Item1 is OutPutType.Event or OutPutType.Error or OutPutType.Struct)
+                CalculateLength(item.Item2, typeInfo);
+        }
     }
-    // int WriteField(FileStream fs, XElement element, bool assign = false)
-    // {
-    //     if (element.Name.LocalName = "field")
-    //     {
-    //         var name = element.Attribute("name");
-    //         var type = element.Attribute("enum") ?? element.Attribute("type");
-
-    //         name.Value.EndsWith("_len") ? fs.Write("private "u8) : fs.Write("public "u8);
-    //         fs.Write(Encoding.UTF8.GetBytes($"{type.Value} {name.Value}"));
-    //         if (assign) fs.Write(Encoding.UTF8.GetBytes($" = {name.Value.ToLower()}"));
-    //         fs.Write(";");
-    //     }
-    //     else if (element.Name.LocalName = "pad")
-    //     {
-    //         var size = element.Attribute("bytes")!.Value;
-    //         var cType = (size) switch
-    //         {
-    //             "1" => "private byte "u8,
-    //             "2" => "private ushort "u8,
-    //             "4" => "private uint "u8,
-    //             "8" => "private ulong "u8,
-    //             _ => "private fixed byte"u8
-    //         };
-    //         fs.Write(cType);
-    //         var name = (size) switch
-    //         {
-    //             "1" or "2" or "4" or "8" => "_pad;"u8,
-    //             _ => Encoding.UTF8.GetBytes($"_pad[{size}];")
-    //         };
-    //         fs.Write(name);
-    //     }
-    //     else
-    //     {
-    //         throw NotImplementedException();
-    //     }
-    // }
 
     void WriteField(FileStream fs, XElement element, string? assign = null)
     {
@@ -183,10 +220,51 @@ class Generator
         return int.Parse(size);
     }
 
-
-    public void Write(FileStream fs)
+    void CalculateLength(XElement element, Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
     {
-        switch (_output)
+        var name = element.Attribute("name")?.Value;
+        Debug.Assert(name != null);
+        var isFixed = true;
+        var len = -1;
+        foreach (var items in element.Elements())
+        {
+            switch (items.Name.LocalName)
+            {
+                case "field":
+                    {
+                        Debug.Assert(items.Attribute("name") != null);
+                        Debug.Assert(items.Attribute("type") != null);
+                        var type = items.Attribute("enum") ?? items.Attribute("type");
+                        if (!typeInfo.TryGetValue(type!.Value.Split(':').Last(), out var val))
+                        {
+                            // todo: take care of.
+                            Console.WriteLine(type!.Value);
+                        }
+                    }
+                    break;
+                case "pad":
+                    {
+                        var size = element.Attribute("bytes")?.Value;
+                        if (size != null)
+                            len += int.Parse(size);
+
+                    }
+                    break;
+                case "list":
+                    isFixed = false;
+                    break;
+                default:
+                    //System.Console.WriteLine(items.Name.LocalName); [i.e. doc, switch, required_start_align]
+                    break;
+            }
+        }
+        typeInfo.TryAdd(name, (name, len, isFixed));
+    }
+
+    public void Write(OutPutType output, FileStream fs)
+    {
+        // for each file open the associate 
+        switch (output)
         {
             case OutPutType.Struct:
             case OutPutType.Event:
@@ -199,13 +277,13 @@ class Generator
                     fs.Write(Encoding.UTF8.GetBytes(_headerName + Environment.NewLine));
                     fs.Write("{"u8);
                     fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                    foreach (var element in _elements)
+                    foreach (var element in _elements.Where(a => a.Item1 == OutPutType.Request))
                     {
-                        var fields = element.Value.Elements().ToList();
+                        var fields = element.Item2.Elements().ToList();
                         var hasNonStanderedPad = fields.Any(a => a.Name.LocalName == "pad" && a.Attribute("bytes")!.Value is "1" or "2" or "4" or "8");
                         var size = 32;// todo: calculate size;
-                        var opCode = element.Value.Attribute("opcode")!.Value;
-                        var name = element.Value.Attribute("name")!.Value;
+                        var opCode = element.Item2.Attribute("opcode")!.Value;
+                        var name = element.Item2.Attribute("name")!.Value;
                         var padLen = 0;
                         var writePos = 0;
 
@@ -254,8 +332,10 @@ class Generator
                                 case "pad":
                                     WritePad(fs, field, padLen, true);
                                     break;
-                                    //     case "list":
-                                    //         break;
+                                    // case "list":
+                                    //     if (field.Elements().Any() && field.Element("value") != null)
+                                    //         System.Console.WriteLine(field.ToString());
+                                    //     break;
                                     //     case "reply":
                                     //         continue;
                                     //         break;
