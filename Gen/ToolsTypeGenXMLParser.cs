@@ -50,6 +50,7 @@ class Generator
         Error,
         Import,
         Union,
+        XIdUnion,
         Ignore
     }
 
@@ -100,7 +101,8 @@ class Generator
                 "error" or "errorcopy" => OutPutType.Error,
                 "import" => OutPutType.Import,
                 "union" => OutPutType.Union,
-                "xidunion" or "eventstruct" => OutPutType.Ignore,
+                "xidunion" => OutPutType.XIdUnion,
+                "eventstruct" => OutPutType.Ignore,
                 _ => throw new ArgumentOutOfRangeException(name)
             };
             if (output == OutPutType.Import)
@@ -153,10 +155,25 @@ class Generator
                 typeInfo.TryAdd(enumName, (enumName, len, true));
             }
 
+            if (output is OutPutType.XIdUnion)
+            {
+                var unionName = element.Attribute("name")?.Value;
+                Debug.Assert(unionName  != null);
+                (string csName, int length, bool isFixed) len = default;
+                foreach(var item in element.Elements())
+                {
+                    Debug.Assert(item.Name.LocalName == "type");
+                    var details = typeInfo[item.Value.Split(':').Last()];
+                    if (len.length < details.length)
+                            len = details;
+                }
+                typeInfo.TryAdd(unionName, len);
+            }
+
             if (output is OutPutType.Union)
                 CalculateUnionLength(value, typeInfo);
 
-            if (output is OutPutType.Event or OutPutType.Error or OutPutType.Struct)
+            if (output is OutPutType.Event or OutPutType.Error or OutPutType.Struct or OutPutType.Request)
                 CalculateStructureLength(value, typeInfo);
 
             elements.Add((output, value));
@@ -251,11 +268,14 @@ class Generator
                     isFixed = false;
                     break;
                 case "doc":
+                case "reply":
                 case "switch":
                 case "required_start_align":
                     break;
                 default:
-                    throw new NotImplementedException();
+                    System.Console.WriteLine(items.Name.LocalName);
+                    break;
+                    // throw new NotImplementedException();
             }
         }
         typeInfo.TryAdd(name, (name, len, isFixed));
@@ -321,9 +341,9 @@ class Generator
                     {
                         var fields = element.Item2.Elements().ToList();
                         var hasNonStanderedPad = fields.Any(a => a.Name.LocalName == "pad" && a.Attribute("bytes")!.Value is "1" or "2" or "4" or "8");
-                        var size = 32;// todo: calculate size;
-                        var opCode = element.Item2.Attribute("opcode")!.Value;
                         var name = element.Item2.Attribute("name")!.Value;
+                        var opCode = element.Item2.Attribute("opcode")!.Value;
+                        var size = _buildTypeSystem[name].length;
                         var padLen = 0;
                         var writePos = 0;
 
@@ -413,13 +433,6 @@ static class TempI
         { "xcb_window_t", "uint"u8.ToArray() },
         { "xcb_atom_t", "ATOM"u8.ToArray() },
     }.ToFrozenDictionary();
-
-
-    public static int GetCsSize(this string value) => value switch
-    {
-        "CARD8" or "BOOL" or "BYTE" or "INT8" or "KEYCODE" => 1,
-        _ => 4
-    };
 
 
     public static ReadOnlySpan<byte> MapCsType(this ReadOnlySpan<byte> value)
