@@ -38,7 +38,7 @@ class Generator
     private readonly Dictionary<string, (string csName, int length, bool isFixed)> _buildTypeSystem;
     private readonly string _workingDir;
     private bool _isCoreLib;
-    private string _headerName;
+    private string? _headerName;
     public enum OutPutType
     {
         Struct,
@@ -49,6 +49,7 @@ class Generator
         Request,
         Error,
         Import,
+        Union,
         Ignore
     }
 
@@ -74,11 +75,6 @@ class Generator
             { "double", ("double", 8, true)},
             { "DRAWABLE", ("uint", 4, true)},
 
-            // special entry
-            {"ClientMessageData", ("ClientMessageData", 32, true)},
-            {"NotifyData", ("NotifyData", 28, true)},
-            { "Behavior", ("Behavior", 2, true)}
-
         };
         BuildTypes(Path.GetFileName(path), _elements, _buildTypeSystem);
     }
@@ -103,7 +99,8 @@ class Generator
                 "request" => OutPutType.Request,
                 "error" or "errorcopy" => OutPutType.Error,
                 "import" => OutPutType.Import,
-                "xidunion" or "union" or "eventstruct" => OutPutType.Ignore,
+                "union" => OutPutType.Union,
+                "xidunion" or "eventstruct" => OutPutType.Ignore,
                 _ => throw new ArgumentOutOfRangeException(name)
             };
             if (output == OutPutType.Import)
@@ -156,13 +153,13 @@ class Generator
                 typeInfo.TryAdd(enumName, (enumName, len, true));
             }
 
+            if (output is OutPutType.Union)
+                CalculateUnionLength(value, typeInfo);
+
+            if (output is OutPutType.Event or OutPutType.Error or OutPutType.Struct)
+                CalculateStructureLength(value, typeInfo);
+
             elements.Add((output, value));
-        }
-    
-        foreach (var item in elements)
-        {
-            if (item.Item1 is OutPutType.Event or OutPutType.Error or OutPutType.Struct)
-                CalculateLength(item.Item2, typeInfo);
         }
     }
 
@@ -220,12 +217,12 @@ class Generator
         return int.Parse(size);
     }
 
-    void CalculateLength(XElement element, Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
+    void CalculateStructureLength(XElement element, Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
     {
         var name = element.Attribute("name")?.Value;
         Debug.Assert(name != null);
         var isFixed = true;
-        var len = -1;
+        var len = 0;
         foreach (var items in element.Elements())
         {
             switch (items.Name.LocalName)
@@ -237,9 +234,9 @@ class Generator
                         var type = items.Attribute("enum") ?? items.Attribute("type");
                         if (!typeInfo.TryGetValue(type!.Value.Split(':').Last(), out var val))
                         {
-                            // todo: take care of.
-                            Console.WriteLine(type!.Value);
+                            val = typeInfo[items.Attribute("type")!.Value];
                         }
+                        len += val.length;
                     }
                     break;
                 case "pad":
@@ -253,12 +250,55 @@ class Generator
                 case "list":
                     isFixed = false;
                     break;
-                default:
-                    //System.Console.WriteLine(items.Name.LocalName); [i.e. doc, switch, required_start_align]
+                case "doc":
+                case "switch":
+                case "required_start_align":
                     break;
+                default:
+                    throw new NotImplementedException();
             }
         }
         typeInfo.TryAdd(name, (name, len, isFixed));
+    }
+
+    void CalculateUnionLength(XElement element, Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
+    {
+        var name = element.Attribute("name")?.Value;
+        Debug.Assert(name != null);
+        var len = 0;
+        foreach (var items in element.Elements())
+        {
+            switch (items.Name.LocalName)
+            {
+                case "field":
+                    {
+                        Debug.Assert(items.Attribute("name") != null);
+                        Debug.Assert(items.Attribute("type") != null);
+                        var type = items.Attribute("enum") ?? items.Attribute("type");
+                        if (!typeInfo.TryGetValue(type!.Value.Split(':').Last(), out var val))
+                            val = typeInfo[items.Attribute("type")!.Value];
+                        if (len < val.length)
+                            len = val.length;
+                    }
+                    break;
+                case "list":
+                    {
+                        Debug.Assert(items.Attribute("type") != null);
+                        Debug.Assert(items.Element("value") != null);
+                        var typeLen = typeInfo[items.Attribute("type")!.Value].length;
+                        var value = items.Element("value")!.Value;
+                        var val = typeLen * int.Parse(value);
+                        if (len < val)
+                            len = val;
+                    }
+                    break;
+                default:
+                    System.Console.WriteLine(items.Name.LocalName);
+                    break;
+            }
+        }
+
+        typeInfo.TryAdd(name, (name, len, true));
     }
 
     public void Write(OutPutType output, FileStream fs)
