@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Xml.Linq;
 using System.Collections.Frozen;
+using System.Xml;
+using System.ComponentModel;
 
 var location = "/mnt/hardDrive/testP/xcb-proto/src";
 if (!Directory.Exists(location))
@@ -15,10 +17,10 @@ if (!Directory.Exists(location))
 var pathAttributes = File.GetAttributes(location);
 if ((pathAttributes & FileAttributes.Directory) == FileAttributes.Directory)
 {
+    using var fs = File.Open("out.G.cs", FileMode.OpenOrCreate);
     foreach (var i in Directory.EnumerateFiles(location, "*.xml", SearchOption.TopDirectoryOnly))
     {
         var gen = new Generator(i);
-        using var fs = File.Open("out.G.cs", FileMode.OpenOrCreate);
         gen.Write(Generator.OutPutType.Request, fs);
     }
 }
@@ -34,11 +36,11 @@ System.Console.WriteLine("Written");
 
 class Generator
 {
-    private readonly List<(OutPutType, XElement)> _elements;
+    private readonly List<(OutPutType, XElement, bool)> _elements;
     private readonly Dictionary<string, (string csName, int length, bool isFixed)> _buildTypeSystem;
     private readonly string _workingDir;
     private bool _isCoreLib;
-    private string? _headerName;
+    private string _headerName;
     public enum OutPutType
     {
         Struct,
@@ -58,7 +60,7 @@ class Generator
     public Generator(string path)
     {
         _workingDir = Path.GetDirectoryName(path) ?? throw new Exception();
-        _elements = new List<(OutPutType, XElement)>();
+        _elements = new List<(OutPutType, XElement, bool)>();
         _buildTypeSystem = new Dictionary<string, (string csName, int length, bool isFixed)>()
         {
             { "CARD8", ("sbyte", 1, true) },
@@ -74,19 +76,25 @@ class Generator
             { "char", ("byte", 1, true)},
             { "float", ("float", 4, true)},
             { "double", ("double", 8, true)},
-            { "DRAWABLE", ("uint", 4, true)},
 
+            /**/{ "fd", ("int", 4, true)},
         };
-        BuildTypes(Path.GetFileName(path), _elements, _buildTypeSystem);
+
+        using (var reader = XmlReader.Create(path))
+        {
+            reader.ReadToFollowing("xcb");
+            _isCoreLib = reader.GetAttribute("extension-name") == null;
+            _headerName = reader.GetAttribute("header")!;
+        }
+        BuildTypes(Path.GetFileName(path), _elements, _buildTypeSystem, true);
     }
 
-    void BuildTypes(string fileName, List<(OutPutType, XElement)> elements,
-        Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
+    void BuildTypes(string fileName, List<(OutPutType, XElement, bool)> elements,
+        Dictionary<string, (string csName, int length, bool isFixed)> typeInfo,
+        bool track)
     {
         var path = Path.Join(_workingDir, fileName);
         var root = XDocument.Load(path).Root!;
-        _isCoreLib = root.Attribute("extension-name") == null;
-        _headerName = root.Attribute("header")!.Value;
         foreach (var element in root.Elements())
         {
             var name = element.Name.LocalName;
@@ -107,7 +115,7 @@ class Generator
             };
             if (output == OutPutType.Import)
             {
-                BuildTypes(element.Value + ".xml", elements, typeInfo);
+                BuildTypes(element.Value + ".xml", elements, typeInfo, false);
                 continue;
             }
 
@@ -158,14 +166,14 @@ class Generator
             if (output is OutPutType.XIdUnion)
             {
                 var unionName = element.Attribute("name")?.Value;
-                Debug.Assert(unionName  != null);
+                Debug.Assert(unionName != null);
                 (string csName, int length, bool isFixed) len = default;
-                foreach(var item in element.Elements())
+                foreach (var item in element.Elements())
                 {
                     Debug.Assert(item.Name.LocalName == "type");
                     var details = typeInfo[item.Value.Split(':').Last()];
                     if (len.length < details.length)
-                            len = details;
+                        len = details;
                 }
                 typeInfo.TryAdd(unionName, len);
             }
@@ -176,7 +184,7 @@ class Generator
             if (output is OutPutType.Event or OutPutType.Error or OutPutType.Struct or OutPutType.Request)
                 CalculateStructureLength(value, typeInfo);
 
-            elements.Add((output, value));
+            elements.Add((output, value, track));
         }
     }
 
@@ -189,11 +197,12 @@ class Generator
         var name = element.Attribute("name");
         var type = element.Attribute("enum") ?? element.Attribute("type");
 
-        fs.Write(name!.Value.EndsWith("_len") ? "        private readonly"u8 : "        public readonly "u8);
-        fs.Write(Encoding.UTF8.GetBytes(type!.Value).MapCsType());
+        fs.Write(name!.Value.EndsWith("_len") ? "        private readonly "u8 : "        public readonly "u8);
+        var csType = _buildTypeSystem[type!.Value.Split(':').Last()];
+        fs.Write(Encoding.UTF8.GetBytes(csType.csName));
         fs.Write(" "u8);
         fs.Write(Encoding.UTF8.GetBytes(name.Value).FixName());
-        if (assign == "") fs.Write(Encoding.UTF8.GetBytes($" = {name.Value.ToLower()}"));
+        if (assign == "") fs.Write(Encoding.UTF8.GetBytes($" = {name.Value.ToLower().Fix()}"));
         if (assign?.Length != 0) fs.Write(Encoding.UTF8.GetBytes($" = {assign}"));
         fs.Write(";"u8);
         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
@@ -228,8 +237,9 @@ class Generator
         }
         else
         {
-            if (assign) fs.Write(" = 0"u8);
+            if (assign) fs.Write(Encoding.UTF8.GetBytes(" = " + size));
             fs.Write(";"u8);
+            fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
         }
         return int.Parse(size);
     }
@@ -248,17 +258,17 @@ class Generator
                     {
                         Debug.Assert(items.Attribute("name") != null);
                         Debug.Assert(items.Attribute("type") != null);
-                        var type = items.Attribute("enum") ?? items.Attribute("type");
-                        if (!typeInfo.TryGetValue(type!.Value.Split(':').Last(), out var val))
+                        var type = items.Attribute("type")!.Value.Split(':').Last();
+                        if (!typeInfo.TryGetValue(type, out var val))
                         {
-                            val = typeInfo[items.Attribute("type")!.Value];
+                            val = typeInfo[type];
                         }
                         len += val.length;
                     }
                     break;
                 case "pad":
                     {
-                        var size = element.Attribute("bytes")?.Value;
+                        var size = items.Attribute("bytes")?.Value;
                         if (size != null)
                             len += int.Parse(size);
 
@@ -267,13 +277,28 @@ class Generator
                 case "list":
                     isFixed = false;
                     break;
+                case "switch":
+                    if (items.Element("fieldref") != null)
+                        isFixed = false;
+                    break;
+                case "exprfield":
+                    {
+                        Debug.Assert(items.Attribute("type") != null);
+                        var val = typeInfo[items.Attribute("type")!.Value];
+                        len += val.length;
+                    }
+                    break;
+                case "fd":
+                    {
+                        len += 4;
+                    }
+                    break;
                 case "doc":
                 case "reply":
-                case "switch":
                 case "required_start_align":
                     break;
                 default:
-                    System.Console.WriteLine(items.Name.LocalName);
+                    // System.Console.WriteLine(items.Name.LocalName + " " + name); // [i. e.] fd find doc how it should work
                     break;
                     // throw new NotImplementedException();
             }
@@ -294,7 +319,7 @@ class Generator
                     {
                         Debug.Assert(items.Attribute("name") != null);
                         Debug.Assert(items.Attribute("type") != null);
-                        var type = items.Attribute("enum") ?? items.Attribute("type");
+                        var type = items.Attribute("type");
                         if (!typeInfo.TryGetValue(type!.Value.Split(':').Last(), out var val))
                             val = typeInfo[items.Attribute("type")!.Value];
                         if (len < val.length)
@@ -313,7 +338,7 @@ class Generator
                     }
                     break;
                 default:
-                    System.Console.WriteLine(items.Name.LocalName);
+                    System.Console.WriteLine(items.Name.LocalName + " " + name);
                     break;
             }
         }
@@ -337,50 +362,99 @@ class Generator
                     fs.Write(Encoding.UTF8.GetBytes(_headerName + Environment.NewLine));
                     fs.Write("{"u8);
                     fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                    foreach (var element in _elements.Where(a => a.Item1 == OutPutType.Request))
+                    foreach (var element in _elements.Where(a => a.Item1 == OutPutType.Request && a.Item3 == true))
                     {
                         var fields = element.Item2.Elements().ToList();
                         var hasNonStanderedPad = fields.Any(a => a.Name.LocalName == "pad" && a.Attribute("bytes")!.Value is "1" or "2" or "4" or "8");
                         var name = element.Item2.Attribute("name")!.Value;
                         var opCode = element.Item2.Attribute("opcode")!.Value;
-                        var size = _buildTypeSystem[name].length;
-                        var padLen = 0;
-                        var writePos = 0;
-
+                        var size = _buildTypeSystem[name].length + (_isCoreLib ? 3 : 4);
+                        var padCount = 0;
                         fs.Write(Encoding.UTF8.GetBytes($"    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = {size})]" + Environment.NewLine));
                         fs.Write("    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]"u8);
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
                         fs.Write(hasNonStanderedPad ? "    internal unsafe readonly struct "u8 : "    internal readonly struct "u8);
-                        fs.Write(Encoding.UTF8.GetBytes(name + Environment.NewLine + "    {" + Environment.NewLine));
+
+                        fs.Write(Encoding.UTF8.GetBytes(name
+                            + '('
+                            + string.Join(", ",
+                                fields
+                                .Where(a => a.Name.LocalName == "field")
+                                .Select(b =>
+                                    $"{_buildTypeSystem[b.Attribute("enum")?.Value ?? b.Attribute("type")?.Value.Split(':').Last() ?? throw new Exception()].csName} {b.Attribute("name")!.Value.Fix()}"))
+                            + ')'
+                            + Environment.NewLine
+                            + "    {" + Environment.NewLine));
 
                         if (!_isCoreLib)
                         {
                             fs.Write("        public readonly byte MajorOpcode = majorOpCode;"u8);
                             fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                            writePos++;
                         }
                         fs.Write("        public readonly Opcode Opcode = Opcode."u8);
                         fs.Write(Encoding.UTF8.GetBytes($"{name};"));
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                        writePos++;
                         if (_isCoreLib)
                         {
                             var fieldI = fields.FirstOrDefault();
                             if (fieldI == null)
                             {
                                 fs.Write("        private readonly byte _pad"u8);
-                                fs.Write(Encoding.UTF8.GetBytes($"{padLen++} = 0;" + Environment.NewLine));
+                                fs.Write(Encoding.UTF8.GetBytes($"{padCount++} = 0;" + Environment.NewLine));
                             }
                             else if (fieldI.Name.LocalName == "pad")
-                                WritePad(fs, fieldI, padLen++, true);
+                                WritePad(fs, fieldI, padCount++, true);
                             else if (fieldI.Name.LocalName == "field")
                                 WriteField(fs, fieldI, "");
-                            writePos++;
                         }
-                        var val = "";// todo: get all the lengths fields and make farthe calculation
+                        var listItem = fields
+                            .Where(a => a.Name.LocalName == "list"
+                                && a.Attribute("type") != null
+                                && a.Element("fieldref") != null
+                                && _buildTypeSystem.ContainsKey(a.Attribute("type")!.Value))
+                                .ToArray();
+                        var val = new StringBuilder();
+                        if (listItem.Any())
+                        {
+                            var fieldNames = listItem.Select(a => a.Element("fieldref")!.Value).ToArray(); // field len targeting field
+                            var fieldInfo = listItem.Select(a => _buildTypeSystem[a.Attribute("type")!.Value].length).ToArray();// type
+                            Debug.Assert(fieldNames.Length == fieldInfo.Length);
+
+                            for (var i = 0; i < fieldInfo.Length; i++)
+                            {
+                                switch (fieldInfo[i])
+                                {
+                                    case 1:
+                                        val.Append(" + ").Append(fieldNames[i]).Append(".AddPadding() / 4");
+                                        break;
+                                    case 2:
+                                        val.Append(" + ").Append(fieldNames[i]).Append(".AddPadding() / 2");
+                                        break;
+                                    case 4:
+                                        val.Append(" + ").Append(fieldNames[i]);
+                                        break;
+                                    case 8:
+                                        val.Append(" + ").Append(fieldNames[i]).Append(" / 2");
+                                        break;
+                                    case 9:
+                                        val.Append(" + ").Append(fieldNames[i]).Append(".AddPadding() / 3");
+                                        break;
+                                    case 12:
+                                        val.Append(" + ").Append(fieldNames[i]).Append(" / 3");
+                                        break;
+                                    case 20:
+                                        val.Append(" + ").Append(fieldNames[i]).Append(" / 5");
+                                        break;
+                                    case 24:
+                                        val.Append(" + ").Append(fieldNames[i]).Append(" / 6");
+                                        break;
+                                    default:
+                                        throw new Exception(fieldNames[i] + " " + fieldInfo[i].ToString());
+                                }
+                            }
+                        }
                         fs.Write("        public readonly ushort Length = "u8);
-                        fs.Write(Encoding.UTF8.GetBytes($"(ushort)({size / 4}{val});" + Environment.NewLine));
-                        writePos += 2;
+                        fs.Write(Encoding.UTF8.GetBytes($"(ushort)({size / 4}{val.ToString()});" + Environment.NewLine));
 
                         foreach (var field in fields.Skip(_isCoreLib ? 1 : 0))
                         {
@@ -390,11 +464,13 @@ class Generator
                                     WriteField(fs, field, "");
                                     break;
                                 case "pad":
-                                    WritePad(fs, field, padLen, true);
+                                    WritePad(fs, field, padCount, true);
                                     break;
                                     // case "list":
                                     //     if (field.Elements().Any() && field.Element("value") != null)
                                     //         System.Console.WriteLine(field.ToString());
+                                    //     if (field.Elements().Any() && field.Element("fieldref") != null)
+                                    //         fs.Write("// has ref and list"u8);
                                     //     break;
                                     //     case "reply":
                                     //         continue;
@@ -412,6 +488,7 @@ class Generator
                     }
                     fs.Write("}"u8);
                     fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
+                    fs.Flush();
                 }
                 break;
             case OutPutType.Error:
@@ -423,24 +500,15 @@ class Generator
 static class TempI
 {
 
-    private static readonly FrozenDictionary<string, byte[]> _map = new Dictionary<string, byte[]>
+    public static string Fix(this string value)
     {
-        { "uint8_t", "byte"u8.ToArray() },
-        { "BOOL", "bool"u8.ToArray() },
-        { "INT8", "sbyte"u8.ToArray() },
-        { "uint16_t", "ushort"u8.ToArray() },
-        { "int16_t", "short"u8.ToArray() },
-        { "xcb_window_t", "uint"u8.ToArray() },
-        { "xcb_atom_t", "ATOM"u8.ToArray() },
-    }.ToFrozenDictionary();
 
-
-    public static ReadOnlySpan<byte> MapCsType(this ReadOnlySpan<byte> value)
-    {
-        // todo: pick data from processed source;
-        string key = Encoding.UTF8.GetString(value);
-        if (_map.TryGetValue(key, out var result))
-            return result;
+        if (value == "class")
+            return "@class";
+        else if (value == "lock")
+            return "@lock";
+        else if (value == "event")
+            return "@event";
         return value;
     }
 
