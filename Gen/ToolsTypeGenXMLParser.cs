@@ -374,7 +374,7 @@ class Generator
                         fs.Write(Encoding.UTF8.GetBytes($"    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = {size})]" + Environment.NewLine));
                         fs.Write("    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]"u8);
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                        fs.Write(hasStanderedPad ? "    internal unsafe readonly struct "u8 : "    internal readonly struct "u8);
+                        fs.Write(hasStanderedPad ? "    internal readonly struct "u8 : "    internal unsafe readonly struct "u8);
                         IEnumerable<string> list = [(_isCoreLib ? string.Empty : "byte majorOpCode"), .. fields.Where(a => a.Name.LocalName == "field").Select(b =>
                                 $"{_buildTypeSystem[b.Attribute("enum")?.Value ?? b.Attribute("type")?.Value.Split(':').Last() ?? throw new Exception()].csName} {b.Attribute("name")!.Value.Fix()}")
                                                     ];
