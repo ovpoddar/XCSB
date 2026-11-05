@@ -63,11 +63,11 @@ class Generator
         _elements = new List<(OutPutType, XElement, bool)>();
         _buildTypeSystem = new Dictionary<string, (string csName, int length, bool isFixed)>()
         {
-            { "CARD8", ("sbyte", 1, true) },
+            { "CARD8", ("byte", 1, true) },
             { "CARD16", ("ushort", 2, true)},
             { "CARD32", ("uint", 4, true)},
             { "CARD64", ("ulong", 8, true)},
-            { "INT8", ("byte", 1, true)},
+            { "INT8", ("sbyte", 1, true)},
             { "INT16", ("short", 2, true)},
             { "INT32", ("int", 4, true)},
             { "INT64", ("long", 8, true)},
@@ -237,7 +237,7 @@ class Generator
         }
         else
         {
-            if (assign) fs.Write(Encoding.UTF8.GetBytes(" = " + size));
+            if (assign) fs.Write(" = 0"u8);
             fs.Write(";"u8);
             fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
         }
@@ -365,7 +365,7 @@ class Generator
                     foreach (var element in _elements.Where(a => a.Item1 == OutPutType.Request && a.Item3 == true))
                     {
                         var fields = element.Item2.Elements().ToList();
-                        var hasNonStanderedPad = fields.Any(a => a.Name.LocalName == "pad" && a.Attribute("bytes")!.Value is "1" or "2" or "4" or "8");
+                        var hasStanderedPad = fields.Any(a => a.Name.LocalName == "pad" && a.Attribute("bytes")!.Value is "1" or "2" or "4" or "8");
                         var name = element.Item2.Attribute("name")!.Value;
                         var opCode = element.Item2.Attribute("opcode")!.Value;
                         var size = _buildTypeSystem[name].length + (_isCoreLib ? 3 : 4);
@@ -373,7 +373,7 @@ class Generator
                         fs.Write(Encoding.UTF8.GetBytes($"    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = {size})]" + Environment.NewLine));
                         fs.Write("    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]"u8);
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                        fs.Write(hasNonStanderedPad ? "    internal unsafe readonly struct "u8 : "    internal readonly struct "u8);
+                        fs.Write(hasStanderedPad ? "    internal unsafe readonly struct "u8 : "    internal readonly struct "u8);
 
                         fs.Write(Encoding.UTF8.GetBytes(name
                             + '('
@@ -464,7 +464,7 @@ class Generator
                                     WriteField(fs, field, "");
                                     break;
                                 case "pad":
-                                    WritePad(fs, field, padCount, true);
+                                    WritePad(fs, field, padCount++, true);
                                     break;
                                     // case "list":
                                     //     if (field.Elements().Any() && field.Element("value") != null)
