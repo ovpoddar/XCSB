@@ -369,19 +369,18 @@ class Generator
                         var name = element.Item2.Attribute("name")!.Value;
                         var opCode = element.Item2.Attribute("opcode")!.Value;
                         var size = _buildTypeSystem[name].length + (_isCoreLib ? 3 : 4);
+                        size = size < 4 ? 4 : size;
                         var padCount = 0;
                         fs.Write(Encoding.UTF8.GetBytes($"    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = {size})]" + Environment.NewLine));
                         fs.Write("    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]"u8);
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
                         fs.Write(hasStanderedPad ? "    internal unsafe readonly struct "u8 : "    internal readonly struct "u8);
-
+                        IEnumerable<string> list = [(_isCoreLib ? string.Empty : "byte majorOpCode"), .. fields.Where(a => a.Name.LocalName == "field").Select(b =>
+                                $"{_buildTypeSystem[b.Attribute("enum")?.Value ?? b.Attribute("type")?.Value.Split(':').Last() ?? throw new Exception()].csName} {b.Attribute("name")!.Value.Fix()}")
+                                                    ];
                         fs.Write(Encoding.UTF8.GetBytes(name
                             + '('
-                            + string.Join(", ",
-                                fields
-                                .Where(a => a.Name.LocalName == "field")
-                                .Select(b =>
-                                    $"{_buildTypeSystem[b.Attribute("enum")?.Value ?? b.Attribute("type")?.Value.Split(':').Last() ?? throw new Exception()].csName} {b.Attribute("name")!.Value.Fix()}"))
+                            + string.Join(", ", list.Where(a => a != string.Empty))
                             + ')'
                             + Environment.NewLine
                             + "    {" + Environment.NewLine));
@@ -397,7 +396,7 @@ class Generator
                         if (_isCoreLib)
                         {
                             var fieldI = fields.FirstOrDefault();
-                            if (fieldI == null)
+                            if (fieldI == null || fieldI.Name.LocalName == "reply")
                             {
                                 fs.Write("        private readonly byte _pad"u8);
                                 fs.Write(Encoding.UTF8.GetBytes($"{padCount++} = 0;" + Environment.NewLine));
