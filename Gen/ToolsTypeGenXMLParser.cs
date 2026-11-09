@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using System.Collections.Frozen;
 using System.Xml;
 using System.ComponentModel;
+using System.Formats.Asn1;
 
 var location = "/mnt/hardDrive/testP/xcb-proto/src";
 if (!Directory.Exists(location))
@@ -188,7 +189,7 @@ class Generator
         }
     }
 
-    void WriteField(FileStream fs, XElement element, string? assign = null)
+    void WriteField(FileStream fs, XElement element, string typeAssing = "", string? assign = null)
     {
         Debug.Assert(element.Name.LocalName == "field");
         Debug.Assert(element.Attribute("name") != null);
@@ -198,53 +199,22 @@ class Generator
         var type = element.Attribute("enum") ?? element.Attribute("type");
 
         fs.Write(name!.Value.EndsWith("_len") ? "        private readonly "u8 : "        public readonly "u8);
-        var csType = _buildTypeSystem[type!.Value.Split(':').Last()];
-        fs.Write(Encoding.UTF8.GetBytes(csType.csName));
+        var csType = typeAssing == "" ? _buildTypeSystem[type!.Value.Split(':').Last()].csName : typeAssing;
+        fs.Write(Encoding.UTF8.GetBytes(csType));
         fs.Write(" "u8);
         fs.Write(Encoding.UTF8.GetBytes(name.Value).FixName());
-        if (assign == "") fs.Write(Encoding.UTF8.GetBytes($" = {name.Value.ToLower().Fix()}"));
-        if (assign?.Length != 0) fs.Write(Encoding.UTF8.GetBytes($" = {assign}"));
+        if (assign is not null)
+        {
+            var temp = assign.Length == 0
+                ? name.Value.ToLower().Fix()
+                : assign;
+
+            fs.Write(Encoding.UTF8.GetBytes($" = {temp}"));
+        }
         fs.Write(";"u8);
         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
     }
-
-    int WritePad(FileStream fs, XElement element, int index, bool assign = false)
-    {
-        Debug.Assert(element.Name.LocalName == "pad");
-        if (element.Attribute("bytes") == null)
-        {
-            Debug.Assert(element.Attribute("align") != null);
-            fs.Write("        // paded by x ammount"u8);
-            fs.Write(Encoding.UTF8.GetBytes(element.Attribute("align") + Environment.NewLine));
-            return 4;
-        }
-
-        var size = element.Attribute("bytes")!.Value;
-        var cType = (size) switch
-        {
-            "1" => "        private readonly byte _pad"u8,
-            "2" => "        private readonly ushort _pad"u8,
-            "4" => "        private readonly uint _pad"u8,
-            "8" => "        private readonly ulong _pad"u8,
-            _ => "        private fixed byte _pad"u8
-        };
-        fs.Write(cType);
-        fs.Write(Encoding.UTF8.GetBytes(index.ToString()));
-
-        if (size != "1" && size != "2" && size != "4" && size != "8")
-        {
-            fs.Write(Encoding.UTF8.GetBytes($"[{size}];{Environment.NewLine}"));
-        }
-        else
-        {
-            if (assign) fs.Write(" = 0"u8);
-            fs.Write(";"u8);
-            fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-        }
-        return int.Parse(size);
-    }
-
-    void CalculateStructureLength(XElement element, Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
+    static void CalculateStructureLength(XElement element, Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
     {
         var name = element.Attribute("name")?.Value;
         Debug.Assert(name != null);
@@ -306,7 +276,7 @@ class Generator
         typeInfo.TryAdd(name, (name, len, isFixed));
     }
 
-    void CalculateUnionLength(XElement element, Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
+    static void CalculateUnionLength(XElement element, Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
     {
         var name = element.Attribute("name")?.Value;
         Debug.Assert(name != null);
@@ -374,12 +344,12 @@ class Generator
                         fs.Write(Encoding.UTF8.GetBytes($"    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = {size})]" + Environment.NewLine));
                         fs.Write("    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]"u8);
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                        fs.Write(hasStanderedPad ? "    internal readonly struct "u8 : "    internal unsafe readonly struct "u8);
+                        fs.Write(hasStanderedPad ? "    internal unsafe readonly struct "u8 : "    internal readonly struct "u8);
                         IEnumerable<string> list = [(_isCoreLib ? string.Empty : "byte majorOpCode"), .. fields.Where(a => a.Name.LocalName == "field").Select(b =>
                                 $"{_buildTypeSystem[b.Attribute("enum")?.Value ?? b.Attribute("type")?.Value.Split(':').Last() ?? throw new Exception()].csName} {b.Attribute("name")!.Value.Fix()}")
                                                     ];
                         fs.Write(Encoding.UTF8.GetBytes(name
-                            + '('
+                            + "Type("
                             + string.Join(", ", list.Where(a => a != string.Empty))
                             + ')'
                             + Environment.NewLine
@@ -397,14 +367,11 @@ class Generator
                         {
                             var fieldI = fields.FirstOrDefault();
                             if (fieldI == null || fieldI.Name.LocalName == "reply")
-                            {
-                                fs.Write("        private readonly byte _pad"u8);
-                                fs.Write(Encoding.UTF8.GetBytes($"{padCount++} = 0;" + Environment.NewLine));
-                            }
+                                Pad.WritePad(fs, Pad.PadType.Pad, 1, padCount++, true);
                             else if (fieldI.Name.LocalName == "pad")
-                                WritePad(fs, fieldI, padCount++, true);
+                                Pad.WritePad(fs, fieldI, padCount++, true);
                             else if (fieldI.Name.LocalName == "field")
-                                WriteField(fs, fieldI, "");
+                                WriteField(fs, fieldI, "", "");
                         }
                         var listItem = fields
                             .Where(a => a.Name.LocalName == "list"
@@ -413,7 +380,7 @@ class Generator
                                 && _buildTypeSystem.ContainsKey(a.Attribute("type")!.Value))
                                 .ToArray();
                         var val = new StringBuilder();
-                        if (listItem.Any())
+                        if (listItem.Length != 0)
                         {
                             var fieldNames = listItem.Select(a => a.Element("fieldref")!.Value).ToArray(); // field len targeting field
                             var fieldInfo = listItem.Select(a => _buildTypeSystem[a.Attribute("type")!.Value].length).ToArray();// type
@@ -453,17 +420,25 @@ class Generator
                             }
                         }
                         fs.Write("        public readonly ushort Length = "u8);
-                        fs.Write(Encoding.UTF8.GetBytes($"(ushort)({size / 4}{val.ToString()});" + Environment.NewLine));
+                        fs.Write(Encoding.UTF8.GetBytes($"(ushort)({Math.Ceiling((double)(size / 4))}{val});" + Environment.NewLine));
 
                         foreach (var field in fields.Skip(_isCoreLib ? 1 : 0))
                         {
                             switch (field.Name.LocalName)
                             {
                                 case "field":
-                                    WriteField(fs, field, "");
+                                    {
+                                        // for bool to processing
+                                        var type = field.Attribute("type");
+                                        var fieldName = field.Attribute("name");
+                                        if (_buildTypeSystem[type!.Value.Split(':').Last()].csName == "bool")
+                                            WriteField(fs, field, "byte", $"{fieldName!.Value} ? 1 : 0");
+                                        else
+                                            WriteField(fs, field, "", "");
+                                    }
                                     break;
                                 case "pad":
-                                    WritePad(fs, field, padCount++, true);
+                                    Pad.WritePad(fs, field, padCount++, true);
                                     break;
                                     // case "list":
                                     //     if (field.Elements().Any() && field.Element("value") != null)
@@ -483,6 +458,11 @@ class Generator
                             }
                         }
 
+                        size %= 4;
+                        if (size != 0)
+                        {
+                            Pad.WritePad(fs, Pad.PadType.Pad, size, padCount, true);
+                        }
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine + "    }" + Environment.NewLine));
                     }
                     fs.Write("}"u8);
@@ -494,6 +474,68 @@ class Generator
                 throw new NotImplementedException();
         }
 
+    }
+
+    static class Pad
+    {
+        public static int WritePad(FileStream fs, XElement element, int index, bool assign = false)
+        {
+            Debug.Assert(element.Name.LocalName == "pad");
+            if (element.Attribute("bytes") == null)
+            {
+                var align = element.Attribute("align");
+                Debug.Assert(align != null);
+                WritePad(fs, PadType.Align, int.Parse(align.Value), index, assign);
+                return 4;
+            }
+            var size = element.Attribute("bytes");
+            Debug.Assert(size != null);
+            var len = int.Parse(size!.Value);
+            WritePad(fs, PadType.Pad, len, index, assign);
+            return len;
+        }
+
+        public enum PadType
+        {
+            Align,
+            Pad
+        }
+
+        public static void WritePad(FileStream fs, PadType type, int length, int index, bool assign)
+        {
+            if (type is PadType.Align)
+            {
+                fs.Write("        // paded by x ammount"u8);
+                fs.Write(Encoding.UTF8.GetBytes(length + Environment.NewLine));
+                return;
+            }
+            else if (type is PadType.Pad)
+            {
+                var cType = length switch
+                {
+                    1 => "        private readonly byte _pad"u8,
+                    2 => "        private readonly ushort _pad"u8,
+                    4 => "        private readonly uint _pad"u8,
+                    8 => "        private readonly ulong _pad"u8,
+                    _ => "        private fixed byte _pad"u8
+                };
+                fs.Write(cType);
+                fs.Write(Encoding.UTF8.GetBytes(index.ToString()));
+
+                if (length is not 1 and not 2 and not 4 and not 8)
+                    fs.Write(Encoding.UTF8.GetBytes($"[{length}];{Environment.NewLine}"));
+                else
+                {
+                    if (assign) fs.Write(" = 0"u8);
+                    fs.Write(";"u8);
+                    fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
+                }
+            }
+            else
+            {
+                throw new NotImplementedException(type.ToString());
+            }
+        }
     }
 }
 static class TempI
