@@ -6,6 +6,7 @@ using System.Collections.Frozen;
 using System.Xml;
 using System.ComponentModel;
 using System.Formats.Asn1;
+using System.Numerics;
 
 var location = "/mnt/hardDrive/testP/xcb-proto/src";
 if (!Directory.Exists(location))
@@ -206,7 +207,7 @@ class Generator
         if (assign is not null)
         {
             var temp = assign.Length == 0
-                ? name.Value.ToLower().Fix()
+                ? name.Value.Fix()
                 : assign;
 
             fs.Write(Encoding.UTF8.GetBytes($" = {temp}"));
@@ -273,7 +274,10 @@ class Generator
                     // throw new NotImplementedException();
             }
         }
-        typeInfo.TryAdd(name, (name, len, isFixed));
+        if (typeInfo.ContainsKey(name))
+            typeInfo[name] = (name, len, isFixed);
+        else
+            typeInfo.Add(name, (name, len, isFixed));
     }
 
     static void CalculateUnionLength(XElement element, Dictionary<string, (string csName, int length, bool isFixed)> typeInfo)
@@ -335,16 +339,17 @@ class Generator
                     foreach (var element in _elements.Where(a => a.Item1 == OutPutType.Request && a.Item3 == true))
                     {
                         var fields = element.Item2.Elements().ToList();
-                        var hasStanderedPad = fields.Any(a => a.Name.LocalName == "pad" && a.Attribute("bytes")!.Value is "1" or "2" or "4" or "8");
+                        var requiresUnsafe = fields.Any(a => a.Name.LocalName == "pad" && a.Attribute("bytes") != null
+                            && a.Attribute("bytes")!.Value is not ("1" or "2" or "4" or "8"));
                         var name = element.Item2.Attribute("name")!.Value;
                         var opCode = element.Item2.Attribute("opcode")!.Value;
                         var size = _buildTypeSystem[name].length + (_isCoreLib ? 3 : 4);
-                        size = size < 4 ? 4 : size;
+                        size = size.AddPadding();
                         var padCount = 0;
                         fs.Write(Encoding.UTF8.GetBytes($"    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = {size})]" + Environment.NewLine));
                         fs.Write("    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]"u8);
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                        fs.Write(hasStanderedPad ? "    internal unsafe readonly struct "u8 : "    internal readonly struct "u8);
+                        fs.Write(requiresUnsafe ? "    internal unsafe readonly struct "u8 : "    internal readonly struct "u8);
                         IEnumerable<string> list = [(_isCoreLib ? string.Empty : "byte majorOpCode"), .. fields.Where(a => a.Name.LocalName == "field").Select(b =>
                                 $"{_buildTypeSystem[b.Attribute("enum")?.Value ?? b.Attribute("type")?.Value.Split(':').Last() ?? throw new Exception()].csName} {b.Attribute("name")!.Value.Fix()}")
                                                     ];
@@ -354,7 +359,6 @@ class Generator
                             + ')'
                             + Environment.NewLine
                             + "    {" + Environment.NewLine));
-
                         if (!_isCoreLib)
                         {
                             fs.Write("        public readonly byte MajorOpcode = majorOpCode;"u8);
@@ -458,11 +462,6 @@ class Generator
                             }
                         }
 
-                        size %= 4;
-                        if (size != 0)
-                        {
-                            Pad.WritePad(fs, Pad.PadType.Pad, size, padCount, true);
-                        }
                         fs.Write(Encoding.UTF8.GetBytes(Environment.NewLine + "    }" + Environment.NewLine));
                     }
                     fs.Write("}"u8);
@@ -550,7 +549,7 @@ static class TempI
             return "@lock";
         else if (value == "event")
             return "@event";
-        return value;
+        return Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(value));
     }
 
     public static byte[] FixName(this ReadOnlySpan<byte> value)
@@ -582,4 +581,13 @@ static class TempI
 
         return result;
     }
+
+
+    public static T AddPadding<T>(this T pad) where T :
+            INumber<T>
+    {
+        var value = int.CreateChecked(pad);
+        return T.CreateChecked(value + ((4 - (value & 3)) & 3));
+    }
+
 }
