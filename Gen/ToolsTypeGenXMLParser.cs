@@ -1,8 +1,6 @@
 #:sdk Microsoft.NET.Sdk
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using static Helpers;
 
 var source = args.Length > 0 ? args[0] : "/mnt/hardDrive/testP/xcb-proto/src";
 while (!Directory.Exists(source))
@@ -12,54 +10,58 @@ while (!Directory.Exists(source))
     if (source == null) return;
 }
 
-var output = new StringBuilder("""
-    using System;
-    using System.Runtime.CompilerServices;
-    using System.Runtime.InteropServices;
-    using Xcsb.Connection.Helpers;
-    using Xcsb.Connection.Models;
-    using Xcsb.Connection.Response;
-    using Xcsb.Connection.Response.Contract;
+string[] header =
+[
+    "using System;",
+    "using System.Runtime.CompilerServices;",
+    "using System.Runtime.InteropServices;",
+    "using Xcsb.Connection.Helpers;",
+    "using Xcsb.Connection.Models;",
+    "using Xcsb.Connection.Response;",
+    "using Xcsb.Connection.Response.Contract;",
+];
 
-    """);
+var units = Directory.GetFiles(source, "*.xml")
+    .Order(StringComparer.Ordinal)
+    .Select(path => Generator.Generate(ProtocolReader.Read(path)))
+    .ToList();
 
-foreach (var file in Directory.GetFiles(source, "*.xml").Order(StringComparer.Ordinal))
-{
-    var protocol = XmlParser.Parse(file);
-    output.AppendLine($"namespace {protocol.Namespace}").AppendLine("{");
-
-    List<string> voidMethods = [], replyMethods = [];
-    foreach (var request in protocol.Requests)
-    {
-        var signature = RequestWriter.Write(protocol, request, output);
-        InterfaceWriter.Add(request, signature, voidMethods, replyMethods);
-    }
-    foreach (var ev in protocol.Events)
-        EventWriter.Write(ev, output);
-    InterfaceWriter.Write(protocol, voidMethods, replyMethods, output);
-
-    output.AppendLine("}");
-}
-File.WriteAllText("out.G.cs", output.ToString());
+File.WriteAllLines("out.G.cs", header.Concat(units.SelectMany(unit => unit)));
 Console.WriteLine("Written");
 
 
+
 readonly record struct WireType(string CsName, int Size, bool IsFixed, bool IsStruct = false);
-sealed record Expr(string Kind, string Text = "", Expr[]? Args = null);
+
+abstract record Expr { }
+sealed record Const(long Value) : Expr;
+sealed record FieldRef(string Name) : Expr;
+sealed record Binary(string Op, Expr Left, Expr Right) : Expr;
+sealed record Unary(string Op, Expr Operand) : Expr;
+sealed record PopCount(Expr Operand) : Expr;
+sealed record SumOf(string List, Expr? Body) : Expr;
+sealed record ListElement : Expr { }
+sealed record UnknownExpr(string Tag) : Expr;
+
+abstract record Member { }
+sealed record Pad(int? Bytes, int? Align) : Member;
+sealed record Field(string Name, WireType Type, string? Enum, Expr? Value) : Member;
+sealed record ListOf(string Name, WireType Type, Expr? Length) : Member;
+sealed record Switch(string Name, Expr Selector, Case[] Cases) : Member;
 sealed record Case(bool IsBitCase, long Bits, int Size, bool IsFixed);
-sealed record Member(
-    string Kind, string Name = "", WireType Type = default, string? Enum = null, Expr? Expr = null,
-    int? Bytes = null, int? Align = null, Case[]? Cases = null);
-sealed record RequestModel(string Name, Member[] Members, bool HasReply);
-sealed record RequestSignature(string[] Parameters, Member[] Trailing);
-sealed record EventModel(string Name, int Number, bool IsXge, Member[]? Members);
-sealed record ProtocolModel(
-    string Namespace, bool IsCore, RequestModel[] Requests, EventModel[] Events, Dictionary<string, int> EnumWidths);
+
+sealed record Request(string Name, Member[] Members, bool HasReply);
+sealed record EventDef(string Name, int Number, bool IsXge, Member[]? Members);
+sealed record Protocol(string Namespace, bool IsCore, Request[] Requests, EventDef[] Events, Dictionary<string, int> EnumWidths);
+
+sealed record Param(string Type, string Name);
+sealed record Signature(Param[] Parameters, Member[] Trailing);
 
 
-static class XmlParser
+
+sealed class ProtocolReader
 {
-    static readonly Dictionary<string, WireType> BaseTypes = new()
+    static readonly Dictionary<string, WireType> Builtins = new()
     {
         ["CARD8"] = new("byte", 1, true),
         ["CARD16"] = new("ushort", 2, true),
@@ -77,357 +79,510 @@ static class XmlParser
         ["double"] = new("double", 8, true),
     };
 
-    public static ProtocolModel Parse(string path)
+    readonly string directory;
+    readonly Dictionary<string, WireType> types = new(Builtins);
+    readonly Dictionary<(string Enum, string Item), long> enumItems = [];
+    readonly Dictionary<string, int> enumWidths = [];
+    readonly HashSet<string> loaded = [];
+
+    ProtocolReader(string directory) => this.directory = directory;
+
+    public static Protocol Read(string path) =>
+        new ProtocolReader(Path.GetDirectoryName(path)!).ReadRoot(Path.GetFileNameWithoutExtension(path));
+
+    Protocol ReadRoot(string file)
     {
-        var directory = Path.GetDirectoryName(path)!;
-        var types = new Dictionary<string, WireType>(BaseTypes);
-        var enumWidths = new Dictionary<string, int>();
-        var enumValues = new Dictionary<(string Enum, string Item), long>();
-        var loaded = new HashSet<string>();
+        var root = Load(file)!;
 
-        var root = Load(Path.GetFileNameWithoutExtension(path))!;
         var requests = root.Elements("request")
-            .Select(r => new RequestModel(Attr(r, "name"), ParseMembers(r.Elements()), r.Element("reply") != null))
+            .Select(r => new Request(r.Attr("name"), ReadMembers(r.Elements()), r.Element("reply") is not null))
             .ToArray();
-        return new(Attr(root, "header"), root.Attribute("extension-name") == null, requests, ParseEvents(root), enumWidths);
 
-        EventModel[] ParseEvents(XElement xml)
-        {
-            var defined = xml.Elements("event")
-                .ToDictionary(e => Attr(e, "name"), e => (Xge: e.Attribute("xge") != null, Members: ParseMembers(e.Elements())));
-            return
-            [
-                .. xml.Elements().Where(e => e.Name.LocalName is "event" or "eventcopy").Select(e =>
-                {
-                    var name = Attr(e, "name");
-                    var number = int.Parse(Attr(e, "number"));
-                    var origin = e.Name.LocalName == "event" ? name : Local(Attr(e, "ref"));
-                    return defined.TryGetValue(origin, out var d)
-                        ? new EventModel(name, number, d.Xge, d.Members)
-                        : new EventModel(name, number, false, null); // copy of an event from another file
-                })
-            ];
-        }
+        var defined = root.Elements("event")
+            .ToDictionary(
+                e => e.Attr("name"),
+                e => (Xge: e.Attribute("xge") is not null, Members: ReadMembers(e.Elements())));
 
-        XElement? Load(string file)
-        {
-            if (!loaded.Add(file))
-                return null;
-            var xml = XDocument.Load(Path.Join(directory, file + ".xml")).Root!;
-            foreach (var e in xml.Elements())
+        // An <eventcopy> reuses the layout of the event it references (only resolvable inside the same file).
+        var events = root.Elements()
+            .Where(e => e.Name.LocalName is "event" or "eventcopy")
+            .Select(e =>
             {
-                var name = e.Attribute("name")?.Value!;
-                switch (e.Name.LocalName)
-                {
-                    case "import":
-                        Load(e.Value);
-                        break;
-                    case "xidtype" or "xidunion":
-                        types[name] = new(name, 4, true);
-                        break;
-                    case "typedef":
-                        types[Attr(e, "newname")] = LookupType(Attr(e, "oldname"));
-                        break;
-                    case "struct":
-                        var (size, isFixed) = Measure(e.Elements());
-                        types[name] = new(name, size, isFixed, true);
-                        break;
-                    case "union":
-                        types[name] = new(name, e.Elements().Max(m => Measure([m]).Size), true, true);
-                        break;
-                    case "eventstruct":
-                        types[name] = new(name, 32, true, true);
-                        break;
-                    case "enum":
-                        foreach (var item in e.Elements("item"))
-                            enumValues[(name, Attr(item, "name"))] =
-                                item.Element("value") is { } value ? long.Parse(value.Value)
-                                : item.Element("bit") is { } bit ? 1L << int.Parse(bit.Value)
-                                : 0;
-                        break;
-                }
+                var name = e.Attr("name");
+                var origin = e.Name.LocalName == "event" ? name : e.Attr("ref").Local();
+                defined.TryGetValue(origin, out var def);
+                return new EventDef(name, int.Parse(e.Attr("number")), def.Xge, def.Members);
+            })
+            .ToArray();
+
+        return new Protocol(
+            root.Attr("header"), root.Attribute("extension-name") is null, requests, events, enumWidths);
+    }
+    XElement? Load(string file)
+    {
+        if (!loaded.Add(file))
+            return null;
+
+        var xml = XDocument.Load(Path.Join(directory, file + ".xml")).Root!;
+
+        foreach (var import in xml.Elements("import"))
+            Load(import.Value);
+        foreach (var e in xml.Elements("enum"))
+            DefineEnum(e);
+        foreach (var e in xml.Elements())
+            DefineType(e);
+
+        foreach (var field in xml.Descendants("field"))
+            if (field.EnumAttr() is { } enumName && types.TryGetValue(field.Attr("type").Local(), out var type))
+                enumWidths.TryAdd(enumName, type.Size);
+
+        return xml;
+    }
+
+    void DefineEnum(XElement e)
+    {
+        var name = e.Attr("name");
+        foreach (var item in e.Elements("item"))
+            enumItems[(name, item.Attr("name"))] =
+                item.Element("value") is { } value ? ParseNumber(value.Value)
+                : item.Element("bit") is { } bit ? 1L << (int)ParseNumber(bit.Value)
+                : 0;
+    }
+
+    void DefineType(XElement e)
+    {
+        var name = e.Attribute("name")?.Value ?? "";
+        switch (e.Name.LocalName)
+        {
+            case "xidtype" or "xidunion":
+                types[name] = new(name, 4, true);
+                break;
+            case "typedef":
+                types[e.Attr("newname")] = Resolve(e.Attr("oldname"));
+                break;
+            case "struct":
+            {
+                var (size, isFixed) = Measure(ReadMembers(e.Elements()));
+                types[name] = new(name, size, isFixed, true);
+                break;
             }
-
-            foreach (var field in xml.Descendants("field"))
-                if (field.Attribute("enum") is { } en && types.TryGetValue(Local(Attr(field, "type")), out var type))
-                    enumWidths.TryAdd(Local(en.Value), type.Size);
-            return xml;
+            case "union":
+                types[name] = new(name, ReadMembers(e.Elements()).Max(m => Measure(new[] { m }).Size), true, true);
+                break;
+            case "eventstruct":
+                types[name] = new(name, 32, true, true);
+                break;
         }
+    }
 
-        Member[] ParseMembers(IEnumerable<XElement> elements) =>
-        [
-            .. elements
-                .Where(m => m.Name.LocalName is "field" or "exprfield" or "pad" or "list" or "switch"
-                            && m.Attribute("type")?.Value != "fd")
-                .Select(ParseMember)
-        ];
-
-        Member ParseMember(XElement m) => m.Name.LocalName switch
+    static (int Size, bool IsFixed) Measure(IEnumerable<Member> members)
+    {
+        var size = 0;
+        var isFixed = true;
+        foreach (var member in members)
         {
-            "pad" => new("pad", Bytes: Int(m, "bytes"), Align: Int(m, "align")),
-            "field" => new("field", Attr(m, "name"), TypeOf(m), EnumOf(m)),
-            "exprfield" => new("field", Attr(m, "name"), TypeOf(m), EnumOf(m), ParseExpr(FirstChild(m)!)),
-            "list" => new("list", Attr(m, "name"), TypeOf(m), Expr: FirstChild(m) is { } count ? ParseExpr(count) : null),
-            "switch" => new("switch", Attr(m, "name"), Expr: ParseExpr(FirstChild(m)!), Cases: ParseCases(m)),
-            var other => throw new NotSupportedException($"<{other}>"),
-        };
-
-        Case[] ParseCases(XElement sw) =>
-        [
-            .. sw.Elements().Where(c => c.Name.LocalName is "bitcase" or "case").Select(c =>
+            switch (member)
             {
-                var (size, isFixed) = Measure(c.Elements());
+                case Field f:
+                    size += f.Type.Size;
+                    isFixed &= f.Type.IsFixed;
+                    break;
+                case Pad p:
+                    size += WireMath.PadLength(p.Bytes, p.Align, size);
+                    break;
+                case ListOf { Length: Const count, Type.IsFixed: true } list:
+                    size += list.Type.Size * (int)count.Value;
+                    break;
+                default: // variable list or switch
+                    isFixed = false;
+                    break;
+            }
+        }
+        return (size, isFixed);
+    }
+
+    WireType Resolve(string name) => types[name.Local()];
+    WireType TypeOf(XElement e) => Resolve(e.Attr("type"));
+
+    static bool IsMember(XElement e) =>
+        e.Name.LocalName is "field" or "exprfield" or "pad" or "list" or "switch"
+        && e.Attribute("type")?.Value != "fd";
+
+    Member[] ReadMembers(IEnumerable<XElement> elements) => [.. elements.Where(IsMember).Select(ReadMember)];
+
+    Member ReadMember(XElement m) => m.Name.LocalName switch
+    {
+        "pad" => new Pad(m.IntAttr("bytes"), m.IntAttr("align")),
+        "field" => new Field(m.Attr("name"), TypeOf(m), m.EnumAttr(), null),
+        "exprfield" => new Field(m.Attr("name"), TypeOf(m), m.EnumAttr(), ReadExpr(m.FirstChild()!)),
+        "list" => new ListOf(m.Attr("name"), TypeOf(m), m.FirstChild() is { } length ? ReadExpr(length) : null),
+        _ => new Switch(m.Attr("name"), ReadExpr(m.FirstChild()!), ReadCases(m)),
+    };
+
+    Case[] ReadCases(XElement sw) =>
+    [
+        .. sw.Elements()
+            .Where(c => c.Name.LocalName is "case" or "bitcase")
+            .Select(c =>
+            {
+                var (size, isFixed) = Measure(ReadMembers(c.Elements()));
                 var bits = c.Elements()
                     .Where(x => x.Name.LocalName is "enumref" or "value")
-                    .Aggregate(0L, (all, x) => all | long.Parse(ParseExpr(x).Text));
+                    .Aggregate(0L, (all, x) => all | Number(x));
                 return new Case(c.Name.LocalName == "bitcase", bits, size, isFixed);
             })
-        ];
+    ];
 
-        Expr ParseExpr(XElement e)
+    Expr ReadExpr(XElement e)
+    {
+        var args = e.Elements().Where(x => x.Name.LocalName != "doc").Select(ReadExpr).ToArray();
+        return e.Name.LocalName switch
         {
-            var args = e.Elements().Where(x => x.Name.LocalName != "doc").Select(ParseExpr).ToArray();
-            return e.Name.LocalName switch
-            {
-                "fieldref" => new("field", e.Value.Trim()),
-                "value" => new("value", ParseNumber(e.Value).ToString()),
-                "enumref" => new("value", enumValues[(Local(Attr(e, "ref")), e.Value.Trim())].ToString()),
-                "op" => new("op", Attr(e, "op"), args),
-                "unop" => new("unop", Attr(e, "op"), args),
-                "popcount" => new("popcount", Args: args),
-                "sumof" => new("sumof", Attr(e, "ref"), args),
-                "listelement-ref" => new("listelement"),
-                var tag => new("unsupported", tag),
-            };
-        }
+            "fieldref" => new FieldRef(e.Value.Trim()),
+            "value" or "enumref" => new Const(Number(e)),
+            "op" => new Binary(e.Attr("op"), args[0], args[1]),
+            "unop" => new Unary(e.Attr("op"), args[0]),
+            "popcount" => new PopCount(args[0]),
+            "sumof" => new SumOf(e.Attr("ref"), args.FirstOrDefault()),
+            "listelement-ref" => new ListElement(),
+            var tag => new UnknownExpr(tag),
+        };
+    }
+    long Number(XElement e) =>
+        e.Name.LocalName == "value" ? ParseNumber(e.Value) : enumItems[(e.Attr("ref").Local(), e.Value.Trim())];
 
-        (int Size, bool IsFixed) Measure(IEnumerable<XElement> members)
-        {
-            var (size, isFixed) = (0, true);
-            foreach (var m in members)
-            {
-                switch (m.Name.LocalName)
-                {
-                    case "field" or "exprfield":
-                        size += TypeOf(m).Size;
-                        isFixed &= TypeOf(m).IsFixed;
-                        break;
-                    case "pad":
-                        size += PadLength(Int(m, "bytes"), Int(m, "align"), size);
-                        break;
-                    case "list" when FirstChild(m) is { Name.LocalName: "value" } count && TypeOf(m).IsFixed:
-                        size += TypeOf(m).Size * int.Parse(count.Value);
-                        break;
-                    case "list" or "switch":
-                        isFixed = false;
-                        break;
-                }
-            }
-            return (size, isFixed);
-        }
-
-        WireType LookupType(string name) => types[Local(name)];
-        WireType TypeOf(XElement member) => LookupType(Attr(member, "type"));
+    static long ParseNumber(string text)
+    {
+        text = text.Trim();
+        return text.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? Convert.ToInt64(text[2..], 16) : long.Parse(text);
     }
 }
 
 
-static class RequestWriter
+
+static class Generator
+{
+    public static string[] Generate(Protocol protocol)
+    {
+        var code = new Code();
+        List<string> voidMethods = [], replyMethods = [];
+
+        using (code.Block($"namespace {protocol.Namespace}"))
+        {
+            foreach (var request in protocol.Requests)
+            {
+                var signature = new RequestGen(protocol, request).Write(code);
+                (request.HasReply ? replyMethods : voidMethods).Add(InterfaceMethod(request, signature));
+            }
+            foreach (var ev in protocol.Events)
+                new EventGen(ev).Write(code);
+
+            WriteInterfaces(code, protocol.Namespace, voidMethods, replyMethods);
+        }
+        return code.ToArray();
+    }
+
+    static string InterfaceMethod(Request request, Signature signature)
+    {
+        // A list's length parameter is implied by the span, so it is not part of the interface method.
+        var counts = signature.Trailing
+            .OfType<ListOf>()
+            .Select(l => l.Length)
+            .OfType<FieldRef>()
+            .Select(f => f.Name.ToCamelCase())
+            .ToHashSet();
+
+        var parameters = signature.Parameters
+            .Select(p => (p.Type, Name: p.Name.ToCamelCase()))
+            .Where(p => !counts.Contains(p.Name))
+            .Select(p => $"{p.Type} {p.Name}")
+            .ToList();
+
+        foreach (var part in signature.Trailing)
+        {
+            switch (part)
+            {
+                case Pad:
+                    break;
+                case ListOf list:
+                    var element = list.Type.CsName is "bool" or "char" or "void" ? "byte" : list.Type.CsName;
+                    parameters.Add($"ReadOnlySpan<{element}> {list.Name.ToCamelCase()}");
+                    break;
+                default:
+                    var what = part switch
+                    {
+                        Field f => $"field '{f.Name}'",
+                        Switch s => $"switch '{s.Name}'",
+                        _ => "member",
+                    };
+                    return $"// TODO: {request.Name} has a {what} which can't be represented in c#";
+            }
+        }
+
+        var args = string.Join(", ", parameters);
+        return request.HasReply
+            ? $"ReplyLease<{request.Name}Reply> {request.Name}({args});"
+            : $"ResponseProto {request.Name}({args});";
+    }
+
+    static void WriteInterfaces(Code code, string ns, List<string> voidMethods, List<string> replyMethods)
+    {
+        var name = "I" + ns.Split('.')[^1].ToPascalCase();
+
+        code.Line();
+        using (code.Block($"public interface {name}VoidProto"))
+            voidMethods.ForEach(m => code.Line(m));
+        code.Line();
+        using (code.Block($"public interface {name}ResponseProto"))
+            replyMethods.ForEach(m => code.Line(m));
+        code.Line();
+        using (code.Block($"public interface {name}Request : {name}ResponseProto, {name}VoidProto"))
+        {
+        }
+    }
+}
+
+
+
+sealed class RequestGen
 {
     static readonly (int Size, string Type)[] PadTypes = [(8, "ulong"), (4, "uint"), (2, "ushort"), (1, "byte")];
 
-    static bool IsFixed(Member m) => m.Kind == "pad" || (m.Kind == "field" && m.Type.IsFixed);
-    static bool FitsInByte(Member m) => m.Kind == "pad" ? m.Bytes == 1 : IsFixed(m) && m.Type.Size == 1;
-    static string Scale(string count, int factor) => factor == 1 ? count : $"{Paren(count)} * {factor}";
+    readonly Protocol protocol;
+    readonly Request request;
+    readonly List<Param> parameters = [];   // constructor parameters, in field order
+    readonly List<string> extras = [];      // extra int parameters (runtime sizes / implicit list lengths)
+    readonly List<string> body = [];        // member lines of the struct
+    int padCount;
 
-    public static RequestSignature Write(ProtocolModel protocol, RequestModel request, StringBuilder sb)
+    public RequestGen(Protocol protocol, Request request)
     {
-        List<string> parameters = [], extras = [], lines = [];
-        var padIndex = 0;
-        var members = new Queue<Member>(request.Members);
+        this.protocol = protocol;
+        this.request = request;
+    }
+
+    static bool IsFixed(Member m) => m is Pad or Field { Type.IsFixed: true };
+    static bool FitsInByte(Member m) => m is Pad { Bytes: 1 } or Field { Type: { IsFixed: true, Size: 1 } };
+
+    public Signature Write(Code code)
+    {
+        var rest = new Queue<Member>(request.Members);
 
         if (!protocol.IsCore)
         {
-            parameters.Add("byte majorOpCode");
-            lines.Add("public readonly byte MajorOpcode = majorOpCode;");
+            parameters.Add(new("byte", "majorOpCode"));
+            body.Add("public readonly byte MajorOpcode = majorOpCode;");
         }
-        lines.Add($"public readonly Opcode Opcode = Opcode.{request.Name};");
+        body.Add($"public readonly Opcode Opcode = Opcode.{request.Name};");
 
         if (protocol.IsCore)
         {
-            if (members.TryPeek(out var first) && FitsInByte(first))
-                Emit(members.Dequeue(), 1);
+            // the byte after the opcode may carry a field of its own
+            if (rest.TryPeek(out var first) && FitsInByte(first))
+                Emit(rest.Dequeue(), 1);
             else
-                lines.AddRange(Pad(1));
+                body.AddRange(Pads(1));
         }
 
-        var lengthAt = lines.Count;
+        var lengthAt = body.Count;
         var size = 4;
-        while (members.TryPeek(out var member) && IsFixed(member))
-            size += Emit(members.Dequeue(), size);
-        lines.Insert(lengthAt, $"public readonly ushort Length = {Length(size, members)};");
+        while (rest.TryPeek(out var next) && IsFixed(next))
+            size += Emit(rest.Dequeue(), size);
+        body.Insert(lengthAt, $"public readonly ushort Length = {Length(size, rest)};");
 
-        var structSize = members.Count == 0 ? Align4(size) : size;
-        sb.AppendLine($"    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = {structSize})]");
-        sb.AppendLine("    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        sb.AppendLine($"    internal readonly struct {request.Name}Type({string.Join(", ", parameters.Concat(extras))})");
-        sb.AppendLine("    {");
-        lines.ForEach(line => sb.AppendLine("        " + line));
-        sb.AppendLine("    }");
-        return new([.. parameters.Skip(protocol.IsCore ? 0 : 1)], [.. members]);
+        var structSize = rest.Count == 0 ? WireMath.Align4(size) : size;
+        var ctor = parameters.Select(p => $"{p.Type} {p.Name.Escape()}")
+            .Concat(extras.Select(x => $"int {x.Escape()}"));
 
-        int Emit(Member m, int offset)
+        code.Line($"[StructLayout(LayoutKind.Sequential, Pack = 1, Size = {structSize})]");
+        code.Line("[method: MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        using (code.Block($"internal readonly struct {request.Name}Type({string.Join(", ", ctor)})"))
+            body.ForEach(line => code.Line(line));
+
+        return new Signature([.. parameters.Skip(protocol.IsCore ? 0 : 1)], [.. rest]);
+    }
+
+    int Emit(Member m, int offset)
+    {
+        switch (m)
         {
-            if (m.Kind != "pad")
+            case Field f:
+                body.Add(Declare(f));
+                return f.Type.Size;
+            case Pad p:
+                var bytes = WireMath.PadLength(p.Bytes, p.Align, offset);
+                body.AddRange(Pads(bytes));
+                return bytes;
+            default:
+                throw new InvalidOperationException($"{m} is not a fixed member");
+        }
+    }
+
+    List<string> Pads(int bytes)
+    {
+        List<string> result = [];
+        foreach (var (size, type) in PadTypes)
+            for (; bytes >= size; bytes -= size)
+                result.Add($"private readonly {type} _pad{padCount++} = 0;");
+        return result;
+    }
+    string Declare(Field f)
+    {
+        var name = f.Name.Escape();
+        var storage = f.Type.CsName == "bool" ? "byte" : f.Type.CsName; // C# bool is not blittable
+
+        string? parameterType;
+        string fieldType, value;
+        if (f.Value is { } expr)
+            (parameterType, fieldType, value) = (null, storage, $"({storage}){Cs.Paren(Render(expr))}");
+        else if (f.Enum is { } en && protocol.EnumWidths.GetValueOrDefault(en) == f.Type.Size)
+            (parameterType, fieldType, value) = (en, en, name);
+        else if (f.Enum is { } otherEnum)
+            (parameterType, fieldType, value) = (otherEnum, storage, $"({storage}){name}");
+        else if (f.Type.CsName == "bool")
+            (parameterType, fieldType, value) = ("bool", "byte", $"(byte)({name} ? 1 : 0)");
+        else
+            (parameterType, fieldType, value) = (f.Type.CsName, f.Type.CsName, name);
+
+        if (parameterType != null)
+            parameters.Add(new(parameterType, f.Name));
+
+        var access = f.Name.EndsWith("_len") ? "private" : "public";
+        return $"{access} readonly {fieldType} {f.Name.ToPascalCase()} = {value};";
+    }
+    string Length(int headerSize, IEnumerable<Member> trailing)
+    {
+        var length = new LengthBuilder(headerSize);
+        foreach (var part in trailing)
+        {
+            switch (part)
             {
-                lines.Add(Field(m));
-                return m.Type.Size;
+                case Pad { Align: not null }:
+                    length.EndRun();
+                    break;
+                case Pad pad:
+                    length.AddConstant(WireMath.PadLength(pad.Bytes, pad.Align, 0));
+                    break;
+                case Switch sw:
+                    AddSwitch(length, sw);
+                    break;
+                case ListOf { Type.IsFixed: true } list:
+                    length.Add(list.Length is null ? Extra($"{list.Name}_len") : Render(list.Length), list.Type.Size);
+                    break;
+                case Field field: // a struct field with a runtime size
+                    length.Add(Extra($"{field.Name}_bytes"), 1);
+                    break;
+                case ListOf list: // list of variable-size elements
+                    length.Add(Extra($"{list.Name}_bytes"), 1);
+                    break;
             }
-            var bytes = PadLength(m.Bytes, m.Align, offset);
-            lines.AddRange(Pad(bytes));
-            return bytes;
         }
+        return length.Build();
+    }
 
-        IEnumerable<string> Pad(int bytes)
+    void AddSwitch(LengthBuilder length, Switch sw)
+    {
+        var cases = sw.Cases;
+        if (!cases.All(c => c.IsBitCase && c.IsFixed))
+            length.Add(Extra($"{sw.Name}_bytes"), 1);
+        else if (sw.Selector is FieldRef selector && cases.Select(c => c.Size).Distinct().Count() == 1)
+            length.Add($"{selector.Name.Escape()}.CountFlags()", cases[0].Size);
+        else
         {
-            foreach (var (padSize, type) in PadTypes)
-                for (; bytes >= padSize; bytes -= padSize)
-                    yield return $"private readonly {type} _pad{padIndex++} = 0;";
-        }
-
-        string Field(Member m)
-        {
-            var parameter = m.Name.Escape();
-            var storage = m.Type.CsName == "bool" ? "byte" : m.Type.CsName; // C# bool is not blittable
-
-            var (parameterType, fieldType, value) = (m.Expr, m.Enum, m.Type.CsName) switch
+            var mask = Render(sw.Selector);
+            foreach (var c in cases)
             {
-                ({ } expr, _, _) => ((string?)null, storage, $"({storage}){Paren(Expression(expr))}"),
-                (_, { } en, _) when protocol.EnumWidths.GetValueOrDefault(en) == m.Type.Size => (en, en, parameter),
-                (_, { } en, _) => (en, storage, $"({storage}){parameter}"),
-                (_, _, "bool") => ("bool", "byte", $"(byte)({parameter} ? 1 : 0)"),
-                _ => (m.Type.CsName, m.Type.CsName, parameter),
-            };
-            if (parameterType != null)
-                parameters.Add($"{parameterType} {parameter}");
-
-            var access = m.Name.EndsWith("_len") ? "private" : "public";
-            return $"{access} readonly {fieldType} {m.Name.ToPascalCase()} = {value};";
-        }
-
-        string Length(int headerSize, IEnumerable<Member> trailing)
-        {
-            List<string> words = [], run = [];
-            var constantWords = 0;
-            var constantBytes = headerSize;
-
-            void Add(string count, int unit)
-            {
-                if (int.TryParse(count, out var n)) constantBytes += n * unit;
-                else if (unit % 4 == 0) words.Add(Scale(count, unit / 4));
-                else run.Add(Scale(count, unit));
+                var unit = c.Size % 4 == 0 ? 4 : 1;
+                length.Add($"(({mask} & {c.Bits}) != 0 ? {c.Size / unit} : 0)", unit);
             }
-
-            void EndRun()
-            {
-                if (run.Count == 0)
-                    constantWords += Align4(constantBytes) / 4;
-                else
-                {
-                    constantWords += constantBytes / 4;
-                    var rest = constantBytes % 4;
-                    var terms = rest == 0 ? run : run.Prepend(rest.ToString());
-                    words.Add($"{Paren(string.Join(" + ", terms))}.AddPadding() / 4");
-                }
-                constantBytes = 0;
-                run.Clear();
-            }
-
-            void AddSwitch(Member sw)
-            {
-                var cases = sw.Cases!;
-                if (!cases.All(x => x.IsBitCase && x.IsFixed))
-                    Add(Extra($"{sw.Name}_bytes"), 1);
-                else if (sw.Expr!.Kind == "field" && cases.Select(x => x.Size).Distinct().Count() == 1)
-                    Add($"{sw.Expr.Text.Escape()}.CountFlags()", cases[0].Size);
-                else
-                {
-                    var mask = Expression(sw.Expr);
-                    foreach (var bitcase in cases)
-                    {
-                        var unit = bitcase.Size % 4 == 0 ? 4 : 1;
-                        Add($"(({mask} & {bitcase.Bits}) != 0 ? {bitcase.Size / unit} : 0)", unit);
-                    }
-                }
-            }
-
-            foreach (var part in trailing)
-            {
-                switch (part)
-                {
-                    case { Kind: "pad", Align: not null }:
-                        EndRun();
-                        break;
-                    case { Kind: "pad" }:
-                        constantBytes += PadLength(part.Bytes, part.Align, 0);
-                        break;
-                    case { Kind: "switch" }:
-                        AddSwitch(part);
-                        break;
-                    case { Kind: "list", Type.IsFixed: true }:
-                        Add(part.Expr == null ? Extra($"{part.Name}_len") : Expression(part.Expr), part.Type.Size);
-                        break;
-                    default: // variable-size list, or a struct field with a runtime size
-                        Add(Extra($"{part.Name}_bytes"), 1);
-                        break;
-                }
-            }
-            EndRun();
-
-            if (words.Count == 0)
-                return constantWords.ToString();
-            if (constantWords != 0)
-                words.Insert(0, constantWords.ToString());
-            return $"(ushort)({string.Join(" + ", words)})";
         }
+    }
 
-        string Expression(Expr e) => e.Kind switch
+    string Render(Expr e)
+    {
+        try
         {
-            "field" => FieldValue(e.Text),
-            "value" => e.Text,
-            "op" => $"({Expression(e.Args![0])} {e.Text} {Expression(e.Args[1])})",
-            "unop" => $"{e.Text}{Paren(Expression(e.Args![0]))}",
-            "popcount" => $"{Paren(Expression(e.Args![0]))}.CountFlags()",
-            _ => throw new NotSupportedException($"<{e.Text}> in request {request.Name}"),
-        };
-
-        string FieldValue(string name)
-        {
-            var field = request.Members.FirstOrDefault(m => m.Kind == "field" && m.Expr == null && m.Name == name);
-            if (field == null)
-                return Extra(name); // implicit list length, e.g. string_len in QueryTextExtents
-
-            var parameter = name.Escape();
-            var type = field.Type.CsName;
-            if (field.Enum != null || type is "uint" or "long" or "ulong")
-                return $"(int){parameter}";
-            return type == "bool" ? $"({parameter} ? 1 : 0)" : parameter;
+            return Exprs.Render(e, FieldValue);
         }
-
-        string Extra(string name)
+        catch (NotSupportedException ex)
         {
-            var parameter = name.Escape();
-            var declaration = $"int {parameter}";
-            if (!extras.Contains(declaration))
-                extras.Add(declaration);
-            return parameter;
+            throw new NotSupportedException($"{ex.Message} in request {request.Name}");
         }
+    }
+    string FieldValue(string name)
+    {
+        var field = request.Members.OfType<Field>().FirstOrDefault(f => f.Value is null && f.Name == name);
+        if (field == null)
+            return Extra(name); // implicit list length, e.g. string_len in QueryTextExtents
+
+        var parameter = name.Escape();
+        var type = field.Type.CsName;
+        if (field.Enum != null || type is "uint" or "long" or "ulong")
+            return $"(int){parameter}";
+        return type == "bool" ? $"({parameter} ? 1 : 0)" : parameter;
+    }
+
+    string Extra(string name)
+    {
+        if (!extras.Contains(name))
+            extras.Add(name);
+        return name.Escape();
     }
 }
 
 
-static class EventWriter
+sealed class LengthBuilder(int headerBytes)
 {
+    readonly List<string> words = [];
+    readonly List<string> run = [];
+    int constantWords;
+    int constantBytes = headerBytes;
+
+    public void AddConstant(int bytes) => constantBytes += bytes;
+
+    public void Add(string count, int unit)
+    {
+        if (int.TryParse(count, out var n))
+            constantBytes += n * unit;
+        else if (unit % 4 == 0)
+            words.Add(Scale(count, unit / 4));
+        else
+            run.Add(Scale(count, unit));
+    }
+    public void EndRun()
+    {
+        if (run.Count == 0)
+            constantWords += WireMath.Align4(constantBytes) / 4;
+        else
+        {
+            constantWords += constantBytes / 4;
+            var rest = constantBytes % 4;
+            var terms = rest == 0 ? run : run.Prepend(rest.ToString());
+            words.Add($"{Cs.Paren(string.Join(" + ", terms))}.AddPadding() / 4");
+        }
+        constantBytes = 0;
+        run.Clear();
+    }
+
+    public string Build()
+    {
+        EndRun();
+        if (words.Count == 0)
+            return constantWords.ToString();
+        if (constantWords != 0)
+            words.Insert(0, constantWords.ToString());
+        return $"(ushort)({string.Join(" + ", words)})";
+    }
+
+    static string Scale(string count, int factor) => factor == 1 ? count : $"{Cs.Paren(count)} * {factor}";
+}
+
+
+
+sealed class EventGen
+{
+    sealed record Prop(string Name, string Type, bool IsList);
+
     static readonly HashSet<string> Primitives =
         ["byte", "ushort", "uint", "ulong", "sbyte", "short", "int", "long", "bool", "float", "double"];
 
@@ -436,293 +591,305 @@ static class EventWriter
         : Primitives.Contains(t.CsName) ? t.CsName
         : t.Size switch { 1 => "byte", 2 => "ushort", 4 => "uint", 8 => "ulong", _ => null };
 
-    public static void Write(EventModel ev, StringBuilder sb)
+    readonly EventDef ev;
+    readonly string name;
+    readonly bool hasSequence;
+    readonly HashSet<string> usedNames;
+    readonly List<string> members = [];                   // property lines
+    readonly Dictionary<string, Prop> props = [];         // by XML field name
+    readonly List<string> runtime = [];                   // runtime terms of the current offset
+    int offset;                                           // constant part of the current offset
+    int fixedEnd = -1;                                    // offset where the fixed part ends
+    bool known = true;                                    // false once an offset can no longer be computed
+    bool needsSumPop;
+
+    public EventGen(EventDef ev)
     {
-        var name = ev.Name.EndsWith("Event") ? ev.Name : ev.Name + "Event";
+        this.ev = ev;
+        name = ev.Name.EndsWith("Event") ? ev.Name : ev.Name + "Event";
+        hasSequence = !ev.IsXge && ev.Name != "KeymapNotify"; // KeymapNotify has no sequence number
+        usedNames = ["ResponseType", "Sequence", "Number", "Length", "ByteSize", "EventType", "Extension", name];
+        offset = ev.IsXge ? 10 : hasSequence ? 4 : 1;
+    }
+
+    public void Write(Code code)
+    {
         if (ev.Members == null)
         {
-            sb.AppendLine($"    // TODO: {name} is a copy of an event defined in another file");
+            code.Line($"// TODO: {name} is a copy of an event defined in another file");
             return;
         }
 
-        var hasSequence = !ev.IsXge && ev.Name != "KeymapNotify"; // KeymapNotify has no sequence number
-        List<string> lines = [], dynamic = [];
-        Dictionary<string, (string Name, string Type, bool IsList)> props = [];
-        HashSet<string> used = ["ResponseType", "Sequence", "Number", "Length", "ByteSize", "EventType", "Extension", name];
-        var constant = ev.IsXge ? 10 : hasSequence ? 4 : 1;
-        var fixedEnd = -1;
-        var known = true;
-        var needsSumPop = false;
-        var members = new Queue<Member>(ev.Members);
+        Layout(ev.Members);
+        var minSize = Math.Max(32, fixedEnd);
 
-        // the first byte after the response type may carry a field of its own
-        if (hasSequence && members.TryPeek(out var first)
-            && (first.Kind == "pad" ? first.Bytes == 1
-                : first.Kind == "field" && first.Type.Size == 1 && Primitive(first.Type) != null))
+        code.Line("[StructLayout(LayoutKind.Sequential, Pack = 1)]");
+        using (code.Block($"public readonly struct {name} : IXEvent<{name}>"))
         {
-            members.Dequeue();
-            if (first.Kind == "field")
-                EmitField(first);
+            code.Line("private readonly byte[] _data;");
+            code.Line($"public const byte Number = {ev.Number};");
+            code.Line();
+            using (code.Block($"private {name}(byte[] data)"))
+            {
+                code.Line("if (data is null) throw new ArgumentNullException(nameof(data));");
+                code.Line($"if (data.Length < {minSize})");
+                code.Line($"    throw new ArgumentException(\"Buffer too small for {name}.\", nameof(data));");
+                code.Line("_data = data;");
+            }
+            code.Line();
+            code.Line("public byte ResponseType => _data[0];");
+
+            if (ev.IsXge)
+            {
+                code.Line("public byte Extension => _data[1];");
+                code.Line("public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);");
+                code.Line("public uint Length => Unsafe.As<byte, uint>(ref _data[4]);");
+                code.Line("public int ByteSize => checked(32 + (int)Length * 4);");
+                code.Line("public ushort EventType => Unsafe.As<byte, ushort>(ref _data[8]);");
+            }
+            else if (hasSequence)
+                code.Line("public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);");
+
+            members.ForEach(line => code.Line(line));
+
+            if (needsSumPop)
+            {
+                code.Line();
+                using (code.Block("private static int SumPop(ReadOnlySpan<uint> s)"))
+                {
+                    code.Line("var n = 0;");
+                    code.Line("foreach (var v in s) n += v.CountFlags();");
+                    code.Line("return n;");
+                }
+            }
+
+            code.Line();
+            code.Line($"public {name} FromBytes(byte[] response) => new {name}(response);");
+        }
+        code.Line();
+    }
+    void Layout(Member[] all)
+    {
+        var rest = new Queue<Member>(all);
+
+        // the byte after the response type may carry a field of its own
+        if (hasSequence && rest.TryPeek(out var first) && CarriesFirstByte(first))
+        {
+            rest.Dequeue();
+            if (first is Field f)
+                AddField(f);
         }
 
-        foreach (var m in members)
+        foreach (var member in rest)
         {
-            switch (m.Kind)
+            switch (member)
             {
-                case "pad" when m.Bytes != null:
-                    constant += m.Bytes.Value;
+                case Pad { Bytes: { } bytes }:
+                    offset += bytes;
                     break;
-                case "pad" when known && dynamic.Count == 0:
-                    constant += PadLength(null, m.Align, constant);
+                case Pad pad when known && runtime.Count == 0:
+                    offset += WireMath.PadLength(null, pad.Align, offset);
                     break;
-                case "pad":
+                case Pad:
                     Unknown();
                     break;
-                case "field":
-                    EmitField(m);
+                case Field field:
+                    AddField(field);
                     break;
-                case "list":
-                    EmitList(m);
+                case ListOf list:
+                    AddList(list);
                     break;
-                default:
-                    lines.Add($"// TODO: '{m.Name}' ({m.Kind}) is not supported");
+                case Switch sw:
+                    members.Add($"// TODO: '{sw.Name}' (switch) is not supported");
                     Unknown();
                     break;
             }
         }
         MarkEnd();
-        var minSize = Math.Max(32, fixedEnd);
+    }
 
-        sb.AppendLine($$"""
-                [StructLayout(LayoutKind.Sequential, Pack = 1)]
-                public readonly struct {{name}} : IXEvent<{{name}}>
-                {
-                    private readonly byte[] _data;
-                    public const byte Number = {{ev.Number}};
+    static bool CarriesFirstByte(Member m) =>
+        m is Pad { Bytes: 1 } || (m is Field f && f.Type.Size == 1 && Primitive(f.Type) != null);
 
-                    private {{name}}(byte[] data)
-                    {
-                        if (data is null) throw new ArgumentNullException(nameof(data));
-                        if (data.Length < {{minSize}})
-                            throw new ArgumentException("Buffer too small for {{name}}.", nameof(data));
-                        _data = data;
-                    }
-
-                    public byte ResponseType => _data[0];
-            """);
-        if (ev.IsXge)
-            sb.AppendLine("""
-                        public byte Extension => _data[1];
-                        public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);
-                        public uint Length => Unsafe.As<byte, uint>(ref _data[4]);
-                        public int ByteSize => checked(32 + (int)Length * 4);
-                        public ushort EventType => Unsafe.As<byte, ushort>(ref _data[8]);
-                """);
-        else if (hasSequence)
-            sb.AppendLine("        public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);");
-
-        lines.ForEach(line => sb.AppendLine("        " + line));
-        if (needsSumPop)
-            sb.AppendLine("""
-
-                        private static int SumPop(ReadOnlySpan<uint> s)
-                        {
-                            var n = 0;
-                            foreach (var v in s) n += v.CountFlags();
-                            return n;
-                        }
-                """);
-        sb.AppendLine($$"""
-
-                    public {{name}} FromBytes(byte[] response) => new {{name}}(response);
-                }
-
-            """);
-        return;
-
-        string At() => dynamic.Count == 0 ? constant.ToString() : $"{constant} + {string.Join(" + ", dynamic)}";
-
-        void MarkEnd()
+    void AddField(Field f)
+    {
+        var primitive = Primitive(f.Type);
+        if (primitive == null)
         {
-            if (fixedEnd < 0) fixedEnd = constant;
+            members.Add($"// TODO: field '{f.Name}' has type {f.Type.CsName} which can't be represented in c#");
+            if (f.Type.IsFixed) offset += f.Type.Size;
+            else Unknown();
+            return;
+        }
+        if (!known)
+        {
+            members.Add($"// TODO: field '{f.Name}' follows a member with an unknown size");
+            return;
         }
 
-        void Unknown()
+        var prop = PropName(f.Name);
+        props[f.Name] = new(prop, primitive, false);
+        var at = At();
+        var read = primitive switch
+        {
+            "bool" => $"_data[{at}] != 0",
+            "byte" => $"_data[{at}]",
+            "sbyte" => $"(sbyte)_data[{at}]",
+            _ => $"Unsafe.As<byte, {primitive}>(ref _data[{at}])",
+        };
+        var access = f.Name.EndsWith("_len") ? "private" : "public";
+        members.Add($"{access} {primitive} {prop} => {read};");
+        offset += f.Type.Size;
+    }
+
+    void AddList(ListOf list)
+    {
+        if (!known)
+        {
+            members.Add($"// TODO: list '{list.Name}' follows a member with an unknown size");
+            return;
+        }
+
+        string count;
+        try
+        {
+            count = list.Length is null ? throw new NotSupportedException("list without length") : Render(list.Length);
+        }
+        catch (NotSupportedException ex)
+        {
+            members.Add($"// TODO: list '{list.Name}' has an unsupported length ({ex.Message})");
+            Unknown();
+            return;
+        }
+
+        var bytes = list.Type.Size == 1 ? count : $"{Cs.Paren(count)} * {list.Type.Size}";
+        var advance = int.TryParse(count, out var n) ? (n * list.Type.Size).ToString() : bytes;
+
+        var primitive = Primitive(list.Type);
+        if (primitive == null)
+        {
+            members.Add($"// TODO: list '{list.Name}' of {list.Type.CsName} can't be represented in c#");
+            if (list.Type.IsFixed) Advance(advance);
+            else Unknown();
+            return;
+        }
+
+        var prop = PropName(list.Name);
+        props[list.Name] = new(prop, primitive, true);
+        var span = $"new ReadOnlySpan<byte>(_data, {At()}, {bytes})";
+        var element = primitive == "bool" ? "byte" : primitive;
+        var value = element == "byte" ? span : $"MemoryMarshal.Cast<byte, {element}>({span})";
+        members.Add($"public ReadOnlySpan<{element}> {prop} => {value};");
+        Advance(advance);
+    }
+
+    string Render(Expr e) => Exprs.Render(e, PropertyRef, SumPopCall);
+    string PropertyRef(string field)
+    {
+        if (!props.TryGetValue(field, out var p) || p.IsList)
+            throw new NotSupportedException($"fieldref {field}");
+        return p.Type == "bool" ? $"({p.Name} ? 1 : 0)" : $"(int){p.Name}";
+    }
+
+    string? SumPopCall(string list)
+    {
+        if (!props.TryGetValue(list, out var p) || p is not { IsList: true, Type: "uint" })
+            return null;
+        needsSumPop = true;
+        return $"SumPop({p.Name})";
+    }
+
+    string At() => runtime.Count == 0 ? offset.ToString() : $"{offset} + {string.Join(" + ", runtime)}";
+
+    void Advance(string bytes)
+    {
+        if (int.TryParse(bytes, out var n))
+            offset += n;
+        else
         {
             MarkEnd();
-            known = false;
+            runtime.Add(bytes);
         }
+    }
 
-        string PropName(string raw)
-        {
-            var n = raw.ToPascalCase();
-            while (!used.Add(n))
-                n += "Field";
-            return n;
-        }
+    void MarkEnd()
+    {
+        if (fixedEnd < 0)
+            fixedEnd = offset;
+    }
 
-        void Advance(string bytes)
-        {
-            if (int.TryParse(bytes, out var n))
-                constant += n;
-            else
-            {
-                MarkEnd();
-                dynamic.Add(bytes);
-            }
-        }
+    void Unknown()
+    {
+        MarkEnd();
+        known = false;
+    }
 
-        void EmitField(Member m)
-        {
-            var prim = Primitive(m.Type);
-            if (prim == null)
-            {
-                lines.Add($"// TODO: field '{m.Name}' has type {m.Type.CsName} which can't be represented in c#");
-                if (m.Type.IsFixed) constant += m.Type.Size;
-                else Unknown();
-                return;
-            }
-            if (!known)
-            {
-                lines.Add($"// TODO: field '{m.Name}' follows a member with an unknown size");
-                return;
-            }
-            var prop = PropName(m.Name);
-            props[m.Name] = (prop, prim, false);
-            var access = m.Name.EndsWith("_len") ? "private" : "public";
-            var at = At();
-            var read = prim switch
-            {
-                "bool" => $"_data[{at}] != 0",
-                "byte" => $"_data[{at}]",
-                "sbyte" => $"(sbyte)_data[{at}]",
-                _ => $"Unsafe.As<byte, {prim}>(ref _data[{at}])",
-            };
-            lines.Add($"{access} {prim} {prop} => {read};");
-            constant += m.Type.Size;
-        }
-
-        void EmitList(Member m)
-        {
-            if (!known)
-            {
-                lines.Add($"// TODO: list '{m.Name}' follows a member with an unknown size");
-                return;
-            }
-            string count;
-            try
-            {
-                count = m.Expr == null ? throw new NotSupportedException("list without length") : Expression(m.Expr);
-            }
-            catch (NotSupportedException e)
-            {
-                lines.Add($"// TODO: list '{m.Name}' has an unsupported length ({e.Message})");
-                Unknown();
-                return;
-            }
-
-            var bytes = m.Type.Size == 1 ? count : $"{Paren(count)} * {m.Type.Size}";
-            var advance = int.TryParse(count, out var n) ? (n * m.Type.Size).ToString() : bytes;
-            var prim = Primitive(m.Type);
-            if (prim == null)
-            {
-                lines.Add($"// TODO: list '{m.Name}' of {m.Type.CsName} can't be represented in c#");
-                if (m.Type.IsFixed) Advance(advance);
-                else Unknown();
-                return;
-            }
-
-            var prop = PropName(m.Name);
-            props[m.Name] = (prop, prim, true);
-            var span = $"new ReadOnlySpan<byte>(_data, {At()}, {bytes})";
-            var element = prim == "bool" ? "byte" : prim;
-            var value = element == "byte" ? span : $"MemoryMarshal.Cast<byte, {element}>({span})";
-            lines.Add($"public ReadOnlySpan<{element}> {prop} => {value};");
-            Advance(advance);
-        }
-
-        string Expression(Expr e)
-        {
-            switch (e.Kind)
-            {
-                case "field":
-                    if (!props.TryGetValue(e.Text, out var p) || p.IsList)
-                        throw new NotSupportedException($"fieldref {e.Text}");
-                    return p.Type == "bool" ? $"({p.Name} ? 1 : 0)" : $"(int){p.Name}";
-                case "value":
-                    return e.Text;
-                case "op":
-                    return $"({Expression(e.Args![0])} {e.Text} {Expression(e.Args[1])})";
-                case "unop":
-                    return $"{e.Text}{Paren(Expression(e.Args![0]))}";
-                case "popcount":
-                    return $"{Paren(Expression(e.Args![0]))}.CountFlags()";
-                case "sumof" when e.Args is [{ Kind: "popcount", Args: [{ Kind: "listelement" }] }]
-                                  && props.TryGetValue(e.Text, out var list) && list is { IsList: true, Type: "uint" }:
-                    needsSumPop = true;
-                    return $"SumPop({list.Name})";
-                default:
-                    throw new NotSupportedException(e.Kind == "unsupported" ? $"<{e.Text}>" : e.Kind);
-            }
-        }
+    string PropName(string raw)
+    {
+        var candidate = raw.ToPascalCase();
+        while (!usedNames.Add(candidate))
+            candidate += "Field";
+        return candidate;
     }
 }
 
 
-static class InterfaceWriter
+
+sealed class Code
 {
-    public static void Add(RequestModel request, RequestSignature signature, List<string> voidMethods, List<string> replyMethods)
+    readonly List<string> lines = [];
+    int depth;
+
+    public void Line(string text = "") => lines.Add(text.Length == 0 ? "" : new string(' ', depth * 4) + text);
+
+    public IDisposable Block(string header)
     {
-        var target = request.HasReply ? replyMethods : voidMethods;
-
-        var counts = signature.Trailing
-            .Where(t => t is { Kind: "list", Expr.Kind: "field" })
-            .Select(t => t.Expr!.Text.ToCamelCase())
-            .ToHashSet();
-        var parameters = signature.Parameters
-            .Select(p => p.Split(' ') is [var type, var name] ? $"{type} {name.ToCamelCase()}" : p)
-            .Where(p => !counts.Contains(p[(p.LastIndexOf(' ') + 1)..]))
-            .ToList();
-
-        foreach (var part in signature.Trailing)
-        {
-            if (part.Kind == "pad")
-                continue;
-            if (part.Kind != "list")
-            {
-                target.Add($"// TODO: {request.Name} has a {part.Kind} '{part.Name}' which can't be represented in c#");
-                return;
-            }
-            var element = part.Type.CsName is "bool" or "char" or "void" ? "byte" : part.Type.CsName;
-            parameters.Add($"ReadOnlySpan<{element}> {part.Name.ToCamelCase()}");
-        }
-
-        var list = string.Join(", ", parameters);
-        target.Add(request.HasReply
-            ? $"ReplyLease<{request.Name}Reply> {request.Name}({list});"
-            : $"ResponseProto {request.Name}({list});");
+        Line(header);
+        Line("{");
+        depth++;
+        return new Scope(this);
     }
 
-    public static void Write(ProtocolModel protocol, List<string> voidMethods, List<string> replyMethods, StringBuilder sb)
-    {
-        var name = "I" + protocol.Namespace.Split('.')[^1].ToPascalCase();
-        sb.AppendLine();
-        Interface($"{name}VoidProto", voidMethods);
-        Interface($"{name}ResponseProto", replyMethods);
-        Interface($"{name}Request : {name}ResponseProto, {name}VoidProto", []);
+    public string[] ToArray() => [.. lines];
 
-        void Interface(string header, List<string> methods)
+    sealed class Scope(Code owner) : IDisposable
+    {
+        public void Dispose()
         {
-            sb.AppendLine($"    public interface {header}").AppendLine("    {");
-            methods.ForEach(m => sb.AppendLine("        " + m));
-            sb.AppendLine("    }");
-            if (!header.Contains(':')) sb.AppendLine();
+            owner.depth--;
+            owner.Line("}");
         }
     }
 }
 
 
-static class Helpers
+static class Exprs
+{
+    public static string Render(Expr e, Func<string, string> field, Func<string, string?>? sumPop = null) => e switch
+    {
+        Const c => c.Value.ToString(),
+        FieldRef f => field(f.Name),
+        Binary b => $"({Render(b.Left, field, sumPop)} {b.Op} {Render(b.Right, field, sumPop)})",
+        Unary u => $"{u.Op}{Cs.Paren(Render(u.Operand, field, sumPop))}",
+        PopCount p => $"{Cs.Paren(Render(p.Operand, field, sumPop))}.CountFlags()",
+        SumOf { Body: PopCount { Operand: ListElement } } s when sumPop?.Invoke(s.List) is { } call => call,
+        SumOf => throw new NotSupportedException("sumof"),
+        UnknownExpr x => throw new NotSupportedException($"<{x.Tag}>"),
+        _ => throw new NotSupportedException(e.GetType().Name),
+    };
+}
+
+
+static class WireMath
+{
+    public static int Align4(int bytes) => (bytes + 3) & ~3;
+
+    public static int PadLength(int? bytes, int? align, int offset) =>
+        bytes ?? (align!.Value - offset % align.Value) % align.Value;
+}
+
+
+static class Cs
 {
     static readonly HashSet<string> Keywords =
     [
@@ -745,24 +912,6 @@ static class Helpers
         var pascal = name.ToPascalCase();
         return (char.ToLowerInvariant(pascal[0]) + pascal[1..]).Escape();
     }
-
-    public static string Local(string name) => name[(name.IndexOf(':') + 1)..];
-    public static XElement? FirstChild(XElement e) => e.Elements().FirstOrDefault(c => c.Name.LocalName != "doc");
-    public static string Attr(XElement e, string name) => e.Attribute(name)!.Value;
-    public static int? Int(XElement e, string name) => e.Attribute(name) is { } a ? int.Parse(a.Value) : null;
-    public static string? EnumOf(XElement e) => e.Attribute("enum") is { } a ? Local(a.Value) : null;
-
-    public static long ParseNumber(string text)
-    {
-        text = text.Trim();
-        return text.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? Convert.ToInt64(text[2..], 16) : long.Parse(text);
-    }
-
-    public static int Align4(int bytes) => (bytes + 3) & ~3;
-
-    public static int PadLength(int? bytes, int? align, int offset) =>
-        bytes ?? (align!.Value - offset % align.Value) % align.Value;
-
     public static string Paren(string expression) =>
         Regex.IsMatch(expression, @"^[\w@.]+(\(\))?$") || IsWrapped(expression) ? expression : $"({expression})";
 
@@ -779,4 +928,16 @@ static class Helpers
         }
         return false;
     }
+}
+
+
+static class XmlExt
+{
+    public static string Attr(this XElement e, string name) => e.Attribute(name)!.Value;
+
+    public static int? IntAttr(this XElement e, string name) => e.Attribute(name) is { } a ? int.Parse(a.Value) : null;
+
+    public static string? EnumAttr(this XElement e) => e.Attribute("enum") is { } a ? a.Value.Local() : null;
+    public static XElement? FirstChild(this XElement e) => e.Elements().FirstOrDefault(c => c.Name.LocalName != "doc");
+    public static string Local(this string name) => name[(name.IndexOf(':') + 1)..];
 }
