@@ -2,6 +2,9 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
+const string I1 = "    ";
+const string I2 = "        ";
+const string I3 = "            ";
 var source = args.Length > 0 ? args[0] : "/mnt/hardDrive/testP/xcb-proto/src";
 while (!Directory.Exists(source))
 {
@@ -10,27 +13,140 @@ while (!Directory.Exists(source))
     if (source == null) return;
 }
 
-string[] header =
-[
-    "using System;",
-    "using System.Runtime.CompilerServices;",
-    "using System.Runtime.InteropServices;",
-    "using Xcsb.Connection.Helpers;",
-    "using Xcsb.Connection.Models;",
-    "using Xcsb.Connection.Response;",
-    "using Xcsb.Connection.Response.Contract;",
-];
+using (var stream = new StreamWriter("out.G.cs"))
+{
+    stream.WriteLine("using System;");
+    stream.WriteLine("using System.Runtime.CompilerServices;");
+    stream.WriteLine("using System.Runtime.InteropServices;");
+    stream.WriteLine("using Xcsb.Connection.Helpers;");
+    stream.WriteLine("using Xcsb.Connection.Models;");
+    stream.WriteLine("using Xcsb.Connection.Response;");
+    stream.WriteLine("using Xcsb.Connection.Response.Contract;");
 
-var units = Directory.GetFiles(source, "*.xml")
-    .Order(StringComparer.Ordinal)
-    .Select(path => Generator.Generate(ProtocolReader.Read(path)))
-    .ToList();
+    foreach (var item in Directory.GetFiles(source, "*.xml").Order(StringComparer.Ordinal))
+    {
+        var protocol = ProtocolReader.Read(item);
+        stream.WriteLine($"namespace {protocol.Namespace}");
+        stream.WriteLine("{");
+        foreach (var request in protocol.Requests)
+        {
+            stream.WriteLine($"{I1}[StructLayout(LayoutKind.Sequential, Pack = 1, Size = {request.StructSize})]");
+            stream.WriteLine($"{I1}[method: MethodImpl(MethodImplOptions.AggressiveInlining)]");
+            stream.WriteLine($"{I1}internal readonly struct {request.Name}Type({request.ParameterList})");
+            stream.WriteLine($"{I1}{{");
+            foreach (var m in request.Members)
+                stream.WriteLine($"{I2}{m.Access} readonly {m.Type} {m.Name} = {m.Value};");
+            stream.WriteLine($"{I1}}}");
+        }
+        foreach (var reply in protocol.Replies)
+        {
+            stream.WriteLine($"{I1}[StructLayout(LayoutKind.Sequential, Pack = 1)]");
+            stream.WriteLine($"{I1}public readonly struct {reply.Name} : IXReply<{reply.Name}, {reply.Name}>, IVerify");
+            stream.WriteLine($"{I1}{{");
+            stream.WriteLine($"{I2}private readonly byte[] _data;");
+            stream.WriteLine();
+            stream.WriteLine($"{I2}private {reply.Name}(byte[] data)");
+            stream.WriteLine($"{I2}{{");
+            stream.WriteLine($"{I3}if (data is null) throw new ArgumentNullException(nameof(data));");
+            stream.WriteLine($"{I3}if (data.Length < {reply.MinSize})");
+            stream.WriteLine($"{I3}    throw new ArgumentException(\"Buffer too small for {reply.Name}.\", nameof(data));");
+            stream.WriteLine($"{I3}_data = data;");
+            stream.WriteLine($"{I2}}}");
+            stream.WriteLine();
 
-File.WriteAllLines("out.G.cs", header.Concat(units.SelectMany(unit => unit)));
+            foreach (var line in reply.Header)
+                stream.WriteLine(I2 + line);
+            foreach (var line in reply.Members)
+                stream.WriteLine(I2 + line);
+
+            if (reply.NeedsSumPop)
+            {
+                stream.WriteLine();
+                stream.WriteLine($"{I2}private static int SumPop(ReadOnlySpan<uint> s)");
+                stream.WriteLine($"{I2}{{");
+                stream.WriteLine($"{I3}var n = 0;");
+                stream.WriteLine($"{I3}foreach (var v in s) n += v.CountFlags();");
+                stream.WriteLine($"{I3}return n;");
+                stream.WriteLine($"{I2}}}");
+            }
+
+            stream.WriteLine();
+            stream.WriteLine($"{I2}public {reply.Name} FromBytes(byte[] response) => new {reply.Name}(response);");
+            stream.WriteLine($"{I1}}}");
+            stream.WriteLine();
+        }
+        foreach (var ev in protocol.Events)
+        {
+            if (ev.Todo != null)
+            {
+                stream.WriteLine($"{I1}{ev.Todo}");
+                return;
+            }
+
+            stream.WriteLine($"{I1}[StructLayout(LayoutKind.Sequential, Pack = 1)]");
+            stream.WriteLine($"{I1}public readonly struct {ev.Name} : IXEvent<{ev.Name}>");
+            stream.WriteLine($"{I1}{{");
+            stream.WriteLine($"{I2}private readonly byte[] _data;");
+            stream.WriteLine($"{I2}public const byte Number = {ev.Number};");
+            stream.WriteLine();
+            stream.WriteLine($"{I2}private {ev.Name}(byte[] data)");
+            stream.WriteLine($"{I2}{{");
+            stream.WriteLine($"{I3}if (data is null) throw new ArgumentNullException(nameof(data));");
+            stream.WriteLine($"{I3}if (data.Length < {ev.MinSize})");
+            stream.WriteLine($"{I3}    throw new ArgumentException(\"Buffer too small for {ev.Name}.\", nameof(data));");
+            stream.WriteLine($"{I3}_data = data;");
+            stream.WriteLine($"{I2}}}");
+            stream.WriteLine();
+
+            foreach (var line in ev.Header)
+                stream.WriteLine(I2 + line);
+            foreach (var line in ev.Members)
+                stream.WriteLine(I2 + line);
+
+            if (ev.NeedsSumPop)
+            {
+                stream.WriteLine();
+                stream.WriteLine($"{I2}private static int SumPop(ReadOnlySpan<uint> s)");
+                stream.WriteLine($"{I2}{{");
+                stream.WriteLine($"{I3}var n = 0;");
+                stream.WriteLine($"{I3}foreach (var v in s) n += v.CountFlags();");
+                stream.WriteLine($"{I3}return n;");
+                stream.WriteLine($"{I2}}}");
+            }
+
+            stream.WriteLine();
+            stream.WriteLine($"{I2}public {ev.Name} FromBytes(byte[] response) => new {ev.Name}(response);");
+            stream.WriteLine($"{I1}}}");
+            stream.WriteLine();
+        }
+
+        stream.WriteLine($"{I1}public interface I{protocol.Namespace.Split('.')[^1].ToPascalCase()}VoidProto");
+        stream.WriteLine($"{I1}{{");
+        foreach (var r in protocol.Requests.Where(r => !r.HasReply))
+            stream.WriteLine(I2 + OutputWriter.InterfaceMethod(r));
+        stream.WriteLine($"{I1}}}");
+
+        stream.WriteLine($"{I1}public interface I{protocol.Namespace.Split('.')[^1].ToPascalCase()}ResponseProto");
+        stream.WriteLine($"{I1}{{");
+        foreach (var r in protocol.Requests.Where(r => r.HasReply))
+            stream.WriteLine(I2 + OutputWriter.InterfaceMethod(r));
+        stream.WriteLine($"{I1}}}");
+        
+        stream.WriteLine($"{I1}public interface I{protocol.Namespace.Split('.')[^1].ToPascalCase()}Request : I{protocol.Namespace.Split('.')[^1].ToPascalCase()}ResponseProto, I{protocol.Namespace.Split('.')[^1].ToPascalCase()}VoidProto");
+        stream.WriteLine($"{I1}{{{Environment.NewLine}{I1}}}");
+        stream.WriteLine("}");
+    }
+
+}
+
 Console.WriteLine("Written");
 
+sealed record Declaration(string Access, string Type, string Name, string Value);
 
-
+sealed record RequestModel(string Name, int StructSize, string ParameterList, Declaration[] Members,
+    bool HasReply, Signature Signature);
+sealed record EventModel(string Name, string? Todo, int Number, int MinSize, string[] Header,
+    string[] Members, bool NeedsSumPop, bool IsReply = false);
 readonly record struct WireType(string CsName, int Size, bool IsFixed, bool IsStruct = false);
 
 abstract record Expr { }
@@ -50,13 +166,14 @@ sealed record ListOf(string Name, WireType Type, Expr? Length) : Member;
 sealed record Switch(string Name, Expr Selector, Case[] Cases) : Member;
 sealed record Case(bool IsBitCase, long Bits, int Size, bool IsFixed);
 
-sealed record Request(string Name, Member[] Members, bool HasReply);
+sealed record Request(string Name, Member[] Members, Member[]? ReplyMembers)
+{
+    public bool HasReply => ReplyMembers is not null;
+}
 sealed record EventDef(string Name, int Number, bool IsXge, Member[]? Members);
-sealed record Protocol(string Namespace, bool IsCore, Request[] Requests, EventDef[] Events, Dictionary<string, int> EnumWidths);
 
 sealed record Param(string Type, string Name);
 sealed record Signature(Param[] Parameters, Member[] Trailing);
-
 
 
 sealed class ProtocolReader
@@ -79,57 +196,88 @@ sealed class ProtocolReader
         ["double"] = new("double", 8, true),
     };
 
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, XElement> XmlCache = new();
+
     readonly string directory;
     readonly Dictionary<string, WireType> types = new(Builtins);
     readonly Dictionary<(string Enum, string Item), long> enumItems = [];
     readonly Dictionary<string, int> enumWidths = [];
     readonly HashSet<string> loaded = [];
 
+    // ---- everything learned about the protocol; analyzers and writers read it from here ----
+    public string Namespace { get; private set; } = "";
+    public bool IsCore { get; private set; }
+    public IReadOnlyDictionary<string, WireType> Types => types;
+    public IReadOnlyDictionary<(string Enum, string Item), long> EnumItems => enumItems;
+    public IReadOnlyDictionary<string, int> EnumWidths => enumWidths;
+    public RequestModel[] Requests { get; private set; } = [];
+    public EventModel[] Events { get; private set; } = [];
+    public EventModel[] Replies { get; private set; } = [];
+
     ProtocolReader(string directory) => this.directory = directory;
 
-    public static Protocol Read(string path) =>
-        new ProtocolReader(Path.GetDirectoryName(path)!).ReadRoot(Path.GetFileNameWithoutExtension(path));
+    public static ProtocolReader Read(string path)
+    {
+        var reader = new ProtocolReader(Path.GetDirectoryName(path)!);
+        reader.ReadRoot(Path.GetFileNameWithoutExtension(path));
+        return reader;
+    }
 
-    Protocol ReadRoot(string file)
+    void ReadRoot(string file)
     {
         var root = Load(file)!;
 
-        var requests = root.Elements("request")
-            .Select(r => new Request(r.Attr("name"), ReadMembers(r.Elements()), r.Element("reply") is not null))
-            .ToArray();
+        Namespace = root.Attr("header");
+        IsCore = root.Attribute("extension-name") is null;
+        List<RequestModel> requests = [];
+        List<EventModel> replies = [];
+        foreach (var r in root.Elements("request"))
+        {
+            var reply = r.Element("reply");
+            var request = new Request(r.Attr("name"), ReadMembers(r.Elements()),
+                reply is null ? null : ReadMembers(reply.Elements()));
+            requests.Add(new RequestAnalyzer(this, request).Analyze());
+            if (request.ReplyMembers is { } members)
+                replies.Add(new EventAnalyzer(new EventDef(request.Name + "Reply", 1, false, members), isReply: true).Analyze());
+        }
+        Replies = [.. replies];
 
-        var defined = root.Elements("event")
-            .ToDictionary(
-                e => e.Attr("name"),
-                e => (Xge: e.Attribute("xge") is not null, Members: ReadMembers(e.Elements())));
+        var eventElements = root.Elements().Where(e => e.Name.LocalName is "event" or "eventcopy").ToArray();
+        Dictionary<string, (bool Xge, Member[] Members)> defined = [];
+        foreach (var e in eventElements)
+            if (e.Name.LocalName == "event")
+                defined[e.Attr("name")] = (e.Attribute("xge") is not null, ReadMembers(e.Elements()));
 
-        // An <eventcopy> reuses the layout of the event it references (only resolvable inside the same file).
-        var events = root.Elements()
-            .Where(e => e.Name.LocalName is "event" or "eventcopy")
-            .Select(e =>
-            {
-                var name = e.Attr("name");
-                var origin = e.Name.LocalName == "event" ? name : e.Attr("ref").Local();
-                defined.TryGetValue(origin, out var def);
-                return new EventDef(name, int.Parse(e.Attr("number")), def.Xge, def.Members);
-            })
-            .ToArray();
+        var events = new EventModel[eventElements.Length];
+        for (var i = 0; i < events.Length; i++)
+        {
+            var e = eventElements[i];
+            var name = e.Attr("name");
+            var origin = e.Name.LocalName == "event" ? name : e.Attr("ref").Local();
+            defined.TryGetValue(origin, out var def);
+            events[i] = new EventAnalyzer(new EventDef(name, int.Parse(e.Attr("number")), def.Xge, def.Members)).Analyze();
+        }
+        Events = events;
 
-        return new Protocol(
-            root.Attr("header"), root.Attribute("extension-name") is null, requests, events, enumWidths);
+        Requests = [.. requests];
     }
     XElement? Load(string file)
     {
         if (!loaded.Add(file))
             return null;
 
-        var xml = XDocument.Load(Path.Join(directory, file + ".xml")).Root!;
+        // Parsed XML is shared across readers: every extension imports xproto, so without
+        // the cache it would be re-read and re-parsed once per protocol file.
+        var xml = XmlCache.GetOrAdd(Path.Join(directory, file + ".xml"), p => XDocument.Load(p).Root!);
 
         foreach (var import in xml.Elements("import"))
             Load(import.Value);
-        foreach (var e in xml.Elements("enum"))
-            DefineEnum(e);
-        foreach (var e in xml.Elements())
+
+        var elements = xml.Elements().ToArray();   // enumerate the root once
+        foreach (var e in elements)
+            if (e.Name.LocalName == "enum")
+                DefineEnum(e);
+        foreach (var e in elements)
             DefineType(e);
 
         foreach (var field in xml.Descendants("field"))
@@ -161,14 +309,19 @@ sealed class ProtocolReader
                 types[e.Attr("newname")] = Resolve(e.Attr("oldname"));
                 break;
             case "struct":
-            {
-                var (size, isFixed) = Measure(ReadMembers(e.Elements()));
-                types[name] = new(name, size, isFixed, true);
-                break;
-            }
+                {
+                    var (size, isFixed) = Measure(ReadMembers(e.Elements()));
+                    types[name] = new(name, size, isFixed, true);
+                    break;
+                }
             case "union":
-                types[name] = new(name, ReadMembers(e.Elements()).Max(m => Measure(new[] { m }).Size), true, true);
-                break;
+                {
+                    var largest = 0;
+                    foreach (var m in ReadMembers(e.Elements()))
+                        largest = Math.Max(largest, Measure([m]).Size);
+                    types[name] = new(name, largest, true, true);
+                    break;
+                }
             case "eventstruct":
                 types[name] = new(name, 32, true, true);
                 break;
@@ -193,7 +346,7 @@ sealed class ProtocolReader
                 case ListOf { Length: Const count, Type.IsFixed: true } list:
                     size += list.Type.Size * (int)count.Value;
                     break;
-                default: // variable list or switch
+                default:
                     isFixed = false;
                     break;
             }
@@ -260,102 +413,18 @@ sealed class ProtocolReader
 
 
 
-static class Generator
-{
-    public static string[] Generate(Protocol protocol)
-    {
-        var code = new Code();
-        List<string> voidMethods = [], replyMethods = [];
-
-        using (code.Block($"namespace {protocol.Namespace}"))
-        {
-            foreach (var request in protocol.Requests)
-            {
-                var signature = new RequestGen(protocol, request).Write(code);
-                (request.HasReply ? replyMethods : voidMethods).Add(InterfaceMethod(request, signature));
-            }
-            foreach (var ev in protocol.Events)
-                new EventGen(ev).Write(code);
-
-            WriteInterfaces(code, protocol.Namespace, voidMethods, replyMethods);
-        }
-        return code.ToArray();
-    }
-
-    static string InterfaceMethod(Request request, Signature signature)
-    {
-        // A list's length parameter is implied by the span, so it is not part of the interface method.
-        var counts = signature.Trailing
-            .OfType<ListOf>()
-            .Select(l => l.Length)
-            .OfType<FieldRef>()
-            .Select(f => f.Name.ToCamelCase())
-            .ToHashSet();
-
-        var parameters = signature.Parameters
-            .Select(p => (p.Type, Name: p.Name.ToCamelCase()))
-            .Where(p => !counts.Contains(p.Name))
-            .Select(p => $"{p.Type} {p.Name}")
-            .ToList();
-
-        foreach (var part in signature.Trailing)
-        {
-            switch (part)
-            {
-                case Pad:
-                    break;
-                case ListOf list:
-                    var element = list.Type.CsName is "bool" or "char" or "void" ? "byte" : list.Type.CsName;
-                    parameters.Add($"ReadOnlySpan<{element}> {list.Name.ToCamelCase()}");
-                    break;
-                default:
-                    var what = part switch
-                    {
-                        Field f => $"field '{f.Name}'",
-                        Switch s => $"switch '{s.Name}'",
-                        _ => "member",
-                    };
-                    return $"// TODO: {request.Name} has a {what} which can't be represented in c#";
-            }
-        }
-
-        var args = string.Join(", ", parameters);
-        return request.HasReply
-            ? $"ReplyLease<{request.Name}Reply> {request.Name}({args});"
-            : $"ResponseProto {request.Name}({args});";
-    }
-
-    static void WriteInterfaces(Code code, string ns, List<string> voidMethods, List<string> replyMethods)
-    {
-        var name = "I" + ns.Split('.')[^1].ToPascalCase();
-
-        code.Line();
-        using (code.Block($"public interface {name}VoidProto"))
-            voidMethods.ForEach(m => code.Line(m));
-        code.Line();
-        using (code.Block($"public interface {name}ResponseProto"))
-            replyMethods.ForEach(m => code.Line(m));
-        code.Line();
-        using (code.Block($"public interface {name}Request : {name}ResponseProto, {name}VoidProto"))
-        {
-        }
-    }
-}
-
-
-
-sealed class RequestGen
+sealed class RequestAnalyzer
 {
     static readonly (int Size, string Type)[] PadTypes = [(8, "ulong"), (4, "uint"), (2, "ushort"), (1, "byte")];
 
-    readonly Protocol protocol;
+    readonly ProtocolReader protocol;
     readonly Request request;
     readonly List<Param> parameters = [];   // constructor parameters, in field order
     readonly List<string> extras = [];      // extra int parameters (runtime sizes / implicit list lengths)
-    readonly List<string> body = [];        // member lines of the struct
+    readonly List<Declaration> body = [];   // member declarations of the struct
     int padCount;
 
-    public RequestGen(Protocol protocol, Request request)
+    public RequestAnalyzer(ProtocolReader protocol, Request request)
     {
         this.protocol = protocol;
         this.request = request;
@@ -364,20 +433,19 @@ sealed class RequestGen
     static bool IsFixed(Member m) => m is Pad or Field { Type.IsFixed: true };
     static bool FitsInByte(Member m) => m is Pad { Bytes: 1 } or Field { Type: { IsFixed: true, Size: 1 } };
 
-    public Signature Write(Code code)
+    public RequestModel Analyze()
     {
         var rest = new Queue<Member>(request.Members);
 
         if (!protocol.IsCore)
         {
             parameters.Add(new("byte", "majorOpCode"));
-            body.Add("public readonly byte MajorOpcode = majorOpCode;");
+            body.Add(new("public", "byte", "MajorOpcode", "majorOpCode"));
         }
-        body.Add($"public readonly Opcode Opcode = Opcode.{request.Name};");
+        body.Add(new("public", "Opcode", "Opcode", $"Opcode.{request.Name}"));
 
         if (protocol.IsCore)
         {
-            // the byte after the opcode may carry a field of its own
             if (rest.TryPeek(out var first) && FitsInByte(first))
                 Emit(rest.Dequeue(), 1);
             else
@@ -388,18 +456,14 @@ sealed class RequestGen
         var size = 4;
         while (rest.TryPeek(out var next) && IsFixed(next))
             size += Emit(rest.Dequeue(), size);
-        body.Insert(lengthAt, $"public readonly ushort Length = {Length(size, rest)};");
+        body.Insert(lengthAt, new("public", "ushort", "Length", Length(size, rest)));
 
         var structSize = rest.Count == 0 ? WireMath.Align4(size) : size;
         var ctor = parameters.Select(p => $"{p.Type} {p.Name.Escape()}")
             .Concat(extras.Select(x => $"int {x.Escape()}"));
 
-        code.Line($"[StructLayout(LayoutKind.Sequential, Pack = 1, Size = {structSize})]");
-        code.Line("[method: MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        using (code.Block($"internal readonly struct {request.Name}Type({string.Join(", ", ctor)})"))
-            body.ForEach(line => code.Line(line));
-
-        return new Signature([.. parameters.Skip(protocol.IsCore ? 0 : 1)], [.. rest]);
+        var signature = new Signature([.. parameters.Skip(protocol.IsCore ? 0 : 1)], [.. rest]);
+        return new RequestModel(request.Name, structSize, string.Join(", ", ctor), [.. body], request.HasReply, signature);
     }
 
     int Emit(Member m, int offset)
@@ -418,15 +482,16 @@ sealed class RequestGen
         }
     }
 
-    List<string> Pads(int bytes)
+    List<Declaration> Pads(int bytes)
     {
-        List<string> result = [];
+        List<Declaration> result = [];
         foreach (var (size, type) in PadTypes)
             for (; bytes >= size; bytes -= size)
-                result.Add($"private readonly {type} _pad{padCount++} = 0;");
+                result.Add(new("private", type, $"_pad{padCount++}", "0"));
         return result;
     }
-    string Declare(Field f)
+
+    Declaration Declare(Field f)
     {
         var name = f.Name.Escape();
         var storage = f.Type.CsName == "bool" ? "byte" : f.Type.CsName; // C# bool is not blittable
@@ -448,8 +513,9 @@ sealed class RequestGen
             parameters.Add(new(parameterType, f.Name));
 
         var access = f.Name.EndsWith("_len") ? "private" : "public";
-        return $"{access} readonly {fieldType} {f.Name.ToPascalCase()} = {value};";
+        return new(access, fieldType, f.Name.ToPascalCase(), value);
     }
+
     string Length(int headerSize, IEnumerable<Member> trailing)
     {
         var length = new LengthBuilder(headerSize);
@@ -509,6 +575,7 @@ sealed class RequestGen
             throw new NotSupportedException($"{ex.Message} in request {request.Name}");
         }
     }
+
     string FieldValue(string name)
     {
         var field = request.Members.OfType<Field>().FirstOrDefault(f => f.Value is null && f.Name == name);
@@ -531,55 +598,8 @@ sealed class RequestGen
 }
 
 
-sealed class LengthBuilder(int headerBytes)
-{
-    readonly List<string> words = [];
-    readonly List<string> run = [];
-    int constantWords;
-    int constantBytes = headerBytes;
 
-    public void AddConstant(int bytes) => constantBytes += bytes;
-
-    public void Add(string count, int unit)
-    {
-        if (int.TryParse(count, out var n))
-            constantBytes += n * unit;
-        else if (unit % 4 == 0)
-            words.Add(Scale(count, unit / 4));
-        else
-            run.Add(Scale(count, unit));
-    }
-    public void EndRun()
-    {
-        if (run.Count == 0)
-            constantWords += WireMath.Align4(constantBytes) / 4;
-        else
-        {
-            constantWords += constantBytes / 4;
-            var rest = constantBytes % 4;
-            var terms = rest == 0 ? run : run.Prepend(rest.ToString());
-            words.Add($"{Cs.Paren(string.Join(" + ", terms))}.AddPadding() / 4");
-        }
-        constantBytes = 0;
-        run.Clear();
-    }
-
-    public string Build()
-    {
-        EndRun();
-        if (words.Count == 0)
-            return constantWords.ToString();
-        if (constantWords != 0)
-            words.Insert(0, constantWords.ToString());
-        return $"(ushort)({string.Join(" + ", words)})";
-    }
-
-    static string Scale(string count, int factor) => factor == 1 ? count : $"{Cs.Paren(count)} * {factor}";
-}
-
-
-
-sealed class EventGen
+sealed class EventAnalyzer
 {
     sealed record Prop(string Name, string Type, bool IsList);
 
@@ -602,82 +622,64 @@ sealed class EventGen
     int fixedEnd = -1;                                    // offset where the fixed part ends
     bool known = true;                                    // false once an offset can no longer be computed
     bool needsSumPop;
+    readonly bool isReply;
 
-    public EventGen(EventDef ev)
+    public EventAnalyzer(EventDef ev, bool isReply = false)
     {
         this.ev = ev;
-        name = ev.Name.EndsWith("Event") ? ev.Name : ev.Name + "Event";
-        hasSequence = !ev.IsXge && ev.Name != "KeymapNotify"; // KeymapNotify has no sequence number
-        usedNames = ["ResponseType", "Sequence", "Number", "Length", "ByteSize", "EventType", "Extension", name];
-        offset = ev.IsXge ? 10 : hasSequence ? 4 : 1;
+        this.isReply = isReply;
+        name = isReply || ev.Name.EndsWith("Event") ? ev.Name : ev.Name + "Event";
+        hasSequence = !ev.IsXge && ev.Name != "KeymapNotify";
+        usedNames = ["ResponseType", "Sequence", "Number", "Length", "ByteSize", "EventType", "Extension", "Verify", "FromBytes", name];
+        offset = ev.IsXge ? 10 : isReply ? 8 : hasSequence ? 4 : 1;
     }
 
-    public void Write(Code code)
+    public EventModel Analyze()
     {
         if (ev.Members == null)
-        {
-            code.Line($"// TODO: {name} is a copy of an event defined in another file");
-            return;
-        }
+            return new(name, $"// TODO: {name} is a copy of an event defined in another file", ev.Number, 0, [], [], false);
 
         Layout(ev.Members);
-        var minSize = Math.Max(32, fixedEnd);
-
-        code.Line("[StructLayout(LayoutKind.Sequential, Pack = 1)]");
-        using (code.Block($"public readonly struct {name} : IXEvent<{name}>"))
-        {
-            code.Line("private readonly byte[] _data;");
-            code.Line($"public const byte Number = {ev.Number};");
-            code.Line();
-            using (code.Block($"private {name}(byte[] data)"))
-            {
-                code.Line("if (data is null) throw new ArgumentNullException(nameof(data));");
-                code.Line($"if (data.Length < {minSize})");
-                code.Line($"    throw new ArgumentException(\"Buffer too small for {name}.\", nameof(data));");
-                code.Line("_data = data;");
-            }
-            code.Line();
-            code.Line("public byte ResponseType => _data[0];");
-
-            if (ev.IsXge)
-            {
-                code.Line("public byte Extension => _data[1];");
-                code.Line("public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);");
-                code.Line("public uint Length => Unsafe.As<byte, uint>(ref _data[4]);");
-                code.Line("public int ByteSize => checked(32 + (int)Length * 4);");
-                code.Line("public ushort EventType => Unsafe.As<byte, ushort>(ref _data[8]);");
-            }
-            else if (hasSequence)
-                code.Line("public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);");
-
-            members.ForEach(line => code.Line(line));
-
-            if (needsSumPop)
-            {
-                code.Line();
-                using (code.Block("private static int SumPop(ReadOnlySpan<uint> s)"))
-                {
-                    code.Line("var n = 0;");
-                    code.Line("foreach (var v in s) n += v.CountFlags();");
-                    code.Line("return n;");
-                }
-            }
-
-            code.Line();
-            code.Line($"public {name} FromBytes(byte[] response) => new {name}(response);");
-        }
-        code.Line();
+        return new(name, null, ev.Number, Math.Max(32, fixedEnd), Header(), [.. members], needsSumPop, isReply);
     }
+
+    string[] Header()
+    {
+        List<string> lines = ["public byte ResponseType => _data[0];"];
+        if (ev.IsXge)
+        {
+            lines.Add("public byte Extension => _data[1];");
+            lines.Add("public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);");
+            lines.Add("public uint Length => Unsafe.As<byte, uint>(ref _data[4]);");
+            lines.Add("public int ByteSize => checked(32 + (int)Length * 4);");
+            lines.Add("public ushort EventType => Unsafe.As<byte, ushort>(ref _data[8]);");
+        }
+        else if (isReply)
+        {
+            lines.Add("public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);");
+            lines.Add("public uint Length => Unsafe.As<byte, uint>(ref _data[4]);");
+            lines.Add("public int ByteSize => checked(32 + (int)Length * 4);");
+            lines.Add("public bool Verify(in ushort sequence) => ResponseType == 1 && Sequence == sequence;");
+        }
+        else if (hasSequence)
+            lines.Add("public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);");
+        return [.. lines];
+    }
+
     void Layout(Member[] all)
     {
         var rest = new Queue<Member>(all);
 
-        // the byte after the response type may carry a field of its own
-        if (hasSequence && rest.TryPeek(out var first) && CarriesFirstByte(first))
+        if (!isReply && hasSequence && rest.TryPeek(out var first) && CarriesFirstByte(first))
         {
             rest.Dequeue();
             if (first is Field f)
+            {
+                var after = offset;
+                offset = 1; // the first byte sits before the sequence number
                 AddField(f);
+                offset = after;
+            }
         }
 
         foreach (var member in rest)
@@ -786,6 +788,8 @@ sealed class EventGen
     string Render(Expr e) => Exprs.Render(e, PropertyRef, SumPopCall);
     string PropertyRef(string field)
     {
+        if (isReply && field == "length" && !props.ContainsKey(field))
+            return "(int)Length";
         if (!props.TryGetValue(field, out var p) || p.IsList)
             throw new NotSupportedException($"fieldref {field}");
         return p.Type == "bool" ? $"({p.Name} ? 1 : 0)" : $"(int){p.Name}";
@@ -834,31 +838,95 @@ sealed class EventGen
 }
 
 
-
-sealed class Code
+sealed class LengthBuilder(int headerBytes)
 {
-    readonly List<string> lines = [];
-    int depth;
+    readonly List<string> words = [];
+    readonly List<string> run = [];
+    int constantWords;
+    int constantBytes = headerBytes;
 
-    public void Line(string text = "") => lines.Add(text.Length == 0 ? "" : new string(' ', depth * 4) + text);
+    public void AddConstant(int bytes) => constantBytes += bytes;
 
-    public IDisposable Block(string header)
+    public void Add(string count, int unit)
     {
-        Line(header);
-        Line("{");
-        depth++;
-        return new Scope(this);
+        if (int.TryParse(count, out var n))
+            constantBytes += n * unit;
+        else if (unit % 4 == 0)
+            words.Add(Scale(count, unit / 4));
+        else
+            run.Add(Scale(count, unit));
+    }
+    public void EndRun()
+    {
+        if (run.Count == 0)
+            constantWords += WireMath.Align4(constantBytes) / 4;
+        else
+        {
+            constantWords += constantBytes / 4;
+            var rest = constantBytes % 4;
+            var terms = rest == 0 ? run : run.Prepend(rest.ToString());
+            words.Add($"{Cs.Paren(string.Join(" + ", terms))}.AddPadding() / 4");
+        }
+        constantBytes = 0;
+        run.Clear();
     }
 
-    public string[] ToArray() => [.. lines];
-
-    sealed class Scope(Code owner) : IDisposable
+    public string Build()
     {
-        public void Dispose()
+        EndRun();
+        if (words.Count == 0)
+            return constantWords.ToString();
+        if (constantWords != 0)
+            words.Insert(0, constantWords.ToString());
+        return $"(ushort)({string.Join(" + ", words)})";
+    }
+
+    static string Scale(string count, int factor) => factor == 1 ? count : $"{Cs.Paren(count)} * {factor}";
+}
+
+static class OutputWriter
+{
+    public static string InterfaceMethod(RequestModel request)
+    {
+        var signature = request.Signature;
+        var counts = signature.Trailing
+            .OfType<ListOf>()
+            .Select(l => l.Length)
+            .OfType<FieldRef>()
+            .Select(f => f.Name.ToCamelCase())
+            .ToHashSet();
+
+        var parameters = signature.Parameters
+            .Select(p => (p.Type, Name: p.Name.ToCamelCase()))
+            .Where(p => !counts.Contains(p.Name))
+            .Select(p => $"{p.Type} {p.Name}")
+            .ToList();
+
+        foreach (var part in signature.Trailing)
         {
-            owner.depth--;
-            owner.Line("}");
+            switch (part)
+            {
+                case Pad:
+                    break;
+                case ListOf list:
+                    var element = list.Type.CsName is "bool" or "char" or "void" ? "byte" : list.Type.CsName;
+                    parameters.Add($"ReadOnlySpan<{element}> {list.Name.ToCamelCase()}");
+                    break;
+                default:
+                    var what = part switch
+                    {
+                        Field f => $"field '{f.Name}'",
+                        Switch s => $"switch '{s.Name}'",
+                        _ => "member",
+                    };
+                    return $"// TODO: {request.Name} has a {what} which can't be represented in c#";
+            }
         }
+
+        var args = string.Join(", ", parameters);
+        return request.HasReply
+            ? $"ReplyLease<{request.Name}Reply> {request.Name}({args});"
+            : $"ResponseProto {request.Name}({args});";
     }
 }
 
