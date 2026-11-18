@@ -266,10 +266,7 @@ sealed class ProtocolReader
         if (!loaded.Add(file))
             return null;
 
-        // Parsed XML is shared across readers: every extension imports xproto, so without
-        // the cache it would be re-read and re-parsed once per protocol file.
         var xml = XmlCache.GetOrAdd(Path.Join(directory, file + ".xml"), p => XDocument.Load(p).Root!);
-
         foreach (var import in xml.Elements("import"))
             Load(import.Value);
 
