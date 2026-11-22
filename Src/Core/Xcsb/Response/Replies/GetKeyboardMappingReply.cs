@@ -7,41 +7,27 @@ using Xcsb.Response.Replies.Internals;
 
 namespace Xcsb.Response.Replies;
 
-public readonly struct GetKeyboardMappingReply:IXReply<GetKeyboardMappingReply,GetKeyboardMappingResponse>
+public readonly struct GetKeyboardMappingReply : IXReply<GetKeyboardMappingReply, GetKeyboardMappingResponse>, IVerify
 {
-    public readonly ResponseType Reply;
-    public readonly ushort Sequence;
-    public readonly uint[] Keysyms;
-    public readonly byte KeyPerKeyCode;
+    private readonly byte[] _data;
 
-    internal GetKeyboardMappingReply(Span<byte> response, byte count)
+    private GetKeyboardMappingReply(byte[] data)
     {
-        ref readonly var context = ref response.AsStruct<GetKeyboardMappingResponse>();
-        if (context.ResponseHeader.GetValue() * count != context.Length)
-            throw new InvalidOperationException("Unknown reply");
-
-        Reply = (ResponseType)context.ResponseHeader.Reply;
-        Sequence = context.ResponseHeader.Sequence;
-        KeyPerKeyCode = context.ResponseHeader.GetValue();
-
-        if (KeyPerKeyCode == 0)
-            Keysyms = [];
-        else
-        {
-            var cursor = Unsafe.SizeOf<GetKeyboardMappingResponse>();
-            var length = (int)context.Length * 4;
-            response = response.Slice(cursor, length);
-            Keysyms = MemoryMarshal.Cast<byte, uint>(response).ToArray();
-            // todo: implement try a custom reader of span and span or similar structure dimantion should be extra to
-            // store but it's not a big deal' because it does not map to any native types
-            // Keysyms = new uint[count][];
-            // for (var i = 0; i < count; i++)
-            //     Keysyms[i] = MemoryMarshal.Cast<byte, uint>(buffer.Slice(i * (KeyPerKeyCode * 4), KeyPerKeyCode * 4)).ToArray();
-        }
+        if (data is null) throw new ArgumentNullException(nameof(data));
+        if (data.Length < 33)
+            throw new ArgumentException("Buffer too small for GetKeyboardMappingReply.", nameof(data));
+        _data = data;
     }
 
-    public GetKeyboardMappingReply FromBytes(byte[] response)
-    {
-        return new GetKeyboardMappingReply();
-    }
+    public byte ResponseType => _data[0];
+    public ushort Sequence => Unsafe.As<byte, ushort>(ref _data[2]);
+    public uint Length => Unsafe.As<byte, uint>(ref _data[4]);
+    public int ByteSize => checked(32 + (int)Length * 4);
+    public bool Verify(in ushort sequence) => ResponseType == 1 && Sequence == sequence;
+    public byte KeysymsPerKeycode => _data[1];
+    public ReadOnlySpan<uint> Keysyms => MemoryMarshal.Cast<byte, uint>(new ReadOnlySpan<byte>(_data, 
+        Unsafe.SizeOf<GetKeyboardMappingResponse>(), 
+        ((int)Length) * 4));
+
+    public GetKeyboardMappingReply FromBytes(byte[] response) => new GetKeyboardMappingReply(response);
 }
