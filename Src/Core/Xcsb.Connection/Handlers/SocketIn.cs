@@ -178,14 +178,14 @@ internal class SocketIn : ISocketIn
                 switch (responseType.ResponseType)
                 {
                     case XResponseType.Error:
-                    {
-                        return (buffer, responseType);
-                    }
+                        {
+                            return (buffer, responseType);
+                        }
                     case XResponseType.Reply:
-                    {
-                        var result = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
-                        return (result, responseType);
-                    }
+                        {
+                            var result = await ComputeResponseAsync(buffer, token: token).ConfigureAwait(false);
+                            return (result, responseType);
+                        }
                     case XResponseType.Unknown:
                     case XResponseType.Event:
                     case XResponseType.Notify:
@@ -353,9 +353,8 @@ internal class SocketIn : ISocketIn
 
             ref readonly var temp = ref result1.Item1.AsStruct<InternalType>();
             var tempSeq = (ushort)sequence;
-            if (!temp.Verify(in tempSeq))
-                return (result1.Item1,
-                    new MappingDetails(XResponseType.Error, UnknownResponse.Unknown(result1.Item1[0])));
+            if (!temp.Verify(in tempSeq) && result1.Item2.ResponseType != XResponseType.Error)
+                return (result1.Item1, new MappingDetails(XResponseType.Error, UnknownResponse.Unknown(result1.Item1[0])));
             return result1;
         }
     }
