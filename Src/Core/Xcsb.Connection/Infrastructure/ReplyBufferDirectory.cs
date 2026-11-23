@@ -4,12 +4,13 @@ namespace Xcsb.Connection.Infrastructure;
 
 public class ReplyBufferDirectory<TValue>
 {
-    private ConcurrentDictionary<ushort, ConcurrentDictionary<uint, TValue>> dict =
-        new ConcurrentDictionary<ushort, ConcurrentDictionary<uint, TValue>>();
-    private ConcurrentDictionary<ushort, uint> lenCollect = new ConcurrentDictionary<ushort, uint>();
+    private ConcurrentDictionary<ushort, ConcurrentDictionary<uint, TValue>> dict;
+    private ConcurrentDictionary<ushort, uint> lenCollect;
 
     public ReplyBufferDirectory()
     {
+        dict = new ConcurrentDictionary<ushort, ConcurrentDictionary<uint, TValue>>();
+        lenCollect = new ConcurrentDictionary<ushort, uint>();
         lenCollect.TryAdd(0, 0);
     }
 
@@ -25,8 +26,12 @@ public class ReplyBufferDirectory<TValue>
             lenCollect[key] = ++index;
         }
 
-        var dictTemp = dict.GetOrAdd(key, new ConcurrentDictionary<uint, TValue>());
-        dictTemp.GetOrAdd(index, value);
+        if (!dict.TryGetValue(key, out var inner))
+        {
+            inner = new ConcurrentDictionary<uint, TValue>();
+            dict[key] = inner;
+        }
+        inner[index] = value;
     }
 
     public TValue? Get(uint key)
