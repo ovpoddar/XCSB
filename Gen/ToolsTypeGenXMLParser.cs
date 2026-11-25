@@ -133,13 +133,89 @@ using (var stream = new StreamWriter("out.G.cs"))
         text.AppendLine($"{I1}public interface I{name}VoidProto");
         text.AppendLine($"{I1}{{");
         foreach (var r in reader.Requests.Where(r => !r.HasReply))
-            text.Append(I2).AppendLine(reader.InterfaceMethod(r));
+        {
+            List<string>? counts = null;
+            foreach (var part in r.Signature.Trailing)
+                if (part is ListOf { Length: FieldRef length })
+                    (counts ??= []).Add(length.Name.ToCamelCase());
+
+            List<string> methodArgs = [];
+            foreach (var p in r.Signature.Parameters)
+            {
+                var paramName = p.Name.ToCamelCase();
+                if (counts is null || !counts.Contains(paramName))
+                    methodArgs.Add($"{p.Type} {paramName}");
+            }
+
+            foreach (var part in r.Signature.Trailing)
+            {
+                switch (part)
+                {
+                    case Pad:
+                        break;
+                    case ListOf list:
+                        var element = list.Type.CsName is "bool" or "char" or "void" ? "byte" : list.Type.CsName;
+                        methodArgs.Add($"ReadOnlySpan<{element}> {list.Name.ToCamelCase()}");
+                        break;
+                    default:
+                        var what = part switch
+                        {
+                            Field f => $"field '{f.Name}'",
+                            Switch s => $"switch '{s.Name}'",
+                            _ => "member",
+                        };
+                        text.Append($"// TODO: {r.Name} has a {what} which can't be represented in c#");
+                        continue;
+                }
+            }
+
+            var list2 = string.Join(", ", methodArgs);
+            text.Append(I2).AppendLine($"ResponseProto {r.Name}({list2});");
+        }
         text.AppendLine($"{I1}}}");
 
         text.AppendLine($"{I1}public interface I{name}ResponseProto");
         text.AppendLine($"{I1}{{");
         foreach (var r in reader.Requests.Where(r => r.HasReply))
-            text.Append(I2).AppendLine(reader.InterfaceMethod(r));
+        {
+            List<string>? counts = null;
+            foreach (var part in r.Signature.Trailing)
+                if (part is ListOf { Length: FieldRef length })
+                    (counts ??= []).Add(length.Name.ToCamelCase());
+
+            List<string> methodArgs = [];
+            foreach (var p in r.Signature.Parameters)
+            {
+                var paramName = p.Name.ToCamelCase();
+                if (counts is null || !counts.Contains(paramName))
+                    methodArgs.Add($"{p.Type} {paramName}");
+            }
+
+            foreach (var part in r.Signature.Trailing)
+            {
+                switch (part)
+                {
+                    case Pad:
+                        break;
+                    case ListOf list:
+                        var element = list.Type.CsName is "bool" or "char" or "void" ? "byte" : list.Type.CsName;
+                        methodArgs.Add($"ReadOnlySpan<{element}> {list.Name.ToCamelCase()}");
+                        break;
+                    default:
+                        var what = part switch
+                        {
+                            Field f => $"field '{f.Name}'",
+                            Switch s => $"switch '{s.Name}'",
+                            _ => "member",
+                        };
+                        text.Append($"// TODO: {r.Name} has a {what} which can't be represented in c#");
+                        continue;
+                }
+            }
+
+            var list2 = string.Join(", ", methodArgs);
+            text.Append(I2).AppendLine($"ReplyLease<{r.Name}Reply> {r.Name}({list2});");
+        }
         text.AppendLine($"{I1}}}");
 
         text.AppendLine($"{I1}public interface I{name}Request : I{name}ResponseProto, I{name}VoidProto");
@@ -253,7 +329,6 @@ sealed class ProtocolReader
     public ExtensionInfo? Extension { get; }        // null for xproto, the core protocol
     public bool IsCore => Extension is null;
     public string[] Imports { get; }
-    public Definition[] Definitions { get; }
 
     public Request[] Requests { get; }
     public Reply[] Replies { get; }
@@ -269,38 +344,35 @@ sealed class ProtocolReader
             root.Attr("extension-name"), root.BoolAttr("extension-multiword"),
             root.IntAttr("major-version") ?? 0, root.IntAttr("minor-version") ?? 0);
         Imports = [.. root.Elements("import").Select(i => i.Value.Trim())];
-        Definitions =
-        [
-            .. root.Elements()
-                .Where(e => e.Name.LocalName != "import")
-                .Select<XElement, Definition>(e => e.Name.LocalName switch
-                {
-                    "enum" => new EnumDef(e.Attr("name"), ReadItems(e), DocOf(e)),
-                    "typedef" => new TypedefDef(e.Attr("newname"), e.Attr("oldname")),
-                    "xidtype" => new XidTypeDef(e.Attr("name")),
-                    "xidunion" => new XidUnionDef(e.Attr("name"), [.. e.Elements("type").Select(t => t.Value.Trim())]),
-                    "struct" => new StructDef(e.Attr("name"), ReadMembers(e.Elements()),
-                        Resolve(e.Attr("name")).Size, Resolve(e.Attr("name")).IsFixed),
-                    "union" => new UnionDef(e.Attr("name"), ReadMembers(e.Elements()),
-                        Resolve(e.Attr("name")).Size, Resolve(e.Attr("name")).IsFixed),
-                    "eventstruct" => new EventStructDef(e.Attr("name"), [.. e.Elements("allowed").Select(a => new AllowedEvents(
-                        a.Attr("extension"), a.BoolAttr("xge"), int.Parse(a.Attr("opcode-min")), int.Parse(a.Attr("opcode-max"))))]),
-                    "request" => new RequestDef(e.Attr("name"), int.Parse(e.Attr("opcode")), e.BoolAttr("combine-adjacent"),
-                        ReadMembers(e.Elements()), StartAlignOf(e),
-                        e.Element("reply") is { } reply
-                            ? new ReplyDef(ReadMembers(reply.Elements()), StartAlignOf(reply), DocOf(reply))
-                            : null,
-                        DocOf(e)),
-                    "event" => new EventDef(e.Attr("name"), int.Parse(e.Attr("number")), e.BoolAttr("xge"),
-                        e.BoolAttr("no-sequence-number"), ReadMembers(e.Elements()), StartAlignOf(e), DocOf(e)),
-                    "eventcopy" => new EventCopyDef(e.Attr("name"), int.Parse(e.Attr("number")), e.Attr("ref")),
-                    "error" => new ErrorDef(e.Attr("name"), int.Parse(e.Attr("number")), ReadMembers(e.Elements())),
-                    "errorcopy" => new ErrorCopyDef(e.Attr("name"), int.Parse(e.Attr("number")), e.Attr("ref")),
-                    var tag => throw new NotSupportedException($"<{tag}> in {Namespace} is not a known top-level element"),
-                })
-        ];
+        var definitions = root.Elements()
+            .Where(e => e.Name.LocalName != "import")
+            .Select<XElement, Definition>(e => e.Name.LocalName switch
+            {
+                "enum" => new EnumDef(e.Attr("name"), ReadItems(e), DocOf(e)),
+                "typedef" => new TypedefDef(e.Attr("newname"), e.Attr("oldname")),
+                "xidtype" => new XidTypeDef(e.Attr("name")),
+                "xidunion" => new XidUnionDef(e.Attr("name"), [.. e.Elements("type").Select(t => t.Value.Trim())]),
+                "struct" => new StructDef(e.Attr("name"), ReadMembers(e.Elements()),
+                    Resolve(e.Attr("name")).Size, Resolve(e.Attr("name")).IsFixed),
+                "union" => new UnionDef(e.Attr("name"), ReadMembers(e.Elements()),
+                    Resolve(e.Attr("name")).Size, Resolve(e.Attr("name")).IsFixed),
+                "eventstruct" => new EventStructDef(e.Attr("name"), [.. e.Elements("allowed").Select(a => new AllowedEvents(
+                    a.Attr("extension"), a.BoolAttr("xge"), int.Parse(a.Attr("opcode-min")), int.Parse(a.Attr("opcode-max"))))]),
+                "request" => new RequestDef(e.Attr("name"), int.Parse(e.Attr("opcode")), e.BoolAttr("combine-adjacent"),
+                    ReadMembers(e.Elements()), StartAlignOf(e),
+                    e.Element("reply") is { } reply
+                        ? new ReplyDef(ReadMembers(reply.Elements()), StartAlignOf(reply), DocOf(reply))
+                        : null,
+                    DocOf(e)),
+                "event" => new EventDef(e.Attr("name"), int.Parse(e.Attr("number")), e.BoolAttr("xge"),
+                    e.BoolAttr("no-sequence-number"), ReadMembers(e.Elements()), StartAlignOf(e), DocOf(e)),
+                "eventcopy" => new EventCopyDef(e.Attr("name"), int.Parse(e.Attr("number")), e.Attr("ref")),
+                "error" => new ErrorDef(e.Attr("name"), int.Parse(e.Attr("number")), ReadMembers(e.Elements())),
+                "errorcopy" => new ErrorCopyDef(e.Attr("name"), int.Parse(e.Attr("number")), e.Attr("ref")),
+                var tag => throw new NotSupportedException($"<{tag}> in {Namespace} is not a known top-level element"),
+            });
 
-        Requests = [.. Definitions.OfType<RequestDef>().Select(r =>
+        Requests = [.. definitions.OfType<RequestDef>().Select(r =>
         {
             var request = new Request(r.Name, r.Members.OnWire(), r.Reply?.Members.OnWire());
             request.Analyze(this);
@@ -314,10 +386,10 @@ sealed class ProtocolReader
             return reply;
         })];
 
-        Events = [.. Definitions.Select(d => d switch
+        Events = [.. definitions.Select(d => d switch
         {
             EventDef e => new Event(e.Name, e.Number, e.Xge, !e.NoSequenceNumber, e.Members.OnWire()),
-            EventCopyDef c => Definitions.OfType<EventDef>().LastOrDefault(e => e.Name == c.Ref.Local()) is { } source
+            EventCopyDef c => definitions.OfType<EventDef>().LastOrDefault(e => e.Name == c.Ref.Local()) is { } source
                 ? new Event(c.Name, c.Number, source.Xge, !source.NoSequenceNumber, source.Members.OnWire())
                 : new Event(c.Name, c.Number, false, false, null),
             _ => null,
@@ -356,47 +428,6 @@ sealed class ProtocolReader
         .Select(a => new EnumUse(a.Name.LocalName, a.Value))
         .FirstOrDefault();
 
-    public string InterfaceMethod(Request request)
-    {
-        List<string>? counts = null;
-        foreach (var part in request.Signature.Trailing)
-            if (part is ListOf { Length: FieldRef length })
-                (counts ??= []).Add(length.Name.ToCamelCase());
-
-        List<string> args = [];
-        foreach (var p in request.Signature.Parameters)
-        {
-            var name = p.Name.ToCamelCase();
-            if (counts is null || !counts.Contains(name))
-                args.Add($"{p.Type} {name}");
-        }
-
-        foreach (var part in request.Signature.Trailing)
-        {
-            switch (part)
-            {
-                case Pad:
-                    break;
-                case ListOf list:
-                    var element = list.Type.CsName is "bool" or "char" or "void" ? "byte" : list.Type.CsName;
-                    args.Add($"ReadOnlySpan<{element}> {list.Name.ToCamelCase()}");
-                    break;
-                default:
-                    var what = part switch
-                    {
-                        Field f => $"field '{f.Name}'",
-                        Switch s => $"switch '{s.Name}'",
-                        _ => "member",
-                    };
-                    return $"// TODO: {request.Name} has a {what} which can't be represented in c#";
-            }
-        }
-
-        var list2 = string.Join(", ", args);
-        return request.HasReply
-            ? $"ReplyLease<{request.Name}Reply> {request.Name}({list2});"
-            : $"ResponseProto {request.Name}({list2});";
-    }
     XElement Collect(string file)
     {
         var xml = XmlCache.GetOrAdd(Path.Join(directory, file + ".xml"), p => XDocument.Load(p).Root!);
@@ -727,8 +758,6 @@ sealed class Request(string name, Member[] members, Member[]? replyMembers)
                 if (field == null)
                     return Extra(name); // implicit list length, e.g. string_len in QueryTextExtents
 
-                // length math is done in int, so AddPadding()/CountFlags() never run on a
-                // byte/ushort operand that would overflow when padded (e.g. name_len = 65535)
                 var parameter = name.Escape();
                 var type = field.Type.CsName;
                 if (field.Enum == null && type == "bool")
@@ -930,7 +959,6 @@ abstract class Message
     {
         if (offset >= bodyAt || headerAt == bodyAt)
             return; // already past the header, or there is none
-        // a member with a variable size never fits in front of the header
         if (offset >= headerAt || WireMath.SizeOf(member, offset) is not { } s || offset + s > headerAt)
             offset = bodyAt;
     }
