@@ -147,6 +147,7 @@ using (var stream = new StreamWriter("out.G.cs"))
                     methodArgs.Add($"{p.Type} {paramName}");
             }
 
+            string? todo = null;
             foreach (var part in r.Signature.Trailing)
             {
                 switch (part)
@@ -164,13 +165,13 @@ using (var stream = new StreamWriter("out.G.cs"))
                             Switch s => $"switch '{s.Name}'",
                             _ => "member",
                         };
-                        text.Append($"// TODO: {r.Name} has a {what} which can't be represented in c#");
-                        continue;
+                        todo ??= ($"// TODO: {r.Name} has a {what} which can't be represented in c#");
+                        break;
                 }
             }
 
             var list2 = string.Join(", ", methodArgs);
-            text.Append(I2).AppendLine($"ResponseProto {r.Name}({list2});");
+            text.Append(I2).AppendLine(todo ?? $"ResponseProto {r.Name}({list2});");
         }
         text.AppendLine($"{I1}}}");
 
@@ -191,6 +192,7 @@ using (var stream = new StreamWriter("out.G.cs"))
                     methodArgs.Add($"{p.Type} {paramName}");
             }
 
+            string? todo = null;
             foreach (var part in r.Signature.Trailing)
             {
                 switch (part)
@@ -208,13 +210,13 @@ using (var stream = new StreamWriter("out.G.cs"))
                             Switch s => $"switch '{s.Name}'",
                             _ => "member",
                         };
-                        text.Append($"// TODO: {r.Name} has a {what} which can't be represented in c#");
-                        continue;
+                        todo ??= ($"// TODO: {r.Name} has a {what} which can't be represented in c#");
+                        break;
                 }
             }
 
             var list2 = string.Join(", ", methodArgs);
-            text.Append(I2).AppendLine($"ReplyLease<{r.Name}Reply> {r.Name}({list2});");
+            text.Append(I2).AppendLine(todo ?? $"ReplyLease<{r.Name}Reply> {r.Name}({list2});");
         }
         text.AppendLine($"{I1}}}");
 
